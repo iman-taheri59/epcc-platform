@@ -1,6 +1,6 @@
 # ADR-EPCC-004 — Physical breakdown: Plant / Pipeline / Subsystem
 
-**Status:** PROPOSED — analysis only, nothing implemented yet
+**Status:** ACCEPTED — built, migrated and tested on 2026-09-13 (see §6)
 **Date:** 2026-09-13
 **Trigger:** «هر پروژه می‌تونه چندین plant و چندین خط لوله (pipeline، نه خطوط piping) داشته باشه و هر plant می‌تونه چندین زیرسیستم داشته باشه. این ساختار باید با ساختار نرم‌افزار Plant 3D سازگاری داشته باشه.»
 
@@ -251,17 +251,66 @@ platform exists to fill. We should be *readable from* Plant 3D, not shaped like 
 
 ---
 
-## 5. Open questions for the user (before any code)
+## 5. Questions asked, and how they were answered
 
-1. **Subsystem numbering** — is `SS-2201` unique across the whole project, or per plant?
-   (§3.7 — affects issued certificates.)
-2. **Do pipelines have subsystems directly, or do they need their own intermediate level?**
-   Industry practice varies: some split by **spread**, some by **block valve section**.
-   If spreads matter, `areas` covers it with `kind`-aware labels; confirm the word you use.
-3. **Is `area` a level you actually use**, or is `plant → subsystem` how your projects run?
-   (Optional either way — this decides the default the seeder and UI present.)
-4. **KP addressing now or later?** Storing `from_kp`/`to_kp` is cheap; *reporting* by KP range
-   (progress per kilometre, weld map) is a feature in its own right.
+1. **Subsystem numbering — project-wide or per plant?** → **Per facility.**
+   `UNIQUE(project_id, code)` was dropped in favour of `UNIQUE(facility_id, code)`, so
+   `PL-01/SS-01` and `PL-02/SS-01` are two legal, distinct subsystems. Issued certificates are
+   unaffected because they snapshot their identifiers rather than joining live.
+2. **Do pipelines need their own intermediate level?** → **Deferred, not refused.**
+   `PIPELINE` exists in `FacilityKind::all()` (so the CHECK accepts it and data can be imported)
+   but is excluded from `selectable()`, so no one can create one through the UI until stationing
+   is designed. `requiresStationing()` already returns true only for that kind.
+3. **Is `area` a level you actually use?** → **Optional, and the fixture proves both shapes.**
+   `subsystems.area_id` is nullable, and `PH-14-PL-02` deliberately has no areas at all.
+4. **KP addressing now or later?** → **Later.** The `addressing` jsonb column is in place and
+   validated per kind, so adding `from_kp`/`to_kp` is data, not a migration.
 
-**Nothing has been implemented.** On your word I will build Option B, starting with the
-migration + `FacilityKind` + an uneven fixture, then the roll-up reports.
+---
+
+## 6. What was actually built
+
+| Object | Shape |
+|---|---|
+| `facilities` | `id, project_id, company_id, code, name_en/fa, kind, addressing jsonb DEFAULT '{}', external_ref` · `UNIQUE(project_id, code)` · `INDEX(project_id, kind)` · CHECK on `kind` driven by `FacilityKind::all()` |
+| `areas` | tenant columns + `facility_id, code, name_en/fa, unit_code` (nullable — Plant 3D keeps Area and Unit as separate tag subparts) + `external_ref` · `UNIQUE(facility_id, code)` |
+| `subsystems` | gained `facility_id` **NOT NULL** (cascade) and `area_id` **nullable** (`nullOnDelete`); unique key swapped to `UNIQUE(facility_id, code)` |
+| integrity | composite FK `subsystems_area_within_facility (area_id, facility_id) → areas (id, facility_id) ON DELETE SET NULL`, backed by `CREATE UNIQUE INDEX areas_id_facility_id_unique` |
+| RLS | both new tables copy `subsystems_tenant_isolation` verbatim: read = any project participant, write = the owning company |
+| `FacilityKind` | PLANT / PIPELINE / OFFSITE / MARINE / UTILITY · `all()` drives the CHECK · `selectable()` excludes PIPELINE · `requiresStationing()` · bilingual `label()` and `areaLabel()` (Area / Section / Berth) |
+| `Subsystem::fullCode()` | `"{facility->code} / {code}"`, **not** a stored column — a composed code in a column drifts the moment a facility is renamed |
+| admin UI | the subsystem register shows Facility (non-toggleable, because the bare code is now ambiguous) and Area (toggleable, em dash when deliberately absent) |
+
+### The composite FK is the load-bearing part
+
+Two independent FKs would let a subsystem point at facility *A* while pointing at an area that
+belongs to facility *B* — silent cross-facility corruption that every roll-up would then report
+confidently and wrongly. The composite FK makes that state **unrepresentable** at the storage
+layer rather than merely discouraged by application code.
+
+### Migration trap worth remembering
+
+The backfill initially wrote nothing and the migration then failed with
+`23502 … facility_id contains null values`. Cause: `subsystems` is under **`FORCE ROW LEVEL
+SECURITY`** and a migration runs with no `epcc.company_id` GUC set, so the backfill `SELECT`
+matched zero rows — silently, because RLS filters rather than errors. Fix: `DISABLE ROW LEVEL
+SECURITY` around the backfill, then restore **both** `ENABLE` *and* `FORCE` (`ENABLE` alone
+leaves the table owner exempt). Safe only because PostgreSQL DDL is transactional.
+
+### Verification
+
+- Full suite **482 passed / 1647 assertions** after the schema change — backward compatible.
+- New `tests/Feature/BreakdownTest.php` — **25 passed / 69 assertions**.
+- Mutation-tested: M118 composite FK dropped, M119 old project-wide unique restored, M120 RLS
+  left disabled after the backfill, M121 area delete cascades instead of nulling, M122 PIPELINE
+  made selectable, M123 `fullCode()` degraded to the bare code — **all six caught.**
+- M118 initially *survived*. The cause was the mutation, not the test: dropping the constraint
+  with `psql` is pointless when `setUp()` runs `migrate:fresh`, which rebuilds it. Mutating the
+  **migration source** caught it. Recorded because the false "SURVIVED" nearly led to rewriting
+  a test that was already correct.
+
+### Deliberately not built
+
+Pipeline KP stationing and spread-based breakdown; bulk subsystem import; roll-up of
+`subsystemMaterialStatus()` to facility/area level. ADR-005 (engineering data ingestion) depends
+on this schema and remains PROPOSED.

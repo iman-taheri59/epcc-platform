@@ -83,6 +83,8 @@ return [
     'nav_people' => 'Organisation',
 
     'ss' => [
+        'facility' => 'Facility',
+        'area' => 'Area',
         'label' => 'Subsystem',
         'plural' => 'Subsystems',
         'code' => 'Subsystem code',

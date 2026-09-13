@@ -1,4 +1,4 @@
-@startuml 06-proposed-breakdown
+@startuml 06-breakdown
 !include _style.puml
 skinparam class {
   BackgroundColor #1e293b
@@ -13,26 +13,28 @@ skinparam package {
   BorderColor #475569
   FontColor #93c5fd
 }
-title **PROPOSED — Physical Breakdown (ADR-004)**\nNot implemented. Option B: one facility table with a kind discriminator.
+title **AS BUILT — Physical Breakdown (ADR-004, ACCEPTED)**\nOption B: one facility table with a kind discriminator. Migration 2026_09_14_090000.
 
-package "Today" {
+package "Before ADR-004" {
   class "Project" as P0 <<today>>
   class "Subsystem" as S0 <<today>>
   P0 "1" *-- "0..*" S0
   note right of S0
     A flat middle. A project with
-    4,000 subsystems has no
+    4,000 subsystems had no
     intermediate grouping at all.
+    UNIQUE(project_id, code) also
+    forced project-wide numbering.
   end note
 }
 
-package "Proposed" {
+package "Now" {
   class "Project " as P {
     + code : string
     + standards_pack : string
   }
 
-  class Facility <<new>> {
+  class Facility <<built>> {
     + id : uuid
     + project_id : uuid
     + code : string
@@ -47,21 +49,29 @@ package "Proposed" {
     --
     + external_ref : string?
     <<Plant 3D PnPID>>
+    --
+    UNIQUE(project_id, code)
+    CHECK kind IN FacilityKind::all()
   }
 
-  class Area <<new, optional level>> {
+  class Area <<built, optional level>> {
     + facility_id : uuid
     + code : string
     + unit_code : string?
     --
     <<= Plant 3D "Area">>
     <<= AWP "CWA">>
+    --
+    UNIQUE(facility_id, code)
   }
 
-  class "Subsystem " as SS <<unchanged columns>> {
-    + facility_id : uuid
+  class "Subsystem " as SS <<migrated>> {
+    + facility_id : uuid  <<NOT NULL>>
     + area_id : uuid?  <<nullable>>
     + code, discipline
+    --
+    UNIQUE(facility_id, code)
+    ..was UNIQUE(project_id, code)..
     --
     + fullCode()
     + blocksMechanicalCompletion()
@@ -69,6 +79,8 @@ package "Proposed" {
   }
 
   class FacilityKind <<value object>> {
+    + all() : drives the CHECK
+    + selectable() : excludes PIPELINE
     + requiresStationing() : bool
     + label(en|fa) : string
     + areaLabel(en|fa) : string
@@ -77,11 +89,23 @@ package "Proposed" {
   P "1" *-- "0..*" Facility
   Facility "1" *-- "0..*" Area
   Area "0..1" <-- "0..*" SS : optional
+  note on link
+    **subsystems_area_within_facility**
+    FK (area_id, facility_id)
+     -> areas (id, facility_id)
+    ON DELETE SET NULL
+
+    A composite FK, not two separate
+    ones: it makes "area belongs to a
+    different facility" unrepresentable
+    rather than merely discouraged.
+  end note
   Facility "1" <-- "0..*" SS : always
   Facility ..> FacilityKind
+
 }
 
-package "Unchanged — 182 occurrences stay put" {
+package "Untouched — subsystem_id in 6 tables" {
   class PunchItem
   class McCertificate
   class MaterialLot
@@ -113,7 +137,12 @@ note bottom of Facility
 end note
 
 note bottom of Area
-  **Optional on purpose.**
+  **Optional on purpose — and the fixture proves it.**
+  PL-01/AR-22 -> SS-2201 · PL-01/AR-33 -> SS-3301
+  PL-01/(none) -> SS-5501  <- optional area on a
+  facility that DOES use areas
+  PL-02 has no areas at all -> SS-4401, SS-6601
+  ---
   Plant 3D's own refinery example has 13 areas, so
   skipping the level would break lossless import.
   But an Iranian booster station with 12 subsystems

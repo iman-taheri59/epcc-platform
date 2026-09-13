@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\Area;
 use App\Models\Company;
+use App\Models\Facility;
 use App\Models\Document;
 use App\Models\DocumentRevision;
 use App\Models\Plan;
@@ -14,6 +16,7 @@ use App\Models\ProjectMembership;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\PunchCategory;
+use App\Support\FacilityKind;
 use App\Support\TenantContext;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -480,8 +483,65 @@ final class AuthSeeder extends Seeder
             return;
         }
 
+        /*
+         * ADR-004 physical breakdown.
+         *
+         * Deliberately uneven, because an even fixture cannot tell the rules
+         * apart - the lesson from M96/M99. Specifically:
+         *
+         *   PH-14-PL-01  a plant WITH areas        -> proves grouping works
+         *     AR-22        process area, 2 subsystems
+         *     AR-33        electrical area, 1 subsystem
+         *   PH-14-PL-02  a plant WITHOUT any area  -> proves the level is
+         *                                             genuinely optional
+         *
+         * and one subsystem inside PL-01 is left attached straight to the
+         * facility with area_id null, so "area is optional" is exercised even
+         * on a facility that does use areas.
+         */
+        $plant = $tenant->runAs($pars->id, fn () => Facility::create([
+            'project_id' => $ph14->id,
+            'company_id' => $pars->id,
+            'code' => 'PH-14-PL-01',
+            'name_en' => 'Gas processing plant',
+            'name_fa' => 'واحد فرآورش گاز',
+            'kind' => FacilityKind::PLANT,
+            'addressing' => ['grid' => 'E 512400 / N 3318600'],
+        ]), $ph14->id);
+
+        $utility = $tenant->runAs($pars->id, fn () => Facility::create([
+            'project_id' => $ph14->id,
+            'company_id' => $pars->id,
+            'code' => 'PH-14-PL-02',
+            'name_en' => 'Utilities block',
+            'name_fa' => 'بلوک سرویس‌های جانبی',
+            'kind' => FacilityKind::UTILITY,
+        ]), $ph14->id);
+
+        $areaProcess = $tenant->runAs($pars->id, fn () => Area::create([
+            'project_id' => $ph14->id,
+            'company_id' => $pars->id,
+            'facility_id' => $plant->id,
+            'code' => 'AR-22',
+            'name_en' => 'Process area 22',
+            'name_fa' => 'ناحیه فرآیندی ۲۲',
+            'unit_code' => 'U-2200',
+        ]), $ph14->id);
+
+        $areaElectrical = $tenant->runAs($pars->id, fn () => Area::create([
+            'project_id' => $ph14->id,
+            'company_id' => $pars->id,
+            'facility_id' => $plant->id,
+            'code' => 'AR-33',
+            'name_en' => 'Electrical area 33',
+            'name_fa' => 'ناحیه برق ۳۳',
+            'unit_code' => null,
+        ]), $ph14->id);
+
         // The subsystem belongs to the contractor that has to deliver it.
         $subsystem = $tenant->runAs($pars->id, fn () => Subsystem::create([
+            'facility_id' => $plant->id,
+            'area_id' => $areaProcess->id,
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-2201',
@@ -564,7 +624,7 @@ final class AuthSeeder extends Seeder
             app(\App\Services\McCertificateService::class)->draft($subsystem, $jafari, 'en');
         }, $ph14->id);
 
-        $this->seedAdditionalSubsystems($ph14, $pars, $punch, $jafari, $rezaei, $karimi, $mcBody, $tenant);
+        $this->seedAdditionalSubsystems($ph14, $pars, $punch, $jafari, $rezaei, $karimi, $mcBody, $tenant, $plant, $utility, $areaElectrical);
     }
 
     /**
@@ -592,9 +652,14 @@ final class AuthSeeder extends Seeder
         User $karimi,
         Company $mcBody,
         TenantContext $tenant,
+        Facility $plant,
+        Facility $utility,
+        Area $areaElectrical,
     ): void {
         // 1. Electrical: punch items raised and ALL closed -> gate is clear.
         $electrical = $tenant->runAs($pars->id, fn () => Subsystem::create([
+            'facility_id' => $plant->id,
+            'area_id' => $areaElectrical->id,
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-3301',
@@ -649,6 +714,8 @@ final class AuthSeeder extends Seeder
         //    a register that treats VERIFIED as cleared looks correct on
         //    every other row in the fixture.
         $instrument = $tenant->runAs($pars->id, fn () => Subsystem::create([
+            'facility_id' => $plant->id,
+            'area_id' => null,
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-5501',
@@ -683,6 +750,8 @@ final class AuthSeeder extends Seeder
         //    would hold up a subsystem that is contractually ready, and there
         //    is no other row in the fixture that can tell the two rules apart.
         $piping = $tenant->runAs($pars->id, fn () => Subsystem::create([
+            'facility_id' => $utility->id,
+            'area_id' => null,
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-6601',
@@ -707,6 +776,8 @@ final class AuthSeeder extends Seeder
         //    "100%" here means "nothing inspected yet", not "finished", and a
         //    register that cannot tell those apart is misleading on handover.
         $tenant->runAs($pars->id, fn () => Subsystem::create([
+            'facility_id' => $utility->id,
+            'area_id' => null,
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-4401',

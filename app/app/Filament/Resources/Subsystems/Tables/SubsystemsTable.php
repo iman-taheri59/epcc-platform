@@ -81,13 +81,41 @@ class SubsystemsTable
                     'punchItems as closed_count' => fn (Builder $q): Builder => $q
                         ->whereNotIn('state', self::openStates()),
                 ])
-                ->with('certificate'))
+                ->with(['certificate', 'facility', 'area']))
             ->columns([
                 TextColumn::make('code')
                     ->label(__('epcc.ss.code'))
                     ->searchable()
                     ->sortable()
                     ->extraAttributes(['dir' => 'ltr', 'style' => 'font-variant-numeric: tabular-nums']),
+
+                /*
+                 * Since ADR-004 the subsystem code is only unique WITHIN a
+                 * facility: PL-01/SS-01 and PL-02/SS-01 are two different
+                 * subsystems and both are legal. A register that showed the
+                 * bare code would render them as indistinguishable duplicate
+                 * rows, so the facility travels next to the code. It is not
+                 * toggleable for that reason - hiding it would make the code
+                 * column ambiguous rather than merely terser.
+                 */
+                TextColumn::make('facility.code')
+                    ->label(__('epcc.ss.facility'))
+                    ->sortable()
+                    ->searchable()
+                    ->extraAttributes(['dir' => 'ltr']),
+
+                /*
+                 * Area is nullable by design: a facility may use areas and
+                 * still have subsystems that sit directly under it, and a
+                 * small utility block may have no areas at all. An em dash
+                 * reads as "deliberately none" where a blank cell reads as
+                 * missing data.
+                 */
+                TextColumn::make('area.code')
+                    ->label(__('epcc.ss.area'))
+                    ->placeholder("\u{2014}")
+                    ->toggleable()
+                    ->extraAttributes(['dir' => 'ltr']),
 
                 TextColumn::make('name')
                     ->label(__('epcc.ss.name'))

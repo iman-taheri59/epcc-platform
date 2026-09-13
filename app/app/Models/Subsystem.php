@@ -20,7 +20,8 @@ final class Subsystem extends Model
     use HasUuid;
 
     protected $fillable = [
-        'project_id', 'company_id', 'code', 'name_en', 'name_fa', 'discipline',
+        'project_id', 'company_id', 'facility_id', 'area_id',
+        'code', 'name_en', 'name_fa', 'discipline',
     ];
 
     public function project(): BelongsTo
@@ -31,6 +32,42 @@ final class Subsystem extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function facility(): BelongsTo
+    {
+        return $this->belongsTo(Facility::class);
+    }
+
+    /** Null is a valid answer: the area level is optional (ADR-004). */
+    public function area(): BelongsTo
+    {
+        return $this->belongsTo(Area::class);
+    }
+
+    /**
+     * The unambiguous identifier for this subsystem.
+     *
+     * Subsystem codes are unique per FACILITY, not per project (the user's
+     * decision in ADR-004), because two plants in one project legitimately both
+     * want SS-2201. So `code` alone is no longer safe to print anywhere a
+     * reader might compare across facilities - a register, a report, a
+     * certificate.
+     *
+     * Deliberately NOT stored: a composed identifier in a column is a second
+     * copy of the truth that drifts the first time a facility is renamed. The
+     * one place a composed code IS frozen is an issued certificate, which
+     * snapshots what it printed at the time of issue.
+     *
+     * Falls back to the bare code when the facility is not loaded and cannot be
+     * reached, so that a partially-hydrated model degrades to the old
+     * behaviour rather than throwing inside a view.
+     */
+    public function fullCode(): string
+    {
+        $facility = $this->relationLoaded('facility') ? $this->facility : $this->facility()->first();
+
+        return $facility === null ? $this->code : $facility->code.' / '.$this->code;
     }
 
     public function punchItems(): HasMany

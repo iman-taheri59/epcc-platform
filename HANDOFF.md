@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-09-13** · Status: **prototype + working vertical slice** · Tests: **482 passed / 1647 assertions** (+83 jsdom)
+Last updated: **2026-09-13** · Status: **prototype + working vertical slice** · Tests: **507 passed / 1716 assertions** (+83 jsdom)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -1217,7 +1217,7 @@ with no network:
 | `03-sequence-receive-to-site.puml` | one heat from inspection to the MC gate, including the lock and the derived PO state |
 | `04-reversal-and-rls.puml` | correcting a booking without erasing it; what a vendor sees (0 MRs / 3 POs / 3 lots) |
 | `05-component-view.puml` | layering, and the rule that value objects depend on nothing |
-| `06-proposed-breakdown.puml` | **PROPOSED, not built** — ADR-004 physical breakdown |
+| `06-breakdown.puml` | **AS BUILT** — ADR-004 facility / area / subsystem + the composite FK |
 | `07-proposed-ingestion.puml` | **PROPOSED, not built** — ADR-005 engineering data ingestion |
 
 Regenerate with `plantuml -tsvg docs/uml/*.puml` then re-run the inliner
@@ -1231,6 +1231,71 @@ they are safe to trust when the code and this file disagree.
 in the base image and are wiped by a sandbox reset. `sudo apt-get install -y
 graphviz plantuml` restores them (`apt-get` without `sudo` fails on the dpkg
 lock — the user is uid 1000 but has passwordless sudo).
+
+### 5l. Physical breakdown — facility / area / subsystem (ADR-004)
+
+`project → facility → (optional) area → subsystem`. Decision record and the full
+as-built table: `docs/ADR-004-Physical-Breakdown-Plant-Pipeline-Subsystem.md`;
+diagram `docs/uml/06-breakdown.puml`.
+
+**What a facility is.** One table, `facilities`, with `kind ∈ FacilityKind` =
+PLANT | PIPELINE | OFFSITE | MARINE | UTILITY. Not sibling `plants` and
+`pipelines` tables: what they share is being a *commissioning parent*; what
+differs is *spatial addressing*, and that lives in a per-kind validated
+`addressing jsonb`. Sibling tables would push every upward query into a
+two-branch `COALESCE` plus an XOR CHECK — the classic shape of a missing
+abstraction. Same pattern already proved twice here: `McCertificate.state` and
+`MovementType`.
+
+**`FacilityKind::all()` vs `selectable()` — the distinction matters.** `all()`
+drives the CHECK constraint, so a PIPELINE row is storable and importable.
+`selectable()` omits PIPELINE, so nobody can create one through the UI while KP
+stationing is undesigned. Storable-but-not-offerable is the honest state; a
+CHECK that rejected PIPELINE would have to be migrated later, and one that
+offered it would promise reporting that does not exist.
+
+**Areas are optional, on purpose.** Plant 3D's own refinery example has 13
+areas, so omitting the level would break lossless import; but an Iranian booster
+station with 12 subsystems should not have to invent 12 areas. Hence
+`subsystems.area_id` is nullable and the fixture is **deliberately uneven** —
+`PH-14-PL-01` has areas `AR-22`/`AR-33` *and* `SS-5501` hanging directly off the
+facility, while `PH-14-PL-02` has no areas at all. A fixture where every branch
+looks the same cannot fail informatively. Same rule as `closurePercent()`
+returning 100 for an empty punch list: **absence of structure is not an error.**
+
+**Numbering is per facility.** `UNIQUE(project_id, code)` → `UNIQUE(facility_id,
+code)`. Real projects renumber per plant, and forcing project-wide uniqueness
+across a 4,000-subsystem job invents collisions that do not exist on site.
+Consequence to remember: **the bare code no longer identifies a subsystem.** The
+admin register shows Facility as a *non-toggleable* column for that reason, and
+`Subsystem::fullCode()` composes `"{facility} / {code}"` at read time. It is not
+a stored column — a composed code in a column drifts the moment a facility is
+renamed, and issued certificates already snapshot their identifiers.
+
+**The one constraint to not remove.** `subsystems_area_within_facility` is a
+*composite* FK `(area_id, facility_id) → areas (id, facility_id)` (backed by
+`areas_id_facility_id_unique`), `ON DELETE SET NULL`. Two independent FKs would
+happily allow a subsystem in facility *A* pointing at an area in facility *B* —
+silent cross-facility corruption that every roll-up would then report
+confidently and wrongly. Deleting an **area** nulls `area_id` and keeps the
+subsystem; deleting a **facility** cascades, because a subsystem with no
+commissioning parent is meaningless.
+
+**Migration trap (cost an hour, will recur).** The backfill wrote nothing and
+the migration died with `23502 … facility_id contains null values`. `subsystems`
+is under `FORCE ROW LEVEL SECURITY` and a migration has no `epcc.company_id`
+GUC, so the backfill `SELECT` matched zero rows — **silently**, because RLS
+filters rather than errors. Fix: `DISABLE ROW LEVEL SECURITY` around the
+backfill, then restore **`ENABLE` *and* `FORCE`** — `ENABLE` alone leaves the
+owner exempt, and role `epcc` owns these tables. Safe only because PostgreSQL
+DDL is transactional.
+
+**Tests:** `tests/Feature/BreakdownTest.php`, 25 tests / 69 assertions, covering
+structure, per-facility code reuse, `fullCode()`, cross-facility integrity,
+area-delete vs facility-delete semantics, `FacilityKind` (including
+known-but-not-selectable), the addressing jsonb, `Area::displayCode()`, RLS
+reads and writes, and that the migration left `relrowsecurity` *and*
+`relforcerowsecurity` true on all three tables. Mutations M118–M123 all caught.
 
 ## 6. The preview iframe (read before debugging "login is broken")
 
@@ -1276,7 +1341,7 @@ The whole mechanism is gated on a preview host **and** `SESSION_URL_FALLBACK`
 ## 7. Testing discipline
 
 ```bash
-cd app && php artisan test                          # 482 passed / 1647 assertions
+cd app && php artisan test                          # 507 passed / 1716 assertions
 node app/tests/Browser/sidebar-toggle.test.cjs      # 17 assertions, needs a fixture
 node app/tests/Browser/sidebar-animation.test.cjs   # 19 assertions, computed styles
 node app/tests/Browser/table-tools.test.cjs         # 42-47 per page, needs /tmp/tt.html
@@ -1292,7 +1357,7 @@ a failure — if a harness produces no output, check `node_modules` first.
 The app's `package.json` sets `"type": "module"`, hence the `.cjs` extension.
 
 - **A guard test that passes may be inert.** Mutate the fix away and watch it go
-  red. **117 mutations have been confirmed caught** this way; the practice has
+  red. **123 mutations have been confirmed caught** this way; the practice has
   already exposed three false-confidence tests (the mixed-content guard, a
   sidebar entitlement check, and "the contractor cannot verify its own fix"),
   a guard made inert by its own documentation, and a test that encoded the
@@ -1393,18 +1458,29 @@ The app's `package.json` sets `"type": "module"`, hence the `.cjs` extension.
 
 ## 9. Suggested next steps
 
-**ADR-004 (`docs/ADR-004-Physical-Breakdown-Plant-Pipeline-Subsystem.md`) — PROPOSED, awaiting
-the user's decision.** The user asked for `project → plant/pipeline → subsystem`, compatible
-with Plant 3D. Investigated rather than assumed: Plant 3D has **no System/Subsystem, no MC, no
-punch, no handover** — it is a design authoring tool whose "hierarchy" is a fixed 3-node folder
-tree plus `Area`/`Unit` as **string tag subparts** in a SQLite `.dcf` PnPDatabase. So
-compatibility must mean a documented **import mapping**, not a copied schema. Recommended
-Option B: one `facilities` table with a `FacilityKind` discriminator (PLANT | PIPELINE | …),
-an **optional** `areas` level (= Plant 3D Area = AWP **CWA**, the level `awp.pack.json`
-already references and has nowhere to put), and per-kind addressing in validated `jsonb`.
-`subsystem_id` does **not** move, so all 182 existing occurrences stay put. Four open
-questions for the user are listed at the end of the ADR — the numbering one
-(`UNIQUE(project_id, code)` vs per-facility) changes `fullCode()` on already-issued PDFs.
+**ADR-004 (`docs/ADR-004-…md`) — ACCEPTED AND BUILT (2026-09-13).** `project → facility →
+(optional) area → subsystem`. Investigated rather than assumed: Plant 3D has **no
+System/Subsystem, no MC, no punch, no handover** — it is a design authoring tool whose
+"hierarchy" is a fixed 3-node folder tree plus `Area`/`Unit` as **string tag subparts** in a
+SQLite `.dcf` PnPDatabase, so compatibility means a documented **import mapping**, not a copied
+schema. Built Option B: one `facilities` table with a `FacilityKind` discriminator, an
+**optional** `areas` level (= Plant 3D Area = AWP **CWA**), per-kind addressing in validated
+`jsonb`. `subsystem_id` did **not** move — all 6 dependent tables untouched. The four open
+questions are now answered in ADR §5; the load-bearing decisions:
+
+- Numbering is **per facility** — `UNIQUE(project_id, code)` became `UNIQUE(facility_id, code)`,
+  so `PL-01/SS-01` and `PL-02/SS-01` are both legal. The admin register therefore shows Facility
+  as a non-toggleable column: the bare code alone is now ambiguous.
+- `subsystems_area_within_facility`, a **composite** FK `(area_id, facility_id) → areas
+  (id, facility_id)`, makes "area belongs to another facility" unrepresentable rather than
+  merely discouraged.
+- `PIPELINE` is in `FacilityKind::all()` (importable) but excluded from `selectable()` — KP
+  stationing is deferred, and the `addressing` jsonb means adding it is data, not a migration.
+- `fullCode()` composes `"{facility} / {code}"` at read time; storing it would drift on rename.
+
+Six mutations (M118–M123) confirm the new rules. **M118 first reported SURVIVED and that was
+the mutation's fault, not the test's** — dropping a constraint with `psql` proves nothing when
+`setUp()` runs `migrate:fresh` and rebuilds it. Mutate the **migration source**.
 
 **ADR-005 (`docs/ADR-005-Engineering-Data-Ingestion.md`) — PROPOSED, depends on ADR-004.** The
 user wants the system usable *before* construction starts and *before* material reaches site,
@@ -1459,6 +1535,7 @@ Append one row per session. Keep it terse.
 
 | Date | Change | Result |
 |---|---|---|
+| 2026-09-13 | **Physical breakdown built (§5l, ADR-004 → ACCEPTED).** `project → facility → (optional) area → subsystem`, after establishing that Plant 3D has **no** System/Subsystem, MC, punch or handover — so compatibility is an **import mapping**, not a copied schema. One `facilities` table with a `FacilityKind` discriminator instead of sibling plant/pipeline tables, because what they share is being a commissioning parent and what differs is addressing (per-kind `jsonb`). Numbering moved to **per facility**, which made the bare code ambiguous — so `fullCode()` composes at read time (never stored: it would drift on rename) and the register shows Facility as a non-toggleable column. Integrity rests on a **composite** FK `(area_id, facility_id) → areas(id, facility_id)`, making cross-facility corruption unrepresentable. The fixture is deliberately uneven — one facility with areas *and* a direct subsystem, one with no areas at all — because a uniform fixture cannot fail informatively. Two traps recorded: the backfill silently matched **zero rows** under `FORCE ROW LEVEL SECURITY` (RLS filters, it does not error), and **M118 first reported SURVIVED because the mutation was wrong, not the test** — dropping a constraint in `psql` proves nothing when `setUp()` runs `migrate:fresh`. Mutate the migration source | **507 / 1716**, **123 mutations caught** |
 | 2026-09-13 | **UML for the procurement module (`docs/uml/`).** Installed `graphviz` + `plantuml` (absent from the base image; plain `apt-get` fails the dpkg lock, `sudo` works) and drew five diagrams — domain model, the three state machines, an inspection-to-MC-gate sequence, reversal + RLS, and the component view. Written against a live `information_schema` dump rather than from memory, so the attribute lists are the real columns. Packaged as `docs/uml/uml.html` with the SVGs **inlined** — checked for external refs and found none, matching the `tour.html` air-gap pattern — and verified by screenshot rather than by byte count | no code change, **482 / 1647** |
 | 2026-09-09 | Docs, standards packs, prototype, ADRs, Laravel scaffold, standards engine, conformance corpus | Foundations in place |
 | 2026-09-09 | PostgreSQL + RLS spike, multi-project, Octane and PgBouncer spikes | All CLOSED, 12 standing rules recorded |
