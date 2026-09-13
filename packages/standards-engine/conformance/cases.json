@@ -1,0 +1,728 @@
+{
+  "$comment": "Language-neutral conformance corpus for the standards-pack release-gate evaluator (ADR-003 Annex A §4/§7). ANY implementation in ANY language must produce these verdicts. Divergence is a build failure, not a field defect. Keep this file free of language-specific constructs.",
+  "version": "1.2.0",
+  "cases": [
+    {
+      "id": "SV-01-all-clear",
+      "why": "Happy path: a complete صورت‌وضعیت passes.",
+      "pack": "ips-iran",
+      "objectType": "interimPaymentCertificate",
+      "facts": {
+        "measurementSheets": [
+          "MS-001",
+          "MS-002"
+        ],
+        "verifiedBy": [
+          "CONSULTANT"
+        ],
+        "deductions": {
+          "retention": 4825000000,
+          "advanceRecovery": 9650000000,
+          "priceAdjustment": 6110000000,
+          "tax": 4341450000
+        },
+        "netAmount": 43234500000,
+        "approverAuthorityLimit": 50000000000
+      },
+      "expect": {
+        "passed": true,
+        "blocked": false,
+        "waiverAllowed": false,
+        "failedChecks": [],
+        "ungated": false
+      }
+    },
+    {
+      "id": "SV-02-no-measurement-sheets",
+      "why": "متره missing is the single most common real-world rejection.",
+      "pack": "ips-iran",
+      "objectType": "interimPaymentCertificate",
+      "facts": {
+        "measurementSheets": [],
+        "verifiedBy": [
+          "CONSULTANT"
+        ],
+        "deductions": {
+          "retention": 1,
+          "advanceRecovery": 1,
+          "priceAdjustment": 1,
+          "tax": 1
+        },
+        "netAmount": 1000,
+        "approverAuthorityLimit": 50000
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": false,
+        "failedChecks": [
+          "measurementSheetsAttached"
+        ]
+      }
+    },
+    {
+      "id": "SV-03-consultant-not-verified",
+      "why": "Employer signature alone must not substitute for the مهندس مشاور.",
+      "pack": "ips-iran",
+      "objectType": "interimPaymentCertificate",
+      "facts": {
+        "measurementSheets": [
+          "MS-001"
+        ],
+        "verifiedBy": [
+          "EMPLOYER"
+        ],
+        "deductions": {
+          "retention": 1,
+          "advanceRecovery": 1,
+          "priceAdjustment": 1,
+          "tax": 1
+        },
+        "netAmount": 1000,
+        "approverAuthorityLimit": 50000
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": false,
+        "failedChecks": [
+          "progressVerifiedByConsultant"
+        ]
+      }
+    },
+    {
+      "id": "SV-04-tadil-missing-from-deductions",
+      "why": "A null تعدیل must fail, not be coerced to zero. Guards against a silent-zero bug.",
+      "pack": "ips-iran",
+      "objectType": "interimPaymentCertificate",
+      "facts": {
+        "measurementSheets": [
+          "MS-001"
+        ],
+        "verifiedBy": [
+          "CONSULTANT"
+        ],
+        "deductions": {
+          "retention": 1,
+          "advanceRecovery": 1,
+          "priceAdjustment": null,
+          "tax": 1
+        },
+        "netAmount": 1000,
+        "approverAuthorityLimit": 50000
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": false,
+        "failedChecks": [
+          "deductionsCalculated"
+        ]
+      }
+    },
+    {
+      "id": "SV-05-over-delegated-authority",
+      "why": "DoA escalation. Amount exceeds the approver's limit.",
+      "pack": "ips-iran",
+      "objectType": "interimPaymentCertificate",
+      "facts": {
+        "measurementSheets": [
+          "MS-001"
+        ],
+        "verifiedBy": [
+          "CONSULTANT"
+        ],
+        "deductions": {
+          "retention": 1,
+          "advanceRecovery": 1,
+          "priceAdjustment": 1,
+          "tax": 1
+        },
+        "netAmount": 43234500000,
+        "approverAuthorityLimit": 10000000000
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": false,
+        "failedChecks": [
+          "budgetWithinAuthority"
+        ]
+      }
+    },
+    {
+      "id": "SV-06-authority-exactly-equal",
+      "why": "Boundary: amount == limit must PASS. Off-by-one here is a real-money bug.",
+      "pack": "ips-iran",
+      "objectType": "interimPaymentCertificate",
+      "facts": {
+        "measurementSheets": [
+          "MS-001"
+        ],
+        "verifiedBy": [
+          "CONSULTANT"
+        ],
+        "deductions": {
+          "retention": 1,
+          "advanceRecovery": 1,
+          "priceAdjustment": 1,
+          "tax": 1
+        },
+        "netAmount": 43234500000,
+        "approverAuthorityLimit": 43234500000
+      },
+      "expect": {
+        "passed": true,
+        "blocked": false,
+        "waiverAllowed": false,
+        "failedChecks": []
+      }
+    },
+    {
+      "id": "SV-07-multiple-failures-order-independent",
+      "why": "All failures must be reported, not just the first. Users need the full list.",
+      "pack": "ips-iran",
+      "objectType": "interimPaymentCertificate",
+      "facts": {
+        "measurementSheets": [],
+        "verifiedBy": [],
+        "deductions": {},
+        "netAmount": 999999999999,
+        "approverAuthorityLimit": 1
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": false,
+        "failedChecks": [
+          "measurementSheetsAttached",
+          "progressVerifiedByConsultant",
+          "deductionsCalculated",
+          "budgetWithinAuthority"
+        ]
+      }
+    },
+    {
+      "id": "SV-08-non-waivable-is-absolute",
+      "why": "ADR/IPS rule: the صورت‌وضعیت gate has waiver.allowed=false. No approver may override.",
+      "pack": "ips-iran",
+      "objectType": "interimPaymentCertificate",
+      "facts": {
+        "measurementSheets": [],
+        "verifiedBy": [
+          "CONSULTANT"
+        ],
+        "deductions": {
+          "retention": 1,
+          "advanceRecovery": 1,
+          "priceAdjustment": 1,
+          "tax": 1
+        },
+        "netAmount": 1,
+        "approverAuthorityLimit": 5
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": false,
+        "absolutelyBlocked": true,
+        "failedChecks": [
+          "measurementSheetsAttached"
+        ]
+      }
+    },
+    {
+      "id": "TAHVIL-01-all-clear",
+      "why": "تحویل موقت happy path.",
+      "pack": "ips-iran",
+      "objectType": "certificate.provisionalAcceptance",
+      "facts": {
+        "punchItems": [
+          {
+            "category": "A",
+            "status": "CLOSED"
+          },
+          {
+            "category": "B",
+            "status": "OPEN"
+          }
+        ],
+        "asBuilt": {
+          "status": "ACCEPTED"
+        },
+        "itrs": [
+          {
+            "signed": true
+          },
+          {
+            "signed": true
+          }
+        ]
+      },
+      "expect": {
+        "passed": true,
+        "blocked": false,
+        "waiverAllowed": true,
+        "failedChecks": []
+      }
+    },
+    {
+      "id": "TAHVIL-02-open-category-A-punch",
+      "why": "Category A defects block provisional acceptance; category B does not.",
+      "pack": "ips-iran",
+      "objectType": "certificate.provisionalAcceptance",
+      "facts": {
+        "punchItems": [
+          {
+            "category": "A",
+            "status": "OPEN"
+          }
+        ],
+        "asBuilt": {
+          "status": "ACCEPTED"
+        },
+        "itrs": [
+          {
+            "signed": true
+          }
+        ]
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": true,
+        "waiverCapability": "certificate.exception.approve",
+        "failedChecks": [
+          "noOpenPunchOfCategory:A"
+        ]
+      }
+    },
+    {
+      "id": "TAHVIL-03-category-B-open-does-not-block",
+      "why": "Argument parsing: the :A argument must be honoured, not ignored.",
+      "pack": "ips-iran",
+      "objectType": "certificate.provisionalAcceptance",
+      "facts": {
+        "punchItems": [
+          {
+            "category": "B",
+            "status": "OPEN"
+          },
+          {
+            "category": "C",
+            "status": "OPEN"
+          }
+        ],
+        "asBuilt": {
+          "status": "ACCEPTED"
+        },
+        "itrs": [
+          {
+            "signed": true
+          }
+        ]
+      },
+      "expect": {
+        "passed": true,
+        "blocked": false,
+        "waiverAllowed": true,
+        "failedChecks": []
+      }
+    },
+    {
+      "id": "TAHVIL-04-empty-itr-list-fails",
+      "why": "Vacuous truth guard. Zero ITRs must NOT satisfy 'all ITRs signed'.",
+      "pack": "ips-iran",
+      "objectType": "certificate.provisionalAcceptance",
+      "facts": {
+        "punchItems": [],
+        "asBuilt": {
+          "status": "ACCEPTED"
+        },
+        "itrs": []
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": true,
+        "failedChecks": [
+          "allItrsSigned"
+        ]
+      }
+    },
+    {
+      "id": "TAHVIL-05-asbuilt-submitted-not-accepted",
+      "why": "SUBMITTED is not ACCEPTED. Status must match exactly.",
+      "pack": "ips-iran",
+      "objectType": "certificate.provisionalAcceptance",
+      "facts": {
+        "punchItems": [],
+        "asBuilt": {
+          "status": "SUBMITTED"
+        },
+        "itrs": [
+          {
+            "signed": true
+          }
+        ]
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": true,
+        "failedChecks": [
+          "asBuiltSubmitted"
+        ]
+      }
+    },
+    {
+      "id": "TAHVIL-06-waivable-carries-capability",
+      "why": "A waivable gate must expose WHICH capability waives it and that justification is required.",
+      "pack": "ips-iran",
+      "objectType": "certificate.provisionalAcceptance",
+      "facts": {
+        "punchItems": [
+          {
+            "category": "A",
+            "status": "OPEN"
+          }
+        ],
+        "asBuilt": {
+          "status": "ACCEPTED"
+        },
+        "itrs": [
+          {
+            "signed": true
+          }
+        ]
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": true,
+        "waivable": true,
+        "absolutelyBlocked": false,
+        "waiverCapability": "certificate.exception.approve",
+        "justificationRequired": true,
+        "failedChecks": [
+          "noOpenPunchOfCategory:A"
+        ]
+      }
+    },
+    {
+      "id": "IWP-01-all-clear",
+      "why": "AWP genericity regression (ADR-002 seam): the engine must stay pack-driven.",
+      "pack": "awp",
+      "objectType": "iwp",
+      "facts": {
+        "constraints": [
+          {
+            "hard": true,
+            "cleared": true
+          },
+          {
+            "hard": false,
+            "cleared": false
+          }
+        ],
+        "drawings": [
+          {
+            "status": "IFC"
+          }
+        ],
+        "materialAvailabilityPct": 100,
+        "permit": {
+          "validForWindow": true
+        },
+        "estimatedHours": 400,
+        "maxHours": 1000
+      },
+      "expect": {
+        "passed": true,
+        "blocked": false,
+        "waiverAllowed": true,
+        "failedChecks": []
+      }
+    },
+    {
+      "id": "IWP-02-soft-constraint-does-not-block",
+      "why": "Only hard constraints gate release.",
+      "pack": "awp",
+      "objectType": "iwp",
+      "facts": {
+        "constraints": [
+          {
+            "hard": false,
+            "cleared": false
+          }
+        ],
+        "drawings": [
+          {
+            "status": "IFC"
+          }
+        ],
+        "materialAvailabilityPct": 100,
+        "permit": {
+          "validForWindow": true
+        },
+        "estimatedHours": 400,
+        "maxHours": 1000
+      },
+      "expect": {
+        "passed": true,
+        "blocked": false,
+        "waiverAllowed": true,
+        "failedChecks": []
+      }
+    },
+    {
+      "id": "IWP-03-drawing-not-IFC",
+      "why": "Argument-carrying check with a status value.",
+      "pack": "awp",
+      "objectType": "iwp",
+      "facts": {
+        "constraints": [],
+        "drawings": [
+          {
+            "status": "IFC"
+          },
+          {
+            "status": "IFR"
+          }
+        ],
+        "materialAvailabilityPct": 100,
+        "permit": {
+          "validForWindow": true
+        },
+        "estimatedHours": 400,
+        "maxHours": 1000
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": true,
+        "failedChecks": [
+          "linkedDrawingsAtStatus:IFC"
+        ]
+      }
+    },
+    {
+      "id": "IWP-04-material-99-percent-fails",
+      "why": "Numeric threshold boundary: 99 < 100 must fail.",
+      "pack": "awp",
+      "objectType": "iwp",
+      "facts": {
+        "constraints": [],
+        "drawings": [
+          {
+            "status": "IFC"
+          }
+        ],
+        "materialAvailabilityPct": 99.9,
+        "permit": {
+          "validForWindow": true
+        },
+        "estimatedHours": 400,
+        "maxHours": 1000
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": true,
+        "failedChecks": [
+          "materialAvailability:100"
+        ]
+      }
+    },
+    {
+      "id": "IWP-05-oversized-package",
+      "why": "IWP size limit - a core AWP discipline.",
+      "pack": "awp",
+      "objectType": "iwp",
+      "facts": {
+        "constraints": [],
+        "drawings": [
+          {
+            "status": "IFC"
+          }
+        ],
+        "materialAvailabilityPct": 100,
+        "permit": {
+          "validForWindow": true
+        },
+        "estimatedHours": 5000,
+        "maxHours": 1000
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": true,
+        "failedChecks": [
+          "iwpSizeWithinLimits"
+        ]
+      }
+    },
+    {
+      "id": "MISC-01-unknown-object-type-passes",
+      "why": "An object type with no gate in the pack passes - but reports ungated, so a UI never renders it as 'passed the checks'.",
+      "pack": "ips-iran",
+      "objectType": "someObjectWithNoGate",
+      "facts": {},
+      "expect": {
+        "passed": true,
+        "blocked": false,
+        "waiverAllowed": false,
+        "failedChecks": [],
+        "ungated": true
+      }
+    },
+    {
+      "id": "MISC-02-missing-facts-fail-closed",
+      "why": "Totally empty facts must FAIL every check, never pass by absence. This is the most important safety property in the corpus.",
+      "pack": "ips-iran",
+      "objectType": "interimPaymentCertificate",
+      "facts": {},
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": false,
+        "failedChecks": [
+          "measurementSheetsAttached",
+          "progressVerifiedByConsultant",
+          "deductionsCalculated"
+        ]
+      },
+      "note": "budgetWithinAuthority is absent from failedChecks because 0 <= 0 holds. That is intentional and documented: an absent amount is not an over-authority amount. Callers must validate presence separately."
+    },
+    {
+      "id": "MISC-03-bilingual-reason-required",
+      "why": "Every failure must carry BOTH en and fa text. A monolingual error message is a bug in a bilingual product.",
+      "pack": "ips-iran",
+      "objectType": "interimPaymentCertificate",
+      "facts": {
+        "measurementSheets": [],
+        "verifiedBy": [
+          "CONSULTANT"
+        ],
+        "deductions": {
+          "retention": 1,
+          "advanceRecovery": 1,
+          "priceAdjustment": 1,
+          "tax": 1
+        },
+        "netAmount": 1,
+        "approverAuthorityLimit": 5
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": false,
+        "failedChecks": [
+          "measurementSheetsAttached"
+        ],
+        "requireBilingualMessages": true
+      }
+    },
+    {
+      "id": "MISC-04-iso-pack-has-no-interim-payment-gate",
+      "why": "Per-project pack selection: ISO defines no interimPaymentCertificate gate. The certificate passes, but as ungated - it must never be shown as cleared-by-checks.",
+      "pack": "iso",
+      "objectType": "interimPaymentCertificate",
+      "facts": {
+        "measurementSheets": [],
+        "verifiedBy": []
+      },
+      "expect": {
+        "passed": true,
+        "blocked": false,
+        "waiverAllowed": false,
+        "ungated": true,
+        "failedChecks": []
+      }
+    },
+    {
+      "id": "SAFETY-01-unknown-check-fails-closed",
+      "why": "CRITICAL. A check the engine does not implement must FAIL, never silently pass. Otherwise a pack authored for a newer engine version quietly disables its own gate on an older air-gapped install (risk IR-R4). This case was added after a mutation test proved the corpus missed it.",
+      "inlinePack": {
+        "releaseGates": [
+          {
+            "objectType": "futurePackObject",
+            "hardBlock": true,
+            "rules": [
+              {
+                "check": "asBuiltSubmitted",
+                "message": {
+                  "en": "As-built must be accepted.",
+                  "fa": "مدارک چون‌ساخت باید پذیرفته شود."
+                }
+              },
+              {
+                "check": "someCheckFromAFutureEngineVersion",
+                "message": {
+                  "en": "Not implemented here.",
+                  "fa": "در این نسخه پیاده‌سازی نشده."
+                }
+              }
+            ],
+            "waiver": {
+              "allowed": false
+            }
+          }
+        ]
+      },
+      "objectType": "futurePackObject",
+      "facts": {
+        "asBuilt": {
+          "status": "ACCEPTED"
+        }
+      },
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": false,
+        "absolutelyBlocked": true,
+        "failedChecks": [
+          "someCheckFromAFutureEngineVersion"
+        ],
+        "requireBilingualMessages": true
+      }
+    },
+    {
+      "id": "SAFETY-02-unknown-check-with-argument",
+      "why": "Same fail-closed rule when the unknown check carries an argument.",
+      "inlinePack": {
+        "releaseGates": [
+          {
+            "objectType": "futurePackObject2",
+            "hardBlock": true,
+            "rules": [
+              {
+                "check": "unknownThing:withArg",
+                "message": {
+                  "en": "x",
+                  "fa": "ایکس"
+                }
+              }
+            ],
+            "waiver": {
+              "allowed": true,
+              "approverCapability": "some.waiver",
+              "justificationRequired": true
+            }
+          }
+        ]
+      },
+      "objectType": "futurePackObject2",
+      "facts": {},
+      "expect": {
+        "passed": false,
+        "blocked": true,
+        "waiverAllowed": true,
+        "waivable": true,
+        "failedChecks": [
+          "unknownThing:withArg"
+        ]
+      }
+    }
+  ]
+}

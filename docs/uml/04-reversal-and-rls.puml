@@ -1,0 +1,123 @@
+@startuml 04-reversal-and-rls
+!include _style.puml
+skinparam database {
+  BackgroundColor #334155
+  BorderColor #475569
+  FontColor #e2e8f0
+}
+skinparam sequence {
+  ArrowColor #94a3b8
+  LifeLineBorderColor #475569
+  LifeLineBackgroundColor #1e293b
+  ParticipantBackgroundColor #334155
+  ParticipantBorderColor #475569
+  ParticipantFontColor #e2e8f0
+  ActorBackgroundColor #334155
+  ActorBorderColor #475569
+  ActorFontColor #e2e8f0
+  BoxBackgroundColor #16233b
+  BoxBorderColor #475569
+  BoxFontColor #93c5fd
+  GroupBackgroundColor #334155
+  GroupBorderColor #6366f1
+  GroupFontColor #e0e7ff
+  GroupHeaderFontColor #c4b5fd
+  DividerBackgroundColor #1e3a5f
+  DividerBorderColor #475569
+  DividerFontColor #93c5fd
+}
+title **Correcting a Mistake, and Who Is Allowed to See It**\nReversal semantics + row-level security
+
+actor "Warehouse Keeper" as WH
+actor "Vendor user\n<<VEN-AZAR>>" as VEN
+
+participant "WarehouseService" as WS
+database "material_movements" as TMOV
+database "PostgreSQL RLS" as RLS
+
+== The wrong quantity was booked ==
+
+note over WH, TMOV
+  PH-14-GRN-0003 recorded 120 m. The delivery note said 120,
+  the truck actually carried 100. The GRN is already signed,
+  already counted, already reported to the client.
+end note
+
+WH -> WS : reverse(movement GRN-0003, reason)
+activate WS
+
+WS -> WS : assert reason is not empty
+WS -> TMOV : already reversed?
+alt#ef4444 a reversal already points here
+  TMOV --> WS : found
+  WS --> WH : ValidationException\n"این تراکنش قبلا برگشت خورده است"
+  note right of WS #7f1d1d
+    Reversing twice would credit the
+    stock back twice. A reversal is
+    idempotent by refusing to repeat.
+  end note
+else not yet reversed
+  WS -> WS : opposite = ISSUE  (for a RECEIPT)
+  WS -> WS : check the reversal itself\ndoes not drive stock negative
+  WS -> TMOV : INSERT PH-14-MIV-0006\ntype = ISSUE, quantity = **+120**\nreverses_movement_id = GRN-0003
+end
+WS --> WH : MaterialMovement
+deactivate WS
+
+WH -> WS : receive(po, qty = 100, heat "A-4471")
+WS -> TMOV : INSERT PH-14-GRN-0007
+
+note over TMOV #14532d
+  **Four rows now exist, and all four stay.**
+  GRN-0003 (+120) · MIV-0006 (-120) · GRN-0007 (+100)
+
+  Balance is correct, *and* the audit trail still shows
+  that somebody booked 120, noticed, and corrected it -
+  with a name, a timestamp and a reason attached.
+
+  An UPDATE would have produced the same balance and
+  destroyed all of that.
+end note
+
+== The same ledger, seen by a vendor ==
+
+VEN -> RLS : SELECT * FROM material_requisitions
+activate RLS
+RLS --> VEN : **0 rows**
+deactivate RLS
+
+note right of VEN #7f1d1d
+  **Commercially load-bearing, not merely tidy.**
+
+  A requisition carries the engineer's internal
+  argument for *why* this material is needed and
+  *how much* the project can bear. A vendor reading
+  it is a vendor negotiating with your own cost
+  estimate in hand.
+
+  Unlike the punch list - where RLS mostly prevents
+  noise - here a leak has a price tag.
+end note
+
+VEN -> RLS : SELECT * FROM purchase_orders
+activate RLS
+RLS -> RLS : USING (vendor_company_id = current tenant\nOR buyer participates in project)
+RLS --> VEN : **3 rows** - only its own orders
+deactivate RLS
+
+VEN -> RLS : SELECT * FROM material_lots
+RLS --> VEN : 3 rows - readable by every participant
+
+note over RLS
+  Verified live against the seeded fixture:
+  | company | MRs | POs | lots |
+  | VEN-AZAR (vendor)   | **0** | 3 | 3 |
+  | NIOC-AFF (employer) | 3 | 3 | 3 |
+
+  Lots and movements are readable by every project
+  participant but writable only by the custodian -
+  the client must be able to audit stock without
+  being able to book a receipt.
+end note
+
+@enduml

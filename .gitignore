@@ -28,3 +28,29 @@ Homestead.json
 .env.production
 .phpactor.json
 auth.json
+
+# ---------------------------------------------------------------------------
+# Retained from GitHub's Laravel template. Most assume Laravel at the repo
+# root rather than under app/, so they are harmless here but kept so that
+# nothing the template protected silently becomes unprotected.
+# ---------------------------------------------------------------------------
+.env.*
+!.env.example
+*.pem
+*.key
+.netrc
+.git-credentials
+source-backup.tar.gz
+.cache/
+__pycache__/
+*.pyc
+app/storage/framework/testing/
+app/storage/logs/*.log
+app/storage/framework/cache/data/*
+app/storage/framework/sessions/*
+app/storage/framework/views/*.php
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

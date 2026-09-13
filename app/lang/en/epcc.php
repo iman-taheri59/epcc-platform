@@ -1,0 +1,115 @@
+<?php
+
+declare(strict_types=1);
+
+/** English strings for the Filament admin panel. See lang/fa/epcc.php. */
+return [
+    'doc' => [
+        'label' => 'Document',
+        'plural' => 'Documents',
+        'number' => 'Document number',
+        'title' => 'Title',
+        'title_fa' => 'Persian title',
+        'title_en' => 'English title',
+        'discipline' => 'Discipline',
+        'type' => 'Document type',
+        'state' => 'State',
+        'revision' => 'Revision',
+        'owner' => 'Owning company',
+        'created' => 'Created',
+        'project' => 'Project',
+        'identity' => 'Document identity',
+        'identity_hint' => 'These fields are assigned by the numbering engine and cannot be edited.',
+        'titles' => 'Titles',
+    ],
+
+    'punch' => [
+        'label' => 'Punch item',
+        'plural' => 'Punch list',
+        'number' => 'Item number',
+        'subsystem' => 'Subsystem',
+        'category' => 'Category',
+        'state' => 'State',
+        'description' => 'Description',
+        'location' => 'Location',
+        'raiser' => 'Raised by',
+        'responsible' => 'Responsible',
+        'raised_at' => 'Raised',
+        'blocks_mc' => 'Blocks Mechanical Completion',
+    ],
+
+    'tr' => [
+        'label' => 'Transmittal',
+        'plural' => 'Transmittals',
+        'number' => 'Transmittal number',
+        'kind' => 'Stream',
+        'kind_contractor' => 'Contractor',
+        'kind_vendor' => 'Vendor',
+        'subject' => 'Subject',
+        'purpose' => 'Purpose',
+        'status' => 'Status',
+        'status_draft' => 'Draft',
+        'status_issued' => 'Issued',
+        'vendor' => 'Vendor',
+        'vendor_reference' => "Vendor's own reference",
+        'recorder' => 'Recorded by',
+        'issued_at' => 'Issued',
+        'due_at' => 'Response due',
+        'items' => 'Documents',
+        'overdue' => 'Overdue',
+    ],
+
+    'usr' => [
+        'label' => 'User',
+        'plural' => 'Users',
+        'name' => 'Name',
+        'email' => 'Email',
+        'company' => 'Company',
+        'tenant_type' => 'Company type',
+        'locale' => 'Language',
+        'active' => 'Active',
+        'status' => 'Status',
+        'is_active' => 'Account active',
+        'inactive' => 'Disabled',
+        'projects' => 'Projects',
+        'roles' => 'Roles',
+        'no_roles' => 'No roles',
+        'created' => 'Created',
+        'colleague' => 'Colleague',
+        'counterparty' => 'Counterparty',
+        'relation' => 'Relation',
+    ],
+
+    'nav_people' => 'Organisation',
+
+    'ss' => [
+        'label' => 'Subsystem',
+        'plural' => 'Subsystems',
+        'code' => 'Subsystem code',
+        'name' => 'Title',
+        'discipline' => 'Discipline',
+        'project' => 'Project',
+        'company' => 'Contractor',
+        'punch' => 'Punch items',
+        'blocking' => 'Blocking items',
+        'closure' => 'Closure',
+        'gate' => 'MC gate',
+        'blocked' => 'Blocked',
+        'clear' => 'Clear',
+        'cert' => 'Certificate',
+        'no_cert' => 'Not issued',
+        'not_walked' => 'Not walked down',
+        'created' => 'Created',
+        'only_blocked' => 'Blocked only',
+    ],
+
+    'nav_qaqc' => 'Quality',
+
+    'nav' => [
+        'engineering' => 'Engineering',
+    ],
+
+    'panel' => [
+        'brand' => 'EPCC Platform',
+    ],
+];

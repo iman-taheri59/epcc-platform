@@ -1,0 +1,317 @@
+{
+  "packId": "awp",
+  "version": "1.0.0",
+  "kind": "awp",
+  "extends": { "packId": "iso", "version": "1.0.0" },
+  "name": {
+    "en": "AWP / Workface Planning Pack",
+    "fa": "بسته بسته‌بندی پیشرفته کار / برنامه‌ریزی جبهه کاری"
+  },
+  "description": {
+    "en": "Execution model driven by the Path of Construction: CWA/CWP/EWP/PWP/IWP hierarchy, typed constraint management, constraint-free work package release and workface productivity KPIs. Based on CII RT-272/RT-319 and the COAA AWP model.",
+    "fa": "مدل اجرایی مبتنی بر مسیر اجرا: سلسله‌مراتب محدوده و بسته‌های کاری، مدیریت قیدهای طبقه‌بندی‌شده، صدور بسته کاری بدون قید و شاخص‌های بهره‌وری جبهه کاری. بر پایه CII RT-272/RT-319 و مدل COAA."
+  },
+  "standardsReferences": [
+    { "code": "CII RT-272", "title": { "en": "Advanced Work Packaging: Design through Workface Execution", "fa": "بسته‌بندی پیشرفته کار: از طراحی تا اجرا در جبهه کاری" }, "scope": "AWP core model" },
+    { "code": "CII RT-319", "title": { "en": "Transforming the Industry: Making AWP the Standard Practice", "fa": "تبدیل AWP به رویه استاندارد صنعت" }, "scope": "Maturity assessment" },
+    { "code": "COAA AWP Model", "title": { "en": "Construction Owners Association of Alberta AWP", "fa": "مدل AWP انجمن کارفرمایان آلبرتا" }, "scope": "WFP practice, IWP sizing" },
+    { "code": "ISO 19650-2:2018", "title": { "en": "Information management - delivery phase", "fa": "مدیریت اطلاعات - فاز تحویل" }, "scope": "Inherited document control" }
+  ],
+
+  "terminology": {
+    "workPackage": { "en": "Work Package", "fa": "بسته کاری" },
+    "deliverable": { "en": "EWP Deliverable", "fa": "قلم تحویلی بسته مهندسی" },
+    "deliverableRegister": { "en": "EWP Deliverable Register", "fa": "فهرست اقلام بسته کاری مهندسی" },
+    "breakdownPrimary": { "en": "Path of Construction", "fa": "مسیر اجرا" },
+    "areaUnit": { "en": "Construction Work Area (CWA)", "fa": "محدوده کاری اجرا" },
+    "gate": { "en": "Package Release Gate", "fa": "دروازه صدور بسته کاری" },
+    "progressBasis": { "en": "Installed Quantity Progress", "fa": "پیشرفت بر پایه مقدار نصب‌شده" },
+    "fieldUnit": { "en": "Installation Work Package (IWP)", "fa": "بسته کاری نصب" },
+    "constraint": { "en": "Constraint", "fa": "قید" },
+    "lookahead": { "en": "Lookahead Plan", "fa": "برنامه پیش‌نگر" }
+  },
+
+  "breakdownStructures": [
+    { "code": "WBS", "name": { "en": "Work Breakdown Structure", "fa": "ساختار شکست کار" }, "enabled": true, "mandatory": true, "maxDepth": 8 },
+    { "code": "CBS", "name": { "en": "Cost Breakdown Structure", "fa": "ساختار شکست هزینه" }, "enabled": true, "mandatory": true, "maxDepth": 6 },
+    { "code": "SBS", "name": { "en": "System Breakdown Structure", "fa": "ساختار شکست سیستم" }, "enabled": true, "mandatory": true, "maxDepth": 3, "parentOf": ["TAG"] },
+    { "code": "CWA", "name": { "en": "Construction Work Area", "fa": "محدوده کاری اجرا" }, "enabled": true, "mandatory": true, "maxDepth": 3, "parentOf": ["CWP"], "codingRule": "num.cwa" },
+    { "code": "CWP", "name": { "en": "Construction Work Package", "fa": "بسته کاری اجرا" }, "enabled": true, "mandatory": true, "maxDepth": 1, "parentOf": ["IWP"], "mustBelongTo": "CWA", "codingRule": "num.cwp" },
+    { "code": "EWP", "name": { "en": "Engineering Work Package", "fa": "بسته کاری مهندسی" }, "enabled": true, "mandatory": true, "maxDepth": 1, "mustBelongTo": "CWP", "codingRule": "num.ewp" },
+    { "code": "PWP", "name": { "en": "Procurement Work Package", "fa": "بسته کاری تأمین" }, "enabled": true, "mandatory": true, "maxDepth": 1, "mustBelongTo": "CWP", "codingRule": "num.pwp" },
+    { "code": "IWP", "name": { "en": "Installation Work Package", "fa": "بسته کاری نصب" }, "enabled": true, "mandatory": true, "maxDepth": 1, "mustBelongTo": "CWP", "codingRule": "num.iwp" },
+    { "code": "TWP", "name": { "en": "Turnover Work Package", "fa": "بسته کاری تحویل" }, "enabled": true, "maxDepth": 1, "mustBelongTo": "SBS", "codingRule": "num.twp" },
+    { "code": "AREA", "name": { "en": "Plant / Unit", "fa": "واحد" }, "enabled": true, "maxDepth": 3 },
+    { "code": "OBS", "name": { "en": "Organizational Breakdown Structure", "fa": "ساختار شکست سازمانی" }, "enabled": true, "maxDepth": 5 },
+    { "code": "PBS", "name": { "en": "Product Breakdown Structure", "fa": "ساختار شکست محصول" }, "enabled": false }
+  ],
+
+  "objectTypes": [
+    {
+      "type": "iwp",
+      "enabled": true,
+      "lifecycle": "lc.iwp",
+      "numbering": "num.iwp",
+      "requiredAttributes": [
+        { "field": "cwp_id", "requiredFromState": "DRAFT", "message": { "en": "Every IWP must belong to a CWP.", "fa": "هر بسته نصب باید به یک بسته اجرا تعلق داشته باشد." } },
+        { "field": "discipline_code", "requiredFromState": "DRAFT", "message": { "en": "Discipline is mandatory.", "fa": "دیسیپلین الزامی است." } },
+        { "field": "crew_size", "requiredFromState": "PLANNED", "message": { "en": "Crew size is required for sizing.", "fa": "اندازه اکیپ برای تعیین حجم بسته لازم است." } },
+        { "field": "estimated_hours", "requiredFromState": "PLANNED", "message": { "en": "Estimated man-hours are required.", "fa": "نفر-ساعت برآوردی الزامی است." } },
+        { "field": "drawing_ids", "requiredFromState": "READY", "message": { "en": "IFC drawings must be attached.", "fa": "نقشه‌های IFC باید پیوست شوند." } },
+        { "field": "itr_ids", "requiredFromState": "READY", "message": { "en": "Applicable ITRs must be attached.", "fa": "گزارش‌های بازرسی مرتبط باید پیوست شوند." } },
+        { "field": "permit_requirements", "requiredFromState": "READY", "message": { "en": "Permit requirements must be declared.", "fa": "الزامات مجوز کار باید مشخص شود." } }
+      ]
+    },
+    { "type": "cwp", "enabled": true, "lifecycle": "lc.cwp", "numbering": "num.cwp" },
+    { "type": "ewp", "enabled": true, "numbering": "num.ewp" },
+    { "type": "pwp", "enabled": true, "numbering": "num.pwp" },
+    { "type": "constraint", "enabled": true, "lifecycle": "lc.constraint" },
+    { "type": "deliverable", "enabled": true, "lifecycle": "lc.iso19650.document", "numbering": "num.iso19650.doc" },
+    { "type": "punchItem", "enabled": true, "lifecycle": "lc.punch" },
+    { "type": "ncr", "enabled": true, "lifecycle": "lc.ncr", "numbering": "num.ncr" }
+  ],
+
+  "lifecycles": [
+    {
+      "id": "lc.iwp",
+      "appliesTo": ["iwp"],
+      "states": [
+        { "code": "DRAFT", "name": { "en": "Draft", "fa": "پیش‌نویس" }, "category": "draft", "colour": "#94A3B8" },
+        { "code": "PLANNED", "name": { "en": "Planned", "fa": "برنامه‌ریزی شده" }, "category": "draft", "colour": "#64748B" },
+        { "code": "CONSTRAINT_REVIEW", "name": { "en": "Constraint Review", "fa": "بررسی قیدها" }, "category": "inReview", "colour": "#F59E0B" },
+        { "code": "READY", "name": { "en": "Ready to Issue (Constraint Free)", "fa": "آماده صدور (بدون قید)" }, "category": "approved", "colour": "#84CC16" },
+        { "code": "ISSUED", "name": { "en": "Issued to Field", "fa": "صادر شده به کارگاه" }, "category": "issued", "colour": "#22C55E" },
+        { "code": "IN_PROGRESS", "name": { "en": "In Progress", "fa": "در حال اجرا" }, "category": "issued", "colour": "#0EA5E9" },
+        { "code": "WORK_COMPLETE", "name": { "en": "Work Complete", "fa": "کار تکمیل شد" }, "category": "approved", "colour": "#3B82F6" },
+        { "code": "CLOSED", "name": { "en": "Closed (QC Records Complete)", "fa": "بسته شده (مدارک کیفی کامل)" }, "category": "closed", "colour": "#16A34A", "isTerminal": true },
+        { "code": "ON_HOLD", "name": { "en": "On Hold", "fa": "متوقف" }, "category": "inReview", "colour": "#DC2626" },
+        { "code": "CANCELLED", "name": { "en": "Cancelled", "fa": "لغو شده" }, "category": "cancelled", "colour": "#6B7280", "isTerminal": true }
+      ],
+      "transitions": [
+        { "from": "DRAFT", "to": "PLANNED", "capability": "iwp.plan", "allowedCompanyTypes": ["EPC", "SUB"], "guards": [{ "check": "iwpSizeWithinLimits", "params": { "minCrewDays": 5, "maxCrewDays": 10 }, "message": { "en": "IWP must be sized between 5 and 10 crew-days.", "fa": "حجم بسته نصب باید بین ۵ تا ۱۰ نفر-روز اکیپ باشد." } }] },
+        { "from": "PLANNED", "to": "CONSTRAINT_REVIEW", "capability": "iwp.plan", "allowedCompanyTypes": ["EPC", "SUB"], "emitsEvent": "iwp.constraintReview.v1" },
+        { "from": "CONSTRAINT_REVIEW", "to": "READY", "capability": "iwp.markReady", "allowedCompanyTypes": ["EPC"], "guards": [{ "check": "allHardConstraintsCleared", "message": { "en": "All hard constraints must be cleared or formally waived before the package can be marked ready.", "fa": "همه قیدهای سخت باید پیش از آماده‌سازی بسته رفع یا رسماً معاف شوند." } }, { "check": "linkedDrawingsAtStatus:IFC", "message": { "en": "All linked drawings must be at IFC status.", "fa": "همه نقشه‌های مرتبط باید در وضعیت IFC باشند." } }, { "check": "materialAvailability:100", "message": { "en": "100% of the bill of materials must be on site and reserved.", "fa": "۱۰۰٪ اقلام باید در کارگاه موجود و رزرو شده باشند." } }], "emitsEvent": "iwp.ready.v1" },
+        { "from": "READY", "to": "ISSUED", "capability": "iwp.release", "allowedCompanyTypes": ["EPC"], "guards": [{ "check": "permitValidForWindow", "message": { "en": "A valid permit to work must cover the planned execution window.", "fa": "مجوز کار معتبر باید بازه اجرای برنامه‌ریزی‌شده را پوشش دهد." } }, { "check": "crewAssigned", "message": { "en": "Assign a crew before issuing the package.", "fa": "پیش از صدور بسته، اکیپ را تخصیص دهید." } }], "signatureRequired": "simple", "emitsEvent": "iwp.released.v1" },
+        { "from": "ISSUED", "to": "IN_PROGRESS", "capability": "iwp.start", "allowedCompanyTypes": ["EPC", "SUB"], "emitsEvent": "iwp.started.v1" },
+        { "from": "IN_PROGRESS", "to": "WORK_COMPLETE", "capability": "iwp.complete", "allowedCompanyTypes": ["EPC", "SUB"], "guards": [{ "check": "progressPercent:100", "message": { "en": "Recorded progress must reach 100%.", "fa": "پیشرفت ثبت‌شده باید به ۱۰۰٪ برسد." } }] },
+        { "from": "WORK_COMPLETE", "to": "CLOSED", "capability": "iwp.close", "allowedCompanyTypes": ["EPC"], "guards": [{ "check": "allItrsSigned", "message": { "en": "All inspection test records in the package must be signed.", "fa": "همه گزارش‌های بازرسی بسته باید امضا شده باشند." } }, { "check": "packageReturnedFromField", "message": { "en": "The physical or digital package must be returned and archived.", "fa": "بسته باید از کارگاه بازگردانده و بایگانی شود." } }], "signatureRequired": "advanced", "emitsEvent": "iwp.closed.v1" },
+        { "from": "IN_PROGRESS", "to": "ON_HOLD", "capability": "iwp.hold", "allowedCompanyTypes": ["EPC", "PMC", "OWN"], "emitsEvent": "iwp.held.v1" },
+        { "from": "ON_HOLD", "to": "IN_PROGRESS", "capability": "iwp.resume", "allowedCompanyTypes": ["EPC"] },
+        { "from": "PLANNED", "to": "CANCELLED", "capability": "iwp.cancel", "allowedCompanyTypes": ["EPC"] }
+      ]
+    },
+    {
+      "id": "lc.cwp",
+      "appliesTo": ["cwp"],
+      "states": [
+        { "code": "DEFINED", "name": { "en": "Defined in PoC", "fa": "تعریف‌شده در مسیر اجرا" }, "category": "draft", "colour": "#94A3B8" },
+        { "code": "ENG_RELEASED", "name": { "en": "Engineering Released", "fa": "مهندسی صادر شد" }, "category": "inReview", "colour": "#F59E0B" },
+        { "code": "PROC_RELEASED", "name": { "en": "Procurement Released", "fa": "تأمین صادر شد" }, "category": "inReview", "colour": "#F97316" },
+        { "code": "CONSTRUCTION_READY", "name": { "en": "Construction Ready", "fa": "آماده اجرا" }, "category": "approved", "colour": "#84CC16" },
+        { "code": "IN_EXECUTION", "name": { "en": "In Execution", "fa": "در حال اجرا" }, "category": "issued", "colour": "#0EA5E9" },
+        { "code": "COMPLETE", "name": { "en": "Complete", "fa": "تکمیل شده" }, "category": "closed", "colour": "#16A34A", "isTerminal": true }
+      ],
+      "transitions": [
+        { "from": "DEFINED", "to": "ENG_RELEASED", "capability": "cwp.manage", "allowedCompanyTypes": ["EPC"], "guards": [{ "check": "allEwpDeliverablesIssued", "message": { "en": "All EWP deliverables must be issued for construction.", "fa": "همه اقلام بسته مهندسی باید برای اجرا صادر شده باشند." } }] },
+        { "from": "ENG_RELEASED", "to": "PROC_RELEASED", "capability": "cwp.manage", "allowedCompanyTypes": ["EPC"], "guards": [{ "check": "pwpMaterialsDelivered", "params": { "threshold": 90 }, "message": { "en": "At least 90% of PWP materials must be delivered.", "fa": "حداقل ۹۰٪ اقلام بسته تأمین باید تحویل شده باشد." } }] },
+        { "from": "PROC_RELEASED", "to": "CONSTRUCTION_READY", "capability": "cwp.manage", "allowedCompanyTypes": ["EPC"], "signatureRequired": "simple" },
+        { "from": "CONSTRUCTION_READY", "to": "IN_EXECUTION", "capability": "cwp.manage", "allowedCompanyTypes": ["EPC"] },
+        { "from": "IN_EXECUTION", "to": "COMPLETE", "capability": "cwp.manage", "allowedCompanyTypes": ["EPC"], "guards": [{ "check": "allChildIwpsClosed", "message": { "en": "All IWPs under this CWP must be closed.", "fa": "همه بسته‌های نصب زیرمجموعه باید بسته شده باشند." } }] }
+      ]
+    },
+    {
+      "id": "lc.constraint",
+      "appliesTo": ["constraint"],
+      "states": [
+        { "code": "IDENTIFIED", "name": { "en": "Identified", "fa": "شناسایی شده" }, "category": "draft", "colour": "#EF4444" },
+        { "code": "ASSIGNED", "name": { "en": "Assigned with Promise Date", "fa": "واگذار شده با تاریخ تعهد" }, "category": "inReview", "colour": "#F59E0B" },
+        { "code": "AT_RISK", "name": { "en": "At Risk (Past Promise Date)", "fa": "در معرض خطر (تاریخ تعهد گذشته)" }, "category": "inReview", "colour": "#DC2626" },
+        { "code": "CLEARED", "name": { "en": "Cleared", "fa": "رفع شده" }, "category": "closed", "colour": "#22C55E", "isTerminal": true },
+        { "code": "WAIVED", "name": { "en": "Waived (Approved Exception)", "fa": "معاف شده (استثنای تأییدشده)" }, "category": "closed", "colour": "#8B5CF6", "isTerminal": true }
+      ],
+      "transitions": [
+        { "from": "IDENTIFIED", "to": "ASSIGNED", "capability": "constraint.manage", "allowedCompanyTypes": ["EPC", "SUB"], "slaHours": 48 },
+        { "from": "ASSIGNED", "to": "AT_RISK", "capability": "system.auto", "allowedCompanyTypes": ["EPC"] },
+        { "from": "ASSIGNED", "to": "CLEARED", "capability": "constraint.clear", "allowedCompanyTypes": ["EPC", "SUB", "PMC", "OWN", "VEN"], "emitsEvent": "constraint.cleared.v1" },
+        { "from": "AT_RISK", "to": "CLEARED", "capability": "constraint.clear", "allowedCompanyTypes": ["EPC", "SUB", "PMC", "OWN", "VEN"], "emitsEvent": "constraint.cleared.v1" },
+        { "from": "AT_RISK", "to": "WAIVED", "capability": "iwp.waiver.approve", "allowedCompanyTypes": ["EPC", "OWN"], "signatureRequired": "advanced", "emitsEvent": "constraint.waived.v1" }
+      ]
+    }
+  ],
+
+  "gates": [
+    {
+      "code": "AWP-G1",
+      "name": { "en": "Path of Construction Approved", "fa": "تأیید مسیر اجرا" },
+      "phase": "planning",
+      "approverCompanyType": "OWN",
+      "exitCriteria": [
+        { "id": "AWP-G1-01", "text": { "en": "CWAs defined and geographically bounded", "fa": "محدوده‌های کاری اجرا تعریف و مرزبندی جغرافیایی شده‌اند" }, "evidenceObjectType": "cwa", "automatable": true },
+        { "id": "AWP-G1-02", "text": { "en": "CWP sequence agreed with construction lead", "fa": "توالی بسته‌های اجرا با مدیر اجرا توافق شده" } },
+        { "id": "AWP-G1-03", "text": { "en": "Every CWP has at least one EWP and one PWP", "fa": "هر بسته اجرا حداقل یک بسته مهندسی و یک بسته تأمین دارد" }, "automatable": true, "guard": { "check": "everyCwpHasEwpAndPwp" } },
+        { "id": "AWP-G1-04", "text": { "en": "AWP roles appointed (AWP champion, WFP coordinators)", "fa": "نقش‌های AWP منصوب شده‌اند" } }
+      ]
+    },
+    {
+      "code": "AWP-G2",
+      "name": { "en": "CWP Construction Ready", "fa": "آمادگی اجرای بسته کاری" },
+      "phase": "construction",
+      "approverCompanyType": "EPC",
+      "exitCriteria": [
+        { "id": "AWP-G2-01", "text": { "en": "All EWP deliverables at IFC", "fa": "همه اقلام بسته مهندسی در وضعیت IFC" }, "automatable": true, "guard": { "check": "linkedDrawingsAtStatus:IFC" } },
+        { "id": "AWP-G2-02", "text": { "en": "PWP material delivery at or above 90%", "fa": "تحویل اقلام بسته تأمین ۹۰٪ یا بیشتر" }, "automatable": true, "guard": { "check": "pwpMaterialsDelivered", "params": { "threshold": 90 } } },
+        { "id": "AWP-G2-03", "text": { "en": "IWPs decomposed and sized for the first 60 days", "fa": "بسته‌های نصب برای ۶۰ روز نخست تفکیک و حجم‌گذاری شده‌اند" }, "automatable": true }
+      ]
+    }
+  ],
+
+  "constraintTypes": [
+    { "code": "ENG", "name": { "en": "Engineering / IFC Drawings", "fa": "مهندسی / نقشه‌های اجرایی" }, "severity": "hard", "defaultOwnerRole": "disciplineLead", "autoCheck": { "source": "engineering.deliverable", "clearWhenEvent": "document.published.v1", "condition": "allLinkedDeliverables.status == 'PUBLISHED_IFC'" }, "waiverAllowed": true, "waiverApproverCapability": "iwp.waiver.approve" },
+    { "code": "MAT", "name": { "en": "Material on Site and Reserved", "fa": "مصالح موجود و رزروشده در کارگاه" }, "severity": "hard", "defaultOwnerRole": "materialsManager", "autoCheck": { "source": "procurement.material", "clearWhenEvent": "material.reserved.v1", "condition": "reservedPercent >= 100" }, "waiverAllowed": true, "waiverApproverCapability": "iwp.waiver.approve" },
+    { "code": "EQUIP", "name": { "en": "Construction Equipment", "fa": "ماشین‌آلات اجرایی" }, "severity": "hard", "defaultOwnerRole": "equipmentCoordinator", "waiverAllowed": true, "waiverApproverCapability": "iwp.waiver.approve" },
+    { "code": "SCAF", "name": { "en": "Scaffolding / Access", "fa": "داربست / دسترسی" }, "severity": "hard", "defaultOwnerRole": "scaffoldingCoordinator", "autoCheck": { "source": "construction.scaffold", "clearWhenEvent": "scaffold.inspected.v1", "condition": "status == 'HANDED_OVER'" }, "waiverAllowed": false },
+    { "code": "PERMIT", "name": { "en": "Permit to Work", "fa": "مجوز کار" }, "severity": "hard", "defaultOwnerRole": "hseManager", "autoCheck": { "source": "hse.permit", "clearWhenEvent": "permit.issued.v1", "condition": "validForWindow == true" }, "waiverAllowed": false },
+    { "code": "LABOR", "name": { "en": "Qualified Labour Availability", "fa": "در دسترس بودن نیروی متخصص" }, "severity": "hard", "defaultOwnerRole": "superintendent", "waiverAllowed": true, "waiverApproverCapability": "iwp.waiver.approve" },
+    { "code": "PRIOR", "name": { "en": "Predecessor Work Complete", "fa": "تکمیل کار پیش‌نیاز" }, "severity": "hard", "defaultOwnerRole": "superintendent", "autoCheck": { "source": "construction.iwp", "clearWhenEvent": "iwp.closed.v1", "condition": "allPredecessorIwps.status == 'CLOSED'" }, "waiverAllowed": true, "waiverApproverCapability": "iwp.waiver.approve" },
+    { "code": "SAFETY", "name": { "en": "Safety Requirement / JSA", "fa": "الزام ایمنی / تحلیل ایمنی شغلی" }, "severity": "hard", "defaultOwnerRole": "hseManager", "waiverAllowed": false },
+    { "code": "QC", "name": { "en": "Quality Hold Point Released", "fa": "رفع نقطه توقف کیفی" }, "severity": "hard", "defaultOwnerRole": "qcManager", "waiverAllowed": false },
+    { "code": "VENDOR", "name": { "en": "Vendor Support / Supervision", "fa": "پشتیبانی سازنده" }, "severity": "soft", "defaultOwnerRole": "procurementManager", "waiverAllowed": true, "waiverApproverCapability": "iwp.waiver.approve" },
+    { "code": "WEATHER", "name": { "en": "Weather Window", "fa": "پنجره جوی" }, "severity": "soft", "defaultOwnerRole": "superintendent", "waiverAllowed": true, "waiverApproverCapability": "iwp.waiver.approve" }
+  ],
+
+  "releaseGates": [
+    {
+      "objectType": "iwp",
+      "hardBlock": true,
+      "rules": [
+        { "check": "allHardConstraintsCleared", "message": { "en": "The package cannot be released while hard constraints remain open. This is the core AWP discipline.", "fa": "تا زمانی که قیدهای سخت باز هستند بسته قابل صدور نیست. این اصل بنیادین AWP است." } },
+        { "check": "linkedDrawingsAtStatus:IFC", "message": { "en": "All drawings in the package must be issued for construction.", "fa": "همه نقشه‌های بسته باید برای اجرا صادر شده باشند." } },
+        { "check": "materialAvailability:100", "message": { "en": "Bill of materials must be 100% available and reserved to this package.", "fa": "فهرست مصالح باید ۱۰۰٪ موجود و به این بسته اختصاص یافته باشد." } },
+        { "check": "permitValidForWindow", "message": { "en": "Permit to work must be valid for the execution window.", "fa": "مجوز کار باید برای بازه اجرا معتبر باشد." } },
+        { "check": "iwpSizeWithinLimits", "params": { "minCrewDays": 5, "maxCrewDays": 10 }, "message": { "en": "Package size must remain within 5 to 10 crew-days.", "fa": "حجم بسته باید بین ۵ تا ۱۰ نفر-روز اکیپ بماند." } }
+      ],
+      "waiver": { "allowed": true, "approverCapability": "iwp.waiver.approve", "justificationRequired": true }
+    },
+    {
+      "objectType": "cwp",
+      "hardBlock": true,
+      "rules": [
+        { "check": "allEwpDeliverablesIssued", "message": { "en": "All engineering work package deliverables must be issued.", "fa": "همه اقلام بسته کاری مهندسی باید صادر شده باشند." } },
+        { "check": "pwpMaterialsDelivered", "params": { "threshold": 90 }, "message": { "en": "Procurement work package must reach 90% delivery.", "fa": "بسته کاری تأمین باید به ۹۰٪ تحویل برسد." } }
+      ],
+      "waiver": { "allowed": true, "approverCapability": "project.waiver.approve", "justificationRequired": true }
+    }
+  ],
+
+  "numberingRules": [
+    { "id": "num.cwa", "appliesTo": ["cwa"], "pattern": "{PROJECT}-CWA-{SEQ:2}", "case": "upper" },
+    { "id": "num.cwp", "appliesTo": ["cwp"], "pattern": "{CWA}-CWP-{DISCIPLINE}-{SEQ:3}", "case": "upper" },
+    { "id": "num.ewp", "appliesTo": ["ewp"], "pattern": "{CWP}-EWP-{SEQ:3}", "case": "upper" },
+    { "id": "num.pwp", "appliesTo": ["pwp"], "pattern": "{CWP}-PWP-{SEQ:3}", "case": "upper" },
+    { "id": "num.iwp", "appliesTo": ["iwp"], "pattern": "{CWP}-IWP-{SEQ:4}", "case": "upper" },
+    { "id": "num.twp", "appliesTo": ["twp"], "pattern": "{SYSTEM}-TWP-{SEQ:3}", "case": "upper" },
+    { "id": "num.iso19650.doc", "appliesTo": ["deliverable"], "pattern": "{PROJECT}-{ORIGINATOR}-{CWA}-{DISCIPLINE}-{TYPE}-{SEQ:4}", "case": "upper", "revisionScheme": { "preIssue": ["A", "B", "C"], "postIssue": ["0", "1", "2"], "statusCodes": ["IFR", "IFA", "IFD", "IFC", "AB"] } }
+  ],
+
+  "progressRules": [
+    {
+      "id": "roc.iwp.execution",
+      "appliesTo": ["iwp"],
+      "method": "weightedMilestone",
+      "steps": [
+        { "code": "ISSUED", "name": { "en": "Package issued to crew", "fa": "بسته به اکیپ تحویل شد" }, "weight": 5 },
+        { "code": "SETUP", "name": { "en": "Set-up and preparation", "fa": "آماده‌سازی" }, "weight": 10 },
+        { "code": "INSTALL_50", "name": { "en": "Installation 50%", "fa": "نصب ۵۰٪" }, "weight": 35 },
+        { "code": "INSTALL_100", "name": { "en": "Installation complete", "fa": "نصب کامل" }, "weight": 30, "evidenceRequired": true },
+        { "code": "QC", "name": { "en": "QC records signed", "fa": "مدارک کیفی امضا شد" }, "weight": 15, "evidenceRequired": true, "verifierCompanyType": "PMC" },
+        { "code": "RETURN", "name": { "en": "Package returned and closed", "fa": "بسته بازگردانده و بسته شد" }, "weight": 5 }
+      ]
+    },
+    {
+      "id": "qty.awp.piping",
+      "appliesTo": ["fieldProgress"],
+      "discipline": "PIP",
+      "method": "quantityBased",
+      "unitOfMeasure": "dia-inch",
+      "steps": [
+        { "code": "ERECT", "name": { "en": "Spool erected", "fa": "اسپول نصب شد" }, "weight": 45 },
+        { "code": "WELD", "name": { "en": "Field weld complete", "fa": "جوش محل تکمیل شد" }, "weight": 25, "evidenceRequired": true },
+        { "code": "NDT", "name": { "en": "NDT accepted", "fa": "آزمون غیرمخرب پذیرفته شد" }, "weight": 15, "evidenceRequired": true, "verifierCompanyType": "TPI" },
+        { "code": "HYDRO", "name": { "en": "Included in accepted test pack", "fa": "در پکیج تست پذیرفته‌شده" }, "weight": 15, "evidenceRequired": true, "verifierCompanyType": "PMC" }
+      ]
+    },
+    {
+      "id": "qty.awp.electrical",
+      "appliesTo": ["fieldProgress"],
+      "discipline": "ELE",
+      "method": "quantityBased",
+      "unitOfMeasure": "m",
+      "steps": [
+        { "code": "TRAY", "name": { "en": "Cable tray installed", "fa": "سینی کابل نصب شد" }, "weight": 25 },
+        { "code": "PULL", "name": { "en": "Cable pulled", "fa": "کابل‌کشی انجام شد" }, "weight": 35 },
+        { "code": "TERM", "name": { "en": "Terminated both ends", "fa": "ترمینیشن دو سر انجام شد" }, "weight": 25, "evidenceRequired": true },
+        { "code": "MEGGER", "name": { "en": "Continuity and megger test passed", "fa": "تست پیوستگی و مگر قبول شد" }, "weight": 15, "evidenceRequired": true, "verifierCompanyType": "PMC" }
+      ]
+    }
+  ],
+
+  "kpis": [
+    { "code": "IWP_ONTIME_RELEASE", "name": { "en": "IWP On-Time Release", "fa": "صدور به‌موقع بسته نصب" }, "definition": { "en": "Percentage of IWPs released on or before their planned release date.", "fa": "درصد بسته‌های نصب که در تاریخ برنامه‌ای یا پیش از آن صادر شده‌اند." }, "formula": "count(iwp where released_at <= planned_release_date) / count(iwp released) * 100", "unit": "%", "target": 90, "direction": "higherIsBetter", "thresholds": { "green": 90, "amber": 75, "red": 60 }, "ownerRole": "awpCoordinator", "dashboards": ["executive", "construction", "awp"] },
+    { "code": "IWP_CONSTRAINT_FREE", "name": { "en": "Constraint-Free Release Rate", "fa": "نرخ صدور بدون قید" }, "definition": { "en": "Percentage of IWPs released with zero open hard constraints and no waiver.", "fa": "درصد بسته‌هایی که بدون هیچ قید سخت باز و بدون معافیت صادر شده‌اند." }, "formula": "count(iwp released where openHardConstraints == 0 and waivers == 0) / count(iwp released) * 100", "unit": "%", "target": 95, "direction": "higherIsBetter", "thresholds": { "green": 95, "amber": 85, "red": 70 }, "ownerRole": "awpCoordinator", "dashboards": ["executive", "awp"] },
+    { "code": "CONSTRAINT_AGING", "name": { "en": "Average Open Constraint Age", "fa": "میانگین سن قیدهای باز" }, "definition": { "en": "Mean days constraints have been open. The strongest leading indicator of AWP failure.", "fa": "میانگین روزهایی که قیدها باز مانده‌اند. قوی‌ترین شاخص پیشرو شکست AWP." }, "formula": "avg(days(now - identified_at)) where state not in ['CLEARED','WAIVED']", "unit": "days", "target": 14, "direction": "lowerIsBetter", "thresholds": { "green": 14, "amber": 30, "red": 45 }, "ownerRole": "awpCoordinator", "dashboards": ["awp", "construction"] },
+    { "code": "PPC", "name": { "en": "Percent Plan Complete", "fa": "درصد تحقق برنامه" }, "definition": { "en": "Committed weekly tasks completed as planned.", "fa": "درصد وظایف تعهدشده هفتگی که طبق برنامه تکمیل شده‌اند." }, "formula": "count(committedTask completed) / count(committedTask planned) * 100", "unit": "%", "target": 85, "direction": "higherIsBetter", "thresholds": { "green": 85, "amber": 70, "red": 55 }, "ownerRole": "superintendent", "dashboards": ["construction", "awp"] },
+    { "code": "TOOL_TIME", "name": { "en": "Tool Time", "fa": "زمان مفید ابزار" }, "definition": { "en": "Share of crew time spent on direct value-adding work, from sampling studies.", "fa": "سهم زمان اکیپ صرف‌شده برای کار مستقیم ارزش‌آفرین، بر پایه نمونه‌برداری." }, "formula": "sum(directWorkMinutes) / sum(observedMinutes) * 100", "unit": "%", "target": 50, "direction": "higherIsBetter", "thresholds": { "green": 50, "amber": 40, "red": 32 }, "ownerRole": "constructionManager", "dashboards": ["executive", "construction", "awp"] },
+    { "code": "IWP_BACKLOG_WEEKS", "name": { "en": "Constraint-Free Backlog", "fa": "ذخیره بسته‌های بدون قید" }, "definition": { "en": "Weeks of ready-to-issue work available to the crews.", "fa": "تعداد هفته‌های کار آماده صدور موجود برای اکیپ‌ها." }, "formula": "sum(readyIwpHours) / avgWeeklyBurnHours", "unit": "weeks", "target": 4, "direction": "higherIsBetter", "thresholds": { "green": 4, "amber": 2, "red": 1 }, "ownerRole": "awpCoordinator", "dashboards": ["awp", "construction"] },
+    { "code": "FIELD_REWORK", "name": { "en": "Field Rework Factor", "fa": "ضریب دوباره‌کاری کارگاهی" }, "formula": "sum(reworkHours) / sum(directHours) * 100", "unit": "%", "target": 2, "direction": "lowerIsBetter", "thresholds": { "green": 2, "amber": 5, "red": 8 }, "ownerRole": "constructionManager", "dashboards": ["construction", "quality"] },
+    { "code": "CWP_READINESS", "name": { "en": "CWP Readiness Index", "fa": "شاخص آمادگی بسته اجرا" }, "formula": "avg(cwp.engineeringPercent * 0.4 + cwp.materialPercent * 0.4 + cwp.iwpDecomposedPercent * 0.2)", "unit": "%", "target": 95, "direction": "higherIsBetter", "thresholds": { "green": 95, "amber": 80, "red": 65 }, "ownerRole": "awpCoordinator", "dashboards": ["awp"] },
+    { "code": "AWP_MATURITY", "name": { "en": "AWP Maturity Score", "fa": "امتیاز بلوغ AWP" }, "definition": { "en": "Self-assessment score against the CII/COAA AWP maturity model.", "fa": "امتیاز خودارزیابی بر پایه مدل بلوغ AWP." }, "formula": "avg(maturityDimensionScore)", "unit": "ratio", "target": 4, "direction": "higherIsBetter", "thresholds": { "green": 4, "amber": 3, "red": 2 }, "ownerRole": "awpCoordinator", "dashboards": ["executive", "awp"] },
+    { "code": "SPI", "name": { "en": "Schedule Performance Index", "fa": "شاخص عملکرد زمانی" }, "formula": "sum(BCWP) / sum(BCWS)", "unit": "ratio", "target": 1.0, "direction": "higherIsBetter", "thresholds": { "green": 0.95, "amber": 0.9, "red": 0.85 }, "ownerRole": "planner", "dashboards": ["executive", "pm"] },
+    { "code": "CPI", "name": { "en": "Cost Performance Index", "fa": "شاخص عملکرد هزینه" }, "formula": "sum(BCWP) / sum(ACWP)", "unit": "ratio", "target": 1.0, "direction": "higherIsBetter", "thresholds": { "green": 0.98, "amber": 0.93, "red": 0.88 }, "ownerRole": "costController", "dashboards": ["executive", "pm"] }
+  ],
+
+  "visibilityMatrix": [
+    { "objectType": "iwp", "grants": { "OWN": "read", "EPC": "own", "PMC": "review", "SUB": "edit", "VEN": "hidden", "MC": "metadata", "TPI": "read", "CB": "hidden" } },
+    { "objectType": "cwp", "grants": { "OWN": "read", "EPC": "own", "PMC": "review", "SUB": "read", "VEN": "hidden", "MC": "read", "TPI": "metadata", "CB": "hidden" } },
+    { "objectType": "constraint", "grants": { "OWN": "read", "EPC": "own", "PMC": "comment", "SUB": "edit", "VEN": "comment", "MC": "metadata", "TPI": "metadata", "CB": "hidden" } },
+    { "objectType": "pathOfConstruction", "grants": { "OWN": "approve", "EPC": "own", "PMC": "review", "SUB": "read", "VEN": "hidden", "MC": "read", "TPI": "hidden", "CB": "hidden" } },
+    { "objectType": "deliverable", "grants": { "OWN": "approve", "EPC": "own", "PMC": "review", "SUB": "read", "VEN": "read", "MC": "read", "TPI": "read", "CB": "read" } },
+    { "objectType": "cost.forecast", "grants": { "OWN": "hidden", "EPC": "own", "PMC": "hidden", "SUB": "hidden", "VEN": "hidden", "MC": "hidden", "TPI": "hidden", "CB": "hidden" } },
+    { "objectType": "toolTimeStudy", "grants": { "OWN": "metadata", "EPC": "own", "PMC": "read", "SUB": "metadata", "VEN": "hidden", "MC": "hidden", "TPI": "hidden", "CB": "hidden" } },
+    { "objectType": "punchItem", "grants": { "OWN": "approve", "EPC": "own", "PMC": "review", "SUB": "edit", "VEN": "metadata", "MC": "approve", "TPI": "review", "CB": "metadata" } },
+    { "objectType": "itr", "grants": { "OWN": "read", "EPC": "own", "PMC": "review", "SUB": "edit", "VEN": "metadata", "MC": "review", "TPI": "approve", "CB": "read" } }
+  ],
+
+  "documentTemplates": [
+    { "id": "tpl.iwp.cover", "name": { "en": "IWP Cover Sheet and Content Index", "fa": "برگ روی جلد و فهرست بسته نصب" }, "appliesTo": "iwp", "layout": "bilingual-side-by-side", "path": "templates/awp/iwp-cover.hbs" },
+    { "id": "tpl.constraint.report", "name": { "en": "Constraint Log Report", "fa": "گزارش دفتر قیدها" }, "appliesTo": "constraintReport", "layout": "bilingual-stacked", "path": "templates/awp/constraint-log.hbs" },
+    { "id": "tpl.lookahead", "name": { "en": "Six Week Lookahead", "fa": "برنامه پیش‌نگر شش‌هفته‌ای" }, "appliesTo": "lookahead", "layout": "bilingual-stacked", "path": "templates/awp/lookahead.hbs" },
+    { "id": "tpl.transmittal.iso", "name": { "en": "Transmittal Sheet", "fa": "برگ ارسال مدارک" }, "appliesTo": "transmittal", "layout": "bilingual-side-by-side", "path": "templates/iso/transmittal.hbs" }
+  ],
+
+  "complianceChecklist": [
+    { "id": "AWP-01", "standardRef": "CII RT-272 P1", "requirement": { "en": "Path of Construction is defined and approved before detailed engineering begins.", "fa": "مسیر اجرا پیش از آغاز مهندسی تفصیلی تعریف و تأیید شده است." }, "evidence": { "objectType": "pathOfConstruction", "condition": "approved == true" }, "severity": "mandatory" },
+    { "id": "AWP-02", "standardRef": "CII RT-272 P2", "requirement": { "en": "Every EWP is aligned to at least one CWP.", "fa": "هر بسته کاری مهندسی به حداقل یک بسته کاری اجرا متصل است." }, "evidence": { "objectType": "ewp", "condition": "cwp_id != null" }, "severity": "mandatory" },
+    { "id": "AWP-03", "standardRef": "COAA WFP", "requirement": { "en": "IWPs are sized between 5 and 10 crew-days.", "fa": "حجم بسته‌های نصب بین ۵ تا ۱۰ نفر-روز اکیپ است." }, "evidence": { "objectType": "iwp", "condition": "crewDays >= 5 and crewDays <= 10" }, "severity": "mandatory" },
+    { "id": "AWP-04", "standardRef": "COAA WFP", "requirement": { "en": "No IWP is released with open hard constraints unless a waiver is approved and justified.", "fa": "هیچ بسته نصبی با قید سخت باز صادر نمی‌شود مگر با معافیت تأییدشده و مستدل." }, "evidence": { "objectType": "iwp", "condition": "state >= 'ISSUED' implies openHardConstraints == 0 or waiverApproved == true" }, "severity": "mandatory" },
+    { "id": "AWP-05", "standardRef": "COAA WFP", "requirement": { "en": "A rolling constraint-free backlog of at least 3 weeks is maintained.", "fa": "ذخیره بسته‌های بدون قید حداقل به میزان ۳ هفته حفظ می‌شود." }, "evidence": { "objectType": "kpi", "condition": "IWP_BACKLOG_WEEKS >= 3" }, "severity": "recommended" },
+    { "id": "AWP-06", "standardRef": "CII RT-319", "requirement": { "en": "AWP roles are formally appointed and staffed on the project.", "fa": "نقش‌های AWP رسماً منصوب و تأمین نیرو شده‌اند." }, "evidence": { "objectType": "projectRole", "condition": "role in ['awpChampion','wfpCoordinator'] and assigned == true" }, "severity": "mandatory" },
+    { "id": "AWP-07", "standardRef": "CII RT-272 P3", "requirement": { "en": "Turnover work packages are mapped to systems and subsystems from the start.", "fa": "بسته‌های کاری تحویل از ابتدا به سیستم‌ها و زیرسیستم‌ها نگاشت شده‌اند." }, "evidence": { "objectType": "twp", "condition": "system_id != null" }, "severity": "recommended" },
+    { "id": "AWP-08", "standardRef": "COAA WFP", "requirement": { "en": "Tool time studies are conducted at least quarterly.", "fa": "مطالعات زمان مفید ابزار حداقل فصلی انجام می‌شود." }, "evidence": { "objectType": "toolTimeStudy", "minimumCount": 1 }, "severity": "recommended" }
+  ],
+
+  "settings": {
+    "iwpTargetCrewDays": 10,
+    "iwpMinCrewDays": 5,
+    "hardBlockOnConstraint": true,
+    "constraintPromiseDateRequired": true,
+    "lookaheadHorizons": [90, 60, 30, 6],
+    "backlogTargetWeeks": 4,
+    "materialReservationRequired": true,
+    "modelBasedScoping": true,
+    "defaultCalendar": "gregorian",
+    "secondaryCalendar": "jalali",
+    "workingWeek": ["saturday", "sunday", "monday", "tuesday", "wednesday"],
+    "punchCategories": ["A", "B", "C"],
+    "itrTypes": ["A", "B", "C"]
+  }
+}

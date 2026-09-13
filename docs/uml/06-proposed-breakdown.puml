@@ -1,0 +1,139 @@
+@startuml 06-proposed-breakdown
+!include _style.puml
+skinparam class {
+  BackgroundColor #1e293b
+  BorderColor #475569
+  FontColor #e2e8f0
+  AttributeFontColor #cbd5e1
+  StereotypeFontColor #c4b5fd
+  HeaderBackgroundColor #334155
+}
+skinparam package {
+  BackgroundColor #16233b
+  BorderColor #475569
+  FontColor #93c5fd
+}
+title **PROPOSED — Physical Breakdown (ADR-004)**\nNot implemented. Option B: one facility table with a kind discriminator.
+
+package "Today" {
+  class "Project" as P0 <<today>>
+  class "Subsystem" as S0 <<today>>
+  P0 "1" *-- "0..*" S0
+  note right of S0
+    A flat middle. A project with
+    4,000 subsystems has no
+    intermediate grouping at all.
+  end note
+}
+
+package "Proposed" {
+  class "Project " as P {
+    + code : string
+    + standards_pack : string
+  }
+
+  class Facility <<new>> {
+    + id : uuid
+    + project_id : uuid
+    + code : string
+    + name_en / name_fa : string
+    --
+    + kind : FacilityKind
+    ..PLANT | PIPELINE | OFFSITE..
+    ..MARINE | UTILITY..
+    --
+    + addressing : jsonb
+    <<validated per kind>>
+    --
+    + external_ref : string?
+    <<Plant 3D PnPID>>
+  }
+
+  class Area <<new, optional level>> {
+    + facility_id : uuid
+    + code : string
+    + unit_code : string?
+    --
+    <<= Plant 3D "Area">>
+    <<= AWP "CWA">>
+  }
+
+  class "Subsystem " as SS <<unchanged columns>> {
+    + facility_id : uuid
+    + area_id : uuid?  <<nullable>>
+    + code, discipline
+    --
+    + fullCode()
+    + blocksMechanicalCompletion()
+    + closurePercent()
+  }
+
+  class FacilityKind <<value object>> {
+    + requiresStationing() : bool
+    + label(en|fa) : string
+    + areaLabel(en|fa) : string
+  }
+
+  P "1" *-- "0..*" Facility
+  Facility "1" *-- "0..*" Area
+  Area "0..1" <-- "0..*" SS : optional
+  Facility "1" <-- "0..*" SS : always
+  Facility ..> FacilityKind
+}
+
+package "Unchanged — 182 occurrences stay put" {
+  class PunchItem
+  class McCertificate
+  class MaterialLot
+  class PurchaseOrderItem
+  class MaterialMovement
+}
+
+SS "1" <-- "0..*" PunchItem
+SS "1" <-- "0..1" McCertificate
+SS "1" <-- "0..*" MaterialLot
+SS "1" <-- "0..*" PurchaseOrderItem
+SS "1" <-- "0..*" MaterialMovement
+
+note bottom of Facility
+  **Why one table and not plants + pipelines.**
+  A plant is bounded by coordinates; a pipeline by
+  stationing (KP 0+000 .. KP 147+500). Two sibling
+  tables would force every upward query into a
+  two-branch COALESCE and an XOR CHECK constraint -
+  the classic smell of a missing abstraction.
+
+  What they genuinely share is being a *commissioning
+  parent*. What differs is *spatial addressing*, which
+  is exactly what a per-kind jsonb column is for.
+
+  Same pattern this codebase already proved twice:
+  McCertificate.state, and MovementType instead of
+  four document tables.
+end note
+
+note bottom of Area
+  **Optional on purpose.**
+  Plant 3D's own refinery example has 13 areas, so
+  skipping the level would break lossless import.
+  But an Iranian booster station with 12 subsystems
+  should not have to invent 12 areas.
+
+  Absence of structure must not be reported as an
+  error - same rule as closurePercent() returning
+  100 for an empty punch list.
+end note
+
+note right of FacilityKind
+  Plant 3D has **no** System/Subsystem, no MC,
+  no punch, no handover - it is a design
+  authoring tool. Compatibility therefore means
+  a documented **import mapping**, not a copied
+  schema:
+
+  Area property -> areas.code
+  Unit subpart  -> areas.unit_code
+  PnPID         -> external_ref
+end note
+
+@enduml

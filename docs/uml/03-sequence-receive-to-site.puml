@@ -1,0 +1,168 @@
+@startuml 03-sequence-receive-to-site
+!include _style.puml
+skinparam database {
+  BackgroundColor #334155
+  BorderColor #475569
+  FontColor #e2e8f0
+}
+skinparam sequence {
+  ArrowColor #94a3b8
+  LifeLineBorderColor #475569
+  LifeLineBackgroundColor #1e293b
+  ParticipantBackgroundColor #334155
+  ParticipantBorderColor #475569
+  ParticipantFontColor #e2e8f0
+  ActorBackgroundColor #334155
+  ActorBorderColor #475569
+  ActorFontColor #e2e8f0
+  BoxBackgroundColor #16233b
+  BoxBorderColor #475569
+  BoxFontColor #93c5fd
+  GroupBackgroundColor #334155
+  GroupBorderColor #6366f1
+  GroupFontColor #e0e7ff
+  GroupHeaderFontColor #c4b5fd
+  DividerBackgroundColor #1e3a5f
+  DividerBorderColor #475569
+  DividerFontColor #93c5fd
+}
+title **The Happy Path of One Steel Heat**\nInspection -> Goods Receipt -> Issue -> Site Delivery -> MC gate
+
+actor "TPI Inspector\n<<TPI / PMC / MC / OWN>>" as TPI
+actor "Warehouse Keeper\n<<custodian company>>" as WH
+actor "MC Engineer\n<<Management Contracting>>" as MC
+
+box "HTTP" #16233b
+  participant "MaterialsController" as CTRL
+end box
+
+box "Domain services" #16233b
+  participant "WarehouseService" as WS
+  participant "MovementType" as MT
+end box
+
+box "Persistence (PostgreSQL + RLS)" #16233b
+  database "material_inspections" as TIN
+  database "material_lots" as TLOT
+  database "material_movements\n<<append-only>>" as TMOV
+  database "purchase_orders" as TPO
+end box
+
+== 1. بازرسی · Inspection (advisory) ==
+
+TPI -> WS : inspect(po, PASS, WORKS, findings)
+activate WS
+WS -> WS : assert inspector company type\nin [TPI, PMC, MC, OWN]
+note right of WS #7f1d1d
+  A contractor may **never** inspect
+  its own material. Independence is
+  enforced even though the verdict
+  itself is advisory.
+end note
+WS -> WS : assert findings present\nif FAIL or CONDITIONAL
+WS -> TIN : INSERT  PH-14-IRN-0001
+WS --> TPI : MaterialInspection
+deactivate WS
+
+== 2. ورود به انبار · Goods Receipt (GRN) ==
+
+WH -> CTRL : POST /projects/PH-14/materials
+CTRL -> WS : receive(project, user, po,\nitemCode, qty=120, heat="A-4471",\ninspection, mtcDocumentId)
+activate WS
+
+WS -> WS : guard quantity > 0
+WS -> TPO : po.acceptsReceipts()?
+TPO --> WS : state = ISSUED  ✓
+
+group#6366f1 DB::transaction
+  WS -> TPO : SELECT project FOR UPDATE
+  note right of WS
+    The lock is taken on the **parent row**,
+    so two concurrent receipts cannot both
+    read sequence 7 and both write LOT-0007.
+  end note
+
+  WS -> TLOT : INSERT lot PH-14-LOT-0002\nheat_number, mtc_document_id,\ninspection_result **denormalised**
+
+  WS -> MT : prefix(RECEIPT)
+  MT --> WS : "GRN"
+  WS -> TMOV : INSERT PH-14-GRN-0003\ntype=RECEIPT, quantity=+120
+
+  WS -> WS : refreshPurchaseOrderState(po)
+  WS -> TMOV : SUM(quantity) WHERE type=RECEIPT
+  TMOV --> WS : received = 120 of 300 ordered
+  WS -> TPO : UPDATE state = PARTIALLY_RECEIVED
+  note right of TPO #14532d
+    **Derived from the ledger**, never
+    passed in by the caller.
+  end note
+end
+
+WS --> CTRL : MaterialLot
+deactivate WS
+CTRL --> WH : 302 redirect + flash
+
+== 3. خروج از انبار · Issue to fabrication (MIV) ==
+
+WH -> WS : issue(lot, quantity = 80)
+activate WS
+WS -> TMOV : SELECT movements of lot
+TMOV --> WS : [GRN +120]
+WS -> WS : balance() = 120\n**computed live from the ledger**
+
+alt#ef4444 quantity > balance
+  WS --> WH : ValidationException\n"موجودی کافی نیست"
+  note right of WS #7f1d1d
+    Stock can never go negative.
+    A negative balance is not a number,
+    it is an unreported theft or a
+    mis-keyed receipt.
+  end note
+else quantity <= balance
+  WS -> TMOV : INSERT PH-14-MIV-0004\ntype=ISSUE, quantity=80  (sign -1)
+end
+WS --> WH : MaterialMovement
+deactivate WS
+
+== 4. ورود به سایت · Delivery to site (SDN) ==
+
+WH -> WS : deliverToSite(lot, qty=50, subsystem SS-6601)
+activate WS
+WS -> MT : sign(SITE)
+MT --> WS : **0**
+note right of MT
+  Zero, not minus one. The stock already
+  left the warehouse at MIV; SDN records
+  *where it ended up*, it does not move
+  stock a second time.
+
+  Material between MIV and SDN is sitting
+  in the laydown area - issued, not yet
+  installed - and the business needs to
+  see exactly that quantity.
+end note
+WS -> TMOV : INSERT PH-14-SDN-0005\ntype=SITE, quantity=50, subsystem_id
+WS --> WH : MaterialMovement
+deactivate WS
+
+== 5. Mechanical Completion gate ==
+
+MC -> WS : subsystemMaterialStatus(SS-6601)
+activate WS
+WS -> TPO : SUM(purchase_order_items.quantity)\nWHERE subsystem_id AND **project_id**
+TPO --> WS : ordered = 300
+WS -> TMOV : SUM(quantity) WHERE type = SITE\nAND lot IN (project lots)
+TMOV --> WS : delivered = 50
+WS -> WS : shortfall = 250\ncomplete = false
+WS --> MC : {ordered, delivered, shortfall,\nlines[], complete}
+deactivate WS
+
+note over MC #7f1d1d
+  **SS-6601 cannot be mechanically complete.**
+  250 m of line pipe is ordered and paid for but
+  has never reached the subsystem. The MC gate
+  reads this live - there is no stored flag anyone
+  can forget to clear.
+end note
+
+@enduml

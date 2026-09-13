@@ -1,0 +1,150 @@
+@startuml 07-proposed-ingestion
+!include _style.puml
+skinparam component {
+  BackgroundColor #1e293b
+  BorderColor #475569
+  FontColor #e2e8f0
+  StereotypeFontColor #c4b5fd
+}
+skinparam database {
+  BackgroundColor #334155
+  BorderColor #475569
+  FontColor #e2e8f0
+}
+skinparam rectangle {
+  BackgroundColor #16233b
+  BorderColor #475569
+  FontColor #93c5fd
+}
+skinparam queue {
+  BackgroundColor #334155
+  BorderColor #475569
+  FontColor #e2e8f0
+}
+title **PROPOSED — Engineering Data Ingestion (ADR-005)**\nNot implemented. One neutral baseline, many sources of differing fidelity.
+
+rectangle "Sources" {
+  component "Navisworks NWD" as NWD #7f1d1d
+  component "Navisworks\nproperty export\nCSV / XLSX" as NVC
+  component "PCF\n(Piping Component File)\nplain text" as PCF #14532d
+  component "MTO / Line list\nXLSX" as XLS
+  component "IFC4\n<<phase 5>>" as IFC
+  component "Manual entry" as MAN
+}
+
+note bottom of NWD
+  **CANNOT BE PARSED.**
+  Proprietary, Windows-only, spec not public.
+  Navisworks exports only DWF/FBX/KML -
+  geometry without properties.
+  Freedom cannot export at all.
+
+  So the model owner exports a property
+  schedule from Manage; we ingest that.
+  Never promise "upload the NWD".
+end note
+
+note bottom of PCF
+  **The sleeper.** Plain text, ISOGEN's own
+  input format, written by Plant 3D, CADWorx,
+  AVEVA, CAESAR II, Cadmatic.
+
+  Gives per line: every component, bore,
+  item code, end-point coordinates, weight.
+  An MTO nobody typed - and it needs no
+  library, no licence, no Windows.
+end note
+
+rectangle "Ingestion spine (new)" {
+  component "ImportProfile\n<<column map, per project>>" as PROF
+  component "Parser\n(openspout / text)" as PARSE
+  queue "Queued batch job\n<<jobs, job_batches\nalready migrated>>" as JOB
+  database "import_batches\n+ import_rows\n<<staged, hashed>>" as STAGE
+  component "Preview + diff\n1204 new / 87 changed\n3 removed / 12 errors" as PREV
+}
+
+database "**engineering_items**\nTHE BASELINE\n--\ntag, size, spec, qty\nsource_kind, confidence\nimport_batch_id\nsubsystem_id / facility_id" as BASE #1e3a5f
+
+database "line_list_entries\n<<design envelope>>" as LL
+database "pms_specs\n+ pms_spec_items" as PMS
+
+rectangle "Existing, reused unchanged" {
+  database "documents\n<<CDE>>\nisometrics, support dwgs" as CDE
+  database "subsystems\n<<ADR-004>>" as SS
+  database "purchase_order_items\nmaterial_lots" as PROC
+}
+
+rectangle "What it unlocks" {
+  component "Shortage =\n**MTO** - delivered" as U1
+  component "Progress =\ninstalled / baseline" as U2
+  component "PMS compliance\n<<advisory>>" as U3
+  component "Rev B -> Rev C diff" as U4
+}
+
+NWD -[#ef4444,dashed]-> NVC : export from Manage
+NVC --> PARSE
+PCF --> PARSE
+XLS --> PARSE
+IFC ..> PARSE
+MAN --> BASE
+
+PROF --> PARSE
+PARSE --> JOB
+JOB --> STAGE
+STAGE --> PREV
+PREV --> BASE : COMMIT\n<<one transaction>>
+PREV -[#ef4444]-> STAGE : REJECT
+
+BASE --> LL
+BASE ..> PMS : validated against
+BASE --> SS : scoped to
+CDE <.. BASE : source_document_id\n+ revision
+
+BASE --> U1
+BASE --> U2
+PMS --> U3
+STAGE --> U4
+U1 --> PROC
+
+note right of BASE
+  **One baseline, many sources.**
+  A line list, an MTO and a PCF parse are three
+  statements about the same physical reality,
+  arriving at different times with different
+  authority.
+
+  Give each its own table and "how much 6in pipe
+  does SS-6601 need?" has three answers and no
+  way to choose.
+
+  So every row records **where it came from**.
+  When sources disagree the system does not pick
+  a winner - it raises a reconciliation item,
+  because on a real project that disagreement
+  IS the finding. It usually means the iso was
+  revised and the MTO was not re-issued.
+end note
+
+note right of STAGE
+  **Versioned, immutable, hashed.**
+  Import is never truncate-and-reload: that
+  would silently delete the baseline a PO was
+  raised against.
+
+  Keeping batches gives the Rev B -> Rev C diff
+  for free - probably the single report most
+  likely to sell the product - plus "which
+  revision did we buy against", and a safe
+  rollback.
+
+  file_hash makes re-upload idempotent.
+end note
+
+note bottom of PREV
+  A 40,000-row MTO that fails on row 39,999 must
+  not leave 39,998 rows behind. Same two-stage
+  commitment as the MR approval flow: a human
+  sees what will happen before it happens.
+end note
+
+@enduml

@@ -1,0 +1,148 @@
+@startuml 05-component-view
+!include _style.puml
+skinparam component {
+  BackgroundColor #1e293b
+  BorderColor #475569
+  FontColor #e2e8f0
+  StereotypeFontColor #c4b5fd
+}
+skinparam interface {
+  BackgroundColor #334155
+  BorderColor #6366f1
+}
+skinparam database {
+  BackgroundColor #334155
+  BorderColor #475569
+  FontColor #e2e8f0
+}
+skinparam rectangle {
+  BackgroundColor #16233b
+  BorderColor #475569
+  FontColor #93c5fd
+}
+skinparam package {
+  BackgroundColor #16233b
+  BorderColor #475569
+  FontColor #93c5fd
+}
+title **Module Structure and Dependencies**\nWhat the procurement module is made of, and what it is allowed to touch
+
+rectangle "Presentation" {
+  component "materials/warehouse\n.blade.php" as VWH <<view>>
+  component "materials/procurement\n.blade.php" as VPR <<view>>
+  component "partials/shell\n.blade.php" as SHELL <<shell contract>>
+  component "Navigation\n<<module key: proc>>" as NAV
+}
+
+rectangle "HTTP" {
+  component "MaterialsController" as CTRL <<controller>>
+  note right of CTRL
+    warehouse()  ·  procurement()
+    issue()  ·  deliver()  ·  reverse()
+    advanceRequisition()  ·  forecast()
+    --
+    Thin by design: it resolves the route
+    model, picks the language, calls one
+    service method and redirects. No rule
+    lives here, so no rule can be bypassed
+    by calling the service from elsewhere.
+  end note
+}
+
+rectangle "Domain services" {
+  component "ProcurementService" as PS <<service>>
+  component "WarehouseService" as WS <<service>>
+}
+
+rectangle "Value objects (pure, no I/O)" {
+  component "MovementType" as MT <<enum-like>>
+  component "ProcurementState" as PST <<enum-like>>
+}
+
+rectangle "Models (Eloquent)" {
+  component "MaterialRequisition\n+ Item" as MMR
+  component "PurchaseOrder\n+ Item" as MPO
+  component "MaterialInspection" as MIN
+  component "MaterialLot" as MLOT
+  component "MaterialMovement" as MMOV
+}
+
+rectangle "Platform (pre-existing)" {
+  component "TenantContext\n<<runAs>>" as TC
+  component "Plan::hasModule" as PLAN
+  component "Subsystem\n<<MC gate>>" as SUB
+  component "Document\n<<CDE / MTC>>" as DOC
+  component "Authorization chain\nAUTH>ENT>MEMB>RBAC>ABAC>SoD" as AUTHZ
+}
+
+database "PostgreSQL 17\n7 tables + RLS policies" as PG
+
+VWH ..> SHELL : extends
+VPR ..> SHELL : extends
+NAV --> VWH
+NAV --> VPR
+NAV ..> PLAN : visible only if\nplan includes "proc"
+
+CTRL --> VWH
+CTRL --> VPR
+CTRL --> PS
+CTRL --> WS
+CTRL ..> AUTHZ
+
+PS --> PST
+PS --> MMR
+PS --> MPO
+WS --> MT
+WS --> PST
+WS --> MIN
+WS --> MLOT
+WS --> MMOV
+WS --> MPO
+
+WS ..> SUB : subsystemMaterialStatus()
+MLOT ..> DOC : mtc_document_id
+PS ..> TC
+WS ..> TC
+
+MMR --> PG
+MPO --> PG
+MIN --> PG
+MLOT --> PG
+MMOV --> PG
+
+note bottom of PG
+  RLS is enforced **in the database**, not in Eloquent.
+  Every query runs inside a tenant binding
+  (SET LOCAL inside an open transaction, NULLIF(GUC,'')).
+  A forgotten ->where('company_id') is therefore a
+  bug in a report, never a data leak.
+end note
+
+note right of WS
+  **One writer.**
+  private post() is the only method in the entire
+  codebase that inserts into material_movements.
+  Numbering, sequencing, signing and the audit
+  fields exist in exactly one place, so a new
+  movement type cannot be added with the rules
+  half-applied.
+end note
+
+note left of MT
+  Value objects hold the rules that must never
+  differ between a screen, a report and a test:
+  sign() · prefix() · label(en|fa)
+  MR_TRANSITIONS · PO_TRANSITIONS
+  poAcceptsReceipts() · needsAttention()
+end note
+
+legend right
+  |= layer |= may depend on |
+  | Presentation | HTTP |
+  | HTTP | Domain services |
+  | Domain services | Value objects, Models, Platform |
+  | Models | PostgreSQL |
+  | Value objects | **nothing** - pure functions, trivially testable |
+endlegend
+
+@enduml

@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="988px" preserveAspectRatio="none" style="width:2433px;height:988px;background:#0F172A;" version="1.1" viewBox="0 0 2433 988" width="2433px" zoomAndPan="magnify"><defs/><g><text fill="#E2E8F0" font-family="Helvetica" font-size="20" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="414" x="1008.5" y="18.5645">Module Structure and Dependencies</text><text fill="#E2E8F0" font-family="Helvetica" font-size="20" lengthAdjust="spacingAndGlyphs" textLength="741" x="845" y="41.8457">What the procurement module is made of, and what it is allowed to touch</text><!--MD5=[8fd473fd151a2794da4f2c8684676405]
+cluster Presentation--><rect fill="#16233B" height="470" style="stroke: #475569; stroke-width: 1.5;" width="382" x="1579" y="112.0625"/><text fill="#93C5FD" font-family="Helvetica" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="93" x="1723.5" y="125.2012">Presentation</text><!--MD5=[e6e61d846f7ebc290f4b7ed94825158d]
+cluster HTTP--><rect fill="#16233B" height="178" style="stroke: #475569; stroke-width: 1.5;" width="469" x="1086" y="71.0625"/><text fill="#93C5FD" font-family="Helvetica" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="35" x="1303" y="84.2012">HTTP</text><!--MD5=[40917519a219363998a5704983d04c91]
+cluster Domain services--><rect fill="#16233B" height="96" style="stroke: #475569; stroke-width: 1.5;" width="349" x="866" y="294.0625"/><text fill="#93C5FD" font-family="Helvetica" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="115" x="983" y="307.2012">Domain services</text><!--MD5=[cb4a2a4fb646c91fbd0859191524d1c8]
+cluster Value objects (pure, no I/O)--><rect fill="#16233B" height="96" style="stroke: #475569; stroke-width: 1.5;" width="316" x="1192" y="479.0625"/><text fill="#93C5FD" font-family="Helvetica" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="193" x="1253.5" y="492.2012">Value objects (pure, no I/O)</text><!--MD5=[d7d176b5c7cd0a17299d6a00c4c1560f]
+cluster Models (Eloquent)--><rect fill="#16233B" height="96" style="stroke: #475569; stroke-width: 1.5;" width="785" x="22" y="479.0625"/><text fill="#93C5FD" font-family="Helvetica" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="128" x="350.5" y="492.2012">Models (Eloquent)</text><!--MD5=[1a5a0701c8e0d21ceeb5509186366d93]
+cluster Platform (pre-existing)--><rect fill="#16233B" height="96" style="stroke: #475569; stroke-width: 1.5;" width="844" x="794" y="636.0625"/><text fill="#93C5FD" font-family="Helvetica" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="159" x="1136.5" y="649.2012">Platform (pre-existing)</text><!--MD5=[3f1dc7da0ec3284f14cb9a45951f59e8]
+entity VWH--><rect fill="#1E293B" height="61.9063" style="stroke: #475569; stroke-width: 1.5;" width="151" x="1595.5" y="319.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1590.5" y="324.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1590.5" y="370.9688"/><text fill="#C4B5FD" font-family="Helvetica" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="40" x="1651" y="340.2012">«view»</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="131" x="1605.5" y="354.1699">materials/warehouse</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="67" x="1605.5" y="368.1387">.blade.php</text><!--MD5=[12d20260141f852ac8506ccc2e62bb8f]
+entity VPR--><rect fill="#1E293B" height="61.9063" style="stroke: #475569; stroke-width: 1.5;" width="163" x="1781.5" y="319.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1776.5" y="324.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1776.5" y="370.9688"/><text fill="#C4B5FD" font-family="Helvetica" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="40" x="1843" y="340.2012">«view»</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="143" x="1791.5" y="354.1699">materials/procurement</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="67" x="1791.5" y="368.1387">.blade.php</text><!--MD5=[f6036233d94ab75489b34e3df6988a90]
+entity SHELL--><rect fill="#1E293B" height="61.9063" style="stroke: #475569; stroke-width: 1.5;" width="120" x="1731" y="504.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1726" y="509.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1726" y="555.9688"/><text fill="#C4B5FD" font-family="Helvetica" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="100" x="1741" y="525.2012">«shell contract»</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="80" x="1751" y="539.1699">partials/shell</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="67" x="1751" y="553.1387">.blade.php</text><!--MD5=[8b72dec5e510c742b6301d5e3b9143d1]
+entity NAV--><rect fill="#1E293B" height="47.9375" style="stroke: #475569; stroke-width: 1.5;" width="141" x="1792.5" y="144.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1787.5" y="149.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1787.5" y="182"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="66" x="1802.5" y="165.2012">Navigation</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="121" x="1802.5" y="179.1699">«module key: proc»</text><!--MD5=[aa33919f6aea5790bca91aa1fa7cb365]
+entity CTRL--><rect fill="#1E293B" height="47.9375" style="stroke: #475569; stroke-width: 1.5;" width="138" x="1102" y="144.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1097" y="149.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1097" y="182"/><text fill="#C4B5FD" font-family="Helvetica" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="74" x="1134" y="165.2012">«controller»</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="118" x="1112" y="179.1699">MaterialsController</text><path d="M1275.5,103.0625 L1275.5,164.0625 L1240.14,168.0625 L1275.5,172.0625 L1275.5,232.8125 A0,0 0 0 0 1275.5,232.8125 L1538.5,232.8125 A0,0 0 0 0 1538.5,232.8125 L1538.5,113.0625 L1528.5,103.0625 L1275.5,103.0625 A0,0 0 0 0 1275.5,103.0625 " fill="#312E81" style="stroke: #6366F1; stroke-width: 1.0;"/><path d="M1528.5,103.0625 L1528.5,113.0625 L1538.5,113.0625 L1528.5,103.0625 " fill="#312E81" style="stroke: #6366F1; stroke-width: 1.0;"/><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="190" x="1281.5" y="119.2012">warehouse()  ·  procurement()</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="191" x="1281.5" y="133.1699">issue()  ·  deliver()  ·  reverse()</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="214" x="1281.5" y="147.1387">advanceRequisition()  ·  forecast()</text><line style="stroke: #6366F1; stroke-width: 1.0;" x1="1276.5" x2="1537.5" y1="149.9688" y2="149.9688"/><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="225" x="1281.5" y="165.1074">Thin by design: it resolves the route</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="230" x="1281.5" y="179.0762">model, picks the language, calls one</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="237" x="1281.5" y="193.0449">service method and redirects. No rule</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="242" x="1281.5" y="207.0137">lives here, so no rule can be bypassed</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="235" x="1281.5" y="220.9824">by calling the service from elsewhere.</text><!--MD5=[7842cb4300efb401920d8f72ebe921e6]
+entity PS--><rect fill="#1E293B" height="47.9375" style="stroke: #475569; stroke-width: 1.5;" width="146" x="1053" y="326.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1048" y="331.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1048" y="364"/><text fill="#C4B5FD" font-family="Helvetica" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="58" x="1097" y="347.2012">«service»</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="126" x="1063" y="361.1699">ProcurementService</text><!--MD5=[48558302b29571c46195c4765052fa70]
+entity WS--><rect fill="#1E293B" height="47.9375" style="stroke: #475569; stroke-width: 1.5;" width="136" x="882" y="326.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="877" y="331.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="877" y="364"/><text fill="#C4B5FD" font-family="Helvetica" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="58" x="921" y="347.2012">«service»</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="116" x="892" y="361.1699">WarehouseService</text><!--MD5=[48cef55b3a07a0e2916c90a840524e82]
+entity MT--><rect fill="#1E293B" height="47.9375" style="stroke: #475569; stroke-width: 1.5;" width="113" x="1208.5" y="511.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1203.5" y="516.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1203.5" y="549"/><text fill="#C4B5FD" font-family="Helvetica" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="74" x="1228" y="532.2012">«enum-like»</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="93" x="1218.5" y="546.1699">MovementType</text><!--MD5=[b382df1acaad48cd0afab4d3ba5381dc]
+entity PST--><rect fill="#1E293B" height="47.9375" style="stroke: #475569; stroke-width: 1.5;" width="135" x="1356.5" y="511.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1351.5" y="516.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1351.5" y="549"/><text fill="#C4B5FD" font-family="Helvetica" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="74" x="1387" y="532.2012">«enum-like»</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="115" x="1366.5" y="546.1699">ProcurementState</text><!--MD5=[bb76c3ddfaa1515168ef2778887f90ef]
+entity MMR--><rect fill="#1E293B" height="47.9375" style="stroke: #475569; stroke-width: 1.5;" width="139" x="651.5" y="511.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="646.5" y="516.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="646.5" y="549"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="119" x="661.5" y="532.2012">MaterialRequisition</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="41" x="661.5" y="546.1699">+ Item</text><!--MD5=[14de59e07732a430a73ff9ab9600f780]
+entity MPO--><rect fill="#1E293B" height="47.9375" style="stroke: #475569; stroke-width: 1.5;" width="114" x="502" y="511.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="497" y="516.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="497" y="549"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="94" x="512" y="532.2012">PurchaseOrder</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="41" x="512" y="546.1699">+ Item</text><!--MD5=[137877b2cbb888f06d8408f9118f9afd]
+entity MIN--><rect fill="#1E293B" height="33.9688" style="stroke: #475569; stroke-width: 1.5;" width="135" x="207.5" y="518.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="202.5" y="523.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="202.5" y="542.0313"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="115" x="217.5" y="539.2012">MaterialInspection</text><!--MD5=[2eeba6df267769a2010171914f24a457]
+entity MLOT--><rect fill="#1E293B" height="33.9688" style="stroke: #475569; stroke-width: 1.5;" width="89" x="377.5" y="518.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="372.5" y="523.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="372.5" y="542.0313"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="69" x="387.5" y="539.2012">MaterialLot</text><!--MD5=[5a61056a5d29f54e78022a0760f7ab0b]
+entity MMOV--><rect fill="#1E293B" height="33.9688" style="stroke: #475569; stroke-width: 1.5;" width="134" x="38" y="518.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="33" y="523.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="33" y="542.0313"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="114" x="48" y="539.2012">MaterialMovement</text><!--MD5=[c2373ef0c1d815b85be038d39d94be15]
+entity TC--><rect fill="#1E293B" height="47.9375" style="stroke: #475569; stroke-width: 1.5;" width="112" x="1064" y="668.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1059" y="673.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1059" y="706"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="92" x="1074" y="689.2012">TenantContext</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="50" x="1074" y="703.1699">«runAs»</text><!--MD5=[02ea8b2314e0d0d23d286ba4611632a1]
+entity PLAN--><rect fill="#1E293B" height="33.9688" style="stroke: #475569; stroke-width: 1.5;" width="123" x="1498.5" y="675.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1493.5" y="680.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1493.5" y="699.0313"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="103" x="1508.5" y="696.2012">Plan::hasModule</text><!--MD5=[b0e062799dac19c10bae6aae0e618543]
+entity SUB--><rect fill="#1E293B" height="47.9375" style="stroke: #475569; stroke-width: 1.5;" width="88" x="941" y="668.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="936" y="673.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="936" y="706"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="68" x="951" y="689.2012">Subsystem</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="65" x="951" y="703.1699">«MC gate»</text><!--MD5=[d92183cf5af8f4f31b0607538d95b5f3]
+entity DOC--><rect fill="#1E293B" height="47.9375" style="stroke: #475569; stroke-width: 1.5;" width="96" x="810" y="668.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="805" y="673.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="805" y="706"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="64" x="820" y="689.2012">Document</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="76" x="820" y="703.1699">«CDE / MTC»</text><!--MD5=[c8a295bf384aeb75a5da9f970eb1e798]
+entity AUTHZ--><rect fill="#1E293B" height="47.9375" style="stroke: #475569; stroke-width: 1.5;" width="252" x="1211" y="668.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1206" y="673.0625"/><rect fill="#1E293B" height="5" style="stroke: #475569; stroke-width: 1.5;" width="10" x="1206" y="706"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="120" x="1221" y="689.2012">Authorization chain</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="232" x="1221" y="703.1699">AUTH&gt;ENT&gt;MEMB&gt;RBAC&gt;ABAC&gt;SoD</text><!--MD5=[f6b3c4ec609d704a8f29c3992fcc8101]
+entity PG--><path d="M286,673.5625 C286,663.5625 367,663.5625 367,663.5625 C367,663.5625 448,663.5625 448,673.5625 L448,710.5 C448,720.5 367,720.5 367,720.5 C367,720.5 286,720.5 286,710.5 L286,673.5625 " fill="#334155" style="stroke: #475569; stroke-width: 1.5;"/><path d="M286,673.5625 C286,683.5625 367,683.5625 367,683.5625 C367,683.5625 448,683.5625 448,673.5625 " fill="none" style="stroke: #475569; stroke-width: 1.5;"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="92" x="296" y="698.7012">PostgreSQL 17</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="142" x="296" y="712.6699">7 tables + RLS policies</text><path d="M184,781.5625 L184,861.4063 A0,0 0 0 0 184,861.4063 L550,861.4063 A0,0 0 0 0 550,861.4063 L550,791.5625 L540,781.5625 L371,781.5625 L367,720.7325 L363,781.5625 L184,781.5625 A0,0 0 0 0 184,781.5625 " fill="#312E81" style="stroke: #6366F1; stroke-width: 1.0;"/><path d="M540,781.5625 L540,791.5625 L550,791.5625 L540,781.5625 " fill="#312E81" style="stroke: #6366F1; stroke-width: 1.0;"/><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="96" x="190" y="797.7012">RLS is enforced</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="113" x="290" y="797.7012">in the database</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="108" x="403" y="797.7012">, not in Eloquent.</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="253" x="190" y="811.6699">Every query runs inside a tenant binding</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="345" x="190" y="825.6387">(SET LOCAL inside an open transaction, NULLIF(GUC,'')).</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="305" x="190" y="839.6074">A forgotten -&gt;where('company_id') is therefore a</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="216" x="190" y="853.5762">bug in a report, never a data leak.</text><path d="M1979.5,296.0625 L1979.5,403.8438 L2304.5,403.8438 L2304.5,306.0625 L2294.5,296.0625 L1979.5,296.0625 " fill="#312E81" style="stroke: #6366F1; stroke-width: 1.0;"/><path d="M2294.5,296.0625 L2294.5,306.0625 L2304.5,306.0625 L2294.5,296.0625 " fill="#312E81" style="stroke: #6366F1; stroke-width: 1.0;"/><text fill="#E0E7FF" font-family="Helvetica" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="81" x="1985.5" y="312.2012">One writer.</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="286" x="1985.5" y="326.1699">private post() is the only method in the entire</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="304" x="1985.5" y="340.1387">codebase that inserts into material_movements.</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="291" x="1985.5" y="354.1074">Numbering, sequencing, signing and the audit</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="258" x="1985.5" y="368.0762">fields exist in exactly one place, so a new</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="297" x="1985.5" y="382.0449">movement type cannot be added with the rules</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="77" x="1985.5" y="396.0137">half-applied.</text><path d="M1977,495.0625 L1977,574.9063 L2279,574.9063 L2279,505.0625 L2269,495.0625 L1977,495.0625 " fill="#312E81" style="stroke: #6366F1; stroke-width: 1.0;"/><path d="M2269,495.0625 L2269,505.0625 L2279,505.0625 L2269,495.0625 " fill="#312E81" style="stroke: #6366F1; stroke-width: 1.0;"/><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="280" x="1983" y="511.2012">Value objects hold the rules that must never</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="281" x="1983" y="525.1699">differ between a screen, a report and a test:</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="176" x="1983" y="539.1387">sign() · prefix() · label(en|fa)</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="217" x="1983" y="553.1074">MR_TRANSITIONS · PO_TRANSITIONS</text><text fill="#E0E7FF" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="249" x="1983" y="567.0762">poAcceptsReceipts() · needsAttention()</text><!--MD5=[9a0d2f2df63b1414a84411548099de9a]
+link VWH to SHELL--><path d="M1690.82,381.2825 C1712.09,413.7325 1745.85,465.2125 1768.21,499.3125 " fill="none" id="VWH-&gt;SHELL" style="stroke: #94A3B8; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#94A3B8" points="1771.16,503.8025,1769.5961,494.0786,1768.4295,499.6139,1762.8943,498.4474,1771.16,503.8025" style="stroke: #94A3B8; stroke-width: 1.0;"/><text fill="#CBD5E1" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="50" x="1742" y="453.2012">extends</text><!--MD5=[0239846d4b6be5e50b343863718ca8dd]
+link VPR to SHELL--><path d="M1851.11,381.2825 C1838.4,413.6025 1818.25,464.7925 1804.84,498.8925 " fill="none" id="VPR-&gt;SHELL" style="stroke: #94A3B8; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#94A3B8" points="1802.91,503.8025,1809.9226,496.887,1804.7374,499.1484,1802.476,493.9632,1802.91,503.8025" style="stroke: #94A3B8; stroke-width: 1.0;"/><text fill="#CBD5E1" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="50" x="1830" y="453.2012">extends</text><!--MD5=[feb6c4ca35fa4eca3774e89d89946e3a]
+link NAV to VWH--><path d="M1838.29,192.2225 C1805.07,223.3725 1745.74,278.9925 1707.4,314.9325 " fill="none" id="NAV-&gt;VWH" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="1703.3,318.7825,1712.602,315.5464,1706.9481,315.3633,1707.1313,309.7094,1703.3,318.7825" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[df8f563a529aff2023b002fb8d9fa06d]
+link NAV to VPR--><path d="M1863,192.2225 C1863,222.9925 1863,277.6425 1863,313.6225 " fill="none" id="NAV-&gt;VPR" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="1863,318.7825,1867,309.7825,1863,313.7825,1859,309.7825,1863,318.7825" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[87c0a26644e689e52905c55c1e5a1b99]
+link NAV to PLAN--><path d="M1933.84,176.6325 C2050.46,190.7225 2274.69,225.1825 2322,286.0625 C2355.87,329.6525 2310.55,576.4725 2297,590.0625 C2203.9,683.4025 1790.57,692.1025 1626.98,691.8025 " fill="none" id="NAV-&gt;PLAN" style="stroke: #94A3B8; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#94A3B8" points="1621.74,691.7825,1630.7285,695.8082,1626.74,691.7968,1630.7514,687.8082,1621.74,691.7825" style="stroke: #94A3B8; stroke-width: 1.0;"/><text fill="#CBD5E1" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="78" x="2331.5" y="446.2012">visible only if</text><text fill="#CBD5E1" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="83" x="2329" y="460.1699">plan includes</text><text fill="#CBD5E1" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="28" x="1629.5507" y="689.2735">proc</text><!--MD5=[cc1fde38bcaf1b4eab76848204db9b54]
+link CTRL to VWH--><path d="M1186.08,192.3525 C1201.34,213.6025 1227.05,243.6625 1258,257.0625 C1289.62,270.7525 1535.69,253.0825 1568,265.0625 C1595.99,275.4425 1622,296.7825 1640.87,315.3525 " fill="none" id="CTRL-&gt;VWH" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="1644.55,319.0325,1640.9959,309.8473,1641.0073,315.5041,1635.3505,315.5155,1644.55,319.0325" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[aa2267af5026f160c25f060d01c93486]
+link CTRL to VPR--><path d="M1186.08,192.3725 C1201.33,213.6225 1227.03,243.6925 1258,257.0625 C1275.14,264.4625 1575.38,263.6925 1594,265.0625 C1669.93,270.6425 1692.35,260.3325 1764,286.0625 C1783.8,293.1725 1803.73,304.7925 1820.47,316.1325 " fill="none" id="CTRL-&gt;VPR" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="1824.65,319.0125,1819.4862,310.6259,1820.5252,316.1865,1814.9646,317.2256,1824.65,319.0125" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[9f15e5d24f5ff3d059db95aaddc64d47]
+link CTRL to PS--><path d="M1165.21,192.2225 C1156.97,225.1725 1141.9,285.4825 1133.03,320.9425 " fill="none" id="CTRL-&gt;PS" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="1131.77,325.9925,1137.8334,318.2314,1132.9827,321.1418,1130.0723,316.2911,1131.77,325.9925" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[277703ed6cf2042d9b13cac297852f77]
+link CTRL to WS--><path d="M1142.56,192.2225 C1101.45,225.7125 1025.63,287.4625 982.41,322.6625 " fill="none" id="CTRL-&gt;WS" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="978.33,325.9925,987.8327,323.4045,982.2049,322.8325,982.7768,317.2047,978.33,325.9925" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[2f37b58e2ddbd75f546d34476cc83842]
+link CTRL to AUTHZ--><path d="M1193.02,192.3825 C1210.31,210.4225 1235.2,235.8425 1258,257.0625 C1365.06,356.7125 1446.84,338.2025 1508,471.0625 C1530.12,519.1025 1534.22,544.1325 1508,590.0625 C1487.64,625.7425 1449.18,650.0925 1413.89,665.9225 " fill="none" id="CTRL-&gt;AUTHZ" style="stroke: #94A3B8; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#94A3B8" points="1409.16,668.0025,1419.0088,668.034,1413.7355,665.9864,1415.7831,660.7131,1409.16,668.0025" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[796268355e4ca089cdf86211ef030078]
+link PS to PST--><path d="M1170.59,374.0925 C1214.36,397.1725 1282.56,434.4525 1339,471.0625 C1356.47,482.3925 1375.13,496.0425 1390.5,507.7325 " fill="none" id="PS-&gt;PST" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="1394.75,510.9725,1390.0387,502.3236,1390.781,507.9315,1385.1731,508.6739,1394.75,510.9725" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[31e511d77b230505118c6e7c03599405]
+link PS to MMR--><path d="M1111.62,374.1225 C1093.37,401.0525 1059.12,444.2725 1017,463.0625 C976.58,481.0925 860.17,457.6425 818,471.0625 C793.81,478.7625 769.85,494.2225 751.8,507.9025 " fill="none" id="PS-&gt;MMR" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="747.8,510.9725,757.3717,508.6523,751.7621,507.9226,752.4918,502.313,747.8,510.9725" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[da6aa80e15aae39bc398d69aab1d0a7b]
+link PS to MPO--><path d="M1093.24,374.2125 C1076.77,384.8225 1056.08,396.6625 1036,404.0625 C893.73,456.4825 849.98,440.8225 700,463.0625 C670.77,467.3925 661.1,459.2925 634,471.0625 C614.89,479.3625 596.9,494.1325 583.33,507.2925 " fill="none" id="PS-&gt;MPO" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="579.62,510.9625,588.8336,507.4827,583.1769,507.4485,583.2112,501.7917,579.62,510.9625" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[1dec1509e2a77b27c76bc90979fd425d]
+link WS to MT--><path d="M964.42,374.3425 C982.06,400.6125 1014.5,442.3925 1054,463.0625 C1076.28,474.7225 1085.73,464.5025 1110,471.0625 C1145,480.5225 1182.72,495.7325 1212.19,508.8425 " fill="none" id="WS-&gt;MT" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="1216.84,510.9225,1210.2551,503.5986,1212.2751,508.8825,1206.9912,510.9025,1216.84,510.9225" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[91230ab909909fa884f6d3f834d0d847]
+link WS to PST--><path d="M982.2,374.2025 C997.83,384.5525 1017.25,396.1725 1036,404.0625 C1136.06,446.1525 1166.25,443.3825 1273,463.0625 C1302.06,468.4225 1311.55,460.1225 1339,471.0625 C1360.08,479.4625 1380.61,494.4225 1396.21,507.6625 " fill="none" id="WS-&gt;PST" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="1400.06,510.9825,1395.8657,502.0714,1396.2768,507.7133,1390.635,508.1244,1400.06,510.9825" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[708bd411a1e1f09929d25c973a164523]
+link WS to MIN--><path d="M881.99,354.0825 C768.49,361.4325 535.62,386.4425 360,471.0625 C336.51,482.3825 312.93,500.5225 296.59,514.4325 " fill="none" id="WS-&gt;MIN" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="292.59,517.8725,302.0265,515.0524,296.3863,514.6185,296.8201,508.9784,292.59,517.8725" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[9652baf5966ea062f4fd402903babebf]
+link WS to MLOT--><path d="M881.89,357.2825 C787.36,368.3525 613.5,397.6625 485,471.0625 C466.13,481.8425 449,499.7525 437.38,513.7325 " fill="none" id="WS-&gt;MLOT" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="433.96,517.9325,442.7398,513.4698,437.113,514.0519,436.5309,508.4251,433.96,517.9325" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[3347b5ebb7df0bcd0af4ccc90855f4aa]
+link WS to MMOV--><path d="M881.98,350.3825 C744.99,351.4125 428.56,366.0725 190,471.0625 C165.82,481.7025 141.98,500.2725 125.73,514.5025 " fill="none" id="WS-&gt;MMOV" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="121.77,518.0125,131.1598,515.0407,125.5133,514.6978,125.8562,509.0513,121.77,518.0125" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[8c10d306a7a8efa0a41a9e1cdcd025d5]
+link WS to MPO--><path d="M882,369.6225 C815.91,389.3025 714.09,424.0525 634,471.0625 C616.84,481.1325 599.7,495.1625 586.15,507.4225 " fill="none" id="WS-&gt;MPO" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="582.42,510.8225,591.7606,507.6994,586.1093,507.4478,586.361,501.7965,582.42,510.8225" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[cc14db6d3ee3362b026dd20a6a86e8ce]
+link WS to SUB--><path d="M933.83,374.0825 C918.59,397.3125 896.81,434.8325 888,471.0625 C875.51,522.4525 868.25,541.0025 888,590.0625 C888.48,591.2525 930.32,634.6025 958.89,664.1125 " fill="none" id="WS-&gt;SUB" style="stroke: #94A3B8; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#94A3B8" points="962.65,668.0025,959.2822,658.7474,959.1793,664.4033,953.5234,664.3004,962.65,668.0025" style="stroke: #94A3B8; stroke-width: 1.0;"/><text fill="#CBD5E1" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="168" x="889" y="539.7012">subsystemMaterialStatus()</text><!--MD5=[200e8de82e0b2c9bfb21baac5767fe9a]
+link MLOT to DOC--><path d="M437.1,552.4525 C449.02,564.4925 466.66,580.3625 485,590.0625 C590.55,645.8925 729.62,672.9125 804.59,684.1925 " fill="none" id="MLOT-&gt;DOC" style="stroke: #94A3B8; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#94A3B8" points="809.88,684.9825,801.5744,679.6893,804.9355,684.2394,800.3855,687.6005,809.88,684.9825" style="stroke: #94A3B8; stroke-width: 1.0;"/><text fill="#CBD5E1" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="109" x="543" y="617.2012">mtc_document_id</text><!--MD5=[a13f92cefbc880a5dc033e6ff110dcdb]
+link PS to TC--><path d="M1125.59,374.1625 C1124.53,434.4925 1121.67,596.6625 1120.5,662.6025 " fill="none" id="PS-&gt;TC" style="stroke: #94A3B8; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#94A3B8" points="1120.41,667.9325,1124.5637,659.0024,1120.4957,662.9332,1116.5649,658.8653,1120.41,667.9325" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[9709e1223c684944da5a85f5d427f5b1]
+link WS to TC--><path d="M955.24,374.0925 C962.44,400.1325 978.06,441.6825 1008,463.0625 C1027.75,477.1625 1043.92,454.8825 1062,471.0625 C1090.51,496.5825 1109.09,609.4925 1116.44,662.8925 " fill="none" id="WS-&gt;TC" style="stroke: #94A3B8; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#94A3B8" points="1117.11,667.8725,1119.8622,658.416,1116.437,662.918,1111.935,659.4928,1117.11,667.8725" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[c9361a7fbf081712d28b9570c4c3262c]
+link MMR to PG--><path d="M686.08,559.2325 C670.43,569.2225 651.58,580.7225 634,590.0625 C576.01,620.8625 506.52,646.8425 452.97,664.7325 " fill="none" id="MMR-&gt;PG" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="448.17,666.3325,457.9713,667.2989,452.9163,664.7599,455.4552,659.7049,448.17,666.3325" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[2a015ee3f8d5cf4e070601669aa426be]
+link MPO to PG--><path d="M558.37,559.3125 C556.7,577.7825 551.64,603.2225 537,620.0625 C515.29,645.0325 483.36,661.4225 453.01,672.0825 " fill="none" id="MPO-&gt;PG" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="448.16,673.7425,457.972,674.5937,452.8875,672.1143,455.3669,667.0298,448.16,673.7425" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[be0935d30d1a741bc4f8f45d66b26c9b]
+link MIN to PG--><path d="M284.5,552.0625 C299.38,577.1325 328.47,626.1525 347.83,658.7625 " fill="none" id="MIN-&gt;PG" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="350.61,663.4425,349.4478,653.6625,348.0543,659.145,342.5718,657.7515,350.61,663.4425" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[5c867e5f7e50b7c70971f0a40ad1bcaf]
+link MLOT to PG--><path d="M413.21,552.1225 C405.96,565.8725 395.8,586.3425 389,605.0625 C382.71,622.3925 377.49,642.3025 373.72,658.6025 " fill="none" id="MLOT-&gt;PG" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="372.6,663.5325,378.5061,655.651,373.7149,658.6584,370.7075,653.8672,372.6,663.5325" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[18a4c2303f651b204e33cc06e809c79d]
+link MMOV to PG--><path d="M129.73,552.2025 C146.58,563.1025 169.48,577.7025 190,590.0625 C230.6,614.5225 277.19,641.0525 312.37,660.7725 " fill="none" id="MMOV-&gt;PG" style="stroke: #94A3B8; stroke-width: 1.0;"/><polygon fill="#94A3B8" points="317.04,663.3925,311.1655,655.4874,312.6848,660.9364,307.2358,662.4558,317.04,663.3925" style="stroke: #94A3B8; stroke-width: 1.0;"/><!--MD5=[78bd649635323c0eb4a0d54e5cbba918]
+link WS to GMN63--><path d="M972.44,326.0025 C991.81,307.1125 1021.65,282.2725 1053.5,271.5625 C1100.36,255.8025 1894.93,262.3025 1943.5,271.5625 C1971.17,276.8325 1999.9,285.8925 2026.63,296.0325 " fill="none" id="WS-GMN63" style="stroke: #94A3B8; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><!--MD5=[c3b6ce026faf3c2247980422c4e7aa42]
+link GMN66 to MT--><path d="M2069.92,494.9325 C2034.99,473.2925 1988.69,448.7725 1943.5,437.5625 C1816.89,406.1625 1476.21,385.7425 1356.5,437.5625 C1322.2,452.4125 1294.85,487.1425 1279.28,510.8825 " fill="none" id="GMN66-MT" style="stroke: #94A3B8; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><rect fill="#1E293B" height="97.8125" rx="5" ry="5" style="stroke: #475569; stroke-width: 1.0;" width="394" x="2028" y="879.5625"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="36" x="2038" y="897.7012">layer</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="109" x="2148" y="897.7012">may depend on</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="81" x="2038" y="911.6699">Presentation</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="31" x="2148" y="911.6699">HTTP</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="31" x="2038" y="925.6387">HTTP</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="102" x="2148" y="925.6387">Domain services</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="102" x="2038" y="939.6074">Domain services</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="197" x="2148" y="939.6074">Value objects, Models, Platform</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="44" x="2038" y="953.5762">Models</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="72" x="2148" y="953.5762">PostgreSQL</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="85" x="2038" y="967.5449">Value objects</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="0" x="2148" y="967.5449"/><text fill="#E2E8F0" font-family="Helvetica" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="55" x="2148" y="967.5449">nothing</text><text fill="#E2E8F0" font-family="Helvetica" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="205" x="2207" y="967.5449">- pure functions, trivially testable</text><line style="stroke: #E2E8F0; stroke-width: 1.0;" x1="2034" x2="2416" y1="886.5625" y2="886.5625"/><line style="stroke: #E2E8F0; stroke-width: 1.0;" x1="2034" x2="2416" y1="900.5313" y2="900.5313"/><line style="stroke: #E2E8F0; stroke-width: 1.0;" x1="2034" x2="2416" y1="914.5" y2="914.5"/><line style="stroke: #E2E8F0; stroke-width: 1.0;" x1="2034" x2="2416" y1="928.4688" y2="928.4688"/><line style="stroke: #E2E8F0; stroke-width: 1.0;" x1="2034" x2="2416" y1="942.4375" y2="942.4375"/><line style="stroke: #E2E8F0; stroke-width: 1.0;" x1="2034" x2="2416" y1="956.4063" y2="956.4063"/><line style="stroke: #E2E8F0; stroke-width: 1.0;" x1="2034" x2="2416" y1="970.375" y2="970.375"/><line style="stroke: #E2E8F0; stroke-width: 1.0;" x1="2034" x2="2034" y1="886.5625" y2="970.375"/><line style="stroke: #E2E8F0; stroke-width: 1.0;" x1="2144" x2="2144" y1="886.5625" y2="970.375"/><line style="stroke: #E2E8F0; stroke-width: 1.0;" x1="2416" x2="2416" y1="886.5625" y2="970.375"/><!--MD5=[cac09e115aa42ec295f1e36b473600a7]
+@startuml 05-component-view
+skinparam backgroundColor #0f172a
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam TitleFontSize 20
+skinparam TitleFontColor #e2e8f0
+skinparam ArrowColor #94a3b8
+skinparam ArrowFontColor #cbd5e1
+skinparam note {
+  BackgroundColor #312e81
+  BorderColor #6366f1
+  FontColor #e0e7ff
+}
+skinparam legend {
+  BackgroundColor #1e293b
+  BorderColor #475569
+  FontColor #e2e8f0
+}
+skinparam state {
+  BackgroundColor #1e293b
+  BorderColor #475569
+  FontColor #e2e8f0
+  AttributeFontColor #cbd5e1
+  StartColor #22c55e
+  EndColor #ef4444
+}
+skinparam component {
+  BackgroundColor #1e293b
+  BorderColor #475569
+  FontColor #e2e8f0
+  StereotypeFontColor #c4b5fd
+}
+skinparam interface {
+  BackgroundColor #334155
+  BorderColor #6366f1
+}
+skinparam database {
+  BackgroundColor #334155
+  BorderColor #475569
+  FontColor #e2e8f0
+}
+skinparam rectangle {
+  BackgroundColor #16233b
+  BorderColor #475569
+  FontColor #93c5fd
+}
+skinparam package {
+  BackgroundColor #16233b
+  BorderColor #475569
+  FontColor #93c5fd
+}
+title **Module Structure and Dependencies**\nWhat the procurement module is made of, and what it is allowed to touch
+
+rectangle "Presentation" {
+  component "materials/warehouse\n.blade.php" as VWH <<view>>
+  component "materials/procurement\n.blade.php" as VPR <<view>>
+  component "partials/shell\n.blade.php" as SHELL <<shell contract>>
+  component "Navigation\n<<module key: proc>>" as NAV
+}
+
+rectangle "HTTP" {
+  component "MaterialsController" as CTRL <<controller>>
+  note right of CTRL
+    warehouse()  ·  procurement()
+    issue()  ·  deliver()  ·  reverse()
+    advanceRequisition()  ·  forecast()
+    - -
+    Thin by design: it resolves the route
+    model, picks the language, calls one
+    service method and redirects. No rule
+    lives here, so no rule can be bypassed
+    by calling the service from elsewhere.
+  end note
+}
+
+rectangle "Domain services" {
+  component "ProcurementService" as PS <<service>>
+  component "WarehouseService" as WS <<service>>
+}
+
+rectangle "Value objects (pure, no I/O)" {
+  component "MovementType" as MT <<enum-like>>
+  component "ProcurementState" as PST <<enum-like>>
+}
+
+rectangle "Models (Eloquent)" {
+  component "MaterialRequisition\n+ Item" as MMR
+  component "PurchaseOrder\n+ Item" as MPO
+  component "MaterialInspection" as MIN
+  component "MaterialLot" as MLOT
+  component "MaterialMovement" as MMOV
+}
+
+rectangle "Platform (pre-existing)" {
+  component "TenantContext\n<<runAs>>" as TC
+  component "Plan::hasModule" as PLAN
+  component "Subsystem\n<<MC gate>>" as SUB
+  component "Document\n<<CDE / MTC>>" as DOC
+  component "Authorization chain\nAUTH>ENT>MEMB>RBAC>ABAC>SoD" as AUTHZ
+}
+
+database "PostgreSQL 17\n7 tables + RLS policies" as PG
+
+VWH ..> SHELL : extends
+VPR ..> SHELL : extends
+NAV - -> VWH
+NAV - -> VPR
+NAV ..> PLAN : visible only if\nplan includes "proc"
+
+CTRL - -> VWH
+CTRL - -> VPR
+CTRL - -> PS
+CTRL - -> WS
+CTRL ..> AUTHZ
+
+PS - -> PST
+PS - -> MMR
+PS - -> MPO
+WS - -> MT
+WS - -> PST
+WS - -> MIN
+WS - -> MLOT
+WS - -> MMOV
+WS - -> MPO
+
+WS ..> SUB : subsystemMaterialStatus()
+MLOT ..> DOC : mtc_document_id
+PS ..> TC
+WS ..> TC
+
+MMR - -> PG
+MPO - -> PG
+MIN - -> PG
+MLOT - -> PG
+MMOV - -> PG
+
+note bottom of PG
+  RLS is enforced **in the database**, not in Eloquent.
+  Every query runs inside a tenant binding
+  (SET LOCAL inside an open transaction, NULLIF(GUC,'')).
+  A forgotten ->where('company_id') is therefore a
+  bug in a report, never a data leak.
+end note
+
+note right of WS
+  **One writer.**
+  private post() is the only method in the entire
+  codebase that inserts into material_movements.
+  Numbering, sequencing, signing and the audit
+  fields exist in exactly one place, so a new
+  movement type cannot be added with the rules
+  half-applied.
+end note
+
+note left of MT
+  Value objects hold the rules that must never
+  differ between a screen, a report and a test:
+  sign() · prefix() · label(en|fa)
+  MR_TRANSITIONS · PO_TRANSITIONS
+  poAcceptsReceipts() · needsAttention()
+end note
+
+legend right
+  |= layer |= may depend on |
+  | Presentation | HTTP |
+  | HTTP | Domain services |
+  | Domain services | Value objects, Models, Platform |
+  | Models | PostgreSQL |
+  | Value objects | **nothing** - pure functions, trivially testable |
+endlegend
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 10:22:07 UTC 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 21.0.12.1+1-1-deb13u1-Debian
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

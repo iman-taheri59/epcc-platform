@@ -1,0 +1,27 @@
+' shared look & feel for all procurement UML
+skinparam backgroundColor #0f172a
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam TitleFontSize 20
+skinparam TitleFontColor #e2e8f0
+skinparam ArrowColor #94a3b8
+skinparam ArrowFontColor #cbd5e1
+skinparam note {
+  BackgroundColor #312e81
+  BorderColor #6366f1
+  FontColor #e0e7ff
+}
+skinparam legend {
+  BackgroundColor #1e293b
+  BorderColor #475569
+  FontColor #e2e8f0
+}
+skinparam state {
+  BackgroundColor #1e293b
+  BorderColor #475569
+  FontColor #e2e8f0
+  AttributeFontColor #cbd5e1
+  StartColor #22c55e
+  EndColor #ef4444
+}

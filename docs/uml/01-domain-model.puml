@@ -1,0 +1,230 @@
+@startuml 01-domain-model
+' =====================================================================
+'  PROCUREMENT & MATERIALS - domain model
+'  EPCC Platform, module key `proc`
+'  Written against the live PostgreSQL schema, not from memory.
+' =====================================================================
+skinparam backgroundColor #0f172a
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam ArrowColor #94a3b8
+skinparam ArrowFontColor #cbd5e1
+skinparam class {
+  BackgroundColor #1e293b
+  BorderColor #475569
+  FontColor #e2e8f0
+  AttributeFontColor #cbd5e1
+  StereotypeFontColor #c4b5fd
+  HeaderBackgroundColor #334155
+}
+skinparam note {
+  BackgroundColor #312e81
+  BorderColor #6366f1
+  FontColor #e0e7ff
+}
+skinparam package {
+  BackgroundColor #16233b
+  BorderColor #475569
+  FontColor #93c5fd
+}
+skinparam legend {
+  BackgroundColor #1e293b
+  BorderColor #475569
+  FontColor #e2e8f0
+}
+
+title **Procurement & Materials - Domain Model**\nEPCC Platform - module "proc"
+
+package "Sourcing (تهیه)" {
+
+  class MaterialRequisition <<aggregate root>> {
+    + id : uuid
+    + project_id : uuid
+    + company_id : uuid <<buyer>>
+    --
+    + number : {PROJECT}-MR-0000
+    + sequence : int
+    + state : MrState
+    + title_en / title_fa : string
+    + discipline : string
+    --
+    .. two-stage approval ..
+    + raised_by : uuid
+    + technical_approved_by : uuid?
+    + commercial_approved_by : uuid?
+    + rejected_by : uuid?
+    + rejection_reason : text?
+    --
+    + isOrderable() : bool
+    + totalQuantity() : float
+  }
+
+  class MaterialRequisitionItem {
+    + line_no : int
+    + item_code : string
+    + unit : string
+    + quantity : decimal(18,3)
+    + specification : string?
+    + subsystem_id : uuid? <<MC link>>
+  }
+
+  class PurchaseOrder <<aggregate root>> {
+    + id : uuid
+    + company_id : uuid <<buyer>>
+    + vendor_company_id : uuid <<RLS>>
+    --
+    + number : {PROJECT}-PO-0000
+    + state : PoState
+    + total_value : decimal? <<null if unpriced>>
+    + currency : string?
+    --
+    .. expediting ..
+    + promised_date : date? <<contractual>>
+    + forecast_date : date? <<vendor's latest>>
+    --
+    + acceptsReceipts() : bool
+    + slipDays() : int?
+    + isLate() : bool
+  }
+
+  class PurchaseOrderItem {
+    + line_no : int
+    + item_code : string
+    + quantity : decimal(18,3)
+    + unit_price : decimal?
+    + subsystem_id : uuid? <<MC link>>
+    --
+    + lineValue() : float?
+  }
+}
+
+package "Inspection (بازرسی)" {
+  class MaterialInspection {
+    + number : {PROJECT}-IRN-0000
+    + result : PASS | FAIL | CONDITIONAL
+    + stage : WORKS | PRE_SHIPMENT | ON_ARRIVAL
+    + findings_en / findings_fa : text?
+    + inspected_by : uuid
+    + inspected_at : timestamptz
+    --
+    + passed() : bool
+    + needsAttention() : bool
+  }
+}
+
+package "Stock & Site (انبار و سایت)" {
+
+  class MaterialLot <<aggregate root>> {
+    + id : uuid
+    + company_id : uuid <<custodian>>
+    + lot_code : {PROJECT}-LOT-0000
+    + item_code : string
+    + unit : string
+    --
+    .. traceability ..
+    + heat_number : string?
+    + serial_number : string?
+    + mtc_document_id : uuid? <<to CDE>>
+    --
+    .. denormalised verdict ..
+    + inspection_result : string?
+    + inspection_id : uuid?
+    --
+    + balance(movements?) : float
+    + deliveredToSite(movements?) : float
+    + inspectionNeedsAttention() : bool
+    + isFullyTraceable() : bool
+  }
+
+  class MaterialMovement <<append-only>> {
+    + id : uuid
+    + number : {PROJECT}-GRN|MIV|SDN|MRN-0000
+    + type : MovementType
+    + quantity : decimal(18,3) <<always positive>>
+    + from_location / to_location : string?
+    + subsystem_id : uuid?
+    + performed_by : uuid
+    + performed_at : timestamptz
+    + reverses_movement_id : uuid?
+    --
+    + signedQuantity() : float
+    + isReversal() : bool
+  }
+}
+
+package "Existing domain" {
+  class Project <<existing>>
+  class Company <<existing>>
+  class Subsystem <<existing>> {
+    + blocksMechanicalCompletion()
+    + closurePercent()
+  }
+  class Document <<existing / CDE>>
+}
+
+MaterialRequisition "1" *-- "1..*" MaterialRequisitionItem : composition
+PurchaseOrder "1" *-- "1..*" PurchaseOrderItem : composition
+MaterialRequisition "0..1" <-- "0..*" PurchaseOrder : satisfies >
+MaterialRequisitionItem "0..1" <-- "0..*" PurchaseOrderItem : fulfils >
+
+PurchaseOrder "1" o-- "0..*" MaterialLot : delivered as >
+PurchaseOrderItem "0..1" <-- "0..*" MaterialLot
+MaterialLot "1" *-- "1..*" MaterialMovement : ledger
+
+MaterialInspection "0..1" <-- "0..*" MaterialLot : verdict copied onto >
+PurchaseOrder "1" o-- "0..*" MaterialInspection
+
+MaterialLot "0..1" --> "0..1" Document : mtc_document_id
+MaterialMovement "0..*" --> "0..1" Subsystem : SITE deliveries
+PurchaseOrderItem "0..*" --> "0..1" Subsystem : allocation
+MaterialMovement --> MaterialMovement : reverses
+
+Company "1" <-- "0..*" PurchaseOrder : vendor_company_id
+Project "1" <-- "0..*" MaterialRequisition
+Project "1" <-- "0..*" MaterialLot
+
+note right of MaterialMovement
+  **Append-only ledger.**
+  No UPDATE, no DELETE. A wrong entry is corrected
+  by posting a reversing movement pointing back at
+  the original.
+
+  A warehouse's only real asset is being able to
+  state what it held on the day of an audit; a
+  mutable ledger cannot answer that at all.
+
+  Quantity is ALWAYS POSITIVE - meaning is the
+  type's job (MovementType::sign).
+end note
+
+note bottom of MaterialLot
+  **Why lots exist.**
+  Stock is not "300 m of 6in pipe" but
+  "120 m of heat A-4471 + 180 m of heat A-4472".
+  A TPI signing a pressure-containing weld must
+  name the heat and produce its certificate.
+
+  balance() is COMPUTED LIVE, never stored. A cached
+  balance beside an append-only ledger is two sources
+  of truth that drift, and when they disagree nobody
+  can say which one lied.
+end note
+
+note bottom of MaterialRequisition
+  **Two approvals, not one flag.**
+  The engineer confirms the spec; the PM confirms the
+  budget. Either can refuse for a reason the other
+  cannot judge, so "technically approved, awaiting
+  commercial" is a real state a buyer sits in for days.
+end note
+
+legend right
+  |= notation |= meaning |
+  | *-- | composition (cascade delete) |
+  | o-- | aggregation |
+  | <<MC link>> | feeds the Mechanical Completion gate |
+  | <<RLS>> | row-level-security discriminator |
+endlegend
+
+@enduml

@@ -1,0 +1,123 @@
+@startuml 02-state-machines
+!include _style.puml
+title **Procurement & Materials - State Machines**\nEvery transition below is enforced in code by a transition table, not by an if-statement
+
+' =====================================================================
+'  MATERIAL REQUISITION
+' =====================================================================
+state "Material Requisition  (MR)" as MRBOX {
+  state DRAFT #1e3a5f
+  state SUBMITTED
+  state TECHNICAL_APPROVED
+  state APPROVED #14532d
+  state ORDERED #14532d
+  state REJECTED #7f1d1d
+
+  [*] --> DRAFT : raiseRequisition()\n<<buyer types: EPC, SUB, OWN>>
+  DRAFT --> SUBMITTED : submitRequisition()
+  SUBMITTED --> TECHNICAL_APPROVED : approveTechnically()\n<<SoD: approver != raiser>>
+  TECHNICAL_APPROVED --> APPROVED : approveCommercially()\n<<SoD: commercial != technical>>
+  APPROVED --> ORDERED : createPurchaseOrder()
+  SUBMITTED --> REJECTED : rejectRequisition()\n<<reason mandatory>>
+  TECHNICAL_APPROVED --> REJECTED : rejectRequisition()
+  REJECTED --> DRAFT : rework
+  ORDERED --> [*]
+
+  note right of REJECTED
+    Rejection is **not** terminal.
+    Real requisitions come back with a
+    corrected spec. The reason text is
+    mandatory, and survives the rework
+    so the second reviewer can see what
+    the first one objected to.
+  end note
+}
+
+' =====================================================================
+'  PURCHASE ORDER
+' =====================================================================
+state "Purchase Order  (PO)" as POBOX {
+  state PO_DRAFT as "DRAFT" #1e3a5f
+  state ISSUED
+  state PARTIALLY_RECEIVED
+  state RECEIVED #14532d
+  state CANCELLED #7f1d1d
+
+  [*] --> PO_DRAFT : createPurchaseOrder()\n<<MR must be APPROVED>>
+  PO_DRAFT --> ISSUED : issuePurchaseOrder()\n<<MR -> ORDERED>>
+  ISSUED --> PARTIALLY_RECEIVED : receive() partial
+  ISSUED --> RECEIVED : receive() in full
+  PARTIALLY_RECEIVED --> RECEIVED : receive() balance
+  PARTIALLY_RECEIVED --> PARTIALLY_RECEIVED : receive() more
+  RECEIVED --> PARTIALLY_RECEIVED : reverse() a GRN
+  PO_DRAFT --> CANCELLED
+  ISSUED --> CANCELLED
+  PARTIALLY_RECEIVED --> CANCELLED
+  RECEIVED --> [*]
+
+  note right of PARTIALLY_RECEIVED
+    **Derived, never set.**
+    refreshPurchaseOrderState() recomputes
+    this from the movement ledger after every
+    receipt and every reversal. No caller may
+    nudge a PO into RECEIVED by hand.
+
+    Hence RECEIVED -> PARTIALLY_RECEIVED: reversing
+    a goods receipt must be able to walk the
+    state backwards, or the ledger and the
+    header would disagree.
+  end note
+
+  note bottom of ISSUED
+    acceptsReceipts() is true only for
+    ISSUED and PARTIALLY_RECEIVED.
+    You cannot book stock against a
+    draft or a cancelled order.
+  end note
+}
+
+' =====================================================================
+'  MATERIAL LOT - physical custody
+' =====================================================================
+state "Material Lot  -  physical custody" as LOTBOX {
+  state "Ordered (not yet arrived)" as ORD #1e3a5f
+  state "In store" as STORE
+  state "Issued to fabrication" as ISS
+  state "Installed on site" as SITE #14532d
+
+  [*] --> ORD
+  ORD --> STORE : **receive()**  GRN\nsign +1
+  STORE --> ISS : **issue()**  MIV\nsign -1
+  ISS --> SITE : **deliverToSite()**  SDN\nsign **0**
+  ISS --> STORE : **returnToStore()**  MRN\nsign +1
+  STORE --> STORE : reverse() a GRN
+  SITE --> [*]
+
+  note right of ISS
+    **ISSUE and SITE are two steps, deliberately.**
+
+    ISSUE answers a *stock* question - the material
+    has left the warehouse. SITE answers a
+    *completion* question - it is installed in a
+    subsystem.
+
+    Between them sits the laydown area, where
+    material can sit for weeks. Collapsing the two
+    would make that material invisible: gone from
+    stock, not yet counted as progress.
+
+    That is why **SDN carries sign 0** - the stock
+    already left at MIV. Counting it twice would
+    drive the balance negative.
+  end note
+}
+
+legend right
+  |= colour |= meaning |
+  |<#1e3a5f>| initial / not yet committed |
+  |<#1e293b>| in flight |
+  |<#14532d>| successful terminal |
+  |<#7f1d1d>| refused / cancelled |
+endlegend
+
+@enduml

@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EPCC Suite — Prototype</title>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#131c2e; --panel2:#1a2438; --line:#26324a;
+    --txt:#e6edf7; --muted:#93a2bd; --accent:#38bdf8; --accent2:#22c55e;
+    --amber:#f59e0b; --red:#ef4444; --violet:#8b5cf6; --radius:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
+    font-family:'Segoe UI',system-ui,-apple-system,'Tahoma',sans-serif;font-size:14px}
+  html[dir="rtl"] body{font-family:'Tahoma','Segoe UI',sans-serif}
+  a{color:inherit;text-decoration:none}
+  /* ---------- shell ---------- */
+  .app{display:flex;min-height:100vh}
+  .side{width:232px;flex:0 0 232px;background:var(--panel);border-inline-end:1px solid var(--line);
+    display:flex;flex-direction:column;padding:14px 0;transition:width .22s ease,flex-basis .22s ease}
+  .brand{padding:0 16px 14px;border-bottom:1px solid var(--line);margin-bottom:10px;
+    white-space:nowrap;overflow:hidden}
+  .brand h1{font-size:16px;margin:0 0 3px}
+  .brand span{font-size:11px;color:var(--muted)}
+  .nav a{display:flex;align-items:center;gap:10px;padding:9px 16px;color:var(--muted);
+    font-size:13px;cursor:pointer;border-inline-start:3px solid transparent;
+    white-space:nowrap;overflow:hidden}
+  .nav a:hover{background:var(--panel2);color:var(--txt)}
+  .nav a.on{background:var(--panel2);color:var(--accent);border-inline-start-color:var(--accent)}
+  .nav .ico{width:18px;flex:0 0 18px;text-align:center;font-size:14px}
+  /* ---------- collapsible sidebar ---------- */
+  .burger{background:var(--panel2);border:1px solid var(--line);border-radius:7px;
+    color:var(--txt);width:34px;height:32px;font-size:15px;line-height:1;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .burger:hover{border-color:var(--accent);color:var(--accent)}
+  .scrim{display:none;position:fixed;inset:0;background:rgba(4,9,18,.6);z-index:40}
+  /* desktop: collapse to an icon rail */
+  body.rail .side{width:56px;flex-basis:56px}
+  body.rail .side .brand{padding-inline:0;text-align:center}
+  body.rail .side .brand h1{font-size:13px}
+  body.rail .side .brand span,
+  body.rail .side .nav a > span:not(.ico){display:none}
+  body.rail .side .nav a{justify-content:center;padding-inline:0;gap:0}
+  /* mobile: sidebar becomes an off-canvas drawer */
+  @media(max-width:820px){
+    .side{position:fixed;inset-block:0;inset-inline-start:0;z-index:50;width:250px;flex-basis:250px;
+      transform:translateX(-105%);transition:transform .22s ease;box-shadow:0 0 30px rgba(0,0,0,.5)}
+    html[dir="rtl"] .side{transform:translateX(105%)}
+    body.drawer .side{transform:translateX(0)}
+    html[dir="rtl"] body.drawer .side{transform:translateX(0)}
+    body.drawer .scrim{display:block}
+    /* the desktop rail state must not apply on mobile */
+    body.rail .side{width:250px;flex-basis:250px}
+    body.rail .side .brand{padding-inline:16px;text-align:start}
+    body.rail .side .brand span,
+    body.rail .side .nav a > span:not(.ico){display:inline}
+    body.rail .side .nav a{justify-content:flex-start;padding-inline:16px;gap:10px}
+    .top{padding:10px 12px;gap:8px}
+    .content{padding:14px 12px}
+    .g4,.g3,.g2{grid-template-columns:1fr 1fr}
+    h2.page{font-size:17px}
+    .card{padding:12px}
+    /* registers stay readable: let wide tables scroll rather than crush */
+    .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-inline:-2px}
+    .tblwrap > table{min-width:580px}
+  }
+  @media(max-width:560px){
+    .g4,.g3,.g2{grid-template-columns:1fr}
+    .top .pill{font-size:11px;padding:4px 9px}
+  }
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .top{display:flex;align-items:center;gap:12px;padding:11px 20px;background:var(--panel);
+    border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .top .grow{flex:1}
+  .pill{background:var(--panel2);border:1px solid var(--line);border-radius:999px;
+    padding:5px 12px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px}
+  select,button{background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+    border-radius:7px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+  select:hover,button:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent);color:#06121f;border-color:var(--accent);font-weight:600}
+  .content{padding:20px;overflow:auto}
+  /* ---------- cards ---------- */
+  .grid{display:grid;gap:14px}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:1100px){.g4,.g3,.g2{grid-template-columns:1fr 1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .card h3{margin:0 0 10px;font-size:13px;color:var(--muted);font-weight:600}
+  .kpi .v{font-size:26px;font-weight:700;line-height:1.1}
+  .kpi .s{font-size:11px;color:var(--muted);margin-top:4px}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-inline-end:6px}
+  h2.page{margin:0 0 4px;font-size:19px}
+  p.sub{margin:0 0 16px;color:var(--muted);font-size:12.5px}
+  /* ---------- table ---------- */
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:start;color:var(--muted);font-weight:600;padding:8px 10px;
+    border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:8px 10px;border-bottom:1px solid rgba(38,50,74,.55);vertical-align:middle}
+  tr:hover td{background:rgba(56,189,248,.05)}
+  .mono{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:var(--accent)}
+  .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:600;white-space:nowrap}
+  .t-ok{background:rgba(34,197,94,.15);color:#4ade80}
+  .t-warn{background:rgba(245,158,11,.15);color:#fbbf24}
+  .t-bad{background:rgba(239,68,68,.15);color:#f87171}
+  .t-info{background:rgba(56,189,248,.15);color:#7dd3fc}
+  .t-mute{background:rgba(148,163,184,.13);color:#cbd5e1}
+  .t-vio{background:rgba(139,92,246,.16);color:#c4b5fd}
+  /* ---------- misc ---------- */
+  .bar{height:6px;background:var(--panel2);border-radius:99px;overflow:hidden;min-width:70px}
+  .bar i{display:block;height:100%;border-radius:99px}
+  .banner{border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;
+    background:linear-gradient(90deg,rgba(56,189,248,.10),transparent);margin-bottom:16px;font-size:12.5px}
+  .banner.block{background:linear-gradient(90deg,rgba(239,68,68,.13),transparent);border-color:rgba(239,68,68,.4)}
+  .banner.ok{background:linear-gradient(90deg,rgba(34,197,94,.12),transparent);border-color:rgba(34,197,94,.4)}
+  .flow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0 2px}
+  .step{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:6px 10px;font-size:11.5px}
+  .step.done{border-color:rgba(34,197,94,.5);color:#4ade80}
+  .step.cur{border-color:var(--accent);color:var(--accent);font-weight:600}
+  .arw{color:var(--muted);font-size:11px}
+  html[dir="rtl"] .arw{transform:scaleX(-1);display:inline-block}
+  .plan{border:1px solid var(--line);border-radius:var(--radius);padding:14px;background:var(--panel)}
+  .plan.hl{border-color:var(--accent);box-shadow:0 0 0 1px rgba(56,189,248,.25)}
+  .plan h4{margin:0 0 2px;font-size:15px}
+  .plan .price{font-size:12px;color:var(--muted);margin-bottom:10px}
+  .plan ul{margin:0;padding-inline-start:16px;font-size:12px;line-height:1.85;color:var(--muted)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:10px}
+  .cellv{font-size:10.5px;text-align:center;border-radius:4px;padding:3px 4px;display:block}
+  .hidden{display:none!important}
+  .split{display:grid;grid-template-columns:1.25fr 1fr;gap:14px}
+  @media(max-width:1000px){.split{grid-template-columns:1fr}}
+  .note{font-size:11.5px;color:var(--muted);line-height:1.7}
+  .chk{color:var(--accent2)} .cross{color:var(--red)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="scrim" id="scrim"></div>
+  <aside class="side" id="side">
+    <div class="brand">
+      <h1 data-i="brand">EPCC Suite</h1>
+      <span data-i="brandsub">Project Automation Platform</span>
+      <div style="margin-top:7px"><span class="tag t-vio" data-i="protobadge">Prototype · 9 of ~101 areas</span></div>
+    </div>
+    <nav class="nav" id="nav">
+      <a data-p="dash" class="on"><span class="ico">◈</span><span data-i="nav.dash">Dashboard</span></a>
+      <a data-p="awp"><span class="ico">▤</span><span data-i="nav.awp">Work Packaging</span></a>
+      <a data-p="iwp"><span class="ico">⛭</span><span data-i="nav.iwp">IWP Release Gate</span></a>
+      <a data-p="docs"><span class="ico">▣</span><span data-i="nav.docs">Document Control</span></a>
+      <a data-p="quality"><span class="ico">✓</span><span data-i="nav.quality">Quality &amp; Punch</span></a>
+      <a data-p="payment"><span class="ico">₪</span><span data-i="nav.payment">Payment Certificate</span></a>
+      <a data-p="access"><span class="ico">⚿</span><span data-i="nav.access">Access Matrix</span></a>
+      <a data-p="std"><span class="ico">◎</span><span data-i="nav.std">Standards Pack</span></a>
+      <a data-p="plans"><span class="ico">◆</span><span data-i="nav.plans">Plans &amp; Licensing</span></a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <button class="burger" id="burger" aria-label="Toggle navigation" aria-expanded="true"
+        aria-controls="side" title="Toggle navigation">☰</button>
+      <div class="pill"><span class="dot" style="background:var(--accent2)"></span>
+        <span data-i="proj">South Pars Phase 14 — Compressor Station</span></div>
+      <div class="grow"></div>
+      <div class="pill"><span data-i="lbl.company">Company</span>
+        <select id="company">
+          <option value="EPC">EPC Contractor</option>
+          <option value="OWN">Owner / Client</option>
+          <option value="PMC">Consultant / PMC</option>
+          <option value="TPI">TPI Inspector</option>
+          <option value="MC">MC Body</option>
+          <option value="SUB">Subcontractor</option>
+        </select>
+      </div>
+      <div class="pill"><span data-i="lbl.pack">Standard</span>
+        <select id="pack">
+          <option value="ips">IPS / Iran</option>
+          <option value="iso">ISO Framework</option>
+          <option value="awp">AWP / WFP</option>
+        </select>
+      </div>
+      <button id="lang" class="primary">فارسی</button>
+    </header>
+
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<script>
+/* =======================  DICTIONARY  ======================= */
+const T = {
+  brand:{en:"EPCC Suite",fa:"سامانه ای‌پی‌سی‌سی"},
+  brandsub:{en:"Project Automation Platform",fa:"پلتفرم اتوماسیون پروژه"},
+  proj:{en:"South Pars Phase 14 — Compressor Station",fa:"پارس جنوبی فاز ۱۴ — ایستگاه تقویت فشار"},
+  "lbl.company":{en:"Company",fa:"شرکت"},
+  "lbl.pack":{en:"Standard",fa:"استاندارد"},
+  "nav.dash":{en:"Dashboard",fa:"داشبورد"},
+  "nav.awp":{en:"Work Packaging",fa:"بسته‌بندی کار"},
+  "nav.iwp":{en:"IWP Release Gate",fa:"دروازه صدور بسته نصب"},
+  "nav.docs":{en:"Document Control",fa:"کنترل مدارک"},
+  "nav.quality":{en:"Quality & Punch",fa:"کیفیت و نواقص"},
+  "nav.access":{en:"Access Matrix",fa:"ماتریس دسترسی"},
+  "nav.std":{en:"Standards Pack",fa:"بسته استاندارد"},
+  "nav.payment":{en:"Payment Certificate",fa:"صورت‌وضعیت"},
+  protobadge:{en:"Prototype · 9 of ~101 areas",fa:"پروتوتایپ · ۹ از حدود ۱۰۱ حوزه"},
+  "nav.plans":{en:"Plans & Licensing",fa:"پلن‌ها و لایسنس"}
+};
+const COMPANIES = {
+  EPC:{en:"EPC Contractor",fa:"پیمانکار ای‌پی‌سی"}, OWN:{en:"Owner / Client",fa:"کارفرما"},
+  PMC:{en:"Consultant / PMC",fa:"مشاور / مدیریت طرح"}, TPI:{en:"TPI Inspector",fa:"بازرس شخص ثالث"},
+  MC:{en:"MC Body",fa:"نهاد تکمیل مکانیکی"}, SUB:{en:"Subcontractor",fa:"پیمانکار جزء"}
+};
+let L='fa', PACK='ips', CO='EPC', PAGE='dash';
+const t=(o)=>o?(o[L]||o.en):'';
+
+/* =======================  DEMO DATA  ======================= */
+const IWPS=[
+  {id:"CWA-02-CWP-PIP-004-IWP-0031",d:{en:"Rack R-12 spool erection, 6\"–12\"",fa:"نصب اسپول رک R-۱۲، ۶ تا ۱۲ اینچ"},dis:"PIP",crew:6,days:8,st:"READY",c:[1,1,1,1,1]},
+  {id:"CWA-02-CWP-PIP-004-IWP-0032",d:{en:"Rack R-12 field welds & NDT",fa:"جوش محل و آزمون غیرمخرب رک R-۱۲"},dis:"PIP",crew:5,days:7,st:"BLOCKED",c:[1,0,1,0,1]},
+  {id:"CWA-02-CWP-ELE-002-IWP-0114",d:{en:"MCC-B cable pulling, tray T-4",fa:"کابل‌کشی MCC-B، سینی T-۴"},dis:"ELE",crew:4,days:9,st:"ISSUED",c:[1,1,1,1,1]},
+  {id:"CWA-03-CWP-CIV-001-IWP-0007",d:{en:"Foundation F-204 rebar & pour",fa:"آرماتوربندی و بتن‌ریزی فونداسیون F-۲۰۴"},dis:"CIV",crew:8,days:6,st:"IN_PROGRESS",c:[1,1,1,1,1]},
+  {id:"CWA-02-CWP-MEC-003-IWP-0052",d:{en:"Compressor K-101 alignment",fa:"هم‌ترازی کمپرسور K-۱۰۱"},dis:"MEC",crew:4,days:5,st:"BLOCKED",c:[0,1,1,1,0]},
+  {id:"CWA-01-CWP-INS-005-IWP-0088",d:{en:"Loop folder LP-2210 hook-up",fa:"نصب هوک‌آپ لوپ LP-۲۲۱۰"},dis:"INS",crew:3,days:8,st:"PLANNED",c:[1,1,0,1,1]}
+];
+const CONSTRAINTS=[
+  {t:{en:"Engineering / IFC Drawings",fa:"مهندسی / نقشه IFC"},code:"ENG"},
+  {t:{en:"Material on Site & Reserved",fa:"مصالح موجود و رزرو شده"},code:"MAT"},
+  {t:{en:"Scaffolding / Access",fa:"داربست / دسترسی"},code:"SCAF"},
+  {t:{en:"Permit to Work",fa:"مجوز کار"},code:"PERMIT"},
+  {t:{en:"Predecessor Work Complete",fa:"تکمیل کار پیش‌نیاز"},code:"PRIOR"}
+];
+const DOCS=[
+  {n:"SP14-EPC-CWA02-PIP-ISO-0431",ti:{en:"Isometric — Line 12-PG-2201",fa:"ایزومتریک — خط ۱۲-PG-۲۲۰۱"},dis:"PIP",rev:"2",st:"PUBLISHED_IFC",days:11},
+  {n:"SP14-EPC-CWA02-PRO-PID-0012",ti:{en:"P&ID — Compressor Suction",fa:"P&ID — مکش کمپرسور"},dis:"PRO",rev:"C",st:"SHARED_IFA",days:19},
+  {n:"SP14-EPC-CWA03-CIV-DWG-0208",ti:{en:"Foundation F-204 layout",fa:"جانمایی فونداسیون F-۲۰۴"},dis:"CIV",rev:"1",st:"APPROVED",days:8},
+  {n:"SP14-EPC-CWA02-ELE-SLD-0033",ti:{en:"Single line diagram — MCC-B",fa:"دیاگرام تک‌خطی — MCC-B"},dis:"ELE",rev:"B",st:"SHARED_IFR",days:26},
+  {n:"SP14-EPC-CWA01-INS-IDX-0002",ti:{en:"Instrument index Rev 4",fa:"فهرست ابزار دقیق ویرایش ۴"},dis:"INS",rev:"3",st:"WIP",days:3}
+];
+const DOCST={
+  WIP:{en:"Work in Progress",fa:"در حال انجام",c:"t-mute"},
+  SHARED_IFR:{en:"Shared — IFR",fa:"اشتراکی — IFR",c:"t-warn"},
+  SHARED_IFA:{en:"Shared — IFA",fa:"اشتراکی — IFA",c:"t-warn"},
+  APPROVED:{en:"Approved A1",fa:"تأیید شده",c:"t-ok"},
+  PUBLISHED_IFC:{en:"Published — IFC",fa:"منتشر شده — IFC",c:"t-ok"}
+};
+/* IPS pack uses the Iranian review-code lifecycle instead */
+const DOCST_IPS={
+  WIP:{en:"Work in Progress",fa:"در حال تهیه",c:"t-mute"},
+  SHARED_IFR:{en:"With consultant",fa:"نزد مشاور",c:"t-warn"},
+  SHARED_IFA:{en:"Code 2 — apply comments",fa:"کد ۲ — اعمال نظرات",c:"t-warn"},
+  APPROVED:{en:"With employer (IFA)",fa:"نزد کارفرما",c:"t-info"},
+  PUBLISHED_IFC:{en:"Code 1 — issued",fa:"کد ۱ — ابلاغ شد",c:"t-ok"}
+};
+const PUNCH=[
+  {n:"PL-0412",s:"U-200",ti:{en:"Missing gasket on flange FL-221",fa:"نبود واشر روی فلنج FL-۲۲۱"},cat:"A",raiser:"MC",st:"OPEN"},
+  {n:"PL-0413",s:"U-200",ti:{en:"Insulation damaged, 3 m section",fa:"آسیب عایق، بخش ۳ متری"},cat:"B",raiser:"TPI",st:"IN_PROGRESS"},
+  {n:"PL-0417",s:"U-210",ti:{en:"Cable gland not sealed, JB-14",fa:"گلند کابل آب‌بند نشده، JB-۱۴"},cat:"A",raiser:"PMC",st:"READY_FOR_CHECK"},
+  {n:"PL-0421",s:"U-210",ti:{en:"Paint touch-up required on support",fa:"نیاز به ترمیم رنگ روی ساپورت"},cat:"C",raiser:"MC",st:"CLOSED"}
+];
+const MATRIX_ROWS=[
+  {k:"deliverable",en:"IFC Drawing",fa:"نقشه اجرایی"},
+  {k:"iwp",en:"Installation Work Package",fa:"بسته کاری نصب"},
+  {k:"cost.forecast",en:"Internal Cost Forecast",fa:"پیش‌بینی هزینه داخلی"},
+  {k:"itr",en:"Inspection Test Record",fa:"گزارش بازرسی و آزمون"},
+  {k:"punchItem",en:"Punch Item",fa:"قلم نواقص"},
+  {k:"ncr",en:"Non-Conformance Report",fa:"گزارش عدم انطباق"},
+  {k:"changeOrder",en:"Change Order",fa:"دستور تغییر"},
+  {k:"certificate",en:"MC Certificate",fa:"گواهی تکمیل مکانیکی"}
+];
+const MATRIX={
+  "deliverable":{OWN:"approve",EPC:"own",PMC:"review",SUB:"read",MC:"read",TPI:"read"},
+  "iwp":{OWN:"read",EPC:"own",PMC:"review",SUB:"edit",MC:"metadata",TPI:"read"},
+  "cost.forecast":{OWN:"hidden",EPC:"own",PMC:"hidden",SUB:"hidden",MC:"hidden",TPI:"hidden"},
+  "itr":{OWN:"read",EPC:"own",PMC:"review",SUB:"edit",MC:"review",TPI:"approve"},
+  "punchItem":{OWN:"approve",EPC:"own",PMC:"review",SUB:"edit",MC:"approve",TPI:"review"},
+  "ncr":{OWN:"read",EPC:"own",PMC:"review",SUB:"comment",MC:"read",TPI:"review"},
+  "changeOrder":{OWN:"approve",EPC:"own",PMC:"review",SUB:"hidden",MC:"hidden",TPI:"hidden"},
+  "certificate":{OWN:"approve",EPC:"edit",PMC:"review",SUB:"read",MC:"own",TPI:"review"}
+};
+const LVL={
+  hidden:{en:"Hidden",fa:"پنهان",c:"#3b4761",t:"#8496b3"},
+  metadata:{en:"Metadata",fa:"فراداده",c:"rgba(148,163,184,.2)",t:"#cbd5e1"},
+  read:{en:"Read",fa:"خواندن",c:"rgba(56,189,248,.16)",t:"#7dd3fc"},
+  comment:{en:"Comment",fa:"اظهارنظر",c:"rgba(56,189,248,.22)",t:"#7dd3fc"},
+  review:{en:"Review",fa:"بازنگری",c:"rgba(245,158,11,.2)",t:"#fbbf24"},
+  approve:{en:"Approve",fa:"تأیید",c:"rgba(34,197,94,.2)",t:"#4ade80"},
+  edit:{en:"Edit",fa:"ویرایش",c:"rgba(139,92,246,.22)",t:"#c4b5fd"},
+  own:{en:"Own",fa:"مالک",c:"rgba(34,197,94,.3)",t:"#86efac"}
+};
+
+/* =======================  PAGES  ======================= */
+function pageDash(){
+  const awp = PACK==='awp';
+  const ips = PACK==='ips';
+  const kIps = [
+    {n:{en:"Physical Progress vs Plan",fa:"پیشرفت فیزیکی در برابر برنامه"},v:"93%",tg:{en:"target 100%",fa:"هدف ۱۰۰٪"},c:"var(--amber)"},
+    {n:{en:"Payment Certificate Cycle",fa:"زمان چرخه صورت‌وضعیت"},v:"52 d",tg:{en:"target 30 d",fa:"هدف ۳۰ روز"},c:"var(--red)"},
+    {n:{en:"Receivable Aging",fa:"سن مطالبات"},v:"118 d",tg:{en:"target 45 d",fa:"هدف ۴۵ روز"},c:"var(--red)"},
+    {n:{en:"Certificate Deduction Rate",fa:"نرخ کسورات صورت‌وضعیت"},v:"6.4%",tg:{en:"target 3%",fa:"هدف ۳٪"},c:"var(--amber)"},
+    {n:{en:"First-Pass Code 1 Rate",fa:"نرخ کد ۱ در نوبت اول"},v:"58%",tg:{en:"target 65%",fa:"هدف ۶۵٪"},c:"var(--amber)"},
+    {n:{en:"Consultant Review Turnaround",fa:"زمان بررسی مشاور"},v:"16 d",tg:{en:"target 14 d",fa:"هدف ۱۴ روز"},c:"var(--amber)"},
+    {n:{en:"Defects Blocking Acceptance",fa:"نواقص مانع تحویل موقت"},v:"2",tg:{en:"target 0",fa:"هدف ۰"},c:"var(--red)"},
+    {n:{en:"HSE-MS Compliance",fa:"انطباق HSE-MS"},v:"96%",tg:{en:"target 95%",fa:"هدف ۹۵٪"},c:"var(--accent2)"}
+  ];
+  const k = ips ? kIps : awp ? [
+    {n:{en:"Constraint-Free Release",fa:"صدور بدون قید"},v:"87%",tg:{en:"target 95%",fa:"هدف ۹۵٪"},c:"var(--amber)"},
+    {n:{en:"IWP On-Time Release",fa:"صدور به‌موقع بسته"},v:"91%",tg:{en:"target 90%",fa:"هدف ۹۰٪"},c:"var(--accent2)"},
+    {n:{en:"Constraint Aging (avg)",fa:"میانگین سن قیدها"},v:"22 d",tg:{en:"target 14 d",fa:"هدف ۱۴ روز"},c:"var(--amber)"},
+    {n:{en:"Tool Time",fa:"زمان مفید ابزار"},v:"43%",tg:{en:"target 50%",fa:"هدف ۵۰٪"},c:"var(--amber)"},
+    {n:{en:"Percent Plan Complete",fa:"درصد تحقق برنامه"},v:"78%",tg:{en:"target 85%",fa:"هدف ۸۵٪"},c:"var(--amber)"},
+    {n:{en:"Constraint-Free Backlog",fa:"ذخیره بدون قید"},v:"3.1 w",tg:{en:"target 4 w",fa:"هدف ۴ هفته"},c:"var(--amber)"},
+    {n:{en:"CWP Readiness Index",fa:"شاخص آمادگی بسته اجرا"},v:"96%",tg:{en:"target 95%",fa:"هدف ۹۵٪"},c:"var(--accent2)"},
+    {n:{en:"AWP Maturity Score",fa:"امتیاز بلوغ AWP"},v:"3.6",tg:{en:"target 4.0",fa:"هدف ۴٫۰"},c:"var(--amber)"}
+  ] : [
+    {n:{en:"Schedule Performance (SPI)",fa:"شاخص عملکرد زمانی"},v:"0.96",tg:{en:"target 1.00",fa:"هدف ۱٫۰۰"},c:"var(--accent2)"},
+    {n:{en:"Cost Performance (CPI)",fa:"شاخص عملکرد هزینه"},v:"0.94",tg:{en:"target 1.00",fa:"هدف ۱٫۰۰"},c:"var(--amber)"},
+    {n:{en:"Document Turnaround",fa:"زمان چرخه مدارک"},v:"17 d",tg:{en:"target 14 d",fa:"هدف ۱۴ روز"},c:"var(--amber)"},
+    {n:{en:"First-Time Approval",fa:"تأیید در نوبت اول"},v:"64%",tg:{en:"target 70%",fa:"هدف ۷۰٪"},c:"var(--amber)"},
+    {n:{en:"Open NCR Age (avg)",fa:"میانگین سن عدم انطباق"},v:"19 d",tg:{en:"target 21 d",fa:"هدف ۲۱ روز"},c:"var(--accent2)"},
+    {n:{en:"First Time Right",fa:"درستی در نوبت اول"},v:"93%",tg:{en:"target 92%",fa:"هدف ۹۲٪"},c:"var(--accent2)"},
+    {n:{en:"TRIR",fa:"نرخ حوادث ثبت‌شدنی"},v:"0.31",tg:{en:"target 0.50",fa:"هدف ۰٫۵۰"},c:"var(--accent2)"},
+    {n:{en:"Gate Conformance",fa:"انطباق دروازه‌ها"},v:"100%",tg:{en:"target 100%",fa:"هدف ۱۰۰٪"},c:"var(--accent2)"}
+  ];
+  const packName = ips ? {en:"IPS / Iranian Framework Pack v1.0.0",fa:"بسته چارچوب ایران نسخه ۱٫۰٫۰"}
+    : awp ? {en:"AWP / Workface Planning Pack v1.0.0",fa:"بسته AWP نسخه ۱٫۰٫۰"}
+    : {en:"ISO Framework Pack v1.0.0",fa:"بسته چارچوب ایزو نسخه ۱٫۰٫۰"};
+  const ipsBanner = ips ? `<div class="banner ok" style="margin-bottom:12px">
+    <b>${t({en:"Iran-first configuration active",fa:"پیکربندی ایران‌محور فعال است"})}</b> —
+    ${t({en:"Jalali calendar primary · Persian default locale · IRR currency · Saturday–Wednesday working week · Nowruz shutdown modelled · on-premise deployment",
+      fa:"تقویم شمسی مبنا · زبان پیش‌فرض فارسی · واحد پول ریال · هفته کاری شنبه تا چهارشنبه · تعطیلات نوروز مدل‌سازی شده · استقرار داخلی"})}
+    <div style="margin-top:6px;font-size:11.5px;color:var(--muted)">
+      ${t({en:"Today",fa:"امروز"})}: <b>۱۸ شهریور ۱۴۰۵</b> <span style="opacity:.7">(9 Sep 2026)</span> ·
+      ${t({en:"Next non-working period",fa:"دوره غیرکاری بعدی"})}: <b>${t({en:"Nowruz 1–13 Farvardin 1406",fa:"نوروز ۱ تا ۱۳ فروردین ۱۴۰۶"})}</b></div></div>` : '';
+  return `
+  <div class="banner" style="border-color:rgba(139,92,246,.45);background:linear-gradient(90deg,rgba(139,92,246,.13),transparent)">
+    <b>${t({en:"This is a prototype, not the product.",fa:"این یک پروتوتایپ است، نه محصول."})}</b>
+    ${t({en:"9 screens out of roughly 101 specified functional areas. Static mock-up — no database, no backend, no login, nothing saves. It exists to prove four things: the standards pack engine, bilingual RTL, cross-company permissions, and hard release gates. Procurement, HSE, Schedule, Risk, Cost Control, Field App and most of Engineering are specified but <b>not built</b>. See docs/Prototype-Coverage-Map.md.",
+       fa:"۹ صفحه از حدود ۱۰۱ حوزه عملکردی مشخص‌شده. ماکت ایستا — بدون پایگاه داده، بدون بک‌اند، بدون ورود کاربر، هیچ چیز ذخیره نمی‌شود. هدفش اثبات چهار چیز است: موتور بسته استاندارد، دوزبانگی راست‌به‌چپ، دسترسی بین‌شرکتی و دروازه‌های سخت صدور. ماژول‌های تأمین، ایمنی، برنامه‌ریزی، ریسک، کنترل هزینه، اپ کارگاهی و بیشتر بخش مهندسی مشخص شده‌اند اما <b>ساخته نشده‌اند</b>."})}</div>
+  <h2 class="page">${t({en:"Project Dashboard",fa:"داشبورد پروژه"})}</h2>
+  <p class="sub">${t({en:"Viewing as",fa:"نمایش به عنوان"})}: <b>${t(COMPANIES[CO])}</b> · ${t({en:"Active pack",fa:"بسته فعال"})}: <b>${t(packName)}</b></p>
+  ${ipsBanner}
+  <div class="banner">${t({en:"The KPI set below is defined <b>by the active standards pack</b>, not hardcoded. Switching the pack in the header replaces the metrics, terminology and gate rules across the whole platform.",
+    fa:"مجموعه شاخص‌های زیر <b>توسط بسته استاندارد فعال</b> تعریف می‌شود، نه به‌صورت ثابت در کد. تعویض بسته در نوار بالا، شاخص‌ها، واژگان و قواعد دروازه‌ها را در کل سامانه جایگزین می‌کند."})}</div>
+  <div class="grid g4">${k.map(x=>`
+    <div class="card kpi"><h3>${t(x.n)}</h3>
+      <div class="v" style="color:${x.c}">${x.v}</div>
+      <div class="s">${t(x.tg)}</div></div>`).join('')}</div>
+  <div class="split" style="margin-top:14px">
+    <div class="card"><h3>${t({en:"Discipline Progress",fa:"پیشرفت به تفکیک دیسیپلین"})}</h3>
+      <table><tbody>${[
+        ["Piping","خطوط لوله",72,"var(--accent2)"],["Civil / Structural","عمران و سازه",88,"var(--accent2)"],
+        ["Electrical","برق",54,"var(--amber)"],["Instrumentation","ابزار دقیق",41,"var(--amber)"],
+        ["Mechanical","مکانیک",63,"var(--accent2)"],["Process","فرآیند",91,"var(--accent2)"],
+        ["Painting & Insulation","رنگ و عایق",28,"var(--red)"]
+      ].map(r=>`<tr><td style="width:38%">${L==='en'?r[0]:r[1]}</td>
+        <td><div class="bar"><i style="width:${r[2]}%;background:${r[3]}"></i></div></td>
+        <td style="width:48px;text-align:end">${r[2]}%</td></tr>`).join('')}</tbody></table></div>
+    <div class="card"><h3>${t({en:"Attention Required",fa:"نیازمند توجه"})}</h3>
+      <table><tbody>${(ips?[
+        [{en:"Approved certificates unpaid > 90 days",fa:"صورت‌وضعیت مصوب پرداخت‌نشده بیش از ۹۰ روز"},"3","t-bad"],
+        [{en:"Essential defects blocking acceptance",fa:"نواقص اساسی مانع تحویل موقت"},"2","t-bad"],
+        [{en:"Unclaimed price adjustment periods",fa:"دوره‌های تعدیل مطالبه‌نشده"},"2","t-bad"],
+        [{en:"Documents returned with code 3",fa:"مدارک عودت‌شده با کد ۳"},"9","t-warn"],
+        [{en:"Consultant reviews past 14-day SLA",fa:"بررسی‌های مشاور فراتر از مهلت ۱۴ روزه"},"7","t-warn"],
+        [{en:"Site minutes awaiting third signature",fa:"صورتجلسه در انتظار امضای سوم"},"4","t-warn"],
+        [{en:"Guarantees expiring < 60 days",fa:"ضمانت‌نامه‌های با انقضای کمتر از ۶۰ روز"},"2","t-info"]
+      ]:[
+        [{en:"IWPs blocked by open constraints",fa:"بسته‌های مسدود به دلیل قید باز"},"2","t-bad"],
+        [{en:"Category A punch items open",fa:"نواقص دسته الف باز"},"2","t-bad"],
+        [{en:"Documents overdue for review",fa:"مدارک با بازنگری معوق"},"7","t-warn"],
+        [{en:"Constraints past promise date",fa:"قیدهای با تاریخ تعهد گذشته"},"4","t-warn"],
+        [{en:"NCRs awaiting disposition",fa:"عدم انطباق در انتظار تعیین تکلیف"},"3","t-warn"],
+        [{en:"Vendor documents overdue",fa:"مدارک سازنده معوق"},"11","t-warn"],
+        [{en:"Welder qualifications expiring < 30 d",fa:"گواهی جوشکار با انقضای کمتر از ۳۰ روز"},"5","t-info"]
+      ]).map(r=>`<tr><td>${t(r[0])}</td><td style="text-align:end"><span class="tag ${r[2]}">${r[1]}</span></td></tr>`).join('')}</tbody></table></div>
+  </div>`;
+}
+
+function pageAWP(){
+  if(PACK!=='awp') return `
+    <h2 class="page">${t({en:"Work Packaging",fa:"بسته‌بندی کار"})}</h2>
+    <div class="banner block">${t(PACK==='ips'
+      ? {en:"<b>Module not active under the IPS / Iran pack.</b> AWP is sold as a paid add-on and is not part of the standard Iranian configuration — few Iranian clients currently mandate it. The IPS pack uses WBS/CBS/OBS/SBS with unit-rate measurement instead. Switch the standard to AWP to preview it.",
+         fa:"<b>این ماژول در بسته IPS / ایران فعال نیست.</b> AWP به‌صورت افزونه پولی عرضه می‌شود و بخشی از پیکربندی استاندارد ایران نیست — در حال حاضر کارفرمایان ایرانی کمی آن را الزامی می‌کنند. بسته IPS از ساختارهای شکست کار/هزینه/سازمان/سیستم با متره واحد استفاده می‌کند. برای پیش‌نمایش، استاندارد را به AWP تغییر دهید."}
+      : {en:"<b>Module not active under the ISO pack.</b> The ISO Framework Pack disables CWA/CWP/EWP/PWP/IWP structures and uses WBS/CBS/OBS/PBS instead. Switch the standard in the header to AWP to enable work packaging.",
+         fa:"<b>این ماژول در بسته ایزو فعال نیست.</b> بسته چارچوب ایزو ساختارهای CWA/CWP/EWP/PWP/IWP را غیرفعال می‌کند و به جای آن از WBS/CBS/OBS/PBS استفاده می‌کند. برای فعال‌سازی، استاندارد را در نوار بالا به AWP تغییر دهید."})}</div>
+    <div class="card"><h3>${t(PACK==='ips'?{en:"Active Breakdown Structures (IPS pack)",fa:"ساختارهای شکست فعال (بسته IPS)"}:{en:"Active Breakdown Structures (ISO pack)",fa:"ساختارهای شکست فعال (بسته ایزو)"})}</h3>
+      <table><thead><tr><th>${t({en:"Code",fa:"کد"})}</th><th>${t({en:"Structure",fa:"ساختار"})}</th><th>${t({en:"Status",fa:"وضعیت"})}</th></tr></thead><tbody>
+      ${[["WBS","Work Breakdown Structure","ساختار شکست کار",1],["CBS","Cost Breakdown Structure","ساختار شکست هزینه",1],
+         ["OBS","Organizational Breakdown","ساختار شکست سازمانی",1],["PBS","Product Breakdown","ساختار شکست محصول",1],
+         ["SBS","System Breakdown Structure","ساختار شکست سیستم",1],["CWA","Construction Work Area","محدوده کاری اجرا",0],
+         ["CWP","Construction Work Package","بسته کاری اجرا",0],["IWP","Installation Work Package","بسته کاری نصب",0]]
+        .map(r=>`<tr><td class="mono">${r[0]}</td><td>${L==='en'?r[1]:r[2]}</td>
+        <td><span class="tag ${r[3]?'t-ok':'t-mute'}">${r[3]?t({en:"Enabled",fa:"فعال"}):t({en:"Disabled by pack",fa:"غیرفعال توسط بسته"})}</span></td></tr>`).join('')}
+      </tbody></table></div>`;
+  const cwps=[
+    {id:"CWA-02-CWP-PIP-004",d:{en:"Pipe rack R-12 — mechanical",fa:"رک لوله R-۱۲ — مکانیکی"},e:100,m:96,i:82,st:"IN_EXECUTION"},
+    {id:"CWA-02-CWP-ELE-002",d:{en:"MCC building B — power distribution",fa:"ساختمان MCC-B — توزیع برق"},e:100,m:91,i:70,st:"CONSTRUCTION_READY"},
+    {id:"CWA-03-CWP-CIV-001",d:{en:"Compressor foundations",fa:"فونداسیون‌های کمپرسور"},e:100,m:100,i:95,st:"IN_EXECUTION"},
+    {id:"CWA-02-CWP-MEC-003",d:{en:"Compressor K-101 installation",fa:"نصب کمپرسور K-۱۰۱"},e:92,m:74,i:40,st:"PROC_RELEASED"},
+    {id:"CWA-01-CWP-INS-005",d:{en:"Field instrumentation — Unit 210",fa:"ابزار دقیق میدانی — واحد ۲۱۰"},e:78,m:52,i:25,st:"ENG_RELEASED"}
+  ];
+  const stl={IN_EXECUTION:{en:"In Execution",fa:"در حال اجرا",c:"t-info"},CONSTRUCTION_READY:{en:"Construction Ready",fa:"آماده اجرا",c:"t-ok"},
+    PROC_RELEASED:{en:"Procurement Released",fa:"تأمین صادر شد",c:"t-warn"},ENG_RELEASED:{en:"Engineering Released",fa:"مهندسی صادر شد",c:"t-warn"}};
+  return `
+  <h2 class="page">${t({en:"Path of Construction & Work Packages",fa:"مسیر اجرا و بسته‌های کاری"})}</h2>
+  <p class="sub">${t({en:"CWA → CWP → (EWP · PWP · IWP) hierarchy, driven by the approved Path of Construction",fa:"سلسله‌مراتب محدوده و بسته‌های کاری، بر پایه مسیر اجرای تأییدشده"})}</p>
+  <div class="card" style="margin-bottom:14px"><h3>${t({en:"Path of Construction — Unit 200",fa:"مسیر اجرا — واحد ۲۰۰"})}</h3>
+    <div class="flow">
+      <span class="step done">1. ${t({en:"Foundations",fa:"فونداسیون"})}</span><span class="arw">→</span>
+      <span class="step done">2. ${t({en:"Structural steel",fa:"اسکلت فلزی"})}</span><span class="arw">→</span>
+      <span class="step cur">3. ${t({en:"Pipe rack & equipment",fa:"رک لوله و تجهیزات"})}</span><span class="arw">→</span>
+      <span class="step">4. ${t({en:"Electrical & instrument bulk",fa:"بالک برق و ابزار دقیق"})}</span><span class="arw">→</span>
+      <span class="step">5. ${t({en:"Insulation & painting",fa:"عایق و رنگ"})}</span><span class="arw">→</span>
+      <span class="step">6. ${t({en:"Pre-commissioning",fa:"پیش‌راه‌اندازی"})}</span>
+    </div></div>
+  <div class="card"><h3>${t({en:"Construction Work Packages",fa:"بسته‌های کاری اجرا"})}</h3>
+  <table><thead><tr>
+    <th>${t({en:"CWP",fa:"بسته اجرا"})}</th><th>${t({en:"Description",fa:"شرح"})}</th>
+    <th>${t({en:"EWP %",fa:"مهندسی ٪"})}</th><th>${t({en:"PWP %",fa:"تأمین ٪"})}</th>
+    <th>${t({en:"IWP %",fa:"نصب ٪"})}</th><th>${t({en:"State",fa:"وضعیت"})}</th></tr></thead><tbody>
+  ${cwps.map(c=>`<tr>
+    <td class="mono">${c.id}</td><td>${t(c.d)}</td>
+    ${[c.e,c.m,c.i].map(v=>`<td><div style="display:flex;align-items:center;gap:7px">
+      <div class="bar" style="flex:1"><i style="width:${v}%;background:${v>=90?'var(--accent2)':v>=70?'var(--amber)':'var(--red)'}"></i></div>
+      <span style="width:32px;text-align:end;font-size:11.5px">${v}%</span></div></td>`).join('')}
+    <td><span class="tag ${stl[c.st].c}">${t(stl[c.st])}</span></td></tr>`).join('')}
+  </tbody></table>
+  <div class="legend"><span>${t({en:"EWP = Engineering Work Package",fa:"EWP = بسته کاری مهندسی"})}</span>
+    <span>${t({en:"PWP = Procurement Work Package",fa:"PWP = بسته کاری تأمین"})}</span>
+    <span>${t({en:"IWP = Installation Work Package",fa:"IWP = بسته کاری نصب"})}</span></div></div>`;
+}
+
+function pageIWP(){
+  if(PACK!=='awp') return `<h2 class="page">${t({en:"IWP Release Gate",fa:"دروازه صدور بسته نصب"})}</h2>
+    <div class="banner block">${t(PACK==='ips'
+    ? {en:"<b>Not available under the IPS / Iran pack.</b> The AWP package hierarchy is a project-level add-on. But the <b>constraint engine is core</b> — the IPS pack already uses it with six constraint types: approved drawings, material, work permit, quality hold, resident engineer approval and site handover.",
+       fa:"<b>در بسته IPS / ایران موجود نیست.</b> سلسله‌مراتب بسته‌های AWP افزونه سطح پروژه است. اما <b>موتور قیدها بخش هسته محصول است</b> و در همین بسته IPS با شش نوع قید فعال است: نقشه تأییدشده، مصالح، مجوز کار، توقف کیفی، تأیید ناظر مقیم و تحویل زمین."}
+    : {en:"<b>Not available under the ISO pack.</b> Constraint-driven work package release is an AWP concept. Under ISO, release control is handled through stage gates instead.",
+       fa:"<b>در بسته ایزو موجود نیست.</b> صدور بسته کاری مبتنی بر قید یک مفهوم AWP است. در ایزو، کنترل صدور از طریق دروازه‌های مرحله‌ای انجام می‌شود."})}</div>`;
+  const canRelease = (CO==='EPC');
+  const stl={READY:{en:"Ready to Issue",fa:"آماده صدور",c:"t-ok"},BLOCKED:{en:"Blocked",fa:"مسدود",c:"t-bad"},
+    ISSUED:{en:"Issued",fa:"صادر شده",c:"t-info"},IN_PROGRESS:{en:"In Progress",fa:"در حال اجرا",c:"t-info"},
+    PLANNED:{en:"Planned",fa:"برنامه‌ریزی شده",c:"t-mute"}};
+  return `
+  <h2 class="page">${t({en:"IWP Release Gate — Constraint Board",fa:"دروازه صدور بسته نصب — تابلوی قیدها"})}</h2>
+  <p class="sub">${t({en:"Hard block: no package leaves this screen with an open hard constraint unless a waiver is formally approved.",fa:"مسدودسازی سخت: هیچ بسته‌ای با قید سخت باز صادر نمی‌شود مگر با معافیت رسمی تأییدشده."})}</p>
+  <div class="banner ${canRelease?'ok':'block'}">
+    ${canRelease
+      ? t({en:"You are acting as <b>EPC Contractor</b> — you hold the <code>iwp.release</code> capability. Waivers additionally require <code>iwp.waiver.approve</code>.",fa:"شما در نقش <b>پیمانکار ای‌پی‌سی</b> هستید و مجوز <code>iwp.release</code> را دارید. معافیت‌ها نیازمند <code>iwp.waiver.approve</code> است."})
+      : t({en:`You are acting as <b>${t(COMPANIES[CO])}</b> — release is <b>not permitted</b> for this company type. You have read or review access only.`,fa:`شما در نقش <b>${t(COMPANIES[CO])}</b> هستید — صدور برای این نوع شرکت <b>مجاز نیست</b>. تنها دسترسی خواندن یا بازنگری دارید.`})}
+  </div>
+  <div class="card"><table><thead><tr>
+    <th>${t({en:"IWP",fa:"بسته نصب"})}</th><th>${t({en:"Scope",fa:"شرح کار"})}</th>
+    <th>${t({en:"Crew-days",fa:"نفر-روز"})}</th>
+    ${CONSTRAINTS.map(c=>`<th style="text-align:center" title="${t(c.t)}">${c.code}</th>`).join('')}
+    <th>${t({en:"State",fa:"وضعیت"})}</th><th>${t({en:"Action",fa:"اقدام"})}</th></tr></thead><tbody>
+  ${IWPS.map(w=>{
+    const open=w.c.filter(x=>!x).length;
+    const sized = w.days>=5 && w.days<=10;
+    return `<tr>
+      <td class="mono">${w.id}</td><td>${t(w.d)}</td>
+      <td>${w.crew}×${w.days} <span class="tag ${sized?'t-ok':'t-bad'}">${sized?'5–10 ✓':'✗'}</span></td>
+      ${w.c.map(x=>`<td style="text-align:center;font-size:15px" class="${x?'chk':'cross'}">${x?'●':'○'}</td>`).join('')}
+      <td><span class="tag ${stl[w.st].c}">${t(stl[w.st])}</span></td>
+      <td>${(w.st==='READY')
+        ? (canRelease?`<button class="primary">${t({en:"Release",fa:"صدور"})}</button>`:`<button disabled style="opacity:.45;cursor:not-allowed">${t({en:"No permission",fa:"بدون مجوز"})}</button>`)
+        : (open>0
+          ? `<span class="tag t-bad">${open} ${t({en:"open constraints",fa:"قید باز"})}</span>`
+          : `<span class="tag t-mute">—</span>`)}</td></tr>`;
+  }).join('')}
+  </tbody></table>
+  <div class="legend">
+    <span><span class="chk">●</span> ${t({en:"Constraint cleared",fa:"قید رفع شده"})}</span>
+    <span><span class="cross">○</span> ${t({en:"Constraint open — blocks release",fa:"قید باز — مانع صدور"})}</span>
+    ${CONSTRAINTS.map(c=>`<span><b>${c.code}</b> = ${t(c.t)}</span>`).join('')}
+  </div></div>
+  <div class="card" style="margin-top:14px"><h3>${t({en:"Why IWP-0032 is blocked",fa:"چرا بسته IWP-۰۰۳۲ مسدود است"})}</h3>
+    <table><tbody>
+      <tr><td style="width:26%">${t({en:"MAT — Material",fa:"MAT — مصالح"})}</td>
+        <td>${t({en:"Weld consumables E7018 reserved 62% of BOM — 38% shortfall",fa:"الکترود E۷۰۱۸ تنها ۶۲٪ رزرو شده — ۳۸٪ کسری"})}</td>
+        <td><span class="tag t-bad">${t({en:"Owner: Materials Manager · 9 days overdue",fa:"مسئول: مدیر مصالح · ۹ روز تأخیر"})}</span></td></tr>
+      <tr><td>${t({en:"PERMIT — Permit to Work",fa:"PERMIT — مجوز کار"})}</td>
+        <td>${t({en:"Hot work permit not yet issued for the execution window",fa:"مجوز کار گرم برای بازه اجرا هنوز صادر نشده"})}</td>
+        <td><span class="tag t-bad">${t({en:"Owner: HSE Manager · no waiver allowed",fa:"مسئول: مدیر HSE · معافیت مجاز نیست"})}</span></td></tr>
+    </tbody></table>
+    <p class="note" style="margin-top:10px">${t({en:"Constraint clearance is event-driven: <code>material.reserved.v1</code> and <code>permit.issued.v1</code> automatically clear these rows the moment the source module publishes the event — no manual ticking.",
+      fa:"رفع قید رویدادمحور است: رویدادهای <code>material.reserved.v1</code> و <code>permit.issued.v1</code> به‌محض انتشار توسط ماژول مبدأ، این سطرها را به‌طور خودکار رفع می‌کنند — بدون تیک زدن دستی."})}</p></div>`;
+}
+
+function pageDocs(){
+  const iso = PACK==='iso', ips = PACK==='ips';
+  const numRule = ips?'{PROJECT}-{CONTRACTOR}-{UNIT}-{DISCIPLINE}-{DOCTYPE}-{SEQ:4}'
+    : iso?'{PROJECT}-{ORIGINATOR}-{VOLUME}-{LEVEL}-{TYPE}-{DISCIPLINE}-{SEQ:4}'
+    : '{PROJECT}-{ORIGINATOR}-{CWA}-{DISCIPLINE}-{TYPE}-{SEQ:4}';
+  const numNote = ips?{en:"NIOC-family coding — NIGC, NPC, NIORDC, POGC and PEDEC schemes ship preloaded",fa:"کدگذاری خانواده نفت — الگوهای شرکت گاز، پتروشیمی، پالایش، پارس جنوبی و پدک از پیش بارگذاری شده"}
+    : iso?{en:"ISO 19650 naming convention",fa:"قرارداد نام‌گذاری ایزو ۱۹۶۵۰"}
+    : {en:"CWA-based naming, aligned to work packaging",fa:"نام‌گذاری بر پایه محدوده کاری، هم‌راستا با بسته‌بندی کار"};
+  const flowIps = `
+    <span class="step done">${t({en:"WIP",fa:"در حال تهیه"})}</span><span class="arw">→</span>
+    <span class="step done">${t({en:"To consultant (IFR)",fa:"ارسال به مشاور"})}</span><span class="arw">→</span>
+    <span class="step cur">${t({en:"Code 1 / 2 / 3",fa:"کد ۱ / ۲ / ۳"})}</span><span class="arw">→</span>
+    <span class="step">${t({en:"To employer (IFA)",fa:"ارسال به کارفرما"})}</span><span class="arw">→</span>
+    <span class="step">${t({en:"Code 1 approved",fa:"تصویب کد ۱"})}</span><span class="arw">→</span>
+    <span class="step">${t({en:"Issued for construction",fa:"ابلاغ برای اجرا"})}</span><span class="arw">→</span>
+    <span class="step">${t({en:"As-Built",fa:"چون‌ساخت"})}</span>`;
+  const flowIso = `
+    <span class="step done">S0 · ${t({en:"WIP",fa:"در حال انجام"})}</span><span class="arw">→</span>
+    <span class="step done">S1 · ${t({en:"Shared IFR",fa:"اشتراکی IFR"})}</span><span class="arw">→</span>
+    <span class="step cur">S3 · ${t({en:"Shared IFA",fa:"اشتراکی IFA"})}</span><span class="arw">→</span>
+    <span class="step">A1 · ${t({en:"Approved",fa:"تأیید شده"})}</span><span class="arw">→</span>
+    <span class="step">A1 · ${t({en:"Published IFC",fa:"منتشر شده IFC"})}</span><span class="arw">→</span>
+    <span class="step">A5 · ${t({en:"As-Built",fa:"چون‌ساخت"})}</span>`;
+  return `
+  <h2 class="page">${t(ips?{en:"Document Control — Consultant & Employer Review",fa:"کنترل مدارک — بررسی مشاور و کارفرما"}:{en:"Document Control — Common Data Environment",fa:"کنترل مدارک — محیط داده مشترک"})}</h2>
+  <p class="sub">${t(ips?{en:"Two-stage Iranian review chain: contractor → consulting engineer (code 1/2/3) → employer approval. Numbering pattern supplied by the active pack.",fa:"زنجیره دو مرحله‌ای بررسی: پیمانکار ← مهندس مشاور (کد ۱/۲/۳) ← تصویب کارفرما. الگوی شماره‌گذاری از بسته فعال تأمین می‌شود."}:{en:"ISO 19650 states with suitability codes. Numbering pattern is supplied by the active pack.",fa:"وضعیت‌های ایزو ۱۹۶۵۰ همراه با کد تناسب. الگوی شماره‌گذاری از بسته فعال تأمین می‌شود."})}</p>
+  <div class="banner"><b>${t({en:"Numbering rule",fa:"قاعده شماره‌گذاری"})}:</b>
+    <code class="mono">${numRule}</code> — ${t(numNote)}</div>
+  <div class="flow" style="margin-bottom:14px">${ips?flowIps:flowIso}</div>
+  <div class="card"><table><thead><tr>
+    <th>${t({en:"Document number",fa:"شماره مدرک"})}</th><th>${t({en:"Title",fa:"عنوان"})}</th>
+    <th>${t({en:"Disc.",fa:"دیسیپلین"})}</th><th>${t({en:"Rev",fa:"ویرایش"})}</th>
+    <th>${t({en:"State",fa:"وضعیت"})}</th><th>${t({en:"Days in state",fa:"روز در وضعیت"})}</th>
+    <th>${t({en:"Your access",fa:"دسترسی شما"})}</th></tr></thead><tbody>
+  ${DOCS.map(d=>{
+    const lv=MATRIX['deliverable'][CO]||'read';
+    const S=(ips?DOCST_IPS:DOCST)[d.st];
+    return `<tr><td class="mono">${d.n}</td><td>${t(d.ti)}</td><td>${d.dis}</td><td>${d.rev}</td>
+    <td><span class="tag ${S.c}">${t(S)}</span></td>
+    <td>${d.days>18?`<span class="tag t-bad">${d.days}</span>`:d.days>13?`<span class="tag t-warn">${d.days}</span>`:d.days}</td>
+    <td><span class="cellv" style="background:${LVL[lv].c};color:${LVL[lv].t}">${t(LVL[lv])}</span></td></tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+
+function pageQuality(){
+  const cat={A:"t-bad",B:"t-warn",C:"t-mute"};
+  const pst={OPEN:{en:"Open",fa:"باز",c:"t-bad"},IN_PROGRESS:{en:"In Progress",fa:"در حال رفع",c:"t-warn"},
+    READY_FOR_CHECK:{en:"Ready for Verification",fa:"آماده راستی‌آزمایی",c:"t-info"},CLOSED:{en:"Closed",fa:"بسته شده",c:"t-ok"}};
+  const canClose = ['OWN','PMC','MC','TPI'].includes(CO);
+  return `
+  <h2 class="page">${t({en:"Quality, Punch List & Mechanical Completion",fa:"کیفیت، فهرست نواقص و تکمیل مکانیکی"})}</h2>
+  <p class="sub">${t({en:"Category A items block the Mechanical Completion Certificate — enforced by the pack's release gate.",fa:"نواقص دسته الف مانع صدور گواهی تکمیل مکانیکی هستند — اعمال‌شده توسط دروازه صدور بسته."})}</p>
+  <div class="banner block"><b>${t({en:"MC Certificate blocked for subsystem U-200",fa:"گواهی تکمیل مکانیکی زیرسیستم U-۲۰۰ مسدود است"})}</b><br>
+    ${t({en:"Guard <code>noOpenPunchOfCategory:A</code> failed — 2 category A items remain open. Guard <code>allItrsSigned</code> passed (48/48). Guard <code>allNcrsClosedForSystem</code> failed — 1 open NCR.",
+      fa:"شرط <code>noOpenPunchOfCategory:A</code> برقرار نیست — ۲ قلم دسته الف باز است. شرط <code>allItrsSigned</code> برقرار است (۴۸ از ۴۸). شرط <code>allNcrsClosedForSystem</code> برقرار نیست — ۱ عدم انطباق باز."})}</div>
+  <div class="grid g4" style="margin-bottom:14px">
+    ${[[{en:"ITRs signed",fa:"گزارش‌های بازرسی امضاشده"},"48 / 48","var(--accent2)"],
+       [{en:"Open A items",fa:"نواقص دسته الف باز"},"2","var(--red)"],
+       [{en:"Open B items",fa:"نواقص دسته ب باز"},"1","var(--amber)"],
+       [{en:"Open NCRs",fa:"عدم انطباق باز"},"1","var(--red)"]]
+      .map(x=>`<div class="card kpi"><h3>${t(x[0])}</h3><div class="v" style="color:${x[2]}">${x[1]}</div></div>`).join('')}
+  </div>
+  <div class="card"><h3>${t({en:"Punch List",fa:"فهرست نواقص"})}</h3><table><thead><tr>
+    <th>${t({en:"No.",fa:"شماره"})}</th><th>${t({en:"Subsystem",fa:"زیرسیستم"})}</th><th>${t({en:"Description",fa:"شرح"})}</th>
+    <th>${t({en:"Cat.",fa:"دسته"})}</th><th>${t({en:"Raised by",fa:"صادرکننده"})}</th>
+    <th>${t({en:"State",fa:"وضعیت"})}</th><th>${t({en:"Action",fa:"اقدام"})}</th></tr></thead><tbody>
+  ${PUNCH.map(p=>`<tr><td class="mono">${p.n}</td><td>${p.s}</td><td>${t(p.ti)}</td>
+    <td><span class="tag ${cat[p.cat]}">${p.cat}</span></td>
+    <td><span class="tag t-mute">${t(COMPANIES[p.raiser])}</span></td>
+    <td><span class="tag ${pst[p.st].c}">${t(pst[p.st])}</span></td>
+    <td>${p.st==='READY_FOR_CHECK'
+      ? (canClose?`<button class="primary">${t({en:"Verify & close",fa:"راستی‌آزمایی و بستن"})}</button>`
+                 :`<button disabled style="opacity:.45;cursor:not-allowed">${t({en:"No permission",fa:"بدون مجوز"})}</button>`)
+      : p.st==='CLOSED'?'—'
+      : `<button style="opacity:.7">${t({en:"Update",fa:"به‌روزرسانی"})}</button>`}</td></tr>`).join('')}
+  </tbody></table>
+  <p class="note" style="margin-top:10px">${t({en:"Only Owner, Consultant, MC body and TPI can verify and close a punch item — the contractor who fixed it cannot close it. This is enforced by <code>allowedCompanyTypes</code> on the lifecycle transition, not by UI hiding.",
+    fa:"تنها کارفرما، مشاور، نهاد تکمیل مکانیکی و بازرس شخص ثالث می‌توانند نواقص را راستی‌آزمایی و ببندند — پیمانکاری که رفع کرده نمی‌تواند ببندد. این قاعده توسط <code>allowedCompanyTypes</code> در گذار چرخه عمر اعمال می‌شود، نه با پنهان‌کردن در رابط کاربری."})}</p></div>`;
+}
+
+function pageAccess(){
+  const cos=["OWN","EPC","PMC","SUB","MC","TPI"];
+  return `
+  <h2 class="page">${t({en:"Cross-Company Visibility Matrix",fa:"ماتریس دید بین‌شرکتی"})}</h2>
+  <p class="sub">${t({en:"Default-deny. Shipped per standards pack, overridable per project with audited justification.",fa:"اصل بر عدم دسترسی است. پیش‌فرض از بسته استاندارد می‌آید و با ثبت دلیل قابل بازتعریف در سطح پروژه است."})}</p>
+  <div class="banner">${t({en:"Note the <b>commercial confidentiality firewall</b>: internal cost forecast is <code>hidden</code> from every company including the Owner. A bug in a handler cannot leak it — PostgreSQL row-level security enforces the same rule at the data layer.",
+    fa:"به <b>دیوار محرمانگی تجاری</b> توجه کنید: پیش‌بینی هزینه داخلی برای همه شرکت‌ها از جمله کارفرما <code>پنهان</code> است. خطای برنامه‌نویسی نمی‌تواند آن را افشا کند — امنیت سطح-سطر پستگرس همین قاعده را در لایه داده اعمال می‌کند."})}</div>
+  <div class="card"><table><thead><tr><th>${t({en:"Object type",fa:"نوع شیء"})}</th>
+    ${cos.map(c=>`<th style="text-align:center">${t(COMPANIES[c])}</th>`).join('')}</tr></thead><tbody>
+  ${MATRIX_ROWS.map(r=>`<tr><td>${L==='en'?r.en:r.fa}</td>
+    ${cos.map(c=>{const lv=MATRIX[r.k][c];
+      return `<td><span class="cellv" style="background:${LVL[lv].c};color:${LVL[lv].t};${c===CO?'outline:1.5px solid var(--accent)':''}">${t(LVL[lv])}</span></td>`;}).join('')}
+  </tr>`).join('')}</tbody></table>
+  <div class="legend">${Object.keys(LVL).map(k=>`<span><span class="cellv" style="display:inline-block;background:${LVL[k].c};color:${LVL[k].t};padding:2px 7px">${t(LVL[k])}</span></span>`).join('')}</div>
+  <p class="note" style="margin-top:10px">${t({en:"Your current company is outlined. Authorization runs six gates in order: authentication → entitlement → project membership → RBAC capability → ABAC scope + this matrix → segregation of duties.",
+    fa:"شرکت فعلی شما با کادر مشخص شده است. مجوزدهی شش دروازه را به ترتیب طی می‌کند: احراز هویت ← حق اشتراک ← عضویت پروژه ← مجوز نقش ← دامنه ABAC و این ماتریس ← تفکیک وظایف."})}</p></div>`;
+}
+
+function pageStd(){
+  const iso=PACK==='iso', ips=PACK==='ips';
+  const rowsIps = [
+    [{en:"Primary breakdown",fa:"ساختار شکست اصلی"},{en:"WBS / CBS / OBS / SBS + unit-rate measurement",fa:"شکست کار / هزینه / سازمان / سیستم + متره واحد"}],
+    [{en:"Review chain",fa:"زنجیره بررسی"},{en:"Contractor → consulting engineer (code 1/2/3) → employer",fa:"پیمانکار ← مهندس مشاور (کد ۱/۲/۳) ← کارفرما"}],
+    [{en:"Payment model",fa:"مدل پرداخت"},{en:"صورت‌وضعیت موقت with تعدیل, حسن انجام کار 10%, advance recovery 20%",fa:"صورت‌وضعیت موقت با تعدیل، حسن انجام کار ۱۰٪، بازپرداخت پیش‌پرداخت ۲۰٪"}],
+    [{en:"Acceptance",fa:"تحویل"},{en:"تحویل موقت → 12-month دوره تضمین → تحویل قطعی",fa:"تحویل موقت ← دوره تضمین ۱۲ ماهه ← تحویل قطعی"}],
+    [{en:"Calendar & week",fa:"تقویم و هفته کاری"},{en:"Jalali primary · Sat–Wed · Nowruz shutdown modelled",fa:"شمسی مبنا · شنبه تا چهارشنبه · تعطیلات نوروز مدل‌سازی شده"}],
+    [{en:"Document numbering",fa:"شماره‌گذاری مدارک"},{en:"NIOC / NIGC / NPC / NIORDC / POGC / PEDEC schemes preloaded",fa:"الگوهای شرکت نفت، گاز، پتروشیمی، پالایش، پارس جنوبی و پدک از پیش بارگذاری"}],
+    [{en:"Headline KPIs",fa:"شاخص‌های اصلی"},{en:"Physical progress · Certificate cycle · Receivable aging · Unclaimed تعدیل",fa:"پیشرفت فیزیکی · چرخه صورت‌وضعیت · سن مطالبات · تعدیل مطالبه‌نشده"}],
+    [{en:"Compliance checks",fa:"بررسی‌های انطباق"},{en:"11 items (IPS, نشریه ۴۳۱۱, تعدیل, HSE-MS, نظام فنی و اجرایی)",fa:"۱۱ مورد (IPS، نشریه ۴۳۱۱، دستورالعمل تعدیل، HSE-MS، نظام فنی و اجرایی)"}]
+  ];
+  const rows = ips ? rowsIps : iso ? [
+    [{en:"Primary breakdown",fa:"ساختار شکست اصلی"},{en:"WBS / CBS / OBS / PBS / SBS",fa:"شکست کار / هزینه / سازمان / محصول / سیستم"}],
+    [{en:"Term for 'area'",fa:"واژه «ناحیه»"},{en:"Plant Area / Unit",fa:"ناحیه / واحد"}],
+    [{en:"Release control",fa:"کنترل صدور"},{en:"Stage gates G1–G4 with evidence checklists",fa:"دروازه‌های G۱ تا G۴ با فهرست مستندات"}],
+    [{en:"Progress basis",fa:"مبنای پیشرفت"},{en:"Rule of credit by revision milestone",fa:"قاعده اعتبار بر پایه نقاط عطف ویرایش"}],
+    [{en:"Document numbering",fa:"شماره‌گذاری مدارک"},{en:"ISO 19650 naming convention",fa:"قرارداد نام‌گذاری ایزو ۱۹۶۵۰"}],
+    [{en:"Headline KPIs",fa:"شاخص‌های اصلی"},{en:"SPI · CPI · Doc turnaround · NCR aging · TRIR",fa:"شاخص زمان · هزینه · چرخه مدارک · سن عدم انطباق · نرخ حوادث"}],
+    [{en:"Compliance checks",fa:"بررسی‌های انطباق"},{en:"8 mandatory items (ISO 19650, 9001, 31000, 45001, 21502)",fa:"۸ مورد الزامی (ایزو ۱۹۶۵۰، ۹۰۰۱، ۳۱۰۰۰، ۴۵۰۰۱، ۲۱۵۰۲)"}]
+  ] : [
+    [{en:"Primary breakdown",fa:"ساختار شکست اصلی"},{en:"CWA → CWP → EWP · PWP · IWP · TWP",fa:"محدوده اجرا ← بسته اجرا ← بسته‌های مهندسی، تأمین، نصب و تحویل"}],
+    [{en:"Term for 'area'",fa:"واژه «ناحیه»"},{en:"Construction Work Area (CWA)",fa:"محدوده کاری اجرا"}],
+    [{en:"Release control",fa:"کنترل صدور"},{en:"Constraint-free release — hard block on 9 hard constraint types",fa:"صدور بدون قید — مسدودسازی سخت روی ۹ نوع قید"}],
+    [{en:"Progress basis",fa:"مبنای پیشرفت"},{en:"Installed quantity per IWP (dia-inch, m, m³)",fa:"مقدار نصب‌شده در هر بسته (اینچ-قطر، متر، مترمکعب)"}],
+    [{en:"Document numbering",fa:"شماره‌گذاری مدارک"},{en:"CWA-based, aligned to work packaging",fa:"بر پایه محدوده کاری، هم‌راستا با بسته‌بندی"}],
+    [{en:"Headline KPIs",fa:"شاخص‌های اصلی"},{en:"Constraint-free release · PPC · Tool time · Constraint aging · Backlog",fa:"صدور بدون قید · تحقق برنامه · زمان مفید · سن قیدها · ذخیره کاری"}],
+    [{en:"Compliance checks",fa:"بررسی‌های انطباق"},{en:"8 items (CII RT-272, RT-319, COAA WFP)",fa:"۸ مورد (CII RT-۲۷۲، RT-۳۱۹، COAA)"}]
+  ];
+  return `
+  <h2 class="page">${t({en:"Standards Pack Engine",fa:"موتور بسته استاندارد"})}</h2>
+  <p class="sub">${t({en:"One codebase, two governance models. The pack is signed, versioned JSON — not code.",fa:"یک پایگاه کد، دو مدل راهبری. بسته یک فایل JSON امضاشده و نسخه‌دار است، نه کد."})}</p>
+  <div class="grid g3" style="margin-bottom:14px">
+    ${[['ips',{en:"IPS / Iran Pack",fa:"بسته IPS / ایران"},{en:"IPS · نشریه ۴۳۱۱ · فهرست‌بها · HSE-MS · نظام فنی و اجرایی",fa:"IPS · شرایط عمومی پیمان · فهرست‌بهای پایه · HSE-MS · نظام فنی و اجرایی"},
+        {en:"Contract-led. The payment cycle, consultant review codes and acceptance model drive the workflow. Ships as the launch default. Inherits ISO document control via <code>extends</code>.",fa:"قرارداد‌محور. چرخه پرداخت، کدهای بررسی مشاور و مدل تحویل، جریان کار را هدایت می‌کنند. پیش‌فرض عرضه اولیه است و کنترل مدارک ایزو را از طریق <code>extends</code> به ارث می‌برد."}],
+       ['iso',{en:"ISO Framework Pack",fa:"بسته چارچوب ایزو"},{en:"ISO 21502 · 19650 · 9001 · 31000 · 45001 · 15926",fa:"ایزو ۲۱۵۰۲ · ۱۹۶۵۰ · ۹۰۰۱ · ۳۱۰۰۰ · ۴۵۰۰۱ · ۱۵۹۲۶"},
+        {en:"Governance-led. Stage gates, information management and audit evidence drive the workflow.",fa:"راهبری‌محور. دروازه‌های مرحله‌ای، مدیریت اطلاعات و شواهد ممیزی، جریان کار را هدایت می‌کنند."}],
+       ['awp',{en:"AWP / WFP Pack",fa:"بسته AWP / جبهه کاری"},{en:"CII RT-272 · RT-319 · COAA — deferred to international phase",fa:"CII RT-۲۷۲ · RT-۳۱۹ · COAA — موکول به فاز بین‌المللی"},
+        {en:"<b>Not shipping at launch.</b> Deferred to the international phase (ADR-002). The pack file is complete and CI-validated so the engine stays generic — reviving it is ~6–10 weeks, not a rewrite. The constraint engine, lookahead and package-based field execution underneath it <b>are</b> in the core product and ship with the Iranian release.",fa:"<b>در عرضه اولیه ارائه نمی‌شود.</b> موکول به فاز بین‌المللی (ADR-002). فایل بسته کامل است و در CI اعتبارسنجی می‌شود تا موتور عمومی بماند — احیای آن حدود ۶ تا ۱۰ هفته است، نه بازنویسی. موتور قیدها، برنامه پیش‌نگر و اجرای بسته‌محور کارگاهی که زیر آن قرار دارند، <b>بخش هسته محصول‌اند</b> و با نسخه ایرانی عرضه می‌شوند."}]]
+      .map(p=>`<div class="plan ${PACK===p[0]?'hl':''}">
+        <h4>${t(p[1])} ${PACK===p[0]?`<span class="tag t-ok">${t({en:"Active",fa:"فعال"})}</span>`:''}${p[0]==='awp'?`<span class="tag t-vio">${t({en:"Deferred",fa:"موکول شده"})}</span>`:''}</h4>
+        <div class="price">${t(p[2])}</div>
+        <p class="note">${t(p[3])}</p>
+      </div>`).join('')}
+  </div>
+  <div class="card"><h3>${t({en:"What the active pack changes",fa:"آنچه بسته فعال تغییر می‌دهد"})}</h3>
+    <table><tbody>${rows.map(r=>`<tr><td style="width:30%;color:var(--muted)">${t(r[0])}</td><td>${t(r[1])}</td></tr>`).join('')}</tbody></table></div>
+  <div class="card" style="margin-top:14px"><h3>${t({en:"Pack change control",fa:"کنترل تغییر بسته"})}</h3>
+    <div class="flow">
+      <span class="step">1. ${t({en:"Impact analysis",fa:"تحلیل اثر"})}</span><span class="arw">→</span>
+      <span class="step">2. ${t({en:"Classify deltas: safe / needs mapping / data-loss risk",fa:"طبقه‌بندی تفاوت‌ها: ایمن / نیازمند نگاشت / ریسک از دست رفتن داده"})}</span><span class="arw">→</span>
+      <span class="step">3. ${t({en:"Owner approval + justification",fa:"تأیید کارفرما و ثبت دلیل"})}</span><span class="arw">→</span>
+      <span class="step">4. ${t({en:"Emit pack.changed.v1",fa:"انتشار رویداد pack.changed.v1"})}</span>
+    </div>
+    <p class="note" style="margin-top:8px">${t({en:"Every record is stamped with the pack version active at creation, so historical data stays valid and reports can be re-run under either version.",fa:"هر رکورد با نسخه بسته فعال هنگام ایجاد مهر می‌شود؛ بنابراین داده تاریخی معتبر می‌ماند و گزارش‌ها با هر دو نسخه قابل بازتولید است."})}</p></div>`;
+}
+
+function pagePlans(){
+  const plans=[
+    {n:{en:"Project Licence",fa:"لایسنس پروژه‌ای"},p:{en:"flagship · employer buys for all parties",fa:"محصول اصلی · خرید کارفرما برای همه طرف‌ها"},hl:1,f:[
+      [1,{en:"Covers every participating company",fa:"پوشش همه شرکت‌های درگیر پروژه"}],[1,{en:"All modules, project duration",fa:"همه ماژول‌ها، به مدت پروژه"}],
+      [1,{en:"On-premise, in your datacentre",fa:"استقرار داخلی، در مرکز داده شما"}],[1,{en:"IPS + ISO packs included",fa:"بسته‌های IPS و ایزو"}],
+      [1,{en:"One IRR invoice to the employer",fa:"یک صورتحساب ریالی به کارفرما"}],[1,{en:"Air-gap capable, offline licence",fa:"قابل اجرا در شبکه ایزوله، لایسنس آفلاین"}],
+      [1,{en:"On-site training & commissioning",fa:"آموزش و راه‌اندازی حضوری"}]]},
+    {n:{en:"Full",fa:"کامل"},p:{en:"per company / year (IRR)",fa:"هر شرکت / سالانه (ریال)"},hl:0,f:[
+      [1,{en:"Unlimited users & projects",fa:"کاربر و پروژه نامحدود"}],[1,{en:"All modules incl. Cost, Claims, BI",fa:"همه ماژول‌ها شامل هزینه، ادعا و هوش تجاری"}],
+      [1,{en:"IPS + ISO + Hybrid + pack editor",fa:"IPS + ایزو + ترکیبی + ویرایشگر بسته"}],[1,{en:"On-premise or local cloud",fa:"استقرار داخلی یا ابر داخلی"}],
+      [1,{en:"Full API · P6 · AD · local ERP",fa:"API کامل · P۶ · اکتیودایرکتوری · ERP داخلی"}],[1,{en:"24×7 support, 4h P1 SLA",fa:"پشتیبانی ۲۴ ساعته، SLA چهار ساعته"}],
+      [1,{en:"Constraints, lookahead, field packages",fa:"قیدها، برنامه پیش‌نگر، بسته‌های کارگاهی"}],[0,{en:"AWP methodology (international phase)",fa:"متدولوژی AWP (فاز بین‌المللی)"}]]},
+    {n:{en:"Starter",fa:"پایه"},p:{en:"per company / year",fa:"هر شرکت / سالانه"},hl:0,f:[
+      [1,{en:"Up to 25 users, 1 project",fa:"تا ۲۵ کاربر، ۱ پروژه"}],[1,{en:"Core + Document Control",fa:"هسته + کنترل مدارک"}],
+      [1,{en:"IPS pack only",fa:"فقط بسته IPS"}],[1,{en:"250 GB storage",fa:"۲۵۰ گیگابایت فضا"}],
+      [0,{en:"AWP (not at launch)",fa:"AWP (در عرضه اولیه خیر)"}],[0,{en:"Cost & claims",fa:"هزینه و ادعا"}],[0,{en:"AI assist",fa:"دستیار هوشمند"}]]},
+    {n:{en:"Professional",fa:"حرفه‌ای"},p:{en:"per company / year",fa:"هر شرکت / سالانه"},hl:0,f:[
+      [1,{en:"Up to 150 users, 5 projects",fa:"تا ۱۵۰ کاربر، ۵ پروژه"}],[1,{en:"+ Procurement, QA/QC, HSE, Schedule",fa:"+ تأمین، کیفیت، ایمنی، برنامه‌ریزی"}],
+      [1,{en:"IPS + ISO packs",fa:"بسته‌های IPS و ایزو"}],[1,{en:"P6 (XER) & Active Directory",fa:"P۶ (XER) و اکتیودایرکتوری"}],
+      [1,{en:"2 TB storage · constraint engine",fa:"۲ ترابایت فضا · موتور قیدها"}],[0,{en:"Cost, claims & BI",fa:"هزینه، ادعا و هوش تجاری"}],[0,{en:"White-label",fa:"برچسب سفید"}]]},
+    {n:{en:"Special / Enterprise",fa:"ویژه / سازمانی"},p:{en:"custom quotation",fa:"قیمت‌گذاری اختصاصی"},hl:0,f:[
+      [1,{en:"Everything in Full",fa:"همه امکانات پلن کامل"}],[1,{en:"Air-gapped deployment, zero egress",fa:"استقرار کاملاً ایزوله، بدون ترافیک خروجی"}],
+      [1,{en:"Client-specific standards pack authored by us",fa:"بسته استاندارد اختصاصی نوشته‌شده توسط ما"}],[1,{en:"Custom modules via partner SDK",fa:"ماژول اختصاصی از طریق SDK"}],
+      [1,{en:"BYOK · data never leaves your datacentre",fa:"کلید اختصاصی · داده هرگز از مرکز داده شما خارج نمی‌شود"}],[1,{en:"Dedicated CSM & named engineer",fa:"مدیر موفقیت و مهندس اختصاصی"}],
+      [1,{en:"Self-hosted AI node (optional GPU)",fa:"نود هوش مصنوعی داخلی (GPU اختیاری)"}]]}
+  ];
+  return `
+  <h2 class="page">${t({en:"Plans, Entitlements & Licensing",fa:"پلن‌ها، حقوق دسترسی و لایسنس"})}</h2>
+  <p class="sub">${t({en:"Plans are per company, not per project. Companies on different plans collaborate inside the same project.",fa:"پلن‌ها به ازای هر شرکت است، نه هر پروژه. شرکت‌ها با پلن‌های متفاوت در یک پروژه همکاری می‌کنند."})}</p>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(215px,1fr))">${plans.map(p=>`
+    <div class="plan ${p.hl?'hl':''}"><h4>${t(p.n)} ${p.hl?`<span class="tag t-info">${t({en:"Popular",fa:"پرطرفدار"})}</span>`:''}</h4>
+      <div class="price">${t(p.p)}</div>
+      <ul style="list-style:none;padding:0">${p.f.map(f=>`<li style="${f[0]?'':'opacity:.45'}">
+        <span class="${f[0]?'chk':'cross'}">${f[0]?'✓':'✕'}</span> ${t(f[1])}</li>`).join('')}</ul></div>`).join('')}
+  </div>
+  <div class="card" style="margin-top:14px"><h3>${t({en:"Non-negotiable licensing rules",fa:"قواعد غیرقابل‌مذاکره لایسنس"})}</h3>
+    <table><tbody>${[
+      [{en:"Server-side enforcement",fa:"اعمال سمت سرور"},{en:"Entitlements are signed tokens evaluated on the server. The client never decides what a plan allows.",fa:"حقوق دسترسی توکن‌های امضاشده‌ای هستند که روی سرور ارزیابی می‌شوند. کلاینت هرگز درباره مجوز پلن تصمیم نمی‌گیرد."}],
+      [{en:"Safety is never gated",fa:"ایمنی هرگز محدود نمی‌شود"},{en:"Incident reporting, statutory audit access and export of your own data always work — on any plan, even an expired one.",fa:"ثبت حادثه، دسترسی ممیزی قانونی و خروجی‌گرفتن از داده خودتان همیشه کار می‌کند — در هر پلن، حتی منقضی‌شده."}],
+      [{en:"Anti lock-in",fa:"ضد قفل‌شدگی"},{en:"Full structured + file + audit-log export in open formats on demand and at termination.",fa:"خروجی کامل داده ساختاریافته، فایل‌ها و گزارش ممیزی در قالب‌های باز، در هر زمان و هنگام خاتمه قرارداد."}],
+      [{en:"Offline licence, no call-home",fa:"لایسنس آفلاین، بدون تماس با سرور"},{en:"A signed licence file bound to the install validates fully offline. Nothing in the product ever requires an outbound internet connection — this is an air-gap requirement, and a trust signal.",fa:"فایل لایسنس امضاشده و مقیدشده به نصب، کاملاً آفلاین اعتبارسنجی می‌شود. هیچ بخشی از محصول به اتصال اینترنت خروجی نیاز ندارد — این هم الزام شبکه ایزوله است و هم نشانه اعتماد."}],
+      [{en:"Project licence option",fa:"گزینه لایسنس پروژه‌ای"},{en:"An employer may buy one licence covering every participating company for the project duration, with the employer as billing party. This is the flagship SKU for Iranian mega-projects.",fa:"کارفرما می‌تواند یک لایسنس بخرد که همه شرکت‌های درگیر را برای مدت پروژه پوشش دهد و صورتحساب به نام کارفرما باشد. این محصول اصلی برای ابرپروژه‌های ایرانی است."}],
+      [{en:"Graceful blocking",fa:"مسدودسازی محترمانه"},{en:"A feature outside your plan shows an upgrade path, never an error page.",fa:"قابلیت خارج از پلن، مسیر ارتقا را نشان می‌دهد، نه صفحه خطا."}]
+    ].map(r=>`<tr><td style="width:26%;color:var(--muted)">${t(r[0])}</td><td>${t(r[1])}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function pagePayment(){
+  if(PACK!=='ips') return `<h2 class="page">${t({en:"Payment Certificate",fa:"صورت‌وضعیت"})}</h2>
+    <div class="banner block">${t({en:"<b>Available only under the IPS / Iran pack.</b> The interim payment certificate (صورت‌وضعیت موقت), price adjustment (تعدیل) and retention model come from the General Conditions of Contract, Publication 4311. Switch the standard in the header to IPS / Iran.",
+      fa:"<b>فقط در بسته IPS / ایران در دسترس است.</b> صورت‌وضعیت موقت، تعدیل و مدل حسن انجام کار از شرایط عمومی پیمان نشریه ۴۳۱۱ می‌آید. استاندارد را در نوار بالا به IPS / ایران تغییر دهید."})}</div>`;
+  const canVerify = CO==='PMC', canApprove = CO==='OWN', canSubmit = (CO==='EPC'||CO==='SUB');
+  const fm=(n)=>n.toLocaleString('en-US');
+  const rows=[
+    [{en:"Gross work value this period",fa:"ناخالص کارکرد این دوره"},"۴۸٬۲۵۰٬۰۰۰٬۰۰۰",48250000000,"+"],
+    [{en:"Price adjustment (تعدیل), Q2 index",fa:"تعدیل، شاخص سه‌ماهه دوم"},"۶٬۱۱۰٬۰۰۰٬۰۰۰",6110000000,"+"],
+    [{en:"Approved change orders",fa:"دستور کارهای تأییدشده"},"۲٬۴۰۰٬۰۰۰٬۰۰۰",2400000000,"+"],
+    [{en:"Retention 10% (حسن انجام کار)",fa:"حسن انجام کار ۱۰٪"},"۵٬۶۷۶٬۰۰۰٬۰۰۰",-5676000000,"−"],
+    [{en:"Advance recovery 20% (بازپرداخت پیش‌پرداخت)",fa:"بازپرداخت پیش‌پرداخت ۲۰٪"},"۱۱٬۳۵۲٬۰۰۰٬۰۰۰",-11352000000,"−"],
+    [{en:"Contractual deductions",fa:"کسورات قراردادی"},"۸۴۰٬۰۰۰٬۰۰۰",-840000000,"−"],
+    [{en:"VAT",fa:"مالیات بر ارزش افزوده"},"۴٬۳۴۲٬۵۰۰٬۰۰۰",4342500000,"+"]
+  ];
+  const net = rows.reduce((s,r)=>s+r[2],0);
+  const steps=[["DRAFT",{en:"Contractor draft",fa:"تنظیم پیمانکار"},1],["SUBMITTED",{en:"Submitted",fa:"ارسال شده"},1],
+    ["CONSULTANT_VERIFIED",{en:"Consultant verified",fa:"تأیید مشاور"},2],["EMPLOYER_APPROVED",{en:"Employer approved",fa:"تصویب کارفرما"},0],
+    ["PAID",{en:"Paid",fa:"پرداخت شده"},0]];
+  return `
+  <h2 class="page">${t({en:"Interim Payment Certificate No. 14",fa:"صورت‌وضعیت موقت شماره ۱۴"})}</h2>
+  <p class="sub">${t({en:"Per General Conditions of Contract, Publication 4311 — the workflow, deductions and approval chain all come from the IPS pack.",fa:"مطابق شرایط عمومی پیمان نشریه ۴۳۱۱ — گردش کار، کسورات و زنجیره تأیید همگی از بسته IPS می‌آید."})}</p>
+  <div class="card" style="margin-bottom:14px">
+    <div class="flow">${steps.map((s,i)=>`${i?'<span class="arw">→</span>':''}
+      <span class="step ${s[2]===1?'done':s[2]===2?'cur':''}">${t(s[1])}</span>`).join('')}</div>
+    <p class="note" style="margin-top:6px">${t({en:"Period: 1–31 Mordad 1405 (23 Jul – 22 Aug 2026) · Submitted 4 Shahrivar · Consultant verified 14 Shahrivar · <b>28 days elapsed, SLA is 30</b>",
+      fa:"دوره: ۱ تا ۳۱ مرداد ۱۴۰۵ · ارسال ۴ شهریور · تأیید مشاور ۱۴ شهریور · <b>۲۸ روز سپری شده، مهلت ۳۰ روز است</b>"})}</p>
+  </div>
+  <div class="split">
+    <div class="card"><h3>${t({en:"Certificate Build-Up (IRR)",fa:"محاسبات صورت‌وضعیت (ریال)"})}</h3>
+      <table><tbody>
+      ${rows.map(r=>`<tr><td>${t(r[0])}</td>
+        <td style="text-align:end;font-family:ui-monospace,monospace;color:${r[2]<0?'var(--red)':'var(--txt)'}">
+        ${r[3]} ${L==='fa'?r[1]:fm(Math.abs(r[2]))}</td></tr>`).join('')}
+      <tr style="border-top:2px solid var(--line)"><td><b>${t({en:"Net payable",fa:"خالص قابل پرداخت"})}</b></td>
+        <td style="text-align:end;font-family:ui-monospace,monospace;font-size:15px;color:var(--accent2)"><b>${L==='fa'?'۴۳٬۲۳۴٬۵۰۰٬۰۰۰':fm(net)}</b></td></tr>
+      </tbody></table>
+      <p class="note" style="margin-top:8px">${t({en:"Rendered in تومان or ریال per tenant setting. Digits display Persian but are stored ASCII so they stay machine-readable and match the drawings.",
+        fa:"نمایش به تومان یا ریال بر اساس تنظیم سازمان. ارقام فارسی نمایش داده می‌شوند اما به‌صورت اسکی ذخیره می‌شوند تا ماشین‌خوان بمانند و با نقشه‌ها هم‌خوان باشند."})}</p></div>
+    <div class="card"><h3>${t({en:"Release Gate — Guards",fa:"دروازه صدور — شروط"})}</h3>
+      <table><tbody>
+      ${[[1,{en:"Measurement sheets attached (متره)",fa:"برگه‌های متره پیوست شده"},"46 ${L}"],
+         [1,{en:"Supporting site minutes attached (صورتجلسه)",fa:"صورتجلسه‌های پشتیبان پیوست شده"},""],
+         [1,{en:"Physical progress verified by consultant",fa:"پیشرفت فیزیکی توسط مشاور تأیید شده"},""],
+         [1,{en:"Retention, advance recovery, tax computed",fa:"حسن انجام کار، بازپرداخت و مالیات محاسبه شده"},""],
+         [0,{en:"Within employer approver's delegated authority",fa:"در حدود اختیارات تأییدکننده کارفرما"},""]]
+        .map(g=>`<tr><td style="width:26px;font-size:15px" class="${g[0]?'chk':'cross'}">${g[0]?'●':'○'}</td>
+        <td>${t(g[1])}</td></tr>`).join('')}
+      </tbody></table>
+      <div class="banner block" style="margin:10px 0 0">${t({en:"<b>Escalation required.</b> Net value exceeds this approver's delegated authority — the certificate routes automatically to the next authority level. No waiver is permitted on payment certificates.",
+        fa:"<b>نیاز به ارجاع به مقام بالاتر.</b> مبلغ خالص از حدود اختیارات این تأییدکننده فراتر است — صورت‌وضعیت به‌طور خودکار به سطح بعدی ارجاع می‌شود. معافیت روی صورت‌وضعیت مجاز نیست."})}</div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        ${canSubmit?`<button>${t({en:"Revise & resubmit",fa:"اصلاح و ارسال مجدد"})}</button>`:''}
+        ${canVerify?`<button class="primary">${t({en:"Verify (consultant)",fa:"تأیید مشاور"})}</button>`:''}
+        ${canApprove?`<button class="primary">${t({en:"Escalate for approval",fa:"ارجاع برای تصویب"})}</button>`:''}
+        ${(!canSubmit&&!canVerify&&!canApprove)?`<button disabled style="opacity:.45;cursor:not-allowed">${t({en:"Hidden for your company type",fa:"برای نوع شرکت شما پنهان است"})}</button>`:''}
+      </div></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>${t({en:"Price Adjustment (تعدیل) — Quarterly Index Application",fa:"تعدیل — اعمال شاخص فصلی"})}</h3>
+    <table><thead><tr><th>${t({en:"Period",fa:"دوره"})}</th><th>${t({en:"Base value",fa:"مبلغ مبنا"})}</th>
+      <th>${t({en:"Index coefficient",fa:"ضریب شاخص"})}</th><th>${t({en:"Adjustment",fa:"تعدیل"})}</th><th>${t({en:"Status",fa:"وضعیت"})}</th></tr></thead><tbody>
+    ${[["۱۴۰۴ Q3","Q3 1404","۳۲٬۱۰۰","1.084","۲٬۶۹۶","t-ok",{en:"Claimed & paid",fa:"مطالبه و پرداخت شد"}],
+       ["۱۴۰۴ Q4","Q4 1404","۴۱٬۵۰۰","1.112","۴٬۶۴۸","t-ok",{en:"Claimed & paid",fa:"مطالبه و پرداخت شد"}],
+       ["۱۴۰۵ Q1","Q1 1405","۴۴٬۸۰۰","1.131","۵٬۸۶۹","t-warn",{en:"Earned, not yet claimed",fa:"تحقق‌یافته، مطالبه نشده"}],
+       ["۱۴۰۵ Q2","Q2 1405","۴۸٬۲۵۰","1.127","۶٬۱۱۰","t-info",{en:"In this certificate",fa:"در همین صورت‌وضعیت"}]]
+      .map(r=>`<tr><td>${L==='fa'?r[0]:r[1]}</td><td class="mono">${r[2]}M</td><td class="mono">${r[3]}</td>
+      <td class="mono">${r[4]}M</td><td><span class="tag ${r[5]}">${t(r[6])}</span></td></tr>`).join('')}
+    </tbody></table>
+    <p class="note" style="margin-top:8px">${t({en:"The platform tracks earned-but-unclaimed adjustment as a KPI (<code>TADIL_EXPOSURE</code>). On long Iranian contracts this is routinely the largest single sum contractors leave on the table.",
+      fa:"سامانه تعدیل تحقق‌یافته اما مطالبه‌نشده را به‌عنوان شاخص (<code>TADIL_EXPOSURE</code>) رصد می‌کند. در قراردادهای بلندمدت، این معمولاً بزرگ‌ترین مبلغی است که پیمانکاران از دست می‌دهند."})}</p></div>`;
+}
+
+/* =======================  RENDER  ======================= */
+const PAGES={dash:pageDash,awp:pageAWP,iwp:pageIWP,docs:pageDocs,quality:pageQuality,payment:pagePayment,access:pageAccess,std:pageStd,plans:pagePlans};
+function render(){
+  document.documentElement.lang = L;
+  document.documentElement.dir  = (L==='fa')?'rtl':'ltr';
+  document.querySelectorAll('[data-i]').forEach(e=>{const k=e.getAttribute('data-i'); if(T[k]) e.textContent=t(T[k]);});
+  document.getElementById('lang').textContent = (L==='en')?'فارسی':'English';
+  const sel=document.getElementById('company');
+  [...sel.options].forEach(o=>o.textContent=t(COMPANIES[o.value]));
+  const ps=document.getElementById('pack');
+  ps.options[0].textContent = t({en:"IPS / Iran",fa:"IPS / ایران"});
+  ps.options[1].textContent = t({en:"ISO Framework",fa:"چارچوب ایزو"});
+  ps.options[2].textContent = t({en:"AWP / WFP",fa:"AWP / جبهه کاری"});
+  document.getElementById('content').innerHTML = PAGES[PAGE]();
+  document.querySelectorAll('#nav a').forEach(a=>{
+    a.classList.toggle('on',a.dataset.p===PAGE);
+    // in collapsed rail mode the label is hidden, so keep a tooltip
+    const lbl=a.querySelector('span:not(.ico)');
+    if(lbl) a.title=lbl.textContent;
+  });
+  // wide tables get a horizontal scroll container on small screens
+  document.querySelectorAll('#content .card > table').forEach(tb=>{
+    if(tb.parentElement.classList.contains('tblwrap')) return;
+    const w=document.createElement('div'); w.className='tblwrap';
+    tb.parentNode.insertBefore(w,tb); w.appendChild(tb);
+  });
+  if(typeof syncBurger==='function') syncBurger();
+}
+/* ---------- sidebar: icon rail on desktop, off-canvas drawer on mobile ---------- */
+/* Feature-detected: on older Safari/Android WebViews matchMedia or its
+   addEventListener may be missing. Never let that kill the whole script. */
+const mqMobile = window.matchMedia ? window.matchMedia('(max-width:820px)') : null;
+const MOBILE=()=> mqMobile ? mqMobile.matches : (window.innerWidth||1024)<=820;
+const body=document.body, burger=document.getElementById('burger');
+function syncBurger(){
+  const open = MOBILE() ? body.classList.contains('drawer') : !body.classList.contains('rail');
+  burger.setAttribute('aria-expanded', String(open));
+  burger.textContent = (MOBILE() && open) ? '✕' : '☰';
+}
+function toggleSide(){
+  body.classList.toggle(MOBILE() ? 'drawer' : 'rail');
+  syncBurger();
+}
+function closeDrawer(){
+  if(body.classList.contains('drawer')){ body.classList.remove('drawer'); syncBurger(); }
+}
+burger.addEventListener('click',toggleSide);
+document.getElementById('scrim').addEventListener('click',closeDrawer);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDrawer(); });
+// crossing the breakpoint must not leave a stale state behind
+const onBreakpoint=()=>{ body.classList.remove('drawer'); syncBurger(); };
+if(mqMobile && mqMobile.addEventListener) mqMobile.addEventListener('change',onBreakpoint);
+else if(mqMobile && mqMobile.addListener) mqMobile.addListener(onBreakpoint); // legacy Safari
+else window.addEventListener('resize',onBreakpoint);
+
+document.getElementById('nav').addEventListener('click',e=>{
+  const a=e.target.closest('a'); if(!a) return; PAGE=a.dataset.p; closeDrawer(); render();});
+document.getElementById('lang').addEventListener('click',()=>{L=(L==='en')?'fa':'en'; render();});
+document.getElementById('company').addEventListener('change',e=>{CO=e.target.value; render();});
+document.getElementById('pack').addEventListener('change',e=>{PACK=e.target.value; render();});
+render();
+</script>
+</body>
+</html>
