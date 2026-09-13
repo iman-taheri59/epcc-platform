@@ -1,56 +1,63 @@
+# ---------------------------------------------------------------------------
+# EPCC Platform — repository ignores
+#
+# Layout note: the Laravel application lives under app/, not at the repository
+# root, so the usual Laravel paths are written with that prefix here.
+# app/.gitignore additionally covers vendor, .env and build output from inside
+# the application itself.
+# ---------------------------------------------------------------------------
+
+# --- Secrets. Never commit. -------------------------------------------------
+# app/.gitignore already ignores app/.env; these are belt-and-braces rules in
+# case an env file or key is ever created somewhere else in the tree.
+.env
+.env.*
+!.env.example
+.env.backup
+.env.production
+*.pem
+*.key
+storage/*.key
+app/storage/*.key
+auth.json
+.netrc
+.git-credentials
+
+# --- Generated snapshot ------------------------------------------------------
+# Rebuilt by hand each session; a 4 MB binary blob that would change on every
+# commit. Version control is now doing this job.
+source-backup.tar.gz
+
+# --- Dependencies and caches -------------------------------------------------
 /vendor/
+vendor/
 node_modules/
 npm-debug.log
 yarn-error.log
-
-# Laravel 4 specific
-bootstrap/compiled.php
-app/storage/
-
-# Laravel 5 & Lumen specific
-public/storage
-public/hot
-
-# Laravel 5 & Lumen specific with changed public path
-public_html/storage
-public_html/hot
-
-storage/*.key
-.env
-Homestead.yaml
-Homestead.json
-/.vagrant
-.phpunit.result.cache
-
-/public/build
-/storage/pail
-.env.backup
-.env.production
-.phpactor.json
-auth.json
-
-# ---------------------------------------------------------------------------
-# Retained from GitHub's Laravel template. Most assume Laravel at the repo
-# root rather than under app/, so they are harmless here but kept so that
-# nothing the template protected silently becomes unprotected.
-# ---------------------------------------------------------------------------
-.env.*
-!.env.example
-*.pem
-*.key
-.netrc
-.git-credentials
-source-backup.tar.gz
 .cache/
 __pycache__/
 *.pyc
+.phpunit.result.cache
+.phpactor.json
+
+# --- Laravel runtime state ---------------------------------------------------
 app/storage/framework/testing/
 app/storage/logs/*.log
 app/storage/framework/cache/data/*
 app/storage/framework/sessions/*
 app/storage/framework/views/*.php
+app/public/storage
+app/public/hot
+app/public/build
+app/storage/pail
+bootstrap/compiled.php
+
+# --- Editor / OS noise -------------------------------------------------------
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
 *.swp
+/.vagrant
+Homestead.yaml
+Homestead.json
