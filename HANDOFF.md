@@ -1529,13 +1529,48 @@ module still in `PLANNED_MODULES`.
 
 ---
 
+## 9a. Git remote — and why the config keeps disappearing
+
+**`github.com/iman-taheri59/epcc-platform`** (private). Current `main` =
+**`cf99f0f`**, 295 files. `app/.env` and `source-backup.tar.gz` are gitignored
+and have been confirmed absent from the remote tree.
+
+**The recurring trap:** `.git/config` is on the snapshot exclusion list (along
+with `.git-credentials` and `.netrc`), so **every sandbox reset wipes the remote
+URL and the committed identity**. Symptoms, in the order you will hit them:
+
+1. `git commit` fails with *"empty ident name"* — fix with
+   `git config user.email … && git config user.name …` (repo-local is fine).
+2. `git push origin main` fails with *"repository does not exist"* — the
+   `origin` remote is simply gone, not misconfigured.
+
+**Do not paste the token into the remote URL.** Push with a one-shot URL so it
+never lands in a file that could be committed or archived:
+
+```bash
+git push "https://x-access-token:${TOKEN}@github.com/iman-taheri59/epcc-platform.git" HEAD:main
+git remote add origin https://github.com/iman-taheri59/epcc-platform.git   # tokenless
+```
+
+Pipe the output through `sed "s|${TOKEN}|***|g"` — git echoes the full URL on
+error, and that output otherwise ends up in the transcript.
+
+**Verify the push against the API, not the push output.** This repo has twice
+reported `size: 0` and a stale `pushed_at` for a non-empty tree. Compare
+`git/ref/heads/main` to `git rev-parse HEAD`, then list
+`git/trees/main?recursive=1` and check the files you expect.
+
+**Token hygiene:** tokens have been pasted into the chat twice. Treat every one
+of them as compromised and rotate it once the push is confirmed — a PAT with
+repo scope on a private commercial codebase is the whole product.
+
 ## 10. Session log
 
 Append one row per session. Keep it terse.
 
 | Date | Change | Result |
 |---|---|---|
-| 2026-09-13 | **Physical breakdown built (§5l, ADR-004 → ACCEPTED).** `project → facility → (optional) area → subsystem`, after establishing that Plant 3D has **no** System/Subsystem, MC, punch or handover — so compatibility is an **import mapping**, not a copied schema. One `facilities` table with a `FacilityKind` discriminator instead of sibling plant/pipeline tables, because what they share is being a commissioning parent and what differs is addressing (per-kind `jsonb`). Numbering moved to **per facility**, which made the bare code ambiguous — so `fullCode()` composes at read time (never stored: it would drift on rename) and the register shows Facility as a non-toggleable column. Integrity rests on a **composite** FK `(area_id, facility_id) → areas(id, facility_id)`, making cross-facility corruption unrepresentable. The fixture is deliberately uneven — one facility with areas *and* a direct subsystem, one with no areas at all — because a uniform fixture cannot fail informatively. Two traps recorded: the backfill silently matched **zero rows** under `FORCE ROW LEVEL SECURITY` (RLS filters, it does not error), and **M118 first reported SURVIVED because the mutation was wrong, not the test** — dropping a constraint in `psql` proves nothing when `setUp()` runs `migrate:fresh`. Mutate the migration source | **507 / 1716**, **123 mutations caught** |
+| 2026-09-13 | **Physical breakdown built (§5l, ADR-004 → ACCEPTED).** `project → facility → (optional) area → subsystem`, after establishing that Plant 3D has **no** System/Subsystem, MC, punch or handover — so compatibility is an **import mapping**, not a copied schema. One `facilities` table with a `FacilityKind` discriminator instead of sibling plant/pipeline tables, because what they share is being a commissioning parent and what differs is addressing (per-kind `jsonb`). Numbering moved to **per facility**, which made the bare code ambiguous — so `fullCode()` composes at read time (never stored: it would drift on rename) and the register shows Facility as a non-toggleable column. Integrity rests on a **composite** FK `(area_id, facility_id) → areas(id, facility_id)`, making cross-facility corruption unrepresentable. The fixture is deliberately uneven — one facility with areas *and* a direct subsystem, one with no areas at all — because a uniform fixture cannot fail informatively. Two traps recorded: the backfill silently matched **zero rows** under `FORCE ROW LEVEL SECURITY` (RLS filters, it does not error), and **M118 first reported SURVIVED because the mutation was wrong, not the test** — dropping a constraint in `psql` proves nothing when `setUp()` runs `migrate:fresh`. Mutate the migration source. Pushed as `cf99f0f` (§9a — a reset had wiped `.git/config`, so the remote and the git identity had to be recreated first) | **507 / 1716**, **123 mutations caught** |
 | 2026-09-13 | **UML for the procurement module (`docs/uml/`).** Installed `graphviz` + `plantuml` (absent from the base image; plain `apt-get` fails the dpkg lock, `sudo` works) and drew five diagrams — domain model, the three state machines, an inspection-to-MC-gate sequence, reversal + RLS, and the component view. Written against a live `information_schema` dump rather than from memory, so the attribute lists are the real columns. Packaged as `docs/uml/uml.html` with the SVGs **inlined** — checked for external refs and found none, matching the `tour.html` air-gap pattern — and verified by screenshot rather than by byte count | no code change, **482 / 1647** |
 | 2026-09-09 | Docs, standards packs, prototype, ADRs, Laravel scaffold, standards engine, conformance corpus | Foundations in place |
 | 2026-09-09 | PostgreSQL + RLS spike, multi-project, Octane and PgBouncer spikes | All CLOSED, 12 standing rules recorded |
