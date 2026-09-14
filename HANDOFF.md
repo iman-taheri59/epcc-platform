@@ -1531,6 +1531,43 @@ absolutely. It also dodges the ADR-004 trap where a seeder cannot read an RLS-fo
 Split: **universal** (NPS/DN/OD, schedules, end types, flange ratings) → reference packs;
 **per-project** (piping classes from the PMS, services, coatings) → normal tenant tables.
 
+**ADR-009 (`docs/ADR-009-Manual-Modelling-and-Component-Templates.md`) — PROPOSED, new.**
+Answers "how does manual entry work, and is the model PCF or Plant 3D?".
+
+- **The user never types a port count.** Ports are a property of the component *class*, declared
+  once in a **component template** shipped as reference data — verified that this is exactly how
+  Plant 3D works: the catalog template holds properties "shared by all sizes", and
+  `PLANTPARTCONVERT` is the command that *adds ports* to a custom block before it can be a
+  piping component. Chain maps 1:1 — Plant 3D catalog → our `component_templates`; spec →
+  `piping_classes`; placed part → `components`.
+- **Manual flow is "pick a type, pick an open port".** Simulated end-to-end: adding a 6"×6"×2"
+  TEE materialises 3 ports with roles RUN/RUN/BRANCH; attaching a PIPE to P3 inherits the 2"
+  size and creates the joint implicitly. Port count, sizes, schedule, end type, wall thickness
+  and the expected branch component are all **derived**. **The "open ends" list is the whole UI**
+  — same query drives the worklist, progress and the import validator.
+- **Structural refusals vs engineering warnings**: attaching to a taken port or typing a
+  mismatched size is *impossible*; a spec-break schedule change or a branch component that
+  differs from the class table is a *warning/deviation*. Same split as advisory inspection.
+- **PCF vs Plant 3D is a false choice — they are different layers.** Conceptual model from
+  **Plant 3D** (ports belong to a class; a connection is a relationship row). Import format
+  **PCF, primary** — text, vendor-neutral, emitted by CADWorx/AVEVA/SmartPlant too, and it
+  already carries welds with `CATEGORY FABRICATION|ERECTION`. Reading `.dcf` would tie us to
+  Autodesk **and Windows** and still would not give welds. Commercially decisive for Iran, where
+  CADWorx and AVEVA are common.
+- **NPS is stored in four columns** at the user's instruction: `nps_label` "2 1/2",
+  `nps_decimal` 2.5, `dn` 65, `od_mm` 73.0. The decimal column is **load-bearing, not
+  redundant** — it is the only one that can be summed, and **dia-inch of accepted welds** is the
+  stated purpose. Tested: summing the string column raises `ValueError` and sorting it puts
+  `12` before `2 1/2`.
+- **ADR-008's four questions all closed** (ADR-009 §4): branch rules stay 2-D; **equal and
+  reducing tees are ONE `TEE` type** with the reduction *derived from port sizes* (a stored
+  `REDUCING_TEE` could contradict its own ports); **no class inheritance** — `parent_class_id`
+  dropped; **published classes lock**, edits create a revision and lines keep pointing at the
+  revision they were issued against.
+- The user corrected the size-band example (no size is in two bands). **Half-open ranges and the
+  exclusion constraint stay** — they now encode that intent exactly, and guard it against
+  transcription error rather than against the user.
+
 **ADR-008 (`docs/ADR-008-PMS-Piping-Class-Rules.md`) — PROPOSED, new.** How a PMS piping class
 expresses size-dependent rules («۱/۲ تا ۴ اینچ SCH80، ۴ تا ۱۰ اینچ SCH40») and the branch table.
 

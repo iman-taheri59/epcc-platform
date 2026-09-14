@@ -127,6 +127,7 @@ standards-packs/
     pipe-sizes.ref.json        # NPS ↔ DN ↔ OD (in + mm), per size
     pipe-schedules.ref.json    # (size × schedule) → wall thickness, ID, kg/m
     end-types.ref.json         # PCF two-char vocabulary: BW SW FL SC PL PF CP GL…
+    component-templates.ref.json  # port COUNT and ROLES per component class (ADR-009 §2)
     flange-ratings.ref.json    # 150/300/600/900/1500/2500 # + facing RF/FF/RTJ
     schema/                    # JSON-schema for each, checked by validate_packs.py
 ```
@@ -139,7 +140,8 @@ standards-packs/
   "source": "ASME B36.10M-2022 / B36.19M-2018",
   "note": "OD is exact by standard, not derived from NPS.",
   "sizes": [
-    {"nps": "1/2",  "npsDecimal": 0.5,  "dn": 15,  "odIn": 0.840,  "odMm": 21.3},
+    {"nps": "1/2",   "npsDecimal": 0.5,  "dn": 15,  "odIn": 0.840,  "odMm": 21.3},
+    {"nps": "2 1/2", "npsDecimal": 2.5,  "dn": 65,  "odIn": 2.875,  "odMm": 73.0},
     {"nps": "3/4",  "npsDecimal": 0.75, "dn": 20,  "odIn": 1.050,  "odMm": 26.7},
     {"nps": "1",    "npsDecimal": 1.0,  "dn": 25,  "odIn": 1.315,  "odMm": 33.4},
     {"nps": "12",   "npsDecimal": 12.0, "dn": 300, "odIn": 12.750, "odMm": 323.8}
@@ -243,6 +245,23 @@ reference, so no translation layer is needed.
 A project that later needs EN 10220 or a different edition gets **another pack**, selected by
 `projects.reference_pack_version` (§7) — not an edit to this one. Reference data is versioned,
 never mutated.
+
+---
+
+## 9a. The four NPS columns are not redundant
+
+`nps` (string), `npsDecimal`, `dn` and `odMm` all ship, at the user's explicit instruction, and
+each has a job that the others cannot do:
+
+- `nps` — `"2 1/2"`, what the engineer reads and what appears in a line number.
+- `npsDecimal` — **`2.5`, the only column that can be summed.** This is what makes **dia-inch**
+  of accepted welds computable, which the user named as the purpose. Tested: summing the string
+  column raises `ValueError`, and sorting it puts `12` before `2 1/2`.
+- `dn` — the integer key for ADR-008's `int4range` size bands.
+- `odMm` — physical dimension, from ASME.
+
+A future "simplification" to fewer columns would silently break dia-inch reporting, so this note
+exists to stop it.
 
 ---
 

@@ -266,23 +266,19 @@ the procurement module: the system reports, it does not silently block.
 
 ---
 
-## 7. Open questions
+## 7. Open questions — all answered (2026-09-14), see ADR-009 §4
 
-1. **Do your PMS branch tables ever depend on anything besides the two sizes?** Some specify by
-   *service* (a sour-service class forbids stub-ins) or by *schedule*. If so the resolver gains
-   a third optional dimension — cheap now, awkward later.
-2. **Reducing tees.** Is `6"×4" → TEE` distinct from `6"×6" → TEE` in your tables, or is the
-   reduction implied by the two sizes being different? I assume implied, and store one
-   `component_type` per cell.
-3. **Class inheritance.** Some PMS documents define a base class plus deltas (`A1` and `A1S`
-   differing in three rows). Worth supporting a `parent_class_id`, or is each class written out
-   in full in your projects?
-4. **Who may edit a published class?** I propose: draft → published (coverage-gated, §3.1), and
-   a published class becomes read-only, with changes creating a new **revision** — because lines
-   already numbered against it must not silently re-baseline. Same reasoning as certificates
-   snapshotting their identifiers.
+| # | Question | Answer | Effect |
+|---|---|---|---|
+| 1 | Do branch rules depend on more than the two sizes? | **No, two sizes only** | resolver stays 2-D; no speculative third axis |
+| 2 | Are reducing tees a distinct component type? | **No — one `TEE`**, labelled Eq./Red. | reduction **derived from port sizes**, never stored; a stored type could contradict its own ports |
+| 3 | Class inheritance? | **No — each class written out in full** | `parent_class_id` **dropped** from the design |
+| 4 | Lock published classes? | **Yes** | `DRAFT → PUBLISHED`; published is read-only, edits create a new **revision**, lines keep pointing at the revision they were issued against |
 
-None of these block phase 1.
+The user also corrected the size-band example: no size ever falls in two bands. **The half-open
+`[from, to)` encoding and the exclusion constraint stay** — they are now simply the correct
+encoding of that intent, and the constraint guards it against transcription error rather than
+against the user.
 
 ---
 
@@ -295,7 +291,7 @@ None of these block phase 1.
 | 2 | `piping_class_branch_rules` + specificity resolver + `BranchLargerThanHeader` |
 | 3 | Wire into ADR-006: derive `wall_thickness`, validate components against their class |
 | 4 | Deviation reporting on import (the audit described in §5) |
-| 5 | Class revisions and the publication lock (open question 4) |
+| 5 | Class revisions and the publication lock (§7 #4 — confirmed required) |
 
 **Nothing is implemented.** Phase 1 is small and self-contained; the spikes in §3 and §4.1 were
 throwaway tables and have been dropped.
