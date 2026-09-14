@@ -1,7 +1,9 @@
 # ADR-EPCC-006 — Piping: lines, components, ports and joints
 
 **Status:** PROPOSED — analysis only, nothing implemented.
-**Revised 2026-09-14** with the user's answers to all five questions — see **§10**, which overrides §5 where they differ.
+**Revised 2026-09-14** with two rounds of user answers — **§10** (first five) and **§11**
+(second five, all resolved). Both override §5 where they differ. Spawned **ADR-007** for
+universal reference data.
 **Date:** 2026-09-14
 **Supersedes part of:** ADR-005 §"what is a document vs what is data" (see §9)
 **Depends on:** ADR-004 (facility / area / subsystem) — ACCEPTED and built
@@ -163,7 +165,8 @@ subsystems (exists)
   └─ piping_lines ───────────── the line number and its design attributes
        ├─ line_documents ────── AFC evidence: line ↔ CDE document (iso, P&ID, PMS, line list)
        ├─ isometrics ─────────── the drawing + revision, pointing at the CDE document
-       ├─ pipe_supports ──────── §10.4 — part of the line, SEPARATE register, no ports
+       ├─ pipe_supports ──────── §10.4/§11.3 — part of the line, SEPARATE register, no
+       │                          ports; own project-configurable numbering pattern
        ├─ spools ─────────────── §10.5 — OPTIONAL grouping; a line may have none
        └─ components ─────────── PIPE / ELBOW / TEE / VALVE / FLANGE …
              │                    + mto_item_no, isometric_sheet_no, length_mm (pipes)
@@ -230,7 +233,7 @@ get a register full of zeros.
 
 | Column | Note |
 |---|---|
-| `joint_number` | **nullable**; per-line scope; partial-unique; see §10.1 — REQUIRED for welded/threaded, NOT_APPLICABLE for flanged |
+| `joint_seq` | **nullable integer**, per-line scope, shared by welded + threaded (§11.1); partial-unique; displayed zero-padded in the view, never stored padded |
 | `numbering_policy` | REQUIRED \| NOT_APPLICABLE — distinguishes "never gets a number" from "not numbered yet" |
 | `state` | MODELLED → FITTED (§10.3); QA/QC states deferred at the user's instruction |
 | `fitted_by_code`, `fitted_at` | both mandatory on entering FITTED; **code is a string, not a `users` FK** (§10.3) |
@@ -508,21 +511,95 @@ removed; `pipe_supports` and `spools` added.)
 
 ---
 
-## 11. Remaining open questions (new, from the answers)
+## 11. Second round of answers (2026-09-14) — all resolved
 
-1. **Joint number format.** Per line, but what does it look like — `{line}-J-001`, or a bare
-   sequence `001` displayed under the line? And do welded and threaded joints share one counter
-   per line, or does each type count separately?
-2. **Threaded joint numbering** — you grouped رزوه‌ای with جوشی as "needs a number". Same counter
-   as welds, or its own series (some projects use `W-` for welds and `T-`/`S-` for screwed)?
-3. **Flanged joints** — you said "or another numbering system should be considered for them".
-   Shall I leave them unnumbered for now (my recommendation: yes, until the bolt-up register is
-   specified), or do you already have a scheme in mind?
-4. **`fitted_by_code`** — is the fitter code a free string from the contractor's own payroll, or
-   should I plan the `site_personnel` register now? It also affects welders, so it is worth
-   deciding once.
-5. **Support numbering** — its own pattern per project like line numbers, or a simple sequence
-   per line?
+### 11.1 Joint number: **simple sequence, shared counter**
+
+> «شماره ساده» + «شمارنده مشترک»
+
+So `joints.joint_number` holds `1, 2, 3…` **as displayed**, scoped per line, with welded and
+threaded joints drawing from **one** counter. The line already identifies the context, so
+`{line}-J-001` would repeat information the user is already looking at.
+
+Stored as an **integer** (`joint_seq`), not a zero-padded string: padding is presentation, and
+storing `"007"` makes sorting and "next number" arithmetic into string surgery. The displayed
+form is `str_pad($seq, 3, '0', STR_PAD_LEFT)` in the view layer, exactly as document numbers
+already do with `sprintf('%04d')`.
+
+The counter is allocated under `lockForUpdate()` on the **parent `piping_lines` row** — the
+established pattern (MR/PO lock `projects`; MCC/punch lock `subsystems`).
+
+### 11.2 Flanged joints: unnumbered for now (my recommendation, accepted)
+
+> «پیشنهاد خودت»
+
+**Leave them unnumbered.** Reasons, in order of weight:
+
+1. **A number nobody uses is a lie that costs.** If flanged joints get numbers now, those
+   numbers appear on reports and in exports, people start quoting them, and when the bolt-up
+   register arrives with its own scheme we either break their references or maintain two.
+2. **They lose nothing.** A flanged joint is still a row, still compatibility-checked (150# to
+   300# is exactly the error worth catching), still addressable by its two components, still
+   attachable to a punch item.
+3. **The data model already distinguishes them** via `numbering_policy = NOT_APPLICABLE`
+   (§10.1), so adding a *separate* flange/bolt-up series later is additive: a new column
+   `boltup_seq` with its own partial-unique index, no migration of existing numbers.
+
+If you later want them numbered, the honest trigger is the **bolt-up / torque register**
+(torque values, gasket type, bolt lot, tightening pass) — that module gives the number a job.
+
+### 11.3 Support numbering: project pattern, sourced from the support documents
+
+> «الگوی پروژه‌ای بر اساس مدارک standard support یا support details و support list و آیزومتریک»
+
+`pipe_supports` therefore gets the **same typed-token numbering machinery** as `piping_lines`
+(§4), not a hardcoded format — one engine, two configurations. Tokens available to a support:
+
+| Token | Source |
+|---|---|
+| `support_type` | the standard support **type code** from the Standard Support document (e.g. `SH`, `GD`, `AN`, `SP`) |
+| `standard_detail_ref` | the detail number from **Support Details** |
+| `line` | the parent line number, or any of its own tokens |
+| `isometric_sheet_no` | the sheet the support appears on |
+| `sequence` | counter, scope configurable (per line / per iso / per project) |
+
+And `pipe_supports` carries `support_list_ref` — supports arrive as a **Support List** document,
+so the register must round-trip to it. Each of the three source documents is linked as a CDE
+document, the same way `line_documents` evidences AFC.
+
+### 11.4 Line number format: the brackets were separators — confirmed
+
+> «بخش‌های مختلف فرمت مثالی شماره خط رو برای این تو کروشه گذاشته بودم که بدونی هر بخش با خط تیره از هم جدا میشه»
+
+Understood, and this is what §4 already encodes: `separator: "-"` with an ordered token list.
+The braces in `{size}-{service}-{class}-{subsystem}-{seq}-{coating}` were never meant literally,
+and the typed-token design means the separator is configurable per project too — a project using
+`/` or no separator at all costs nothing.
+
+### 11.5 Attribute values must be pre-registered, not typed
+
+> «بعضی موارد مثل سایز، piping class، نوع پوشش، از قبل تو سیستم ثبت بشن»
+
+This splits into two kinds, and the distinction drives **ADR-007**:
+
+| Kind | Examples | Varies by | Home |
+|---|---|---|---|
+| **Universal reference** | pipe sizes (NPS/DN/OD), schedules and wall thicknesses, end types, flange ratings | nothing — true everywhere | **ADR-007**: versioned JSON reference packs, read-only, no RLS, no DB pressure |
+| **Project register** | piping classes (from the PMS), services, coating types, insulation types | per project | normal tenant tables, seeded per project, editable by the engineering lead |
+
+So `piping_lines.nominal_size` is a **picklist from the reference pack**, while
+`piping_lines.piping_class` is a **FK into a per-project `piping_classes` table**. Both are
+"pre-registered" as the user asked; they differ in who owns the list.
+
+This is also what makes line-number **parsing** (§4) possible: every token can be validated
+against a known vocabulary, so `8-P-A1-SS2201-001-CT2` can be rejected if `A1` is not a piping
+class on this project — the single most useful import check there is.
+
+**→ See `docs/ADR-007-Reference-Data-Engineering-Standards.md`**, which also documents a real
+trap found while verifying the data: published sources **disagree** on large-bore walls because
+some print STD values under a "SCH 40" heading. STD diverges from SCH 40 at **12" and above**;
+XS diverges from SCH 80 at **10" and above**. Taking one source on trust would have produced a
+confidently wrong table.
 
 ---
 
@@ -538,6 +615,10 @@ removed; `pipe_supports` and `spools` added.)
 | 6 | **PCF import** → staged `upload → preview → commit`; must import *unnumbered* | yes — collapses 2–5 to minutes |
 | 7 | Incrementally-maintained roll-ups (§6) into subsystem progress; join to `material_lots` heats via `mto_item_no` | yes |
 | 8 | QA/QC and welding states — **awaiting the user's specification** | separate ADR |
+
+**Phase 0 (new, prerequisite): the reference packs of ADR-007.** Phase 1 cannot validate a
+`{size}` token without the size vocabulary, so ADR-007 phase 1 lands first. It is small and
+self-contained.
 
 Phase 4 moved earlier: fit-up is the first thing that makes this useful **to the people on site**
 rather than to the office, and it needs only phases 1–3.

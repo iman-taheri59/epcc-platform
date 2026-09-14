@@ -1482,7 +1482,7 @@ Six mutations (M118–M123) confirm the new rules. **M118 first reported SURVIVE
 the mutation's fault, not the test's** — dropping a constraint with `psql` proves nothing when
 `setUp()` runs `migrate:fresh` and rebuilds it. Mutate the **migration source**.
 
-**ADR-006 (`docs/ADR-006-Piping-Line-Component-Joint-Model.md`) — PROPOSED, revised 2026-09-14 with the user's answers (§10); 5 narrower questions remain (§11), none blocking phase 1.**
+**ADR-006 (`docs/ADR-006-Piping-Line-Component-Joint-Model.md`) — PROPOSED, all ten questions answered (§10, §11). Ready to build; phase 0 is ADR-007.**
 The user corrected a category error in ADR-005: isometrics and support drawings are not things
 to *file*, the system needs **their content**. Model: `subsystem → piping_lines → components →
 component_ports → joints`, with the port model adopted from Plant 3D's `PartPort` /
@@ -1512,6 +1512,31 @@ not a level — same reasoning as optional `areas` in ADR-004. `isometric_sheets
 components derive from the **MTO** (`mto_item_no`, the missing link to
 `material_requisition_items`), and the sheet is just a string on components and joints; pipes
 carry `length_mm` under a type-conditional CHECK.
+
+**Second round resolved the rest.** Joint number is a **simple integer sequence per line**,
+welded and threaded sharing one counter, allocated under `lockForUpdate()` on the parent line —
+stored as an int, padded only in the view (storing `"007"` turns sorting and next-number into
+string surgery). **Flanged joints stay unnumbered** (my recommendation, accepted): a number
+nobody uses gets quoted in reports and then has to be broken when the bolt-up register arrives
+with its own scheme; they lose nothing meanwhile, since they are still rows, still
+compatibility-checked. Supports get the **same typed-token numbering engine** as lines, fed by
+the Standard Support / Support Details / Support List documents.
+
+**ADR-007 (`docs/ADR-007-Reference-Data-Engineering-Standards.md`) — PROPOSED, new.** The user
+asked where universal constants live «که به دیتابیس فشار وارد نکند». Answer: **versioned JSON
+reference packs** beside `standards-packs/`, read-only, **no RLS** — and the reasoning matters:
+RLS on reference data could only ever be "everyone can read", a policy that fails open, whereas
+the real guarantee needed is *nobody can write, including the owner*. A file gives that
+absolutely. It also dodges the ADR-004 trap where a seeder cannot read an RLS-forced table.
+Split: **universal** (NPS/DN/OD, schedules, end types, flange ratings) → reference packs;
+**per-project** (piping classes from the PMS, services, coatings) → normal tenant tables.
+
+**A real trap caught while verifying that data.** Published B36.10M tables *disagree* on
+large-bore walls because some print **STD** values under a column labelled **SCH 40**.
+Verified: **STD diverges from SCH 40 at 12" and above** (12" is 10.31 vs 9.53) and **XS diverges
+from SCH 80 at 10" and above** (fixed at 12.70). So STD/XS/XXS are **first-class schedules, not
+aliases**, and the tests must assert the *divergence* — a fixture checking only 2" and 6" would
+pass on a completely wrong large-bore table.
 
 **Benchmarked before proposing** (2M rows, real RLS policy, role `epcc`): indexed fetch of one
 line's ports **0.45 ms** — the policy's `EXISTS` is hashed once, not per row — but a full-scan
