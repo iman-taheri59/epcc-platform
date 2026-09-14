@@ -293,17 +293,10 @@ create components through the template, so they cannot diverge.
 
 ---
 
-## 7. Open questions
+## 7. Open questions — answered 2026-09-14, see ADR-010
 
-1. **Dia-inch convention** — for a reducing weld (6"×2"), is the dia-inch the larger, the
-   smaller, or the average? Practice varies by contract. Affects only the report, not storage.
-2. **Component template extensibility** — if a project has a component class we did not ship
-   (a special strainer, a proprietary coupling), should the project be able to define its own
-   template, or should that be a release-level change? I lean toward **project-level, with the
-   universal set read-only** — same split as reference data vs project registers.
-3. **Equipment nozzles** — ADR-006 §2 noted a joint may terminate at an equipment nozzle rather
-   than a component. Do you want equipment modelled now (even minimally: tag + nozzle list), or
-   should a line simply terminate at a `from_ref` / `to_ref` string until an equipment module
-   exists?
-
-None block phases 0–2.
+| # | Question | Answer |
+|---|---|---|
+| 1 | Dia-inch convention for a reducing weld | **The smaller diameter governs.** Computed, never stored (except frozen into an approved progress snapshot). ADR-010 §1 |
+| 2 | Who may define component templates | **Two tiers**: universal set read-only in the reference pack; projects may add their own, may not shadow a universal code. ADR-010 §2 |
+| 3 | Equipment now, or free-text endpoints | **Model equipment.** A nozzle is a port owner, so `joints` needs no change — verified. ADR-010 §3 |

@@ -1531,6 +1531,34 @@ absolutely. It also dodges the ADR-004 trap where a seeder cannot read an RLS-fo
 Split: **universal** (NPS/DN/OD, schedules, end types, flange ratings) → reference packs;
 **per-project** (piping classes from the PMS, services, coatings) → normal tenant tables.
 
+**ADR-010 (`docs/ADR-010-Equipment-Nozzles-and-Dia-Inch.md`) — PROPOSED, new.** Closes ADR-009's
+three questions.
+
+- **Dia-inch: the smaller diameter governs.** `min(portA, portB)`. Measured on a 5-weld sample:
+  **19.0 vs 27.0** under the other reading — a **42% overstatement**, and on a job progressed or
+  paid by dia-inch that is a commercial number. Computed, **never stored on the joint** (it would
+  drift from the port sizes), *except* frozen into an approved progress snapshot. The test must
+  contain **reducing** welds — an equal-bore fixture passes under either convention and proves
+  nothing, the same trap as testing schedules only at 2".
+- **Component templates get two tiers.** Universal set (PIPE/ELBOW/TEE/…/NOZZLE) ships read-only
+  in the reference pack — a tee has three ports everywhere and that is not a project opinion.
+  Projects may add their own (Victaulic coupling, vendor connector) but **may not shadow a
+  universal code**; same closed-vocabulary / configurable-subset split as `FacilityKind::all()`
+  vs `selectable()`.
+- **Equipment: a nozzle is a port owner, so `joints` needs NO change.** Verified with a spike —
+  one `ports` table, `owner_kind ∈ {COMPONENT, NOZZLE}`, a CHECK enforcing exactly one owner FK.
+  A COMPONENT↔NOZZLE joint inserted with the joints table untouched; a mixed-owner row rejected
+  by `check_violation`. Mirrors Plant 3D, where `AssetOwnership` links equipment to nozzles and a
+  nozzle is a `NozzleSubPart`, not a line component. **Rejected** the alternative (separate
+  `nozzle_ports` + `port_a_kind`/`port_b_kind` on joints) because every joint query would become
+  a two-branch UNION — the same smell that argued for one `facilities` table in ADR-004.
+- `equipment.subsystem_id` means equipment **joins the existing completion machinery for free**:
+  punch, MC and material status are already keyed to subsystems. Biggest immediate win: a 6" 300#
+  RF nozzle against a 6" 150# RF flange becomes a **hard INVALID at entry**, instead of being
+  discovered at bolt-up with the crane hired.
+- Equipment lands at **phase 3b**, not phase 1 — lines keep free-text endpoints until then and
+  upgrade to nozzle FKs without migrating a single joint.
+
 **ADR-009 (`docs/ADR-009-Manual-Modelling-and-Component-Templates.md`) — PROPOSED, new.**
 Answers "how does manual entry work, and is the model PCF or Plant 3D?".
 
