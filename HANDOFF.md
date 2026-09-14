@@ -1482,6 +1482,44 @@ Six mutations (M118–M123) confirm the new rules. **M118 first reported SURVIVE
 the mutation's fault, not the test's** — dropping a constraint with `psql` proves nothing when
 `setUp()` runs `migrate:fresh` and rebuilds it. Mutate the **migration source**.
 
+**ADR-006 (`docs/ADR-006-Piping-Line-Component-Joint-Model.md`) — PROPOSED, revised 2026-09-14 with the user's answers (§10); 5 narrower questions remain (§11), none blocking phase 1.**
+The user corrected a category error in ADR-005: isometrics and support drawings are not things
+to *file*, the system needs **their content**. Model: `subsystem → piping_lines → components →
+component_ports → joints`, with the port model adopted from Plant 3D's `PartPort` /
+`P3dPartConnection`. Key findings: Plant 3D stores a connection as a **relationship row**
+(part1/port1/part2/port2) and has **no joint number, no weld, no NDT** — the joint is *geometry*
+there and a *construction object* here. **PCF is the import path**: ports are explicit
+(`END-POINT x y z bore ENDTYPE`), a TEE really does emit 3 keypoints, and **welds are already
+first-class** with `CATEGORY FABRICATION|ERECTION` = shop/field. Line numbering is
+**per-project configurable** (the PMS is the authority, not the standards pack) and must
+**parse as well as compose**, so the pattern is stored as typed tokens, not a `{}` string.
+Compatibility returns **three** verdicts (VALID/WARNING/INVALID) — a boolean would make every
+spec break either a lie or a blocker, the same reasoning as advisory inspection.
+
+**The answers changed the shape.** Joint numbering is **per line and conditional**: welded and
+threaded joints need a number, flanged ones do not. That makes `joint_number` nullable for *two
+different reasons*, which must not be conflated — so `numbering_policy` (REQUIRED |
+NOT_APPLICABLE) is stored, guarded by a **partial unique index** plus a CHECK. Spiked on this
+PostgreSQL first (no partial-unique precedent existed in the schema): unnumbered flanges and
+unnumbered imported welds coexist, duplicates rejected, a *numbered* flange rejected. Import
+**must not invent numbers** — an unnumbered welded joint is a valid row and needs its own
+worklist. Joints gained a state machine (**MODELLED → FITTED**, `fitted_by_code` + `fitted_at`
+mandatory on entry); **`fitted_by_code` is a string, not a `users` FK** — verified there is no
+personnel table and `users` holds office accounts, so a pipe fitter has no login and must not be
+forced into the identity RLS policies. Supports are **part of the line but their own register**
+(no ports, so no fake component rows). Spools are an **optional grouping** (nullable `spool_id`),
+not a level — same reasoning as optional `areas` in ADR-004. `isometric_sheets` was **deleted**:
+components derive from the **MTO** (`mto_item_no`, the missing link to
+`material_requisition_items`), and the sheet is just a string on components and joints; pipes
+carry `length_mm` under a type-conditional CHECK.
+
+**Benchmarked before proposing** (2M rows, real RLS policy, role `epcc`): indexed fetch of one
+line's ports **0.45 ms** — the policy's `EXISTS` is hashed once, not per row — but a full-scan
+aggregate is **2,248 ms vs 204 ms without RLS, an 11× penalty**. So: normal screens are safe,
+and **piping progress roll-ups must be incrementally maintained, never aggregated live.** That
+is a *new* rule — `subsystemMaterialStatus()` (WarehouseService:441) computes live today, which
+is fine at its current scale but must not be copied into the piping module.
+
 **ADR-005 (`docs/ADR-005-Engineering-Data-Ingestion.md`) — PROPOSED, depends on ADR-004.** The
 user wants the system usable *before* construction starts and *before* material reaches site,
 fed by Excel and by Navisworks exports, carrying PMS, MTO, isometrics, line list and support
