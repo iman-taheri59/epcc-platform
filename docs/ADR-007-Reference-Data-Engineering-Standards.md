@@ -233,10 +233,22 @@ same pattern and can be added as further packs when the bolt-up register is spec
 
 ---
 
-## 9. Open question
+## 9. Editions — decided
 
-**Which editions?** I propose **ASME B36.10M** (carbon/alloy) + **B36.19M** (stainless) for
-dimensions, since they are what Plant 3D, PCF and the Iranian IPS specs all reference. If your
-projects standardise on **IPS-E-PI** or **EN 10220** as the governing dimensional document
-instead, say so — it changes the `source` field and a handful of rows, not the design. IPS
-generally adopts the ASME dimensions by reference, which is why I have not assumed otherwise.
+**ASME is the governing dimensional standard** (user, 2026-09-14). So:
+**ASME B36.10M** for carbon/alloy steel and **ASME B36.19M** for stainless, recorded in each
+pack's `source` field. This is also what Plant 3D, PCF/ISOGEN and the Iranian IPS specs
+reference, so no translation layer is needed.
+
+A project that later needs EN 10220 or a different edition gets **another pack**, selected by
+`projects.reference_pack_version` (§7) — not an edit to this one. Reference data is versioned,
+never mutated.
+
+---
+
+## 10. What consumes this beyond ADR-006
+
+`docs/ADR-008-PMS-Piping-Class-Rules.md` depends on this pack for the **NPS → DN conversion**
+that makes size-band rules possible: the PMS says "4 inch", the rule engine stores DN100, and
+only this reference can connect the two. ADR-008 §2 explains why DN integers are the only sane
+key for range logic — NPS is a label (`1 1/4`, `1.25`, `1-1/4`, `۱¼`), not a number.

@@ -1531,6 +1531,38 @@ absolutely. It also dodges the ADR-004 trap where a seeder cannot read an RLS-fo
 Split: **universal** (NPS/DN/OD, schedules, end types, flange ratings) → reference packs;
 **per-project** (piping classes from the PMS, services, coatings) → normal tenant tables.
 
+**ADR-008 (`docs/ADR-008-PMS-Piping-Class-Rules.md`) — PROPOSED, new.** How a PMS piping class
+expresses size-dependent rules («۱/۲ تا ۴ اینچ SCH80، ۴ تا ۱۰ اینچ SCH40») and the branch table.
+
+- **Half-open DN ranges `[from, to)`, never inclusive text.** The user's own sentence has 4" in
+  *both* bands — obvious to an engineer, fatal to a database. Keyed on **DN integers** because
+  NPS is a label (`1 1/4`, `1.25`, `1-1/4`, `۱¼`), not a number.
+- **One table `piping_class_rules` with a `rule_kind` discriminator** — schedule, end prep,
+  valve type, flange type, gasket, bolt spec all share the shape. Same pattern as `MovementType`
+  and `FacilityKind`.
+- **`EXCLUDE USING gist (class WITH =, rule_kind WITH =, dn_range WITH &&)`** makes overlapping
+  bands unrepresentable. **Verified on PG 17.11:** half-open bands accepted, DN100 resolves to
+  exactly one rule (SCH 40), DN80 to SCH 80, and the *inclusive* spelling of the same sentence
+  is **rejected** with `exclusion_violation` naming DN100. Needs `btree_gist` — **already
+  installed in the dev DB** by the spike; the migration must `CREATE EXTENSION IF NOT EXISTS`.
+- Overlap is impossible but **gaps are not**, so coverage is checked with PG 17 `range_agg`:
+  one contiguous fragment = complete, more than one = holes. Becomes a **publication gate** on
+  the class.
+
+**The branch table spike changed the design — record this.** I first tried the same exclusion
+constraint in two dimensions. It **rejected two perfectly legitimate PMS rules** (`[15,600)×
+[15,600)→TEE` plus `[50,600)×[15,50)→WELDOLET`), because a specific rule's footprint sits inside
+the general one. Every real branch table is written as *general rule + specific exceptions*, so
+**overlap there is a feature, not corruption**: `UNIQUE` on the exact footprint only, and
+resolution by **specificity — narrowest `header span + branch span` wins**. Verified: three
+rules match the 6"×1" cell and SOCKOLET (tightest) is correctly chosen, while 6"×6" gives TEE.
+`branch_dn ≤ header_dn` cannot be a row CHECK (it is a property of the query, not the row) so it
+lives in the resolver with its own exception.
+
+**Two-layer validation, deliberately separate:** ASME says what *exists* (INVALID if not),
+the PMS says what is *specified* (DEVIATION if not). A 6" SCH 60 pipe is real and wrong — one
+layer alone would either lie or miss it. Same philosophy as advisory inspection.
+
 **A real trap caught while verifying that data.** Published B36.10M tables *disagree* on
 large-bore walls because some print **STD** values under a column labelled **SCH 40**.
 Verified: **STD diverges from SCH 40 at 12" and above** (12" is 10.31 vs 9.53) and **XS diverges
