@@ -175,6 +175,19 @@ final class TableToolsTest extends TestCase
 
             $body = file_get_contents($file->getPathname());
 
+            /*
+             * An editor grid is not a data table. piping/config renders the
+             * number-format tokens as rows of <input>s whose ORDER IS THE
+             * DATA - token 1 then token 2 is what the number looks like - so
+             * offering to sort them would corrupt the thing being edited, and
+             * filtering would hide rows that are about to be submitted as a
+             * set. Opting out is declared in the view itself so the exemption
+             * is visible where someone might otherwise add data-tt.
+             */
+            if (str_contains($body, 'data-tt-exempt')) {
+                continue;
+            }
+
             // Only tables with a <thead> are data tables; a layout table would
             // not have one. None exist today, but the distinction keeps this
             // guard from becoming a nuisance that gets deleted.

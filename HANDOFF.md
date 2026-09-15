@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-09-15** · Status: **prototype + working vertical slice** · Tests: **647 passed / 2716 assertions** (+83 jsdom)
+Last updated: **2026-09-15** · Status: **prototype + working vertical slice** · Tests: **667 passed / 2751 assertions** (+83 jsdom)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -1658,6 +1658,84 @@ approval predicate, the missing-evidence check, import sequencing, counter scope
 participation check.
 
 
+## 5s. The numbering editor and evidence attachment (ADR-006 phase 1b) — BUILT
+
+§5r left phase 1 *correct but not operable*: the number format could only be changed from tinker,
+and evidence could only be attached programmatically. Both are now real screens.
+
+### `/projects/{code}/piping/config` — the numbering editor
+
+Owner-company only. Edits the token list, the separator, and the three project registers
+(services, coatings, insulation types). Two blank token rows are always rendered, so adding a
+token needs no JavaScript.
+
+**Why this screen needed guard rails more than most.** A number format is the one setting where a
+plausible-looking mistake does not fail on save — it fails weeks later, on the hundredth line.
+Four rules, each verified rather than assumed:
+
+| Rule | What happens without it |
+|---|---|
+| Pattern must contain a counter | **Probed the engine first:** composing a counter-less pattern twice with identical inputs returns the identical string, so the second `create()` dies on the uniqueness check with *"number already taken"* — a message naming the symptom and hiding the cause. The project silently caps at one line per subsystem. |
+| Counter width may grow, never shrink below what was issued | Padding is render-time, so narrowing does **not** corrupt stored data — which is exactly why it is dangerous. Nothing breaks until the project crosses the threshold, then line 100 renders beside `001` and a text sort interleaves them. |
+| Register values may not contain the separator | Every number built from the value becomes unparseable: the regex cannot tell the operator's dash from a structural one. |
+| A value used in an existing line number cannot be removed | Removing it renumbers nothing; it just makes those numbers unrecognisable to `parse()`. Paired with a test proving an **unused** value can still be removed, so the rule does not freeze the register solid. |
+
+Well-formedness (one counter maximum, no duplicate token names, non-empty separator) is
+**delegated to `NumberPattern`'s constructor** rather than reimplemented, so the two cannot drift.
+The service only translates those into a `ValidationException` a form can render.
+
+**Trap:** `AmbiguousPatternException` and `InvalidPatternException` both extend `RuntimeException`
+directly and are `final` — neither is a subclass of the other. Catching only `InvalidPatternException`
+let the two-counter case escape as a 500. Catch both.
+
+### Evidence attachment, and the gate that could not be escaped
+
+The register now has a document picker per draft line, showing each linked document with its CDE
+state and suitability, `✓` or `•` by whether it actually passes.
+
+**Driving the screen found a real defect.** Attaching is *not* exclusive — several documents can
+be linked under the same kind, and `unapprovedEvidence()` checks **all** of them. So a B-coded
+drawing attached by mistake locked the line out of AFC **permanently**, with no way back except a
+database edit. Attaching the correct A-coded isometric afterwards did not help: the bad link was
+still evidence.
+
+`detachEvidence()` fixes it, with two constraints:
+
+- **Draft lines only.** Detaching evidence from a confirmed line would erase the justification for
+  a decision already taken. Revert to draft first — that path demands a reason and is logged.
+- **The link must belong to the line.** Caught by **mutation M21**, which survived the first pass:
+  nothing stopped a hand-edited URL pairing line A with line B's evidence link. Both rows sit in
+  the same project, so **RLS is perfectly happy** — the ownership check is the only thing between a
+  curious URL and quietly stripping evidence off a line the user never opened.
+
+A strict gate must still be escapable by *correcting the input*. That is the difference between a
+gate and a trap.
+
+### Confirmed end-to-end through the UI
+
+Attach B-coded ISO + approved P&ID → gate refuses, naming the document and explaining that a B
+code is *approved with comments* → detach the B-coded one → attach the A-coded one → **AFC
+confirmed**.
+
+### Tests
+
+`PipingConfigTest` 15 · `PipingLineHttpTest` 10 (was 6) · `PipingLineTest` 32 (was 31, +2 archive
+guards, −1 duplicate I had added twice).
+
+**Mutants 14–22, all caught** after M21 was fixed: counter-less pattern, narrowing guard,
+owner-only, separator-in-value, in-use removal, archive guard, detach-on-confirmed,
+detach-cross-line, and `data-tt` on the register table.
+
+### `data-tt-exempt`
+
+`TableToolsTest` enforces that every view with a `<thead>` opts into filter/sort. The config
+screen's token grid legitimately must not: **the row order *is* the data** (it is the order tokens
+appear in the number), so sorting would corrupt what is being edited and filtering would hide rows
+about to be submitted as a set. Rather than weaken the guard, the view declares `data-tt-exempt`
+and says why. Verified the guard still bites: removing `data-tt` from the real register table
+still fails the test, and there is exactly **one** exemption in the codebase.
+
+
 ## 6. The preview iframe (read before debugging "login is broken")
 
 The preview serves the app in an **iframe whose top-level document is a
@@ -1702,7 +1780,7 @@ The whole mechanism is gated on a preview host **and** `SESSION_URL_FALLBACK`
 ## 7. Testing discipline
 
 ```bash
-cd app && php artisan test                          # 647 passed / 2716 assertions (~900 s)
+cd app && php artisan test                          # 667 passed / 2751 assertions (~1050 s)
 python3 standards-packs/validate_packs.py           # 3 standards + 4 reference packs
 node app/tests/Browser/sidebar-toggle.test.cjs      # 17 assertions, needs a fixture
 node app/tests/Browser/sidebar-animation.test.cjs   # 19 assertions, computed styles
@@ -1903,15 +1981,18 @@ engineering content, the B-code trap and the 13 killed mutants. **Next is phase 
 components** (`components` → `component_ports`), then 2b the manual modelling UI, then 3 joints
 with `diaInch()`.
 
-Left open by phase 1, in the order I would take them:
-1. **`ProjectPipingConfig` has no editor.** The pattern, services and coatings are seeded or set
-   from tinker. A project cannot currently configure its own number format through the UI, which
-   is the whole point of making it data. This is the first thing a real pilot would hit.
-2. **Evidence attachment has a route but no form.** `POST …/piping/{id}/evidence` works and is
-   tested; the register does not yet render a document picker, so evidence must be attached
-   programmatically. The gate is therefore demonstrable but not yet operable end-to-end by a user.
-3. `ProjectArchiveService::assertWritable()` is still not wired into the piping write paths —
-   RLS is the only thing stopping writes to an archived project's lines (silently, per §8).
+**Phase 1b closed all three items phase 1 left open** (see §5s): the numbering editor exists, the
+register has a document picker with detach, and `assertWritable()` turned out to be wired into all
+six piping write paths already — it just had no test, which it now does (two, in `PipingLineTest`).
+
+Left open by phase 1b, in the order I would take them:
+1. **The pattern editor cannot reorder tokens.** Rows are edited in place and blank rows append;
+   changing `{size}-{service}` to `{service}-{size}` means retyping both. Drag-and-drop needs
+   JavaScript, but up/down buttons would not. Minor, and invisible until someone tries it.
+2. **No preview of the next number while editing.** The screen shows the *current* sketch; it
+   cannot show what the number would look like under the pattern being typed without a round trip.
+3. **`insulation_types` is editable but unused** — no token reads it yet. Harmless, but it is the
+   kind of half-wired field that later gets mistaken for dead code and deleted.
 
 **ADR-007 (`docs/ADR-007-…md`) — ACCEPTED AND BUILT (2026-09-15, phase 0).** The engineering
 reference packs: 36 sizes, 355 schedule pairs, 13 end types, 20 component templates, behind
@@ -2234,6 +2315,7 @@ Append one row per session. Keep it terse.
 
 | Date | Change | Result |
 |---|---|---|
+| 2026-09-15 | **Phase 1b (§5s): the numbering editor and evidence attachment — the two things that made phase 1 *correct but not operable*.** The number format could only be changed from tinker, which is a hardcoded rule with extra steps; evidence could only be attached programmatically, so the gate was demonstrable but not usable. Both are now screens. Probed the engine before designing the editor's guard rails rather than reasoning about them: a **counter-less pattern composes to the identical string twice**, so the second create dies on the uniqueness check with "number already taken" — symptom named, cause hidden, project silently capped at one line per subsystem. Four rules now refuse at the point of editing, including that counter width may grow but never shrink below what was issued (padding is render-time, so narrowing corrupts nothing until the project crosses the threshold, which is exactly what makes it dangerous). Well-formedness is delegated to `NumberPattern`'s constructor so the two cannot drift — which exposed that **`AmbiguousPatternException` is not a subclass of `InvalidPatternException`**; both extend `RuntimeException` and are `final`, so catching one let the two-counter case escape as a 500. Driving the register with curl then found the defect that mattered: **attaching evidence is not exclusive and the gate checks every link**, so one B-coded drawing attached by mistake locked a line out of AFC permanently with no way back but a database edit. Added `detachEvidence()` — draft lines only, because removing the justification for a decision already taken is not a correction. **Mutation M21 survived the first pass**: nothing stopped a hand-edited URL from pairing line A with line B's evidence link, and since both rows live in the same project **RLS is perfectly happy** — the ownership check was the only guard, and it was untested. Also: `TableToolsTest` correctly caught the config screen's token grid, which legitimately must not be sortable because **the row order *is* the data**; declared `data-tt-exempt` in the view with its reasoning rather than weakening the guard, then confirmed the guard still bites | **667 / 2751**, 21 new tests, **mutants 14–22 caught, 0 survivors** |
 | 2026-09-15 | **ADR-006 phase 1 built (§5r): piping lines, per-project numbering, and the AFC gate.** The first piece of the engineering spine — every component, joint, weld and NDT record eventually resolves to a line. The number format is **data, not code**: a jsonb token list per project, composed and parsed by an engine with the vocabularies injected. Confirmed against real fixture data that the obvious implementation is wrong — **`explode('-', …)` yields 9 fragments for 6 tokens**, because the subsystem code contains three separators. Two defects existed before a line of test ran: `confirmAfc()` called **`CdeState::isApproved()`, which did not exist**, on **`$revision->state`, a column that does not exist**. Fixing it forced the real question — what *is* approval? Answered from the ISO 19650-2 table already in the code rather than invented: `PUBLISHED` **and** an A-family suitability, because **B1–B5 mean "approved with comments"** and waving them through is exactly the rework the gate exists to prevent. Mutation testing then earned its keep twice: **M1** showed my longest-first-sorting test proved nothing (PCRE backtracking rescues `A1|A1B`, so the real hazard is a *following* token absorbing the difference — `PH-14` vs `PH-14-SS`, wrong subsystem, silently), and **M8** showed the `PUBLISHED` half of the gate could be deleted with the suite still green, because the SHARED+S2 fixture fails the A-check anyway; the test that separates them is **SHARED + A1**. Built the register UI and drove it with curl, which surfaced two more: a legitimate refusal escaped as a **500**, and the form offered free text where a project register governs. Imported numbers keep **`sequence` NULL** so a foreign `…-777` cannot push our counter to 778 | **647 / 2716**, 61 new tests, **13 mutants killed, 0 survivors** |
 | 2026-09-15 | **Project archive built (§5q) — the answer to ADR-013's open question, which the user settled as «آرشیو».** `ACTIVE ↔ ARCHIVED`, reversible, with **no `DELETED` state**: deletion stays a separate ceremony rather than one dropdown position away. Archived projects are read-only, hidden from the portfolio behind a clickable count, and **excluded from `plans.max_projects`** — the commercial crux, because a customer on a one-project plan who cannot start job two without deleting job one *will* delete job one, and the licence terms would be instructing them to destroy contractual evidence. Two layers, both necessary and failing differently: the service refuses loudly and translated, RLS is the backstop. Spiked the mechanism before writing it and found the asymmetry that shaped the design — **a blocked UPDATE/DELETE raises nothing**, `rowCount=0`, `save()` returns true, so RLS alone would tell a user "saved" while the edit vanished. Then found a real hole by trying it rather than trusting the design: **`WITH CHECK` is never evaluated for DELETE**, so the freeze policy reported `DELETE 9` and emptied an archived project's punch list — fixed with a second `FOR DELETE USING (...)` policy per table (22 × 2). Also uncovered incidentally: **`SetUserLocale` was registered on the Filament panel only**, so every `__()` outside the admin panel fell back to the default locale; invisible while only views used it (they have their own `?lang=` closure) and exposed the instant a service threw a translated exception | **586 / 2564**, 30 new tests |
 | 2026-09-15 | **Phase 0 built: the engineering reference packs (§5m, ADR-007 → ACCEPTED AND BUILT).** First code from ADRs 006-010, and deliberately first: the line-number parser, the compatibility engine and the PCF importer all need the size vocabulary before they can validate anything. Four versioned JSON packs (36 sizes, 355 schedule pairs, 13 PCF end types, 20 component templates) behind one memoised singleton - **not** database tables, because the protection needed is *nobody can write, including the owner company*, which a file gives absolutely and a permissive RLS policy only pretends to. The ADR predicted from published sources that **STD is not an alias of SCH 40 above 10″ and XS is not SCH 80 above 8″**; the shipped data now asserts it in three layers. Two defects: PHP **coerces numeric string array keys to integers**, so `schedulesFor()` returned a mixed `int|string` list (caught by the suite on first run); and the reachable **alias-fallback bug runs the opposite way to the assertion** - ASME defines STD at 22″ and 26″ but no SCH 40 there at all, so a "helpful" fallback returns 9.53 mm for a schedule that does not exist. That one **survived the first suite** and was found only by mutation M1. M14 also showed the singleton test proved nothing: instance identity is not memoisation, so it now warms the cache, deletes the files, and asserts a *fresh* instance still throws | **556 / 2491**, **153 mutations caught** (+15 pack-data, +15 PHP) |

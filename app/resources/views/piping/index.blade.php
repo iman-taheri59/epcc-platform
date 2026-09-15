@@ -29,6 +29,10 @@
         'note'    => ['fa' => 'توضیح', 'en' => 'Note'],
         'reason'  => ['fa' => 'دلیل بازگشت (الزامی)', 'en' => 'Reason (required)'],
         'nonconf' => ['fa' => 'خارج از قالب پروژه', 'en' => 'Outside the project format'],
+        'pickdoc' => ['fa' => 'مدرک…', 'en' => 'Document…'],
+        'link'    => ['fa' => 'پیوست', 'en' => 'Link'],
+        'unlink'  => ['fa' => 'حذف پیوست', 'en' => 'Remove link'],
+        'config'  => ['fa' => 'تنظیم شماره‌گذاری', 'en' => 'Numbering setup'],
         'noreg'   => ['fa' => 'این فهرست برای پروژه تعریف نشده است؛ تا تعریف نشود شماره‌گذاری خودکار ممکن نیست.',
                       'en' => 'Not set up for this project yet - automatic numbering needs it first.'],
     ];
@@ -73,6 +77,7 @@
     @endif
     <span style="margin-{{ $fa ? 'right' : 'left' }}:auto;font-size:12px;color:var(--muted);">
       {{ $L('pattern') }}: <code>{{ $pattern }}</code>
+      · <a href="/projects/{{ $project->code }}/piping/config?lang={{ $lang }}">{{ $L('config') }}</a>
     </span>
   </div>
 
@@ -115,18 +120,62 @@
             <span class="pill">{{ $fa ? $label['fa'] : $label['en'] }}</span>
           @endif
         </td>
-        <td style="font-size:11.5px;line-height:1.7;">
-          @if($b === null)
-            —
-          @elseif($ready)
-            <span style="color:#6ee7b7;">{{ $L('ready') }}</span>
-          @else
-            @if($b['missing'] !== [])
-              <div style="color:#fca5a5;">{{ $L('missing') }} {{ implode(', ', $b['missing']) }}</div>
+        <td style="font-size:11.5px;line-height:1.7;min-width:230px;">
+          @php $links = $attached[$line->id] ?? collect(); @endphp
+
+          @foreach($links as $link)
+            @php
+              $rev = $link->document?->currentRevision;
+              $ok = $rev !== null && \App\Support\CdeState::isApproved((string) $rev->cde_state, $rev->suitability);
+            @endphp
+            <div style="display:flex;gap:5px;align-items:baseline;">
+              <span style="color:{{ $ok ? '#6ee7b7' : '#fcd34d' }};">{{ $ok ? '✓' : '•' }}</span>
+              <span class="mono" style="font-size:11px;">{{ $link->document?->number }}</span>
+              <span style="color:var(--muted);font-size:10.5px;">
+                {{ $link->evidence_kind }}@if($rev) · {{ $rev->cde_state }}/{{ $rev->suitability ?: '—' }}@endif
+              </span>
+              @if(\App\Support\LineReleaseState::isEditable((string) $line->release_state))
+                <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/evidence/{{ $link->id }}/detach?lang={{ $lang }}" style="display:inline;">
+                  @csrf
+                  <button type="submit" title="{{ $L('unlink') }}"
+                          style="border:0;background:none;color:#fca5a5;cursor:pointer;font:inherit;font-size:11px;padding:0 2px;">×</button>
+                </form>
+              @endif
+            </div>
+          @endforeach
+
+          @if($b !== null)
+            @if($ready)
+              <div style="color:#6ee7b7;margin-top:3px;">{{ $L('ready') }}</div>
+            @else
+              @if($b['missing'] !== [])
+                <div style="color:#fca5a5;">{{ $L('missing') }} {{ implode(', ', $b['missing']) }}</div>
+              @endif
+              @if($b['unapproved'] !== [])
+                <div style="color:#fcd34d;">{{ $L('notappr') }} {{ implode(', ', $b['unapproved']) }}</div>
+              @endif
             @endif
-            @if($b['unapproved'] !== [])
-              <div style="color:#fcd34d;">{{ $L('notappr') }} {{ implode(', ', $b['unapproved']) }}</div>
-            @endif
+          @endif
+
+          @if(\App\Support\LineReleaseState::isEditable((string) $line->release_state))
+            <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/evidence?lang={{ $lang }}"
+                  style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;">
+              @csrf
+              <select name="document_id" required style="max-width:118px;padding:3px 4px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:10.5px;">
+                <option value="">{{ $L('pickdoc') }}</option>
+                @foreach($documents as $doc)
+                  <option value="{{ $doc->id }}">{{ $doc->number }}</option>
+                @endforeach
+              </select>
+              <select name="evidence_kind" required style="max-width:96px;padding:3px 4px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:10.5px;">
+                @foreach($evidenceKinds as $kind)
+                  <option value="{{ $kind }}" @selected(in_array($kind, $requiredKinds, true) && in_array($kind, $b['missing'] ?? [], true))>{{ $kind }}</option>
+                @endforeach
+              </select>
+              <button type="submit" style="padding:3px 8px;border-radius:5px;border:1px solid var(--line);background:var(--card);color:inherit;font:inherit;font-size:10.5px;cursor:pointer;">
+                {{ $L('link') }}
+              </button>
+            </form>
           @endif
         </td>
         <td>

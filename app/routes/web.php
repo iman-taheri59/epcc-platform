@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\MaterialsController;
+use App\Http\Controllers\PipingConfigController;
 use App\Http\Controllers\PipingLineController;
 use App\Http\Controllers\PunchController;
 use App\Http\Controllers\TransmittalController;
@@ -75,6 +76,13 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::post('/projects/{projectCode}/piping', [PipingLineController::class, 'store'])->name('piping.store');
     Route::post('/projects/{projectCode}/piping/{lineId}/transition', [PipingLineController::class, 'transition'])->name('piping.transition');
     Route::post('/projects/{projectCode}/piping/{lineId}/evidence', [PipingLineController::class, 'attach'])->name('piping.evidence');
+
+    Route::post('/projects/{projectCode}/piping/{lineId}/evidence/{linkId}/detach', [PipingLineController::class, 'detach'])->name('piping.evidence.detach');
+
+    // The numbering editor is a setup screen, not part of daily line entry.
+    Route::get('/projects/{projectCode}/piping/config', [PipingConfigController::class, 'edit'])->name('piping.config');
+    Route::post('/projects/{projectCode}/piping/config/pattern', [PipingConfigController::class, 'updatePattern'])->name('piping.config.pattern');
+    Route::post('/projects/{projectCode}/piping/config/register', [PipingConfigController::class, 'updateRegister'])->name('piping.config.register');
 
     Route::get('/projects/{projectCode}/punch', [PunchController::class, 'index'])->name('punch');
     Route::post('/projects/{projectCode}/punch', [PunchController::class, 'store'])->name('punch.store');

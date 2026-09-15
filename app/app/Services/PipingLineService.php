@@ -324,6 +324,39 @@ final class PipingLineService
     }
 
     /** Attach a CDE document as evidence for this line. */
+    /**
+     * Remove an evidence link.
+     *
+     * Needed because attaching is not exclusive: several documents can be
+     * linked under the same kind, and unapprovedEvidence() checks ALL of them.
+     * Found by driving the screen - a wrongly attached B-coded drawing left
+     * the line permanently unable to pass AFC, with no way back except a
+     * database edit. The gate must be strict, not unescapable.
+     *
+     * Only editable lines: detaching evidence from a line that is already
+     * AFC-confirmed would erase the justification for a decision that has
+     * been made. Revert to draft first, which demands a reason and is logged.
+     */
+    public function detachEvidence(PipingLine $line, User $actor, LineDocument $link): void
+    {
+        $project = Project::query()->findOrFail($line->project_id);
+        $this->archives->assertWritable($project);
+
+        if (! LineReleaseState::isEditable((string) $line->release_state)) {
+            throw ValidationException::withMessages([
+                'evidence' => __('epcc.line.evidence_locked'),
+            ]);
+        }
+
+        if ((string) $link->piping_line_id !== (string) $line->id) {
+            throw ValidationException::withMessages([
+                'evidence' => __('epcc.line.evidence_other_line'),
+            ]);
+        }
+
+        $link->delete();
+    }
+
     public function attachEvidence(PipingLine $line, User $actor, Document $document, string $kind): LineDocument
     {
         $project = Project::query()->findOrFail($line->project_id);

@@ -96,6 +96,28 @@ final class PipingLineController extends Controller
             $project->id,
         );
 
+        // Documents that could serve as evidence, plus what is already linked.
+        // Loaded once for the whole page rather than per row.
+        [$documents, $attached] = $this->tenant->runAs(
+            $user->company_id,
+            function () use ($rows): array {
+                $docs = Document::query()
+                    ->with('currentRevision')
+                    ->orderBy('number')
+                    ->limit(500)
+                    ->get();
+
+                $links = LineDocument::query()
+                    ->whereIn('piping_line_id', $rows->pluck('id'))
+                    ->with('document.currentRevision')
+                    ->get()
+                    ->groupBy('piping_line_id');
+
+                return [$docs, $links];
+            },
+            $project->id,
+        );
+
         return view('piping.index', [
             'lang' => $lang,
             'dir' => $lang === 'fa' ? 'rtl' : 'ltr',
@@ -108,6 +130,10 @@ final class PipingLineController extends Controller
             'blockers' => $blockers,
             'pattern' => $this->lines->configFor($project)->pattern()->sketch(),
             'vocab' => $vocab,
+            'documents' => $documents,
+            'attached' => $attached,
+            'evidenceKinds' => LineDocument::kinds(),
+            'requiredKinds' => LineDocument::requiredForAfc(),
             'patternTokens' => $this->lines->configFor($project)->pattern()->tokenNames(),
             'jalaliDate' => $this->today($lang),
         ]);
@@ -203,6 +229,23 @@ final class PipingLineController extends Controller
             $document = Document::findOrFail($data['document_id']);
 
             $this->lines->attachEvidence($line, $user, $document, (string) $data['evidence_kind']);
+        }, $project->id);
+
+        return redirect($this->backTo($projectCode, $lang, $request));
+    }
+
+    /** Remove an evidence link that should not have been made. */
+    public function detach(Request $request, string $projectCode, string $lineId, string $linkId): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+
+        $this->tenant->runAs($user->company_id, function () use ($lineId, $linkId, $user): void {
+            $line = PipingLine::findOrFail($lineId);
+            $link = LineDocument::findOrFail($linkId);
+
+            $this->lines->detachEvidence($line, $user, $link);
         }, $project->id);
 
         return redirect($this->backTo($projectCode, $lang, $request));

@@ -14,6 +14,7 @@ use App\Models\ProjectPipingConfig;
 use App\Models\Subsystem;
 use App\Models\User;
 use App\Services\PipingLineService;
+use App\Services\ProjectArchiveService;
 use App\Support\CdeState;
 use App\Support\LineReleaseState;
 use App\Support\TenantContext;
@@ -474,6 +475,25 @@ final class PipingLineTest extends TestCase
         $this->assertFalse(CdeState::isApproved(CdeState::PUBLISHED, null), 'no code is no decision');
         $this->assertFalse(CdeState::isApproved(CdeState::PUBLISHED, ''));
         $this->assertFalse(CdeState::isApproved(CdeState::WIP, 'A1'));
+    }
+
+    public function test_an_archived_project_refuses_the_afc_gate(): void
+    {
+        // The same guard on a state transition rather than an insert. Confirming
+        // AFC on a closed-out project would be backdating an approval, which is
+        // exactly the kind of record the archive exists to keep honest.
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->makeLine();
+
+        app(ProjectArchiveService::class)->archive($project, $owner, 'Closed out');
+
+        try {
+            $this->expectException(ValidationException::class);
+            $this->asOwner(fn () => $this->service()->confirmAfc($line, $owner));
+        } finally {
+            app(ProjectArchiveService::class)->reopen($project->fresh(), $owner);
+        }
     }
 
     public function test_release_makes_the_line_buildable(): void

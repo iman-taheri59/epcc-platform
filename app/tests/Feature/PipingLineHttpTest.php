@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Document;
+use App\Models\DocumentRevision;
+use App\Models\LineDocument;
+use App\Support\CdeState;
 use App\Models\PipingClass;
 use App\Models\PipingLine;
 use App\Models\Project;
@@ -178,6 +182,243 @@ final class PipingLineHttpTest extends TestCase
 
         $this->assertSame('LEGACY-XYZ-0042', $line->line_number);
         $this->assertNull($line->sequence, 'an imported number must not feed our counter');
+    }
+
+    /** Create a published document at the given suitability. */
+    private function evidenceDoc(string $number, string $suitability, int $seq): Document
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+
+        return app(TenantContext::class)->runAs(
+            $owner->company_id,
+            function () use ($project, $owner, $number, $suitability, $seq): Document {
+                $doc = Document::create([
+                    'project_id' => $project->id,
+                    'company_id' => $owner->company_id,
+                    'number' => $number,
+                    'discipline' => 'PIPING',
+                    'doc_type' => 'DWG',
+                    'sequence' => $seq,
+                    'title_en' => 'Evidence',
+                    'title_fa' => 'مدرک',
+                ]);
+                $rev = DocumentRevision::create([
+                    'document_id' => $doc->id,
+                    'project_id' => $project->id,
+                    'company_id' => $owner->company_id,
+                    'revision' => '0',
+                    'ordinal' => 1,
+                    'cde_state' => CdeState::PUBLISHED,
+                    'suitability' => $suitability,
+                    'issued_by' => $owner->id,
+                    'issued_at' => now(),
+                ]);
+                $doc->update(['current_revision_id' => $rev->id]);
+
+                return $doc;
+            },
+            $project->id,
+        );
+    }
+
+    private function aLine(): PipingLine
+    {
+        $class = $this->seedRegisters();
+        $subsystem = $this->subsystem();
+
+        $this->actingAs($this->owner())->post('/projects/PH-14/piping?lang=en', [
+            'subsystem_id' => $subsystem->id,
+            'nominal_size' => '8',
+            'service_code' => 'P',
+            'piping_class_id' => $class->id,
+        ]);
+
+        return app(TenantContext::class)->runAs(
+            $this->owner()->company_id,
+            fn () => PipingLine::firstOrFail(),
+            $this->project()->id,
+        );
+    }
+
+    public function test_evidence_can_be_attached_and_the_gate_then_passes(): void
+    {
+        // The whole point of the screen: a user, not a script, can get a line
+        // from draft to AFC.
+        $line = $this->aLine();
+        $owner = $this->owner();
+        $iso = $this->evidenceDoc('PH-14-PIP-ISO-7001', 'A1', 7001);
+        $pid = $this->evidenceDoc('PH-14-PIP-PID-7002', 'A2', 7002);
+
+        foreach ([[$iso, LineDocument::ISOMETRIC], [$pid, LineDocument::PID]] as [$doc, $kind]) {
+            $this->actingAs($owner)
+                ->post("/projects/PH-14/piping/{$line->id}/evidence?lang=en", [
+                    'document_id' => $doc->id,
+                    'evidence_kind' => $kind,
+                ])
+                ->assertRedirect();
+        }
+
+        $this->actingAs($owner)
+            ->post("/projects/PH-14/piping/{$line->id}/transition?lang=en", [
+                'to' => LineReleaseState::AFC_CONFIRMED,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $fresh = app(TenantContext::class)->runAs(
+            $owner->company_id,
+            fn () => PipingLine::findOrFail($line->id),
+            $this->project()->id,
+        );
+
+        $this->assertSame(LineReleaseState::AFC_CONFIRMED, $fresh->release_state);
+        $this->assertNotNull($fresh->afc_confirmed_at);
+    }
+
+    public function test_a_wrongly_attached_document_can_be_removed(): void
+    {
+        // Found by driving the screen: attaching is not exclusive, and
+        // unapprovedEvidence() checks every link. A B-coded drawing attached
+        // by mistake therefore locked the line out of AFC permanently, with no
+        // way back except editing the database. A strict gate must still be
+        // escapable by correcting the input.
+        $line = $this->aLine();
+        $owner = $this->owner();
+        $good = $this->evidenceDoc('PH-14-PIP-ISO-7003', 'A1', 7003);
+        $bad = $this->evidenceDoc('PH-14-PIP-ISO-7004', 'B1', 7004);
+        $pid = $this->evidenceDoc('PH-14-PIP-PID-7005', 'A1', 7005);
+
+        foreach ([[$good, LineDocument::ISOMETRIC], [$bad, LineDocument::ISOMETRIC], [$pid, LineDocument::PID]] as [$doc, $kind]) {
+            $this->actingAs($owner)->post("/projects/PH-14/piping/{$line->id}/evidence?lang=en", [
+                'document_id' => $doc->id,
+                'evidence_kind' => $kind,
+            ]);
+        }
+
+        // Still blocked, because the B-coded one is also evidence.
+        $this->actingAs($owner)
+            ->post("/projects/PH-14/piping/{$line->id}/transition?lang=en", [
+                'to' => LineReleaseState::AFC_CONFIRMED,
+            ])
+            ->assertSessionHasErrors();
+
+        $badLink = app(TenantContext::class)->runAs(
+            $owner->company_id,
+            fn () => LineDocument::where('document_id', $bad->id)->firstOrFail(),
+            $this->project()->id,
+        );
+
+        $this->actingAs($owner)
+            ->post("/projects/PH-14/piping/{$line->id}/evidence/{$badLink->id}/detach?lang=en")
+            ->assertRedirect();
+
+        $this->actingAs($owner)
+            ->post("/projects/PH-14/piping/{$line->id}/transition?lang=en", [
+                'to' => LineReleaseState::AFC_CONFIRMED,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $fresh = app(TenantContext::class)->runAs(
+            $owner->company_id,
+            fn () => PipingLine::findOrFail($line->id),
+            $this->project()->id,
+        );
+
+        $this->assertSame(LineReleaseState::AFC_CONFIRMED, $fresh->release_state);
+    }
+
+    public function test_evidence_cannot_be_detached_once_the_line_is_confirmed(): void
+    {
+        // Removing the justification for a decision already taken would leave
+        // an approval with nothing behind it. Revert to draft first - that
+        // path demands a reason.
+        $line = $this->aLine();
+        $owner = $this->owner();
+        $iso = $this->evidenceDoc('PH-14-PIP-ISO-7006', 'A1', 7006);
+        $pid = $this->evidenceDoc('PH-14-PIP-PID-7007', 'A1', 7007);
+
+        foreach ([[$iso, LineDocument::ISOMETRIC], [$pid, LineDocument::PID]] as [$doc, $kind]) {
+            $this->actingAs($owner)->post("/projects/PH-14/piping/{$line->id}/evidence?lang=en", [
+                'document_id' => $doc->id,
+                'evidence_kind' => $kind,
+            ]);
+        }
+
+        $this->actingAs($owner)->post("/projects/PH-14/piping/{$line->id}/transition?lang=en", [
+            'to' => LineReleaseState::AFC_CONFIRMED,
+        ]);
+
+        $link = app(TenantContext::class)->runAs(
+            $owner->company_id,
+            fn () => LineDocument::where('document_id', $iso->id)->firstOrFail(),
+            $this->project()->id,
+        );
+
+        $this->actingAs($owner)
+            ->post("/projects/PH-14/piping/{$line->id}/evidence/{$link->id}/detach?lang=en")
+            ->assertSessionHasErrors();
+
+        $still = app(TenantContext::class)->runAs(
+            $owner->company_id,
+            fn () => LineDocument::where('document_id', $iso->id)->exists(),
+            $this->project()->id,
+        );
+
+        $this->assertTrue($still, 'the evidence must survive the refused detach');
+    }
+
+    public function test_evidence_cannot_be_detached_via_another_line(): void
+    {
+        // Mutation M21: nothing stopped a hand-edited URL from pairing line A
+        // with line B's evidence link. Both rows are inside the same project,
+        // so RLS is perfectly happy - the ownership check is the only thing
+        // standing between a curious URL and quietly stripping the evidence
+        // off a line the user never opened.
+        $classA = $this->seedRegisters();
+        $subsystem = $this->subsystem();
+        $owner = $this->owner();
+
+        foreach ([1, 2] as $_) {
+            $this->actingAs($owner)->post('/projects/PH-14/piping?lang=en', [
+                'subsystem_id' => $subsystem->id,
+                'nominal_size' => '8',
+                'service_code' => 'P',
+                'piping_class_id' => $classA->id,
+            ]);
+        }
+
+        [$lineA, $lineB] = app(TenantContext::class)->runAs(
+            $owner->company_id,
+            fn () => PipingLine::orderBy('sequence')->get()->all(),
+            $this->project()->id,
+        );
+
+        $doc = $this->evidenceDoc('PH-14-PIP-ISO-7008', 'A1', 7008);
+
+        $this->actingAs($owner)->post("/projects/PH-14/piping/{$lineB->id}/evidence?lang=en", [
+            'document_id' => $doc->id,
+            'evidence_kind' => LineDocument::ISOMETRIC,
+        ]);
+
+        $link = app(TenantContext::class)->runAs(
+            $owner->company_id,
+            fn () => LineDocument::where('document_id', $doc->id)->firstOrFail(),
+            $this->project()->id,
+        );
+
+        // Line A is a draft, so the editable check passes - only the ownership
+        // check can refuse this.
+        $this->actingAs($owner)
+            ->post("/projects/PH-14/piping/{$lineA->id}/evidence/{$link->id}/detach?lang=en")
+            ->assertSessionHasErrors();
+
+        $survived = app(TenantContext::class)->runAs(
+            $owner->company_id,
+            fn () => LineDocument::where('document_id', $doc->id)->exists(),
+            $this->project()->id,
+        );
+
+        $this->assertTrue($survived, "line B's evidence must survive a detach aimed through line A");
     }
 
     public function test_the_gate_still_refuses_over_http(): void
