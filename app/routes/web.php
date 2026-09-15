@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\MaterialsController;
+use App\Http\Controllers\PipingLineController;
 use App\Http\Controllers\PunchController;
 use App\Http\Controllers\TransmittalController;
 use App\Http\Controllers\GateDemoController;
@@ -68,6 +69,12 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     // distinct places with distinct URLs people can bookmark and link to.
     Route::get('/projects/{projectCode}/vendor-transmittals', [TransmittalController::class, 'vendorIndex'])->name('transmittals.vendor');
     Route::post('/projects/{projectCode}/vendor-transmittals/{transmittalId}/rollup', [TransmittalController::class, 'rollUp'])->name('transmittals.rollup');
+
+    // Piping line register + AFC gate (ADR-006 phase 1).
+    Route::get('/projects/{projectCode}/piping', [PipingLineController::class, 'index'])->name('piping');
+    Route::post('/projects/{projectCode}/piping', [PipingLineController::class, 'store'])->name('piping.store');
+    Route::post('/projects/{projectCode}/piping/{lineId}/transition', [PipingLineController::class, 'transition'])->name('piping.transition');
+    Route::post('/projects/{projectCode}/piping/{lineId}/evidence', [PipingLineController::class, 'attach'])->name('piping.evidence');
 
     Route::get('/projects/{projectCode}/punch', [PunchController::class, 'index'])->name('punch');
     Route::post('/projects/{projectCode}/punch', [PunchController::class, 'store'])->name('punch.store');

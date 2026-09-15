@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-09-15** · Status: **prototype + working vertical slice** · Tests: **586 passed / 2564 assertions** (+83 jsdom)
+Last updated: **2026-09-15** · Status: **prototype + working vertical slice** · Tests: **647 passed / 2716 assertions** (+83 jsdom)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -1545,6 +1545,119 @@ Tests: `php artisan test --filter=ProjectArchiveTest` — **30 tests**, includin
 regression, the silent-failure documentation, the quota exclusion and the bilingual refusal.
 
 
+## 5r. Piping lines + numbering + the AFC gate (ADR-006 phase 1) — BUILT
+
+The first piece of the engineering-object spine. A **line** is the unit the whole piping discipline
+hangs off: components, joints, welds, NDT, hydrotest and progress all resolve to a line. Phase 1
+builds the register, the project-configurable number, and the gate that says *"this line may be
+built"*.
+
+### The numbering engine is data, not code
+
+The number format is **per project**, stored as jsonb on `project_piping_config`:
+
+```
+{size}-{service}-{class}-{subsystem}-{sequence}-{coating}   →  8-P-A1-PH-14-SS-2201-001-CT2
+```
+
+Each token declares `source` (`attribute` | `parent` | `counter`), an optional `width` for padding
+and an `optional` flag. **Padding is render-time only** — `sequence` is an integer in the database,
+so `MAX(sequence)+1` stays a number and never sorts as `"10" < "9"`.
+
+**Do not parse a number by splitting on the separator.** The separator occurs *inside* token values:
+`explode('-', '8-P-A1-PH-14-SS-2201-001-CT2')` yields **9 fragments for 6 tokens**, because the
+subsystem code `PH-14-SS-2201` contains three of them. `parse()` builds an anchored regex from the
+injected vocabularies instead.
+
+Two PCRE facts the tests now pin:
+
+- **Alternation is first-match, not longest-match.** Usually backtracking hides this (`A1|A1B`
+  against `A1B-…` retries and succeeds). It stops hiding it when the *next* token can absorb the
+  difference — with `PH-14|PH-14-SS` against `PH-14-SS-2201`, both splits match and the wrong one
+  wins silently. Hence vocabularies are sorted **longest-first**. Mutation M1 proves it.
+- A relaxed diagnostic token must be lazy `.+?`, and **only one token may be relaxed at a time**.
+  `[^-]+` cannot cross a separator, so relaxing everything at once just fails again.
+
+**`compose()` throws; `parse()` never throws.** Composition with a value outside the project
+register is a refusal — otherwise an unrecognisable number reaches a drawing. Parsing is diagnosis:
+it returns one of four outcomes (no-match / valid / matched-with-`unknownValues` /
+matched-but-`unconfirmed`), because `isValid()` and `isFullyChecked()` are different questions when
+a number arrives from someone else's P&ID.
+
+### Two doors, and why imports must not feed the counter
+
+`create()` allocates: it locks the **subsystem** row and takes `MAX(sequence)+1`.
+`register()` imports: it stores the supplied number **verbatim** and leaves **`sequence` NULL**.
+
+That NULL is load-bearing. An imported `…-777` must not push our next allocation to 778 — we would
+be inheriting a foreign numbering scheme's gaps by accident. A non-conforming number is stored with
+`number_tokens` NULL and flagged, never rejected and never "normalised": ADR-006 §10.2 forbids
+inventing or rewriting someone else's tag. Mutation M10 pins it.
+
+### What AFC actually means, and the B-code trap
+
+AFC — *Approved For Construction* — is the moment the office tells the site **this is safe to
+build**. A gate that can be passed without real approved evidence is worse than no gate, because
+every downstream report then claims a check happened.
+
+`CdeState::isApproved($state, $suitability)` requires **both**:
+
+| Condition | Why |
+|---|---|
+| `cde_state === PUBLISHED` | SHARED is issued *for review*, however it is coded |
+| suitability starts with `A` | **B1–B5 mean "approved with comments"** — published, valid, *not* fit to build |
+
+Both halves are needed and neither is redundant. **Mutation M8 caught the gap here**: the obvious
+"not approved" fixture is SHARED+S2, but S2 already fails the A-check, so the state condition was
+never exercised and could have been deleted with the suite still green. The test that separates
+them is **SHARED + A1** — right code, wrong container. A null or empty suitability is not approval
+either: absence of a code is absence of a decision.
+
+Waving a B-code through is precisely the rework mechanism the gate exists to stop.
+
+**Two defects were found by writing these tests, before any of this ran:** `confirmAfc()` called
+`CdeState::isApproved()` — *a method that did not exist* — on `$revision->state`, *a column that
+does not exist* (it is `cde_state`, with `suitability` a sibling column).
+
+### States
+
+`DRAFT → AFC_CONFIRMED → RELEASED`, with backward edges to `DRAFT` only. `revertToDraft()` demands
+a reason and **nulls** `afc_confirmed_at` / `released_at` — a line pulled back must not keep a
+stale approval timestamp that a later report would read as still-approved (mutation M12). Four DB
+CHECK constraints enforce known states and AFC/release provenance independently of the service, so
+a future write path that bypasses `PipingLineService` still cannot forge an approval.
+
+### UI — `/projects/{code}/piping`
+
+Register, both doors, the gate buttons, and per-line **blockers**: the screen says *why* a line
+cannot pass (`Missing: ISOMETRIC, PID` / `Not approved: <doc no.>`), not merely that it has not.
+
+Two UI defects found by driving the real screen with curl after the service tests were green:
+
+1. `UnknownTokenValueException` escaped as a **500**. The engine was right to refuse; the
+   controller was wrong to crash. An operator choosing a service the project has not set up is
+   making a correctable mistake and is now told which value and which token.
+2. The form offered **free text** for vocabulary-controlled tokens. Now they are `<select>`s built
+   from the live register, and a token the pattern needs but the project has not populated renders
+   as a disabled "not set up for this project yet" notice rather than a box that can only fail.
+
+Note `back()` is wrong for the error path — a form POST may carry no referer, and the redirect to
+`/` burns the flashed error. Redirect to the register explicitly.
+
+### Tests
+
+| Suite | Tests | Notes |
+|---|---|---|
+| `LineNumberingTest` | 24 | pure unit, no DB, ~1 s |
+| `PipingLineTest` | 31 | service + RLS, real DB |
+| `PipingLineHttpTest` | 6 | the screen, authorization, the two defects above |
+
+**13 mutants killed, 0 survivors** (after fixing the two the first pass exposed): sort order,
+`preg_quote`, lazy relaxation, padding, compose validation, regex anchors, both halves of the
+approval predicate, the missing-evidence check, import sequencing, counter scope, revert clearing,
+participation check.
+
+
 ## 6. The preview iframe (read before debugging "login is broken")
 
 The preview serves the app in an **iframe whose top-level document is a
@@ -1589,7 +1702,7 @@ The whole mechanism is gated on a preview host **and** `SESSION_URL_FALLBACK`
 ## 7. Testing discipline
 
 ```bash
-cd app && php artisan test                          # 556 passed / 2491 assertions
+cd app && php artisan test                          # 647 passed / 2716 assertions (~900 s)
 python3 standards-packs/validate_packs.py           # 3 standards + 4 reference packs
 node app/tests/Browser/sidebar-toggle.test.cjs      # 17 assertions, needs a fixture
 node app/tests/Browser/sidebar-animation.test.cjs   # 19 assertions, computed styles
@@ -1661,6 +1774,20 @@ The app's `package.json` sets `"type": "module"`, hence the `.cjs` extension.
 
 ## 8. Known traps (non-obvious, will cost you an hour each)
 
+- **PCRE alternation is first-match, and backtracking usually hides it.**
+  `A1|A1B` against `A1B-…` *works* — the engine tries `A1`, fails the next
+  separator, retries `A1B`. So a naive test passes and you conclude ordering
+  does not matter. It matters when the following token can absorb the
+  difference: `PH-14|PH-14-SS` against `PH-14-SS-2201` matches both ways and
+  keeps the **wrong** split, silently attributing a line to the wrong
+  subsystem. Sort vocabularies longest-first. See §5r.
+- **A test can pin a rule for the wrong reason.** The AFC gate needs
+  `PUBLISHED` **and** an A-family suitability. The obvious negative fixture,
+  SHARED+S2, fails the A-check on its own — so the `PUBLISHED` half was never
+  actually exercised and deleting it left the suite green. Mutation testing
+  found it; the fixture that separates the two conditions is **SHARED + A1**.
+  When a rule is a conjunction, write one test per conjunct that satisfies
+  every *other* conjunct. See §5r.
 - **RLS `WITH CHECK` does not apply to DELETE.** A RESTRICTIVE policy with a
   `WITH CHECK` clause blocks INSERT and UPDATE and lets every DELETE straight
   through — there is no new row to check, so the clause is never evaluated.
@@ -1770,14 +1897,28 @@ The app's `package.json` sets `"type": "module"`, hence the `.cjs` extension.
 
 ## 9. Suggested next steps
 
+**ADR-006 phase 1 — BUILT (2026-09-15).** `piping_lines`, the per-project numbering engine and
+the AFC gate, with a working register screen at `/projects/{code}/piping`. See **§5r** for the
+engineering content, the B-code trap and the 13 killed mutants. **Next is phase 2: ports and
+components** (`components` → `component_ports`), then 2b the manual modelling UI, then 3 joints
+with `diaInch()`.
+
+Left open by phase 1, in the order I would take them:
+1. **`ProjectPipingConfig` has no editor.** The pattern, services and coatings are seeded or set
+   from tinker. A project cannot currently configure its own number format through the UI, which
+   is the whole point of making it data. This is the first thing a real pilot would hit.
+2. **Evidence attachment has a route but no form.** `POST …/piping/{id}/evidence` works and is
+   tested; the register does not yet render a document picker, so evidence must be attached
+   programmatically. The gate is therefore demonstrable but not yet operable end-to-end by a user.
+3. `ProjectArchiveService::assertWritable()` is still not wired into the piping write paths —
+   RLS is the only thing stopping writes to an archived project's lines (silently, per §8).
+
 **ADR-007 (`docs/ADR-007-…md`) — ACCEPTED AND BUILT (2026-09-15, phase 0).** The engineering
 reference packs: 36 sizes, 355 schedule pairs, 13 end types, 20 component templates, behind
 `PipeReference`. See §5m for the traps. **This is phase 0 of the consolidated build order in
-ADR-010 §5.** Next is **phase 1: `piping_lines` + the numbering engine + the AFC gate** — the
-numbering engine must *parse* as well as compose, and it can now validate a size token against
-a real vocabulary, which is why phase 0 came first.
+ADR-010 §5.**
 
-ADRs 006, 008, 009 and 010 remain PROPOSED (analysis only). Three questions at the end of
+ADR-006 is now **PARTLY BUILT** (phase 1 of 7). ADRs 008, 009 and 010 remain PROPOSED (analysis only). Three questions at the end of
 ADR-010 are still unanswered by the user: equipment tag uniqueness (per project vs per
 facility — I lean per facility), whether an instrument register is needed now, and whether
 equipment tags are imported-and-validated rather than allocated.
@@ -2081,6 +2222,7 @@ Append one row per session. Keep it terse.
 
 | Date | Change | Result |
 |---|---|---|
+| 2026-09-15 | **ADR-006 phase 1 built (§5r): piping lines, per-project numbering, and the AFC gate.** The first piece of the engineering spine — every component, joint, weld and NDT record eventually resolves to a line. The number format is **data, not code**: a jsonb token list per project, composed and parsed by an engine with the vocabularies injected. Confirmed against real fixture data that the obvious implementation is wrong — **`explode('-', …)` yields 9 fragments for 6 tokens**, because the subsystem code contains three separators. Two defects existed before a line of test ran: `confirmAfc()` called **`CdeState::isApproved()`, which did not exist**, on **`$revision->state`, a column that does not exist**. Fixing it forced the real question — what *is* approval? Answered from the ISO 19650-2 table already in the code rather than invented: `PUBLISHED` **and** an A-family suitability, because **B1–B5 mean "approved with comments"** and waving them through is exactly the rework the gate exists to prevent. Mutation testing then earned its keep twice: **M1** showed my longest-first-sorting test proved nothing (PCRE backtracking rescues `A1|A1B`, so the real hazard is a *following* token absorbing the difference — `PH-14` vs `PH-14-SS`, wrong subsystem, silently), and **M8** showed the `PUBLISHED` half of the gate could be deleted with the suite still green, because the SHARED+S2 fixture fails the A-check anyway; the test that separates them is **SHARED + A1**. Built the register UI and drove it with curl, which surfaced two more: a legitimate refusal escaped as a **500**, and the form offered free text where a project register governs. Imported numbers keep **`sequence` NULL** so a foreign `…-777` cannot push our counter to 778 | **647 / 2716**, 61 new tests, **13 mutants killed, 0 survivors** |
 | 2026-09-15 | **Project archive built (§5q) — the answer to ADR-013's open question, which the user settled as «آرشیو».** `ACTIVE ↔ ARCHIVED`, reversible, with **no `DELETED` state**: deletion stays a separate ceremony rather than one dropdown position away. Archived projects are read-only, hidden from the portfolio behind a clickable count, and **excluded from `plans.max_projects`** — the commercial crux, because a customer on a one-project plan who cannot start job two without deleting job one *will* delete job one, and the licence terms would be instructing them to destroy contractual evidence. Two layers, both necessary and failing differently: the service refuses loudly and translated, RLS is the backstop. Spiked the mechanism before writing it and found the asymmetry that shaped the design — **a blocked UPDATE/DELETE raises nothing**, `rowCount=0`, `save()` returns true, so RLS alone would tell a user "saved" while the edit vanished. Then found a real hole by trying it rather than trusting the design: **`WITH CHECK` is never evaluated for DELETE**, so the freeze policy reported `DELETE 9` and emptied an archived project's punch list — fixed with a second `FOR DELETE USING (...)` policy per table (22 × 2). Also uncovered incidentally: **`SetUserLocale` was registered on the Filament panel only**, so every `__()` outside the admin panel fell back to the default locale; invisible while only views used it (they have their own `?lang=` closure) and exposed the instant a service threw a translated exception | **586 / 2564**, 30 new tests |
 | 2026-09-15 | **Phase 0 built: the engineering reference packs (§5m, ADR-007 → ACCEPTED AND BUILT).** First code from ADRs 006-010, and deliberately first: the line-number parser, the compatibility engine and the PCF importer all need the size vocabulary before they can validate anything. Four versioned JSON packs (36 sizes, 355 schedule pairs, 13 PCF end types, 20 component templates) behind one memoised singleton - **not** database tables, because the protection needed is *nobody can write, including the owner company*, which a file gives absolutely and a permissive RLS policy only pretends to. The ADR predicted from published sources that **STD is not an alias of SCH 40 above 10″ and XS is not SCH 80 above 8″**; the shipped data now asserts it in three layers. Two defects: PHP **coerces numeric string array keys to integers**, so `schedulesFor()` returned a mixed `int|string` list (caught by the suite on first run); and the reachable **alias-fallback bug runs the opposite way to the assertion** - ASME defines STD at 22″ and 26″ but no SCH 40 there at all, so a "helpful" fallback returns 9.53 mm for a schedule that does not exist. That one **survived the first suite** and was found only by mutation M1. M14 also showed the singleton test proved nothing: instance identity is not memoisation, so it now warms the cache, deletes the files, and asserts a *fresh* instance still throws | **556 / 2491**, **153 mutations caught** (+15 pack-data, +15 PHP) |
 | 2026-09-13 | **Physical breakdown built (§5l, ADR-004 → ACCEPTED).** `project → facility → (optional) area → subsystem`, after establishing that Plant 3D has **no** System/Subsystem, MC, punch or handover — so compatibility is an **import mapping**, not a copied schema. One `facilities` table with a `FacilityKind` discriminator instead of sibling plant/pipeline tables, because what they share is being a commissioning parent and what differs is addressing (per-kind `jsonb`). Numbering moved to **per facility**, which made the bare code ambiguous — so `fullCode()` composes at read time (never stored: it would drift on rename) and the register shows Facility as a non-toggleable column. Integrity rests on a **composite** FK `(area_id, facility_id) → areas(id, facility_id)`, making cross-facility corruption unrepresentable. The fixture is deliberately uneven — one facility with areas *and* a direct subsystem, one with no areas at all — because a uniform fixture cannot fail informatively. Two traps recorded: the backfill silently matched **zero rows** under `FORCE ROW LEVEL SECURITY` (RLS filters, it does not error), and **M118 first reported SURVIVED because the mutation was wrong, not the test** — dropping a constraint in `psql` proves nothing when `setUp()` runs `migrate:fresh`. Mutate the migration source. Pushed as `cf99f0f` (§9a — a reset had wiped `.git/config`, so the remote and the git identity had to be recreated first) | **507 / 1716**, **123 mutations caught** |

@@ -100,6 +100,9 @@ final class Navigation
                     $this->item('project.vendortr', 'doc', "/projects/{$code}/vendor-transmittals", [
                         'fa' => 'ترانسمیتال وندورها', 'en' => 'Vendor transmittals',
                     ], $plan, $lang, $currentPath),
+                    $this->item('project.piping', 'qaqc', "/projects/{$code}/piping", [
+                        'fa' => 'خطوط لوله', 'en' => 'Piping lines',
+                    ], $plan, $lang, $currentPath),
                     $this->item('project.punch', 'qaqc', "/projects/{$code}/punch", [
                         'fa' => 'کنترل کیفیت و پانچ‌لیست', 'en' => 'QA/QC & punch list',
                     ], $plan, $lang, $currentPath),
@@ -202,6 +205,7 @@ final class Navigation
             'project.transmittals' => '<path d="M3 6.5h18v11H3z"/><path d="M3 7l9 6 9-6"/>',
             'project.vendortr' => '<path d="M3 9h13v8H3z"/><path d="M16 11h3l2 3v3h-5z"/><circle cx="7" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/>',
             'project.punch' => '<path d="M9 11l2.5 2.5L16 9"/><circle cx="12" cy="12" r="9"/>',
+            'project.piping' => '<path d="M3 12h18"/><path d="M7 9v6"/><path d="M17 9v6"/>',
             // A shopping-cart outline for buying, a crate for the warehouse.
             'project.procurement' => '<path d="M3 4h2l2.4 10.4a2 2 0 0 0 2 1.6h7.4a2 2 0 0 0 2-1.55L20.5 8H6"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/>',
             'project.materials' => '<path d="M3 8.5L12 4l9 4.5v7L12 20l-9-4.5z"/><path d="M3 8.5L12 13l9-4.5M12 13v7"/>',

@@ -55,6 +55,42 @@ final class CdeState
     ];
 
     /**
+     * Is this revision fit to build from? (ISO 19650-2)
+     *
+     * Two conditions, and BOTH are needed - which is the whole point of this
+     * method existing rather than a `state === PUBLISHED` check scattered
+     * around the codebase.
+     *
+     *   1. The container must be PUBLISHED. A SHARED revision is issued for
+     *      review or comment, not for construction.
+     *   2. The suitability code must be in the **A family**. This is the part
+     *      that is easy to get wrong: A-codes mean "authorised for
+     *      construction"; B-codes mean "partial sign-off - approved WITH
+     *      COMMENTS". A B1 drawing is published, it is legitimate, and it is
+     *      explicitly NOT fit to build from until the comments are cleared.
+     *
+     * Treating PUBLISHED alone as approval would wave every B-coded drawing
+     * through the AFC gate, which is precisely the mistake that produces
+     * rework: the field builds from a revision the reviewer had reservations
+     * about, and nobody notices until the comment resurfaces at handover.
+     *
+     * A revision with no suitability code is not approved either. Absence of a
+     * code is absence of a decision.
+     */
+    public static function isApproved(string $state, ?string $suitability): bool
+    {
+        if ($state !== self::PUBLISHED) {
+            return false;
+        }
+
+        if ($suitability === null || $suitability === '') {
+            return false;
+        }
+
+        return str_starts_with(strtoupper($suitability), 'A');
+    }
+
+    /**
      * Position in the lifecycle, for ORDERING.
      *
      * Exists because sorting a state column by its rendered label is wrong in

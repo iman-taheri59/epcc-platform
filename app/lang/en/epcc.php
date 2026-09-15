@@ -132,6 +132,31 @@ return [
         'show_archived' => 'Show archived projects',
     ],
 
+    'line' => [
+        'state' => [
+            'draft' => 'Draft',
+            'afc_confirmed' => 'AFC confirmed',
+            'released' => 'Released for construction',
+        ],
+        'title' => 'Piping lines',
+        'number' => 'Line number',
+        'number_required' => 'A line number is required.',
+        'number_taken' => 'Line number :number already exists on this project.',
+        'bad_transition' => 'A line cannot go from :from to :to.',
+        'afc_missing_evidence' => 'AFC needs these documents linked first: :kinds.',
+        'afc_evidence_not_approved' => 'These documents are not at an approved revision: :documents. A published revision with a B suitability code is approved with comments, not approved for construction.',
+        'revert_needs_reason' => 'Say why the line is going back to draft - it cancels an approval somebody gave.',
+        'unknown_evidence_kind' => ':kind is not a kind of AFC evidence.',
+        'evidence_other_project' => 'That document belongs to another project.',
+        'not_buildable' => 'This line is not released for construction yet.',
+        'non_conforming' => 'Does not match the project line number format',
+        'externally_numbered' => 'Numbered outside the project scheme',
+        'evidence' => 'AFC evidence',
+        'confirm_afc' => 'Confirm AFC',
+        'release' => 'Release for construction',
+        'revert' => 'Return to draft',
+    ],
+
     'panel' => [
         'brand' => 'EPCC Platform',
     ],

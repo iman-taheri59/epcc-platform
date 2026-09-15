@@ -144,6 +144,31 @@ return [
         'show_archived' => 'نمایش پروژه‌های بایگانی‌شده',
     ],
 
+    'line' => [
+        'state' => [
+            'draft' => 'پیش‌نویس',
+            'afc_confirmed' => 'تأیید AFC',
+            'released' => 'ابلاغ برای اجرا',
+        ],
+        'title' => 'خطوط لوله',
+        'number' => 'شمارهٔ خط',
+        'number_required' => 'شمارهٔ خط الزامی است.',
+        'number_taken' => 'شمارهٔ خط :number از قبل در این پروژه وجود دارد.',
+        'bad_transition' => 'خط نمی‌تواند از :from به :to برود.',
+        'afc_missing_evidence' => 'برای AFC ابتدا این مدارک باید پیوست شوند: :kinds.',
+        'afc_evidence_not_approved' => 'این مدارک در رویژن تأییدشده نیستند: :documents. رویژن منتشرشده با کد B یعنی «تأیید با اظهارنظر»، نه تأیید برای اجرا.',
+        'revert_needs_reason' => 'دلیل بازگشت خط به پیش‌نویس را بنویسید؛ این کار تأیید صادرشده را باطل می‌کند.',
+        'unknown_evidence_kind' => ':kind یکی از انواع مدرک AFC نیست.',
+        'evidence_other_project' => 'این مدرک متعلق به پروژهٔ دیگری است.',
+        'not_buildable' => 'این خط هنوز برای اجرا ابلاغ نشده است.',
+        'non_conforming' => 'با قالب شمارهٔ خط پروژه مطابقت ندارد',
+        'externally_numbered' => 'شماره‌گذاری‌شده خارج از سامانهٔ پروژه',
+        'evidence' => 'مدارک AFC',
+        'confirm_afc' => 'تأیید AFC',
+        'release' => 'ابلاغ برای اجرا',
+        'revert' => 'بازگشت به پیش‌نویس',
+    ],
+
     'panel' => [
         'brand' => 'سامانهٔ EPCC',
     ],
