@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\GateService;
 use App\Support\AuthorizationPipeline;
 use App\Support\TenantContext;
+use App\Support\TenantType;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Morilog\Jalali\CalendarUtils;
@@ -41,7 +42,15 @@ final class CertificateController extends Controller
         $lang = $this->lang($request);
         $acting = $this->resolveActing($request);
 
-        $projects = $this->visibleProjects($acting, $request->user());
+        $all = $this->visibleProjects($acting, $request->user());
+
+        // Archived projects are hidden from the portfolio by default - that is
+        // most of what "archived" means day to day - but the count stays on
+        // screen and one click brings them back. Hiding without saying so is
+        // how a finished project starts to feel deleted.
+        $archivedCount = $all->filter(fn (Project $p): bool => $p->isArchived())->count();
+        $showArchived = $request->boolean('archived');
+        $projects = $showArchived ? $all : $all->reject(fn (Project $p): bool => $p->isArchived())->values();
 
         $cards = $this->tenant->runAs($acting->id, function () use ($projects, $acting): array {
             $limit = $this->authorityLimit($acting);
@@ -91,6 +100,8 @@ final class CertificateController extends Controller
             'user'       => $request->user(),
             'acting'     => $acting,
             'cards'      => $cards,
+            'archivedCount' => $archivedCount,
+            'showArchived'  => $showArchived,
             'jalaliDate' => $this->today($lang),
         ]);
     }
@@ -128,16 +139,34 @@ final class CertificateController extends Controller
             $project->id, // <- RLS project scope
         );
 
+        // Close-out controls (ADR-013 §7.2). Only the owner company may archive
+        // or reopen; showing the control to anyone else would be an invitation
+        // to a refusal. The service re-checks on POST - this is presentation.
+        $canArchive = $acting->id === $project->owner_company_id
+            && $acting->tenant_type === TenantType::OWN;
+
+        $archivedByName = null;
+        if ($project->archived_by !== null) {
+            // `users` is RLS-protected and the archiving user may belong to a
+            // company this viewer cannot otherwise see; the audit line names
+            // them, so fetch through the identity hatch.
+            $archivedByName = $this->tenant->forIdentityLookup(
+                fn () => User::query()->whereKey($project->archived_by)->value('name')
+            );
+        }
+
         return view('certificates', [
-            'lang'       => $lang,
-            'dir'        => $lang === 'fa' ? 'rtl' : 'ltr',
-            'user'       => $user,
-            'acting'     => $acting,
-            'project'    => $project,
-            'projects'   => $projects,
-            'rows'       => $rows,
-            'limit'      => $limit,
-            'jalaliDate' => $this->today($lang),
+            'lang'           => $lang,
+            'dir'            => $lang === 'fa' ? 'rtl' : 'ltr',
+            'user'           => $user,
+            'acting'         => $acting,
+            'project'        => $project,
+            'projects'       => $projects,
+            'rows'           => $rows,
+            'limit'          => $limit,
+            'canArchive'     => $canArchive,
+            'archivedByName' => $archivedByName,
+            'jalaliDate'     => $this->today($lang),
         ]);
     }
 

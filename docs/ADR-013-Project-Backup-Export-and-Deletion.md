@@ -1,6 +1,6 @@
 # ADR-EPCC-013 — Per-project backup, export and deletion
 
-**Status:** PROPOSED — the full cycle was built and proven on a scratch copy; **nothing is wired into the product yet**
+**Status:** **PARTLY ACCEPTED AND BUILT** — the user chose **archive** (§9), and archive is now built and shipped (see §10 and HANDOFF §5q). Export and ceremonial hard delete remain PROPOSED.
 **Date:** 2026-09-15
 **Depends on:** ADR-011 (one database per project — answered "no"), ADR-001 (RLS)
 **Relates to:** ADR-012 (the policy change proposed there does not affect this)
@@ -179,11 +179,62 @@ operation eventually gets clicked by accident.
 
 ---
 
-## 9. Open question for the user
+## 9. Open question for the user — ANSWERED
 
 **What should the default be for a finished project — archive, or delete?**
 
-My recommendation is **archive**, with hard delete available only on explicit contractual request,
+My recommendation was **archive**, with hard delete available only on explicit contractual request,
 because the artefacts in §6 are the ones a company needs when a claim arrives two years later.
 If the requirement is driven by a client demanding their data leave your servers entirely, then
 hard delete is right — but it should produce a signed export and a retention-log entry first.
+
+**The user answered «آرشیو» (archive) on 2026-09-15.** Archive is therefore built (§10); hard
+delete is *not* built, and deliberately so.
+
+---
+
+## 10. As built — archive
+
+`ACTIVE ↔ ARCHIVED`, reversible. There is **no `DELETED` state**: putting deletion in the same
+enum would make an irreversible act one dropdown position away from a reversible one.
+
+| Concern | Decision |
+|---|---|
+| Read access | **Unchanged.** Every row stays visible and exportable. An archive you cannot read is a slow delete. |
+| Write access | Refused for everyone, including the owner company. |
+| Visibility | Hidden from the portfolio by default, behind a clickable count — never silently. |
+| Plan quota | **Excluded from `plans.max_projects`.** |
+| Who may do it | Owner company only (`TenantType::OWN`). |
+| Provenance | `archived_at`, `archived_by`, `archive_reason`, enforced by CHECK constraint. |
+
+**The quota exclusion is not a nicety.** A customer on a one-project plan who finishes a job and
+cannot start the next without deleting the first will delete the first — the licence terms would be
+quietly instructing them to destroy the evidence in §6. Archive only functions as an alternative to
+deletion if it is free.
+
+### Two layers, because each covers the other's failure
+
+- **`ProjectArchiveService`** refuses first, loudly, in the user's language.
+- **RLS** (`<table>_archive_freeze` + `<table>_archive_no_delete`, 22 tables) is the backstop, so a
+  write path that forgets the service call is rude rather than destructive.
+
+### Two findings that changed the design
+
+1. **A blocked UPDATE/DELETE is silent.** INSERT raises `42501` naming the policy; UPDATE and
+   DELETE match zero rows with no error, so `save()` returns `true` and the user is told their edit
+   was saved. RLS can therefore never be the only thing refusing a write a human is waiting on.
+2. **`WITH CHECK` is never evaluated for DELETE.** The first policy — `FOR ALL USING (true) WITH
+   CHECK (...)` — blocked inserts and updates and let a DELETE empty an archived project's punch
+   list (`DELETE 9`). `USING (true)` is deliberate, since a RESTRICTIVE `USING` clause also filters
+   `SELECT`; the fix is a second policy scoped `FOR DELETE`. Verified: archived → `DELETE 0`, rows
+   intact; reopened → `DELETE 9`.
+
+Also required: `epcc_project_is_writable(uuid)` must be `SECURITY DEFINER`, or it is itself subject
+to RLS on `projects` and the freeze **fails open**.
+
+### Still proposed, not built
+
+Export (§7.1) and ceremonial two-person hard delete (§7.3), including the four traps in §2–§5 —
+the truncated `pg_dump` that exits 0, `--where` being PG18-only, the topological sort that drops FK
+cycles, and blobs surviving the cascade. Archiving needs none of them, which is part of why it went
+first.

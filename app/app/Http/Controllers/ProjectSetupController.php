@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\ProjectMembership;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\ProjectArchiveService;
 use App\Services\StandardsPackRepository;
 use App\Support\AuthorizationPipeline;
 use App\Support\TenantContext;
@@ -100,13 +101,25 @@ final class ProjectSetupController extends Controller
         // because it is a count, not a capability.
         $plan = $user->company->plan;
         if ($plan?->max_projects !== null) {
-            $owned = Project::where('owner_company_id', $user->company_id)->count();
+            // ACTIVE projects only. An archived project is finished work kept
+            // for the record, and charging a licence slot for it would push
+            // customers to delete the evidence of a completed job in order to
+            // start the next one. Archiving is the alternative to deletion, so
+            // it has to be free of the quota or it is not an alternative.
+            $owned = Project::where('owner_company_id', $user->company_id)->active()->count();
 
             if ($owned >= $plan->max_projects) {
+                $archived = Project::where('owner_company_id', $user->company_id)->archived()->count();
+                $hint = $archived > 0
+                    ? ($lang === 'fa'
+                        ? " ({$archived} پروژهٔ بایگانی‌شده شمارش نمی‌شود.)"
+                        : " ({$archived} archived project(s) do not count.)")
+                    : '';
+
                 throw ValidationException::withMessages([
-                    'code' => $lang === 'fa'
-                        ? "طرح «{$plan->name_fa}» حداکثر {$plan->max_projects} پروژه را مجاز می‌داند. برای پروژهٔ بیشتر، طرح را ارتقا دهید."
-                        : "The {$plan->name_en} plan allows at most {$plan->max_projects} project(s). Upgrade to add more.",
+                    'code' => ($lang === 'fa'
+                        ? "طرح «{$plan->name_fa}» حداکثر {$plan->max_projects} پروژهٔ فعال را مجاز می‌داند. یک پروژه را بایگانی کنید یا طرح را ارتقا دهید."
+                        : "The {$plan->name_en} plan allows at most {$plan->max_projects} active project(s). Archive one, or upgrade to add more.").$hint,
                 ]);
             }
         }
@@ -337,5 +350,42 @@ final class ProjectSetupController extends Controller
     private function lang(Request $request): string
     {
         return $request->query('lang') === 'en' ? 'en' : 'fa';
+    }
+
+    /**
+     * Archive a project (ADR-013 §7.2).
+     *
+     * Deliberately a POST with a confirmation in the UI rather than a toggle:
+     * the effect is that every other company on the job loses the ability to
+     * write, which they find out by being refused. Reversible, but not
+     * something to discover by mis-clicking.
+     */
+    public function archive(Request $request, string $projectCode, ProjectArchiveService $archives): RedirectResponse
+    {
+        $user = $request->user();
+        $project = $this->visibleProject($user, $projectCode);
+
+        $data = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $archives->archive($project, $user, $data['reason'] ?? null);
+
+        return redirect()
+            ->route('project', ['projectCode' => $project->code, 'lang' => $this->lang($request)])
+            ->with('status', __('epcc.project.archived_badge'));
+    }
+
+    /** Reopen an archived project. Re-checks the plan quota. */
+    public function reopen(Request $request, string $projectCode, ProjectArchiveService $archives): RedirectResponse
+    {
+        $user = $request->user();
+        $project = $this->visibleProject($user, $projectCode);
+
+        $archives->reopen($project, $user);
+
+        return redirect()
+            ->route('project', ['projectCode' => $project->code, 'lang' => $this->lang($request)])
+            ->with('status', __('epcc.project.state.active'));
     }
 }

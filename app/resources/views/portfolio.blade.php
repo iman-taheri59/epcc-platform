@@ -43,6 +43,16 @@
     <span class="pill pack">{{ $acting->code }}</span>
     <span style="font-size:12.5px;color:var(--muted);">{{ $acting->name($lang) }}</span>
     <span class="count"><b>{{ count($cards) }}</b> {{ $L('visible') }}</span>
+    @if($archivedCount > 0)
+      {{-- Archived projects are hidden by default but never silently: a count
+           the user can click is the difference between "put away" and "lost". --}}
+      <a href="?lang={{ $lang }}&amp;archived={{ $showArchived ? 0 : 1 }}"
+         class="pill"
+         style="background:{{ $showArchived ? '#78350f' : 'transparent' }};color:{{ $showArchived ? '#fde68a' : 'var(--muted)' }};border:1px solid #92400e;text-decoration:none;">
+        {{ $showArchived ? __('epcc.project.state.archived') : __('epcc.project.show_archived') }}
+        · {{ \App\Support\JalaliDate::digits((string) $archivedCount, $lang) }}
+      </a>
+    @endif
   </div>
 
   <div class="note">{{ $L('note') }}</div>
@@ -53,10 +63,13 @@
     <div class="grid">
       @foreach($cards as $card)
         @php $p = $card['project']; @endphp
-        <a class="pcard" href="/projects/{{ $p->code }}?lang={{ $lang }}">
+        <a class="pcard" href="/projects/{{ $p->code }}?lang={{ $lang }}" @if($p->isArchived()) style="opacity:.72;" @endif>
           <h3>{{ $p->name($lang) }}</h3>
           <span class="code">{{ $p->code }}</span>
           <span class="pill pack">{{ $p->standards_pack }}</span>
+          @if($p->isArchived())
+            <span class="pill" style="background:#78350f;color:#fde68a;border:1px solid #92400e;">{{ __('epcc.project.state.archived') }}</span>
+          @endif
           <div class="stats">
             <div class="stat">
               <div class="k">{{ $L('certs') }}</div>

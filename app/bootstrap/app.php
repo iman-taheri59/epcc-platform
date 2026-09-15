@@ -43,6 +43,23 @@ return Application::configure(basePath: dirname(__DIR__))
         // fails silently, which is indistinguishable from "the fix did not
         // work".
         $middleware->prependToGroup('web', App\Http\Middleware\PreviewSessionFallback::class);
+        // Locale for the WHOLE web side, not just the admin panel.
+        //
+        // SetUserLocale was originally registered on the Filament panel alone,
+        // because that is where the translator is consulted far from any view.
+        // But `__()` is now used by the hand-written screens and, more
+        // importantly, by service-layer exception messages - so a refusal
+        // raised deep in ProjectArchiveService came back in English to a
+        // Persian user reading a Persian page. The hand-written views mostly
+        // pick language from `?lang=` via their own $L() closure, which hid
+        // the gap: the page was Persian and only the translated strings were
+        // not.
+        //
+        // Added to the group AFTER StartSession (it reads $request->user(),
+        // which needs the session) but BEFORE PreviewUrlRewriter, which the
+        // note above requires to stay last so it is first to see the response.
+        $middleware->appendToGroup('web', App\Http\Middleware\SetUserLocale::class);
+
         $middleware->appendToGroup('web', App\Http\Middleware\PreviewUrlRewriter::class);
 
         $middleware->alias([

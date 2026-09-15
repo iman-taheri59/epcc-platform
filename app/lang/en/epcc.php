@@ -111,6 +111,27 @@ return [
         'engineering' => 'Engineering',
     ],
 
+    'project' => [
+        'state' => [
+            'active' => 'Active',
+            'archived' => 'Archived',
+        ],
+        'archived_badge' => 'Archived - read only',
+        'archive' => 'Archive project',
+        'reopen' => 'Reopen project',
+        'archive_reason' => 'Reason for archiving',
+        'archived_on' => 'Archived on :date by :user',
+        'read_only' => 'This project is archived and is read only. Reopen it to make changes.',
+        'already_archived' => 'This project is already archived.',
+        'not_archived' => 'This project is not archived.',
+        'bad_transition' => 'That is not a valid change of project state.',
+        'archive_owner_only' => 'Only the owner company may archive or reopen a project.',
+        'quota_reached' => 'Your plan allows :max active project(s). Archive another project first.',
+        'archive_confirm' => 'Archiving makes the whole project read only for every company. Nothing is deleted and you can reopen it later.',
+        'archived_count' => ':count archived',
+        'show_archived' => 'Show archived projects',
+    ],
+
     'panel' => [
         'brand' => 'EPCC Platform',
     ],

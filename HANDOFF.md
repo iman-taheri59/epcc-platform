@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-09-15** · Status: **prototype + working vertical slice** · Tests: **556 passed / 2491 assertions** (+83 jsdom)
+Last updated: **2026-09-15** · Status: **prototype + working vertical slice** · Tests: **586 passed / 2564 assertions** (+83 jsdom)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -1493,6 +1493,58 @@ inspections — contractual evidence. ADR-013 therefore proposes three separate 
 archive / ceremonial two-person hard delete) and recommends **archive as the default**.
 
 
+## 5q. Project archive — BUILT (the answer to "what happens when a project finishes?")
+
+ADR-013 asked whether a finished project should be archived or hard-deleted. **The decision was
+archive**, and it is now built. A hard delete remains a separate, ceremonial operation that is
+deliberately *not* implemented yet.
+
+**What archiving is.** A project moves `ACTIVE ↔ ARCHIVED`, reversibly. Archived means:
+read-only for everyone including the owner, hidden from the portfolio by default, and **not
+counted against `plans.max_projects`**. Nothing is deleted, nothing is moved, every certificate and
+transmittal stays exactly where it was and stays exportable. There is deliberately **no `DELETED`
+state** in `ProjectState` — deletion is not one dropdown position away from archiving.
+
+**Why the quota exclusion is the commercial crux.** A customer on a one-project plan who finishes a
+job and cannot start the next one without deleting the first will delete the first. The licence
+terms would be quietly instructing them to destroy contractual evidence. Archiving only works as an
+alternative to deletion if it is free of the quota — see `ProjectSetupController` (the count is now
+`->active()`), and the refusal message now tells them archiving is the way out.
+
+**Two enforcement layers, and both are necessary.**
+
+| Layer | File | Fails how |
+|---|---|---|
+| Service (refuses first) | `app/Services/ProjectArchiveService.php` | `ValidationException`, translated, actionable |
+| RLS (backstop) | migration `2026_09_15_120000_add_project_archive_state.php` | `SQLSTATE 42501` on INSERT/UPDATE; **silence** on DELETE |
+
+Neither alone is enough. The service is forgettable — a new write path that skips `assertWritable()`
+gets no protection from it. RLS is mute — see the trap below. So the service exists to produce a
+sentence a user can act on, and RLS exists so that forgetting it is merely rude rather than
+destructive.
+
+**`epcc_project_is_writable(uuid)` is `STABLE SECURITY DEFINER` and must stay that way.** Without
+`SECURITY DEFINER` the function is itself subject to RLS on `projects`, so a session scoped to
+project A cannot see project B's state, the lookup returns NULL, and the freeze **fails open**.
+
+**The DELETE hole, found by trying it.** The freeze policy is `FOR ALL USING (true) WITH CHECK
+(...)`. `USING (true)` is deliberate — a RESTRICTIVE `USING` clause is ANDed into `SELECT` too, and
+an archive you cannot read is just a slow delete. But **`WITH CHECK` is never evaluated for
+DELETE**, because there is no new row to check. With only that policy, deleting the punch list of
+an archived project reported `DELETE 9` and removed all nine rows. Fixed with a second policy per
+table, `FOR DELETE USING (epcc_project_is_writable(project_id))`, which constrains only DELETE and
+leaves reads alone. **22 tables × 2 policies.** Verified: archived → `DELETE 0`, rows intact;
+reopened → `DELETE 9`.
+
+**UI.** Archive/reopen live on the project page, owner company only (`TenantType::OWN`), with the
+reason recorded and shown back as `Archived on <date> by <user> — <reason>`. The portfolio hides
+archived projects but always shows a clickable count — hiding without saying so is how a finished
+project starts to feel lost.
+
+Tests: `php artisan test --filter=ProjectArchiveTest` — **30 tests**, including the DELETE
+regression, the silent-failure documentation, the quota exclusion and the bilingual refusal.
+
+
 ## 6. The preview iframe (read before debugging "login is broken")
 
 The preview serves the app in an **iframe whose top-level document is a
@@ -1608,6 +1660,29 @@ The app's `package.json` sets `"type": "module"`, hence the `.cjs` extension.
 ---
 
 ## 8. Known traps (non-obvious, will cost you an hour each)
+
+- **RLS `WITH CHECK` does not apply to DELETE.** A RESTRICTIVE policy with a
+  `WITH CHECK` clause blocks INSERT and UPDATE and lets every DELETE straight
+  through — there is no new row to check, so the clause is never evaluated.
+  A read-only guard therefore needs a *second* policy `FOR DELETE USING (...)`.
+  Found by trying it: an "archived" project's punch list deleted cleanly,
+  `DELETE 9`. See §5q.
+- **A blocked UPDATE/DELETE under RLS is SILENT.** INSERT raises 42501 naming
+  the policy, but UPDATE and DELETE simply match zero rows: no error,
+  `rowCount = 0`, and Eloquent's `save()` returns **true**. The data is safe and
+  the user is told the opposite. Never let RLS be the only thing refusing a
+  write that a human is waiting on — refuse in a service first.
+- **A `SECURITY DEFINER` helper is mandatory when a policy reads another
+  RLS-protected table.** `epcc_project_is_writable()` reads `projects`; without
+  `SECURITY DEFINER` it sees only the currently scoped project, returns NULL for
+  every other one, and the policy **fails open** — the most dangerous direction.
+- **`__()` was only localised inside the Filament panel.** `SetUserLocale` was
+  registered on the admin panel alone, so on every other route the translator
+  used the default locale. The hand-written views hid this for months because
+  they take language from their own `?lang=` closure — the page was Persian and
+  only the `__()` strings were English. It surfaced the moment a *service* threw
+  a translated exception. Now registered on the `web` group too, before
+  `PreviewUrlRewriter` (which must stay last).
 
 - **`pg_dump` exits 0 after an RLS abort.** Under `FORCE ROW LEVEL SECURITY` the
   dump fails part-way and still returns success, leaving a truncated file. Never
@@ -1979,6 +2054,7 @@ Append one row per session. Keep it terse.
 
 | Date | Change | Result |
 |---|---|---|
+| 2026-09-15 | **Project archive built (§5q) — the answer to ADR-013's open question, which the user settled as «آرشیو».** `ACTIVE ↔ ARCHIVED`, reversible, with **no `DELETED` state**: deletion stays a separate ceremony rather than one dropdown position away. Archived projects are read-only, hidden from the portfolio behind a clickable count, and **excluded from `plans.max_projects`** — the commercial crux, because a customer on a one-project plan who cannot start job two without deleting job one *will* delete job one, and the licence terms would be instructing them to destroy contractual evidence. Two layers, both necessary and failing differently: the service refuses loudly and translated, RLS is the backstop. Spiked the mechanism before writing it and found the asymmetry that shaped the design — **a blocked UPDATE/DELETE raises nothing**, `rowCount=0`, `save()` returns true, so RLS alone would tell a user "saved" while the edit vanished. Then found a real hole by trying it rather than trusting the design: **`WITH CHECK` is never evaluated for DELETE**, so the freeze policy reported `DELETE 9` and emptied an archived project's punch list — fixed with a second `FOR DELETE USING (...)` policy per table (22 × 2). Also uncovered incidentally: **`SetUserLocale` was registered on the Filament panel only**, so every `__()` outside the admin panel fell back to the default locale; invisible while only views used it (they have their own `?lang=` closure) and exposed the instant a service threw a translated exception | **586 / 2564**, 30 new tests |
 | 2026-09-15 | **Phase 0 built: the engineering reference packs (§5m, ADR-007 → ACCEPTED AND BUILT).** First code from ADRs 006-010, and deliberately first: the line-number parser, the compatibility engine and the PCF importer all need the size vocabulary before they can validate anything. Four versioned JSON packs (36 sizes, 355 schedule pairs, 13 PCF end types, 20 component templates) behind one memoised singleton - **not** database tables, because the protection needed is *nobody can write, including the owner company*, which a file gives absolutely and a permissive RLS policy only pretends to. The ADR predicted from published sources that **STD is not an alias of SCH 40 above 10″ and XS is not SCH 80 above 8″**; the shipped data now asserts it in three layers. Two defects: PHP **coerces numeric string array keys to integers**, so `schedulesFor()` returned a mixed `int|string` list (caught by the suite on first run); and the reachable **alias-fallback bug runs the opposite way to the assertion** - ASME defines STD at 22″ and 26″ but no SCH 40 there at all, so a "helpful" fallback returns 9.53 mm for a schedule that does not exist. That one **survived the first suite** and was found only by mutation M1. M14 also showed the singleton test proved nothing: instance identity is not memoisation, so it now warms the cache, deletes the files, and asserts a *fresh* instance still throws | **556 / 2491**, **153 mutations caught** (+15 pack-data, +15 PHP) |
 | 2026-09-13 | **Physical breakdown built (§5l, ADR-004 → ACCEPTED).** `project → facility → (optional) area → subsystem`, after establishing that Plant 3D has **no** System/Subsystem, MC, punch or handover — so compatibility is an **import mapping**, not a copied schema. One `facilities` table with a `FacilityKind` discriminator instead of sibling plant/pipeline tables, because what they share is being a commissioning parent and what differs is addressing (per-kind `jsonb`). Numbering moved to **per facility**, which made the bare code ambiguous — so `fullCode()` composes at read time (never stored: it would drift on rename) and the register shows Facility as a non-toggleable column. Integrity rests on a **composite** FK `(area_id, facility_id) → areas(id, facility_id)`, making cross-facility corruption unrepresentable. The fixture is deliberately uneven — one facility with areas *and* a direct subsystem, one with no areas at all — because a uniform fixture cannot fail informatively. Two traps recorded: the backfill silently matched **zero rows** under `FORCE ROW LEVEL SECURITY` (RLS filters, it does not error), and **M118 first reported SURVIVED because the mutation was wrong, not the test** — dropping a constraint in `psql` proves nothing when `setUp()` runs `migrate:fresh`. Mutate the migration source. Pushed as `cf99f0f` (§9a — a reset had wiped `.git/config`, so the remote and the git identity had to be recreated first) | **507 / 1716**, **123 mutations caught** |
 | 2026-09-13 | **UML for the procurement module (`docs/uml/`).** Installed `graphviz` + `plantuml` (absent from the base image; plain `apt-get` fails the dpkg lock, `sudo` works) and drew five diagrams — domain model, the three state machines, an inspection-to-MC-gate sequence, reversal + RLS, and the component view. Written against a live `information_schema` dump rather than from memory, so the attribute lists are the real columns. Packaged as `docs/uml/uml.html` with the SVGs **inlined** — checked for external refs and found none, matching the `tour.html` air-gap pattern — and verified by screenshot rather than by byte count | no code change, **482 / 1647** |

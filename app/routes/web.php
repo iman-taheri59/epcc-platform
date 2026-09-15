@@ -31,6 +31,11 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::get('/projects/new', [ProjectSetupController::class, 'create'])->name('projects.create');
     Route::post('/projects', [ProjectSetupController::class, 'store'])->name('projects.store');
 
+    // Close-out (ADR-013 §7.2). POST, because archiving takes write access
+    // away from every other company on the job.
+    Route::post('/projects/{projectCode}/archive', [ProjectSetupController::class, 'archive'])->name('projects.archive');
+    Route::post('/projects/{projectCode}/reopen', [ProjectSetupController::class, 'reopen'])->name('projects.reopen');
+
     Route::get('/projects/{projectCode}', [CertificateController::class, 'show'])->name('project');
 
     // Document register / CDE. Under the project, because a deliverable

@@ -43,8 +43,48 @@
   <div class="sub">
     <span class="mono">{{ $project->code }}</span>
     · <span class="pill pack">{{ $L('pack') }}: {{ $project->standards_pack }}</span>
+    @if($project->isArchived())
+      · <span class="pill" style="background:#78350f;color:#fde68a;border:1px solid #92400e;">{{ __('epcc.project.archived_badge') }}</span>
+    @endif
     · {{ $jalaliDate }}
   </div>
+
+  @if($project->isArchived())
+    {{-- Read-only banner, stated at the top: every write control below is
+         still visible and will refuse, so say why before they try. --}}
+    <div style="margin:14px 0;padding:12px 14px;border-radius:10px;background:rgba(120,53,15,.28);border:1px solid #92400e;color:#fde68a;font-size:13px;line-height:1.7;">
+      <strong>{{ __('epcc.project.archived_badge') }}</strong>
+      <div>{{ __('epcc.project.read_only') }}</div>
+      @if($project->archived_at)
+        <div style="opacity:.85;margin-top:4px;">
+          {{ __('epcc.project.archived_on', [
+              'date' => \App\Support\JalaliDate::format($project->archived_at, $lang),
+              'user' => $archivedByName ?? '—',
+          ]) }}@if($project->archive_reason) — {{ $project->archive_reason }}@endif
+        </div>
+      @endif
+      @if($canArchive)
+        <form method="POST" action="/projects/{{ $project->code }}/reopen?lang={{ $lang }}" style="margin-top:10px;">
+          @csrf
+          <button type="submit" style="padding:7px 14px;border-radius:8px;border:1px solid #92400e;background:#78350f;color:#fde68a;font:inherit;cursor:pointer;">
+            {{ __('epcc.project.reopen') }}
+          </button>
+        </form>
+      @endif
+    </div>
+  @endif
+
+  @if(session('status'))
+    <div style="margin:14px 0;padding:10px 14px;border-radius:10px;background:rgba(6,78,59,.35);border:1px solid #065f46;color:#a7f3d0;font-size:13px;">
+      {{ session('status') }}
+    </div>
+  @endif
+
+  @if($errors->any())
+    <div style="margin:14px 0;padding:10px 14px;border-radius:10px;background:rgba(127,29,29,.35);border:1px solid #991b1b;color:#fecaca;font-size:13px;">
+      @foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach
+    </div>
+  @endif
 
   <div class="bar">
     <label>{{ $L('acting') }}:</label>
@@ -105,6 +145,24 @@
     @endforelse
     </tbody>
   </table>
+
+  @if($canArchive && ! $project->isArchived())
+    <div style="margin-top:22px;padding:14px;border-radius:10px;border:1px solid var(--line);background:var(--card);">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px;">{{ __('epcc.project.archive') }}</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.7;margin-bottom:10px;">{{ __('epcc.project.archive_confirm') }}</div>
+      <form method="POST" action="/projects/{{ $project->code }}/archive?lang={{ $lang }}"
+            onsubmit="return confirm(@js(__('epcc.project.archive_confirm')));"
+            style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        @csrf
+        <input type="text" name="reason" maxlength="500"
+               placeholder="{{ __('epcc.project.archive_reason') }}"
+               style="flex:1;min-width:220px;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+        <button type="submit" style="padding:7px 14px;border-radius:8px;border:1px solid #92400e;background:#78350f;color:#fde68a;font:inherit;cursor:pointer;">
+          {{ __('epcc.project.archive') }}
+        </button>
+      </form>
+    </div>
+  @endif
 </div>
 </div>
 </body>
