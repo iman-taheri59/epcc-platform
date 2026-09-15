@@ -2,13 +2,18 @@
 """
 Standards pack CI gate.
 
-Two jobs:
+Three jobs:
   1. Validate every pack against the schema.
   2. Guard the AWP seams (ADR-002). The AWP pack is deferred, NOT deleted.
      It stays in CI as a regression test proving the standards engine has not
      silently grown Iran-specific assumptions. If this file starts failing,
      someone has broken the pack abstraction and reviving AWP for the
      international release just got expensive.
+  3. Validate the REFERENCE packs (ADR-007): pipe sizes, schedules, end types
+     and component templates. These are universal engineering constants, not
+     per-project configuration, and the checks below are the only thing
+     standing between a transcription typo and a wrong wall thickness on a
+     large-bore line.
 
 Usage:  python3 validate_packs.py
 Exit:   0 = clean, 1 = problems found
@@ -24,6 +29,14 @@ PACKS = {
     "iso": HERE / "iso.pack.json",
     "awp": HERE / "awp.pack.json",
     "ips-iran": HERE / "ips-iran.pack.json",
+}
+
+REF_DIR = HERE / "reference"
+REF_PACKS = {
+    "pipe-sizes": REF_DIR / "pipe-sizes.ref.json",
+    "pipe-schedules": REF_DIR / "pipe-schedules.ref.json",
+    "end-types": REF_DIR / "end-types.ref.json",
+    "component-templates": REF_DIR / "component-templates.ref.json",
 }
 
 # Packs that must remain loadable even though the module is deferred.
@@ -174,6 +187,233 @@ def check_extends(packs: dict) -> None:
             notes.append(f"[{name}] extends '{parent}' v{ext['version']}")
 
 
+# ------------------------------------------------- reference packs ---------
+def check_reference_schema() -> dict:
+    """Each reference pack has its own schema in reference/schema/."""
+    loaded = {}
+    for name, path in REF_PACKS.items():
+        if not path.exists():
+            fail(f"[ref:{name}] pack missing at {path}")
+            continue
+        loaded[name] = load(path)
+
+    try:
+        import jsonschema
+    except ImportError:
+        notes.append("jsonschema not installed - reference schema validation SKIPPED")
+        return loaded
+
+    for name, pack in loaded.items():
+        spath = REF_DIR / "schema" / f"{name}.schema.json"
+        if not spath.exists():
+            fail(f"[ref:{name}] no schema at {spath}")
+            continue
+        validator = jsonschema.Draft202012Validator(load(spath))
+        errors = sorted(validator.iter_errors(pack), key=lambda e: list(e.path))
+        if errors:
+            for err in errors[:5]:
+                fail(f"[ref:{name}] schema: {list(err.path)} -> {err.message[:160]}")
+        else:
+            notes.append(f"[ref:{name}] schema valid (v{pack['version']}, {pack['source'][:44]}...)")
+    return loaded
+
+
+def check_reference_integrity(refs: dict) -> None:
+    """
+    Cross-pack and physical checks a JSON-schema cannot express.
+
+    Every assertion here corresponds to a way the data can be wrong while still
+    looking perfectly well-formed.
+    """
+    sizes = refs.get("pipe-sizes")
+    scheds = refs.get("pipe-schedules")
+    ends = refs.get("end-types")
+    templates = refs.get("component-templates")
+
+    if not sizes or not scheds:
+        return
+
+    rows = sizes["sizes"]
+    by_nps = {r["nps"]: r for r in rows}
+
+    # --- 1. NPS labels unique, DN unique, and both strictly ascending --------
+    if len(by_nps) != len(rows):
+        fail("[ref] duplicate NPS label in pipe-sizes")
+    dns = [r["dn"] for r in rows]
+    if len(set(dns)) != len(dns):
+        fail("[ref] duplicate DN in pipe-sizes")
+    for a, b in zip(rows, rows[1:]):
+        if b["dn"] <= a["dn"]:
+            fail(f"[ref] pipe-sizes not ascending by DN: {a['nps']} then {b['nps']}")
+        if b["npsDecimal"] <= a["npsDecimal"]:
+            fail(f"[ref] pipe-sizes not ascending by npsDecimal: {a['nps']} then {b['nps']}")
+        if b["odMm"] <= a["odMm"]:
+            fail(f"[ref] pipe-sizes not ascending by OD: {a['nps']} then {b['nps']}")
+
+    # --- 2. npsDecimal must actually equal the label it claims to encode -----
+    # This is the column dia-inch is summed from (ADR-007 9a, ADR-010 1).
+    # A mismatch here silently corrupts every progress figure on the project.
+    from fractions import Fraction
+    for r in rows:
+        label = r["nps"]
+        try:
+            parts = label.split()
+            value = sum(Fraction(p) for p in parts)
+        except (ValueError, ZeroDivisionError):
+            fail(f"[ref] NPS label '{label}' is not parseable as a number")
+            continue
+        if float(value) != r["npsDecimal"]:
+            fail(f"[ref] npsDecimal mismatch for '{label}': "
+                 f"label parses to {float(value)}, column says {r['npsDecimal']}")
+
+    # --- 3. odIn and odMm must agree (25.4 mm/in, 0.6 mm tolerance) ---------
+    for r in rows:
+        derived = r["odIn"] * 25.4
+        if abs(derived - r["odMm"]) > 0.6:
+            fail(f"[ref] OD inconsistent for {r['nps']}: "
+                 f"{r['odIn']} in = {derived:.1f} mm but odMm is {r['odMm']}")
+
+    # --- 4. every size in the schedule table exists in the size table -------
+    ladder = set(scheds["schedules"])
+    orphan = set(scheds["walls"]) - set(by_nps)
+    if orphan:
+        fail(f"[ref] pipe-schedules references unknown sizes: {sorted(orphan)}")
+    uncovered = set(by_nps) - set(scheds["walls"])
+    if uncovered:
+        fail(f"[ref] sizes with no schedule row at all: {sorted(uncovered)}")
+
+    pair_count = 0
+    for nps, row in scheds["walls"].items():
+        if nps not in by_nps:
+            continue
+        od = by_nps[nps]["odMm"]
+        for sch, wall in row.items():
+            pair_count += 1
+            if sch not in ladder:
+                fail(f"[ref] {nps}: schedule '{sch}' is not in the declared ladder")
+            # --- 5. physically possible: two walls must leave a bore --------
+            if 2 * wall >= od:
+                fail(f"[ref] {nps} SCH {sch}: wall {wall} leaves no bore (OD {od})")
+
+    # --- 6. the STD/SCH40 and XS/SCH80 divergence (ADR-007 section 2) -------
+    # Published tables disagree here and several print STD under a "SCH 40"
+    # heading. If someone "tidies" the data from one of those sources, these
+    # assertions are what catches it.
+    def wall(nps, sch):
+        return scheds["walls"].get(nps, {}).get(sch)
+
+    for nps in ("1/2", "2", "6", "8"):
+        if wall(nps, "40") != wall(nps, "STD"):
+            fail(f"[ref] {nps}: STD should still equal SCH 40 at this size")
+        if wall(nps, "80") != wall(nps, "XS"):
+            fail(f"[ref] {nps}: XS should still equal SCH 80 at this size")
+
+    if wall("10", "80") == wall("10", "XS"):
+        fail("[ref] 10 inch: XS must NOT equal SCH 80 (15.09 vs 12.70)")
+    for nps in ("12", "14", "16", "18", "20", "24"):
+        if wall(nps, "STD") == wall(nps, "40"):
+            fail(f"[ref] {nps}: STD must NOT equal SCH 40")
+
+    for nps, row in scheds["walls"].items():
+        if by_nps.get(nps, {}).get("npsDecimal", 0) >= 14:
+            if row.get("STD") != 9.53:
+                fail(f"[ref] {nps}: STD must be pinned at 9.53 above NPS 12, got {row.get('STD')}")
+            if row.get("XS") != 12.70:
+                fail(f"[ref] {nps}: XS must be pinned at 12.70 above NPS 8, got {row.get('XS')}")
+
+    # --- 7. monotonic numbered ladder within a size -------------------------
+    numeric = ["5", "10", "20", "30", "40", "60", "80", "100", "120", "140", "160"]
+    for nps, row in scheds["walls"].items():
+        present = [(s, row[s]) for s in numeric if s in row]
+        for (s1, t1), (s2, t2) in zip(present, present[1:]):
+            if t2 <= t1:
+                fail(f"[ref] {nps}: SCH {s2} ({t2}) is not heavier than SCH {s1} ({t1})")
+
+    notes.append(f"[ref] {len(rows)} sizes, {pair_count} (size,schedule) pairs, "
+                 f"divergence assertions hold")
+
+    # --- 8. end types ------------------------------------------------------
+    if ends:
+        codes = [e["code"] for e in ends["endTypes"]]
+        if len(set(codes)) != len(codes):
+            fail("[ref] duplicate end-type code")
+        for e in ends["endTypes"]:
+            # A weld that cannot be numbered cannot be reported as dia-inch,
+            # and a numbered joint that is not a weld is a contradiction.
+            if e["numbered"] and not e["weldable"]:
+                fail(f"[ref] end type {e['code']}: numbered but not weldable - "
+                     f"a joint number implies a weld (ADR-006 section 4)")
+            if e.get("wildcard") and e["weldable"]:
+                fail(f"[ref] end type {e['code']}: a wildcard must not be weldable")
+        if "**" not in codes:
+            fail("[ref] end-types must declare the PCF wildcard '**' so import can reject it")
+        notes.append(f"[ref] {len(codes)} end types, "
+                     f"{sum(1 for e in ends['endTypes'] if e['numbered'])} numbered")
+
+    # --- 9. component templates -------------------------------------------
+    if templates:
+        tcodes = [t["code"] for t in templates["templates"]]
+        if len(set(tcodes)) != len(tcodes):
+            fail("[ref] duplicate component template code")
+        roles = set(templates["portRoles"])
+        rules = set(templates["sizeRules"])
+        end_codes = {e["code"] for e in ends["endTypes"]} if ends else set()
+
+        for t in templates["templates"]:
+            seqs = [p["seq"] for p in t["ports"]]
+            if seqs != list(range(1, len(seqs) + 1)):
+                fail(f"[ref] template {t['code']}: port seq must be 1..n, got {seqs}")
+            if t["sizeRule"] not in rules:
+                fail(f"[ref] template {t['code']}: unknown sizeRule {t['sizeRule']}")
+            for p in t["ports"]:
+                if p["role"] not in roles:
+                    fail(f"[ref] template {t['code']}: unknown port role {p['role']}")
+                if end_codes and p["defaultEnd"] not in end_codes:
+                    fail(f"[ref] template {t['code']} port {p['seq']}: "
+                         f"defaultEnd '{p['defaultEnd']}' is not a known end type")
+                if p["defaultEnd"] == "**":
+                    fail(f"[ref] template {t['code']}: defaultEnd must not be the wildcard")
+
+            # Size rules that need more than one port, or a specific role.
+            if t["sizeRule"] == "BRANCH_LE_RUN":
+                if not any(p["role"] == "BRANCH" for p in t["ports"]):
+                    fail(f"[ref] template {t['code']}: BRANCH_LE_RUN but no BRANCH port")
+            if t["sizeRule"] == "LARGE_GT_SMALL":
+                got = {p["role"] for p in t["ports"]}
+                if not {"LARGE", "SMALL"} <= got:
+                    fail(f"[ref] template {t['code']}: LARGE_GT_SMALL needs LARGE and SMALL ports")
+            if t.get("terminates") and len(t["ports"]) != 1:
+                fail(f"[ref] template {t['code']}: terminating component must have exactly 1 port")
+            if t.get("directional"):
+                got = {p["role"] for p in t["ports"]}
+                if not {"INLET", "OUTLET"} <= got:
+                    fail(f"[ref] template {t['code']}: directional needs INLET and OUTLET roles")
+
+        # The decisions the ADRs turn on, asserted as data.
+        tee = next((t for t in templates["templates"] if t["code"] == "TEE"), None)
+        if not tee:
+            fail("[ref] no TEE template")
+        else:
+            if len(tee["ports"]) != 3:
+                fail(f"[ref] TEE must have 3 ports, has {len(tee['ports'])} - "
+                     f"this is the universal fact ADR-010 section 2 refuses to let a project override")
+            if not tee.get("qualifierDerived"):
+                fail("[ref] TEE: equal vs reducing must be DERIVED, not chosen "
+                     "(user decision, ADR-009 section 6)")
+        if any(t["code"] in ("REDUCING_TEE", "EQUAL_TEE") for t in templates["templates"]):
+            fail("[ref] equal and reducing tees must NOT be separate templates "
+                 "(user decision, ADR-009 section 6)")
+
+        nozzle = next((t for t in templates["templates"] if t["code"] == "NOZZLE"), None)
+        if not nozzle:
+            fail("[ref] no NOZZLE template - ADR-010 section 3 needs it as a port owner")
+        elif nozzle.get("ownerKind") != "NOZZLE":
+            fail("[ref] NOZZLE template must declare ownerKind NOZZLE")
+
+        notes.append(f"[ref] {len(tcodes)} component templates, "
+                     f"{sum(len(t['ports']) for t in templates['templates'])} port definitions")
+
+
 # --------------------------------------------------------------- main ------
 def main() -> int:
     packs = check_schema()
@@ -181,6 +421,10 @@ def main() -> int:
     check_bilingual(packs)
     check_progress_weights(packs)
     check_awp_seams(packs)
+
+    refs = check_reference_schema()
+    check_bilingual(refs)
+    check_reference_integrity(refs)
 
     for n in notes:
         print(f"  ok  {n}")
@@ -193,7 +437,7 @@ def main() -> int:
         print("as a genericity guard. A failure here means the pack abstraction is eroding.")
         return 1
 
-    print(f"\nAll {len(packs)} packs valid. AWP seams intact (ADR-002).")
+    print(f"\nAll {len(packs)} standards packs + {len(REF_PACKS)} reference packs valid. AWP seams intact (ADR-002).")
     return 0
 
 

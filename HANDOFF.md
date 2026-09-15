@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-09-13** · Status: **prototype + working vertical slice** · Tests: **507 passed / 1716 assertions** (+83 jsdom)
+Last updated: **2026-09-15** · Status: **prototype + working vertical slice** · Tests: **556 passed / 2491 assertions** (+83 jsdom)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -1297,6 +1297,91 @@ known-but-not-selectable), the addressing jsonb, `Area::displayCode()`, RLS
 reads and writes, and that the migration left `relrowsecurity` *and*
 `relforcerowsecurity` true on all three tables. Mutations M118–M123 all caught.
 
+## 5m. Engineering reference data — ASME sizes, schedules, end types, templates (phase 0)
+
+**ADR-007 is ACCEPTED AND BUILT.** This is the first piece of ADRs 006–010 to exist as code.
+It is deliberately the first: the line-number parser, the port compatibility engine and the
+PCF importer all need the size vocabulary before they can validate anything.
+
+### What it is
+
+Four versioned JSON packs under `standards-packs/reference/`, read through one memoised
+singleton. **Not database tables.** `NPS 6" = DN 150 = OD 168.3 mm` is true on every project
+in every company in every year — putting it in a table means either ~500 duplicated rows per
+project or the system's first cross-tenant table plus a permanent RLS exception. The
+protection actually needed is *nobody can write, including the owner company*, which a file
+on disk gives absolutely and a permissive RLS policy only pretends to.
+
+| Pack | Size |
+|---|---|
+| `pipe-sizes.ref.json` | 36 sizes, 1/8″–48″ |
+| `pipe-schedules.ref.json` | 355 (size, schedule) pairs, 18-rung ladder |
+| `end-types.ref.json` | 13 PCF end types |
+| `component-templates.ref.json` | 20 templates, 41 port definitions |
+
+Access: `App\Support\Reference\PipeReference`, singleton in `EpccServiceProvider`, directory
+from `config('epcc.reference_dir')`. `App\Support\Reference\PipeSize` is the readonly value
+object. **Every lookup throws** (`UnknownSizeException`, `UnknownScheduleException`) — except
+`resolveLabel()`, which returns null because line-number parsing legitimately asks "is this
+token a size at all?" where "no" is a normal answer.
+
+### The four NPS columns, and why none can go
+
+At the user's explicit instruction, and each has a job the others cannot do:
+`nps` `"2 1/2"` is what the engineer reads · **`npsDecimal` `2.5` is the only summable one —
+this is what makes dia-inch computable (ADR-010)** · `dn` `65` is the integer key for ADR-008's
+`int4range` bands · `odMm` `73.0` is the physical dimension. A future "simplification" to
+fewer columns silently breaks dia-inch reporting.
+
+### STD is not SCH 40 — the trap that justified this whole ADR
+
+Published tables disagree, and **several print STD values under a column headed SCH 40**.
+Verified in the shipped data and asserted in three independent layers:
+
+| NPS | SCH 40 | STD | SCH 80 | XS |
+|---|---|---|---|---|
+| 6″ | 7.11 | 7.11 | 10.97 | 10.97 |
+| 10″ | 9.27 | 9.27 | **15.09** | **12.70** |
+| 12″ | **10.31** | **9.53** | 17.48 | **12.70** |
+| 24″ | **17.48** | **9.53** | 30.96 | **12.70** |
+
+STD diverges from SCH 40 from 12″; XS diverges from SCH 80 from 10″. Above those, STD is
+pinned at 9.53 and XS at 12.70 regardless of diameter. **A test that spot-checks 2″ and 6″
+passes on a completely wrong large-bore table.**
+
+### TRAPS
+
+- **PHP coerces numeric string array keys to integers.** `array_keys()` on the decoded wall
+  table returns `40` as an **int**, so `schedulesFor()` handed back a mixed `int|string` list:
+  strict `in_array()` silently fails, and feeding a key back into `wall()` is a `TypeError`.
+  Fixed with `array_map(strval(...), …)`. Caught by the suite on first run.
+- **The reachable alias-fallback bug runs the other way.** Asserting STD ≠ SCH 40 at 12″+ does
+  **not** stop a "helpful" fallback, because STD is never the missing one. **ASME defines STD
+  at 22″ and 26″ but no SCH 40 there at all** (likewise XS but no SCH 80 from 26″ up) — a
+  fallback returns 9.53 mm for a schedule that does not exist. Survived the first suite; found
+  only by mutation M1.
+- **Instance identity does not prove memoisation.** A singleton that re-decodes 500 rows per
+  lookup is still a singleton. The test now warms the cache, deletes the files, asserts the
+  lookup still works, **and** asserts a fresh instance against the same empty directory throws
+  — otherwise it would pass on an eager-loading implementation. Found by mutation M14.
+- **A PCF bore is meaningless without its unit.** `UNITS-BORE` may be `INCH`, `MM` or
+  `INCH-SIXTEENTH`. A bore of `96` is 6″ in sixteenths and **not a pipe size at all** in
+  inches. `resolveBore()` therefore takes the unit as a required argument and throws on an
+  unrecognised one rather than defaulting.
+- **Persian digits must be folded.** `۲ ۱/۲` → `2 1/2`. Without it, a Farsi-locale user typing
+  a perfectly valid size gets `UnknownSizeException`.
+
+### Validation, three layers
+
+Generation-time checks in the emitting script; `validate_packs.py` grew
+`check_reference_schema()` + `check_reference_integrity()` (NPS labels re-parsed with
+`Fraction` and compared to `npsDecimal`, `odIn × 25.4` reconciled to `odMm`, monotonic ladder,
+the STD/XS pins, `numbered ⇒ weldable`, `TEE` must have 3 ports and be `qualifierDerived`,
+`EQUAL_TEE`/`REDUCING_TEE` **forbidden**, `NOZZLE` must carry `ownerKind`); then 49 PHPUnit
+tests including `test_it_touches_no_database()`, which fails if reference data is ever moved
+into a table. **15 data mutations and 15 PHP mutations were run; all 30 caught.**
+
+
 ## 6. The preview iframe (read before debugging "login is broken")
 
 The preview serves the app in an **iframe whose top-level document is a
@@ -1341,7 +1426,8 @@ The whole mechanism is gated on a preview host **and** `SESSION_URL_FALLBACK`
 ## 7. Testing discipline
 
 ```bash
-cd app && php artisan test                          # 507 passed / 1716 assertions
+cd app && php artisan test                          # 556 passed / 2491 assertions
+python3 standards-packs/validate_packs.py           # 3 standards + 4 reference packs
 node app/tests/Browser/sidebar-toggle.test.cjs      # 17 assertions, needs a fixture
 node app/tests/Browser/sidebar-animation.test.cjs   # 19 assertions, computed styles
 node app/tests/Browser/table-tools.test.cjs         # 42-47 per page, needs /tmp/tt.html
@@ -1357,7 +1443,7 @@ a failure — if a harness produces no output, check `node_modules` first.
 The app's `package.json` sets `"type": "module"`, hence the `.cjs` extension.
 
 - **A guard test that passes may be inert.** Mutate the fix away and watch it go
-  red. **123 mutations have been confirmed caught** this way; the practice has
+  red. **153 mutations have been confirmed caught** this way (123 + 15 pack-data + 15 PHP in phase 0); the practice has
   already exposed three false-confidence tests (the mixed-content guard, a
   sidebar entitlement check, and "the contractor cannot verify its own fix"),
   a guard made inert by its own documentation, and a test that encoded the
@@ -1457,6 +1543,18 @@ The app's `package.json` sets `"type": "module"`, hence the `.cjs` extension.
 ---
 
 ## 9. Suggested next steps
+
+**ADR-007 (`docs/ADR-007-…md`) — ACCEPTED AND BUILT (2026-09-15, phase 0).** The engineering
+reference packs: 36 sizes, 355 schedule pairs, 13 end types, 20 component templates, behind
+`PipeReference`. See §5m for the traps. **This is phase 0 of the consolidated build order in
+ADR-010 §5.** Next is **phase 1: `piping_lines` + the numbering engine + the AFC gate** — the
+numbering engine must *parse* as well as compose, and it can now validate a size token against
+a real vocabulary, which is why phase 0 came first.
+
+ADRs 006, 008, 009 and 010 remain PROPOSED (analysis only). Three questions at the end of
+ADR-010 are still unanswered by the user: equipment tag uniqueness (per project vs per
+facility — I lean per facility), whether an instrument register is needed now, and whether
+equipment tags are imported-and-validated rather than allocated.
 
 **ADR-004 (`docs/ADR-004-…md`) — ACCEPTED AND BUILT (2026-09-13).** `project → facility →
 (optional) area → subsystem`. Investigated rather than assumed: Plant 3D has **no
@@ -1730,6 +1828,7 @@ Append one row per session. Keep it terse.
 
 | Date | Change | Result |
 |---|---|---|
+| 2026-09-15 | **Phase 0 built: the engineering reference packs (§5m, ADR-007 → ACCEPTED AND BUILT).** First code from ADRs 006-010, and deliberately first: the line-number parser, the compatibility engine and the PCF importer all need the size vocabulary before they can validate anything. Four versioned JSON packs (36 sizes, 355 schedule pairs, 13 PCF end types, 20 component templates) behind one memoised singleton - **not** database tables, because the protection needed is *nobody can write, including the owner company*, which a file gives absolutely and a permissive RLS policy only pretends to. The ADR predicted from published sources that **STD is not an alias of SCH 40 above 10″ and XS is not SCH 80 above 8″**; the shipped data now asserts it in three layers. Two defects: PHP **coerces numeric string array keys to integers**, so `schedulesFor()` returned a mixed `int|string` list (caught by the suite on first run); and the reachable **alias-fallback bug runs the opposite way to the assertion** - ASME defines STD at 22″ and 26″ but no SCH 40 there at all, so a "helpful" fallback returns 9.53 mm for a schedule that does not exist. That one **survived the first suite** and was found only by mutation M1. M14 also showed the singleton test proved nothing: instance identity is not memoisation, so it now warms the cache, deletes the files, and asserts a *fresh* instance still throws | **556 / 2491**, **153 mutations caught** (+15 pack-data, +15 PHP) |
 | 2026-09-13 | **Physical breakdown built (§5l, ADR-004 → ACCEPTED).** `project → facility → (optional) area → subsystem`, after establishing that Plant 3D has **no** System/Subsystem, MC, punch or handover — so compatibility is an **import mapping**, not a copied schema. One `facilities` table with a `FacilityKind` discriminator instead of sibling plant/pipeline tables, because what they share is being a commissioning parent and what differs is addressing (per-kind `jsonb`). Numbering moved to **per facility**, which made the bare code ambiguous — so `fullCode()` composes at read time (never stored: it would drift on rename) and the register shows Facility as a non-toggleable column. Integrity rests on a **composite** FK `(area_id, facility_id) → areas(id, facility_id)`, making cross-facility corruption unrepresentable. The fixture is deliberately uneven — one facility with areas *and* a direct subsystem, one with no areas at all — because a uniform fixture cannot fail informatively. Two traps recorded: the backfill silently matched **zero rows** under `FORCE ROW LEVEL SECURITY` (RLS filters, it does not error), and **M118 first reported SURVIVED because the mutation was wrong, not the test** — dropping a constraint in `psql` proves nothing when `setUp()` runs `migrate:fresh`. Mutate the migration source. Pushed as `cf99f0f` (§9a — a reset had wiped `.git/config`, so the remote and the git identity had to be recreated first) | **507 / 1716**, **123 mutations caught** |
 | 2026-09-13 | **UML for the procurement module (`docs/uml/`).** Installed `graphviz` + `plantuml` (absent from the base image; plain `apt-get` fails the dpkg lock, `sudo` works) and drew five diagrams — domain model, the three state machines, an inspection-to-MC-gate sequence, reversal + RLS, and the component view. Written against a live `information_schema` dump rather than from memory, so the attribute lists are the real columns. Packaged as `docs/uml/uml.html` with the SVGs **inlined** — checked for external refs and found none, matching the `tour.html` air-gap pattern — and verified by screenshot rather than by byte count | no code change, **482 / 1647** |
 | 2026-09-09 | Docs, standards packs, prototype, ADRs, Laravel scaffold, standards engine, conformance corpus | Foundations in place |

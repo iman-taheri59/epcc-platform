@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Pipe sizes reference pack",
+  "type": "object",
+  "required": ["refId", "version", "source", "sizes"],
+  "additionalProperties": false,
+  "properties": {
+    "refId": {"const": "pipe-sizes"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "source": {"type": "string", "minLength": 10},
+    "note": {"type": "string"},
+    "units": {"type": "object"},
+    "sizes": {
+      "type": "array",
+      "minItems": 20,
+      "items": {
+        "type": "object",
+        "required": ["nps", "npsDecimal", "dn", "odIn", "odMm"],
+        "additionalProperties": false,
+        "properties": {
+          "nps": {"type": "string", "pattern": "^[0-9]+( [0-9]+/[0-9]+)?$|^[0-9]+/[0-9]+$"},
+          "npsDecimal": {"type": "number", "exclusiveMinimum": 0},
+          "dn": {"type": "integer", "exclusiveMinimum": 0},
+          "odIn": {"type": "number", "exclusiveMinimum": 0},
+          "odMm": {"type": "number", "exclusiveMinimum": 0}
+        }
+      }
+    }
+  }
+}

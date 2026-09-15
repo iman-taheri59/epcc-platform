@@ -1,8 +1,8 @@
 # ADR-EPCC-007 — Engineering reference data (pipe sizes, schedules, ratings)
 
-**Status:** PROPOSED — analysis only, nothing implemented
+**Status:** **ACCEPTED AND BUILT** (phase 0, 2026-09-15) — see §11 for the as-built record
 **Date:** 2026-09-14
-**Depends on:** ADR-006 (piping model) — PROPOSED
+**Depends on:** ADR-006 (piping model) — PROPOSED (this ADR does not wait on it)
 **Relates to:** the standards-pack engine (`packages/standards-engine`, `standards-packs/*.pack.json`)
 
 **Trigger (user):** «بعضی داده‌ها مثل سایز، استاندارد و… برای همه پروژه‌ها ثابت هستند و باید در جایی
@@ -271,3 +271,110 @@ exists to stop it.
 that makes size-band rules possible: the PMS says "4 inch", the rule engine stores DN100, and
 only this reference can connect the two. ADR-008 §2 explains why DN integers are the only sane
 key for range logic — NPS is a label (`1 1/4`, `1.25`, `1-1/4`, `۱¼`), not a number.
+
+
+---
+
+## 11. As built (2026-09-15, phase 0)
+
+Everything in §5 and §8 is implemented. Nothing in this ADR was deferred except the
+flange/gasket/bolt packs, which §8 already placed outside phase 1.
+
+### 11.1 Files
+
+| Path | Contents |
+|---|---|
+| `standards-packs/reference/pipe-sizes.ref.json` | **36 sizes**, NPS 1/8″ – 48″, four columns each |
+| `standards-packs/reference/pipe-schedules.ref.json` | **355 (size, schedule) pairs** over an 18-rung ladder |
+| `standards-packs/reference/end-types.ref.json` | 13 PCF end types, 3 of them numbered |
+| `standards-packs/reference/component-templates.ref.json` | 20 templates, 41 port definitions |
+| `standards-packs/reference/schema/*.schema.json` | one JSON-schema per pack |
+| `app/app/Support/Reference/PipeReference.php` | the access layer |
+| `app/app/Support/Reference/PipeSize.php` | readonly value object |
+| `app/app/Support/Reference/Exceptions/` | `UnknownSizeException`, `UnknownScheduleException` |
+| `app/tests/Feature/PipeReferenceTest.php` | **49 tests / 775 assertions** |
+
+Wired as a singleton in `EpccServiceProvider`; directory configured at
+`config('epcc.reference_dir')`, default `../standards-packs/reference`.
+
+### 11.2 The divergence, verified in the shipped data
+
+§2 predicted it from the published tables; the data now asserts it in three places
+(generator, CI validator, PHPUnit):
+
+| NPS | SCH 40 | STD | SCH 80 | XS |
+|---|---|---|---|---|
+| 6″ | 7.11 | 7.11 | 10.97 | 10.97 |
+| 10″ | 9.27 | 9.27 | **15.09** | **12.70** |
+| 12″ | **10.31** | **9.53** | 17.48 | **12.70** |
+| 24″ | **17.48** | **9.53** | 30.96 | **12.70** |
+
+### 11.3 Two defects the tests caught, and one the tests missed
+
+**Caught by the suite on first run — PHP integer key coercion.** `array_keys()` on the
+decoded wall table returns `40` as an **int**, not `"40"`, because PHP coerces numeric
+string keys. `schedulesFor()` therefore handed back a mixed `int|string` list: a strict
+`in_array()` in a picklist would silently fail, and passing a key straight back into
+`wall()` was an outright `TypeError`. Fixed with an explicit `array_map(strval(...), …)`
+and a comment, because the next person to "simplify" that line will reintroduce it.
+
+**Missed by the suite, found by mutation testing — the reachable alias fallback.** The
+suite asserted that STD ≠ SCH 40 at 12″ and above, so a mutant that made `wall()` fall
+back from a missing STD to SCH 40 still passed: at every size where STD is missing… it
+never is. The reachable direction is the other one. **ASME defines STD at 22″ and 26″
+but defines no SCH 40 there at all** (likewise XS but no SCH 80 from 26″ up). A
+"helpful" fallback would return 9.53 mm for a schedule the standard does not define at
+that size — a plausible number, wrong, and undetectable downstream. Now covered by
+`test_it_never_falls_back_between_std_and_a_numbered_schedule` and its XS twin.
+
+The general lesson, consistent with the rest of this codebase: **an assertion about
+data can only test the direction the data exercises.** Only mutation testing found the
+gap.
+
+**Also strengthened:** the singleton test asserted instance identity, which does not
+prove memoisation — a singleton that re-decodes 500 rows per lookup is still a
+singleton. Replaced with an observable proof: warm the cache, delete the files, assert
+the lookup still works, and assert a *fresh* instance against the same empty directory
+throws (otherwise the test would pass on an eager-loading implementation).
+
+### 11.4 Validation, three layers
+
+1. **Generation time** — the script that emitted the schedule table asserted size-table
+   agreement, ladder membership, positive bore, the divergence and per-size monotonicity
+   before writing.
+2. **CI** — `validate_packs.py` grew `check_reference_schema()` and
+   `check_reference_integrity()`: NPS labels parsed with `Fraction` and compared against
+   `npsDecimal`, `odIn × 25.4` reconciled against `odMm` (0.6 mm tolerance), ascending
+   DN/decimal/OD, no orphan sizes, monotonic ladder, the STD/XS pins, `numbered ⇒
+   weldable`, template port sequences, roles and end types resolvable, `TEE` present with
+   3 ports and `qualifierDerived`, `EQUAL_TEE`/`REDUCING_TEE` **forbidden**, `NOZZLE`
+   carrying `ownerKind`. The existing bilingual check was extended over the reference
+   packs for free. **15 data mutations were run against it; 15 were caught.**
+3. **PHPUnit** — 49 tests, including `test_it_touches_no_database()`, which fails if a
+   future refactor moves reference data into a table and quietly makes it the first
+   cross-tenant one.
+
+### 11.5 Decisions taken while building, not in the original analysis
+
+- **`resolveLabel()` returns null, everything else throws.** Line-number parsing and PCF
+  import legitimately need to ask *"is this token a size at all?"*, where "no" is a normal
+  answer rather than an error. Every other accessor throws, per §5.
+- **Persian digits are folded on input.** `۲ ۱/۲` resolves to `2 1/2`. The UI is bilingual
+  and a Farsi keyboard produces these; without folding, a Persian-locale user typing a
+  size gets `UnknownSizeException` for a perfectly valid pipe.
+- **`resolveBore()` takes the unit as a required argument** and throws on an unrecognised
+  one, rather than defaulting to inches. A PCF bore of `96` is 6″ in `INCH-SIXTEENTH` and
+  not a pipe size at all in `INCH` — asserted in
+  `test_misreading_the_bore_unit_would_corrupt_the_size`.
+- **`NOZZLE` ships in the template pack** even though a nozzle is not a line component.
+  The port-creation machinery is identical (one template, one port); only `ownerKind`
+  differs. This is what lets ADR-010's pipe-to-nozzle joint reuse the `joints` table
+  unchanged.
+- **Three schedules were added to the §8 ladder** (`5S`, `10S`, `40S`, `80S` were already
+  listed; the stainless rows are populated from B36.19M where they differ from B36.10M).
+
+### 11.6 Not built, deliberately
+
+`flange-ratings.ref.json` (150–2500 # with RF/FF/RTJ facings) is still the obvious next
+pack, but nothing consumes it until ADR-010's nozzle rating check exists at phase 3b.
+`projects.reference_pack_version` (§7) remains a recorded future column, not a migration.

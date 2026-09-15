@@ -1,0 +1,140 @@
+{
+  "refId": "end-types",
+  "version": "1.0.0",
+  "source": "PCF Reference Guide v15 (Hexagon) - end-connection vocabulary, also the last two characters of an ISOGEN SKEY",
+  "note": "Two-character codes. These are the values a port's end_type may take (ADR-006 section 3). 'weldable' drives whether a joint between two such ports is a weld and therefore whether it can carry a joint number and dia-inch (ADR-006 section 4, ADR-010 section 1).",
+  "endTypes": [
+    {
+      "code": "BW",
+      "name": {"en": "Butt weld", "fa": "جوش لب به لب"},
+      "weldable": true,
+      "numbered": true,
+      "genderRequired": false,
+      "note": {
+        "en": "The default field weld. Bevelled ends, full penetration. Both ports must be the same bore and wall to fit up without a transition.",
+        "fa": "جوش میدانی متعارف. لبه‌ها پخ‌زده و نفوذ کامل. دو سر باید هم‌قطر و هم‌ضخامت باشند."
+      }
+    },
+    {
+      "code": "SW",
+      "name": {"en": "Socket weld", "fa": "جوش سوکتی"},
+      "weldable": true,
+      "numbered": true,
+      "genderRequired": true,
+      "note": {
+        "en": "Small bore, typically 2 inch and below. One end is the socket (female), the other the spigot (male) - so gender must match, not just size.",
+        "fa": "برای سایزهای کوچک، معمولاً ۲ اینچ و پایین‌تر. یک سر مادگی و سر دیگر نری است، پس جنسیت هم باید بخواند نه فقط سایز."
+      }
+    },
+    {
+      "code": "FL",
+      "name": {"en": "Flanged", "fa": "فلنجی"},
+      "weldable": false,
+      "numbered": false,
+      "genderRequired": false,
+      "note": {
+        "en": "A bolted joint, not a weld. It is never allocated a joint number (ADR-006: numbering_policy NOT_APPLICABLE) and contributes no dia-inch. Rating and facing must match, which is the check that catches a 300# nozzle against a 150# flange (ADR-010 section 3).",
+        "fa": "اتصال پیچی است نه جوش. هرگز شماره جوش نمی‌گیرد و دیا اینچ تولید نمی‌کند. رِیتینگ و فیسینگ باید بخواند."
+      }
+    },
+    {
+      "code": "SC",
+      "name": {"en": "Screwed / threaded", "fa": "دنده‌ای"},
+      "weldable": false,
+      "numbered": false,
+      "genderRequired": true,
+      "note": {
+        "en": "Threaded connection, male into female. Common on instrument hook-ups and utility small bore.",
+        "fa": "اتصال رزوه‌ای، نری در مادگی. رایج در هوک‌آپ ابزار دقیق و خطوط کوچک سرویس."
+      }
+    },
+    {
+      "code": "PL",
+      "name": {"en": "Plain end", "fa": "سر ساده"},
+      "weldable": true,
+      "numbered": false,
+      "genderRequired": false,
+      "note": {
+        "en": "Square cut, no preparation. Weldable but not a prepared butt weld; also the end of a pipe that has not yet been cut to its final connection.",
+        "fa": "برش صاف بدون آماده‌سازی. قابل جوش است ولی جوش لب به لب آماده‌شده نیست."
+      }
+    },
+    {
+      "code": "CP",
+      "name": {"en": "Compression", "fa": "فشاری"},
+      "weldable": false,
+      "numbered": false,
+      "genderRequired": true,
+      "note": {
+        "en": "Ferrule fitting, typical of instrument tubing.",
+        "fa": "اتصال فرولی، متداول در تیوبینگ ابزار دقیق."
+      }
+    },
+    {
+      "code": "PF",
+      "name": {"en": "Push fit", "fa": "جازنی"},
+      "weldable": false,
+      "numbered": false,
+      "genderRequired": true,
+      "note": {"en": "Push-in connection.", "fa": "اتصال جازنی."}
+    },
+    {
+      "code": "GL",
+      "name": {"en": "Glued / solvent weld", "fa": "چسبی"},
+      "weldable": false,
+      "numbered": false,
+      "genderRequired": true,
+      "note": {
+        "en": "Non-metallic piping (GRP, PVC). Not a weld in the QC sense - no WPS, no welder, no NDT.",
+        "fa": "لوله‌کشی غیرفلزی. از نظر کنترل کیفیت جوش محسوب نمی‌شود: نه WPS، نه جوشکار، نه NDT."
+      }
+    },
+    {
+      "code": "BS",
+      "name": {"en": "Brazed / soldered", "fa": "لحیمی"},
+      "weldable": false,
+      "numbered": false,
+      "genderRequired": true,
+      "note": {"en": "Brazed or soldered socket.", "fa": "سوکت لحیم‌کاری‌شده."}
+    },
+    {
+      "code": "CL",
+      "name": {"en": "Clamped", "fa": "کلمپی"},
+      "weldable": false,
+      "numbered": false,
+      "genderRequired": false,
+      "note": {"en": "Clamp coupling, e.g. Victaulic grooved.", "fa": "کوپلینگ کلمپی، مثل ویکتالیک."}
+    },
+    {
+      "code": "GF",
+      "name": {"en": "Grooved for flexible coupling", "fa": "شیاردار"},
+      "weldable": false,
+      "numbered": false,
+      "genderRequired": false,
+      "note": {"en": "Rolled or cut groove.", "fa": "شیار غلتکی یا ماشین‌کاری‌شده."}
+    },
+    {
+      "code": "FA",
+      "name": {"en": "Fabricated / special", "fa": "ساخت ویژه"},
+      "weldable": true,
+      "numbered": true,
+      "genderRequired": false,
+      "note": {
+        "en": "Shop-fabricated special. Treated as weldable so that a fabricated branch connection can still carry a joint number.",
+        "fa": "قطعه ساخت کارگاهی خاص. قابل جوش در نظر گرفته می‌شود تا اتصال انشعاب ساختنی بتواند شماره جوش بگیرد."
+      }
+    },
+    {
+      "code": "**",
+      "name": {"en": "Any end (wildcard)", "fa": "هر نوع سر (وایلدکارد)"},
+      "weldable": false,
+      "numbered": false,
+      "genderRequired": false,
+      "wildcard": true,
+      "note": {
+        "en": "PCF wildcard meaning the end type is unspecified. Accepted on IMPORT only - it must never be stored on a port, because a port whose end type is 'anything' defeats every compatibility check (ADR-006 section 5.4).",
+        "fa": "وایلدکارد PCF به معنی نامشخص بودن نوع سر. فقط هنگام ایمپورت پذیرفته می‌شود و هرگز نباید روی پورت ذخیره شود، چون پورتی که سرش «هر چیزی» باشد تمام کنترل‌های سازگاری را بی‌اثر می‌کند."
+      }
+    }
+  ]
+}

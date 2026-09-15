@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Services\StandardsPackRepository;
+use App\Support\Reference\PipeReference;
 use App\Support\TenantContext;
 use Epcc\StandardsEngine\ReleaseGateEvaluator;
 use Illuminate\Support\ServiceProvider;
@@ -17,6 +18,16 @@ final class EpccServiceProvider extends ServiceProvider
             StandardsPackRepository::class,
             fn (): StandardsPackRepository => new StandardsPackRepository(
                 (string) config('epcc.pack_dir', base_path('../standards-packs')),
+            ),
+        );
+
+        // Singleton so the ~500 rows of ASME data are decoded once per process,
+        // not once per port. Read-only by construction: the packs are files on
+        // disk with no writer anywhere in the codebase (ADR-007 section 4).
+        $this->app->singleton(
+            PipeReference::class,
+            fn (): PipeReference => new PipeReference(
+                (string) config('epcc.reference_dir', base_path('../standards-packs/reference')),
             ),
         );
 
