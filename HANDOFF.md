@@ -1414,6 +1414,50 @@ Schema-per-project solves it and stays cheap to reach later, because every table
 `project_id`, RLS is already project-aware, and there are **zero** `DB::connection()` call sites.
 
 
+## 5o. The RLS escape hatch is a performance defect (ADR-012) — UNFIXED
+
+**Found 2026-09-15 at 200 projects / 2.64 M rows. Present in production code today, invisible at
+fixture scale, and it couples tenants: one customer's page slows down when an unrelated
+customer's project grows.**
+
+Every tenant policy has this shape:
+
+```sql
+(NULLIF(current_setting('epcc.project_id', true),'') IS NULL      -- escape hatch
+ OR project_id = NULLIF(current_setting('epcc.project_id', true))::uuid)
+AND EXISTS (SELECT 1 FROM project_company pc WHERE …)
+```
+
+`A IS NULL OR col = A` is **not sargable**. No index on `project_id` can ever be used:
+
+```
+Seq Scan on punch_items   Rows Removed by Filter: 1315440   -- to return 25 rows
+Execution Time: 870 ms  (1,690 ms once the table doubled)
+```
+
+Adding `(project_id, sequence)` changed nothing — **the index was never the problem.**
+
+**The trap: the fastest fix is the broken one.** Deleting the `OR` branch gives 870 ms → 0.16 ms
+and **silently returns 0 rows** for the cross-project landing page (company bound, no project
+bound). No error; every project-bound test still passes. A benchmark alone would have chosen it.
+`coalesce(setting, project_id)` is correct but still opaque to the planner (183 ms, parallel seq
+scan).
+
+**The fix that is both:** the policy keeps only membership (`project_id IN (SELECT … FROM
+project_company WHERE company_id = …)`) and the *query* adds `WHERE project_id = :current`.
+Measured: register page **0.144 ms**, cross-project view **211,200 rows**, non-participant **0**,
+participant asking for a project it is not in **0**.
+
+**The curve goes flat** — a 540 k-row project pages in the same 0.13 ms as a 5 k-row one, at both
+1.3 M and 2.6 M total rows. Page latency follows page size, not table size. **No partitioning, no
+sharding, no database-per-project.**
+
+Not yet applied: it changes 24 security policies. Isolation *between companies* stays
+database-enforced; isolation *between projects of the same company* moves to the query layer —
+a deliberate decision, not a side effect. Plan in ADR-012 §8, and **write the failing
+cross-project test first**, because the current suite would pass the broken version.
+
+
 ## 6. The preview iframe (read before debugging "login is broken")
 
 The preview serves the app in an **iframe whose top-level document is a
@@ -1530,6 +1574,16 @@ The app's `package.json` sets `"type": "module"`, hence the `.cjs` extension.
 
 ## 8. Known traps (non-obvious, will cost you an hour each)
 
+- **`x IS NULL OR col = x` in an RLS policy disables every index on `col`.** It reads
+  like a harmless convenience ("unbound means all") and it silently forces a
+  sequential scan forever. At fixture scale a seq scan is the *correct* plan, so
+  this is invisible until a million rows exist. Check `Rows Removed by Filter`
+  in `EXPLAIN (ANALYZE)` — if it is orders of magnitude larger than the rows
+  returned, the predicate is not sargable. See §5o.
+- **Benchmark a security policy and you will select the insecure version.** The
+  fastest form of the tenant policy is the one that returns zero rows for the
+  cross-project view. Every correctness probe must be run alongside the timing,
+  in the same script, or the fast-and-wrong answer wins.
 - **The backup was archiving itself.** `tar -czf source-backup.tar.gz .` from the
   repo root includes the *previous* `source-backup.tar.gz`, so each refresh
   nests the last one and the file roughly doubles. It also swept in republished
