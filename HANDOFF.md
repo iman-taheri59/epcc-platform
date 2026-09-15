@@ -1382,6 +1382,38 @@ tests including `test_it_touches_no_database()`, which fails if reference data i
 into a table. **15 data mutations and 15 PHP mutations were run; all 30 caught.**
 
 
+## 5n. Why one database, not one per project (ADR-011)
+
+Asked by the user on 2026-09-15. Answer: **no for the hosted SaaS, yes at instance level for
+on-premise.** Measured rather than asserted, and one finding settled it.
+
+**The fixture already contains the breaking case.** `EPC-PARS`, `NIOC-AFF` and `PMC-TEHRAN` each
+participate in **two projects** — normal for an Iranian EPC contractor, not an edge case. Under
+database-per-project a single human becomes two independent user rows with two password hashes
+(verified in a spike), and the post-login landing page — *my documents across my projects* —
+cannot be produced by a query at all:
+
+```
+ERROR:  cross-database references are not implemented
+```
+
+That is a hard PostgreSQL limit, not a config problem. `plans.max_projects` also proves the
+**commercial unit is the company, not the project**, so the billing boundary and the storage
+boundary would point in opposite directions.
+
+**Isolation is already there.** Binding a session shows the same company gets strictly one
+project's rows when bound to that project, both when bound to neither, and a non-participant
+gets zero. Separation would buy isolation that exists, and would swap a database-enforced rule
+(fails closed) for a connect-to-the-right-database rule in application code (fails open).
+
+**RLS applies to `COPY`, not just `SELECT`** — so a per-project export is just a bound session.
+The usual "but we need per-project handover" argument does not require separation.
+
+The one genuine capability the shared database lacks is **per-project point-in-time restore**.
+Schema-per-project solves it and stays cheap to reach later, because every table already carries
+`project_id`, RLS is already project-aware, and there are **zero** `DB::connection()` call sites.
+
+
 ## 6. The preview iframe (read before debugging "login is broken")
 
 The preview serves the app in an **iframe whose top-level document is a
