@@ -2044,6 +2044,33 @@ reported `size: 0` and a stale `pushed_at` for a non-empty tree. Compare
 `git/ref/heads/main` to `git rev-parse HEAD`, then list
 `git/trees/main?recursive=1` and check the files you expect.
 
+**A fine-grained PAT is scoped to a repo LIST, and a missing repo looks like a
+404, not a permission error.** A token that authenticates perfectly
+(`/user` → 200, correct login) can still return **404 Not Found** for
+`/repos/<owner>/<repo>` and `403 Write access to repository not granted` on
+push — because the repository was simply never added to the token's
+*Repository access* list. 404 rather than 403 is deliberate on GitHub's part:
+it avoids confirming that a private repo exists.
+
+Diagnose it in one call before assuming the token is broken or expired:
+
+```bash
+curl -s -H "Authorization: Bearer $PAT" \
+  "https://api.github.com/user/repos?per_page=100&affiliation=owner" \
+  | python3 -c "import json,sys; [print(r['full_name'], r['permissions']['push']) for r in json.load(sys.stdin)]"
+```
+
+This listed exactly one repo — `iman-taheri59/awp-epcc`, an **unrelated
+project** (Laravel at the repo root, Docker, `phases-*` branches, last pushed
+2026-09-07) whose history shares no commit with ours. Pushing there would have
+needed `--force` or a nonsense merge and would have damaged someone else's
+work. **If the reachable repo is not the one you expect, stop and ask** — the
+fix is on GitHub (add the repo, Contents: Read and write), not in the shell.
+
+**Push status:** `main` = **`04fe0ad`**, pushed 2026-09-15 and verified through
+the API (branch sha, five spot-checked new paths, HANDOFF §5q present). Local
+and remote are level; nothing is outstanding.
+
 **Token hygiene:** tokens have been pasted into the chat twice. Treat every one
 of them as compromised and rotate it once the push is confirmed — a PAT with
 repo scope on a private commercial codebase is the whole product.
