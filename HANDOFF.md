@@ -2156,6 +2156,18 @@ module still in `PLANNED_MODULES`.
 
 ## 9a. Git remote — and why the config keeps disappearing
 
+> **State as of 2026-09-15 (end of phase 1):** local `main` is at **`fe8156c`**
+> (ADR-006 phase 1), **one commit ahead of the remote**, which is still at
+> `edc2925`. The push could not be made because the fine-grained PAT was
+> shredded at the end of the previous session, as intended — credentials are
+> not left lying in the sandbox. To publish, mint a new fine-grained PAT with
+> **Contents: Read and write** scoped to **`epcc-platform`** (an unlisted repo
+> 404s rather than 403s — see below), then `git push origin main`. Never put
+> the token in the remote URL; use `git credential approve` or a prompt.
+> The work is not at risk in the meantime: `source-backup.tar.gz` (3,547,088 B,
+> 449 entries) is current and extraction-verified.
+
+
 **`github.com/iman-taheri59/epcc-platform`** (private). Current `main` =
 **`cf99f0f`**, 295 files. `app/.env` and `source-backup.tar.gz` are gitignored
 and have been confirmed absent from the remote tree.
