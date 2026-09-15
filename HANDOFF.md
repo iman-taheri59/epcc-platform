@@ -1498,6 +1498,27 @@ The app's `package.json` sets `"type": "module"`, hence the `.cjs` extension.
 
 ## 8. Known traps (non-obvious, will cost you an hour each)
 
+- **The backup was archiving itself.** `tar -czf source-backup.tar.gz .` from the
+  repo root includes the *previous* `source-backup.tar.gz`, so each refresh
+  nests the last one and the file roughly doubles. It also swept in republished
+  Filament assets (`app/public/{js,css}/filament`, ~3 MB) and compiled Blade
+  views, all of which `restore.sh` regenerates. Exclude the tarball itself, the
+  published assets, `storage/framework/views` and `storage/framework/testing`;
+  then **diff the entry list against the old one** — a pure size comparison
+  cannot tell "captured more source" from "captured more garbage". Current:
+  **3,469,495 B / 418 entries**, extraction verified in `/tmp` before replacing
+  the old file.
+- **Numeric string keys are integers in PHP.** `json_decode(..., true)` turns
+  `"40"` into array key `40`, so `array_keys()` on a schedule table returns a
+  mixed `int|string` list. Strict `in_array()` then fails silently and passing a
+  key to a `string`-typed parameter is a `TypeError`. Cast at the boundary with
+  `array_map(strval(...), …)`.
+- **An assertion about data only tests the direction the data exercises.**
+  `PipeReferenceTest` asserted STD ≠ SCH 40 at 12″+, which felt like complete
+  coverage of the alias question. It was not: a fallback from a missing schedule
+  to its "equivalent" survived, because STD is never the missing one. The
+  reachable case is the reverse — ASME defines STD at 22″/26″ but no SCH 40
+  there at all. Only mutation testing found it.
 - **Anything that reaches the internet is invisible in a connected sandbox.**
   A URL assembled at runtime (Filament's avatar provider) exists in no file, so
   grep and any static scan report a clean build. Capture a browser net-log, or
