@@ -1458,6 +1458,41 @@ a deliberate decision, not a side effect. Plan in ADR-012 §8, and **write the f
 cross-project test first**, because the current suite would pass the broken version.
 
 
+## 5p. Per-project backup and deletion (ADR-013) — proven on a scratch copy, not yet built
+
+User asked whether one project can be backed up and then completely deleted. **Yes — the full
+cycle (export → delete → restore → verify) was run end to end on a byte-for-byte copy of the live
+database.** 93 rows / 26 tables exported, delete took **53 ms** via 23 cascades, zero orphans,
+other projects untouched, restore matched the manifest exactly and every FK re-validated.
+
+**Four traps, and the first two make the naive answer wrong:**
+
+1. **`pg_dump` as the app user silently truncates.** `FORCE ROW LEVEL SECURITY` applies to the
+   owner, so the dump **aborts mid-way, exits 0, and leaves a 29 KB file** where the real dump is
+   166 KB. A backup script checking `$?` reports success. Per-project backup therefore requires a
+   superuser/`BYPASSRLS` role — the backup job is a **privileged component**.
+2. **`pg_dump --where` is PostgreSQL 18.** On 17.11 it is `unrecognized option`. Row-filtered
+   export must be built table by table with `\copy (SELECT … WHERE project_id=…)`.
+3. **A topological sort of the 25 tables silently drops the document register.**
+   `documents.current_revision_id ↔ document_revisions.document_id` is a genuine cycle, so those
+   four tables have no topological position and fall out of the recursion — the export completes,
+   reports success, and contains **no documents**. Fix: explicit reviewed order + restore under
+   `SET session_replication_role = replica`, then re-validate. **The per-table row-count manifest
+   is what catches a silently-empty table.**
+4. **Deleting the rows does not delete the files.** No FK reaches the filesystem: after a clean
+   cascade with zero orphans, the project's 4 blobs are still on disk. Blob paths are
+   project-scoped (`documents/<project-uuid>/…`) and no sha is shared across projects, so it is a
+   directory removal — but it must happen **before** the rows, or the paths are gone.
+
+**Also:** `authorization_denials` and `gate_evaluations` carry `project_id` with **no FK**, so they
+are never cascaded and must be deleted explicitly. And `projects_code_unique` means a deleted
+code becomes reusable, so two unrelated `PH-14`s can end up in the archive.
+
+Deleting PH-14 destroyed 1 MC certificate, **2 payment certificates**, 5 transmittals and 3
+inspections — contractual evidence. ADR-013 therefore proposes three separate operations (export /
+archive / ceremonial two-person hard delete) and recommends **archive as the default**.
+
+
 ## 6. The preview iframe (read before debugging "login is broken")
 
 The preview serves the app in an **iframe whose top-level document is a
@@ -1574,6 +1609,15 @@ The app's `package.json` sets `"type": "module"`, hence the `.cjs` extension.
 
 ## 8. Known traps (non-obvious, will cost you an hour each)
 
+- **`pg_dump` exits 0 after an RLS abort.** Under `FORCE ROW LEVEL SECURITY` the
+  dump fails part-way and still returns success, leaving a truncated file. Never
+  trust the exit code — compare the output size or the row counts against a
+  manifest. See §5p.
+- **A topological sort over the schema drops any FK cycle.** `documents` and
+  `document_revisions` reference each other, so a recursive dependency ordering
+  returns 21 of 25 tables and loses the whole document register without error.
+  Order such lists explicitly, and load with
+  `SET session_replication_role = replica`.
 - **`x IS NULL OR col = x` in an RLS policy disables every index on `col`.** It reads
   like a harmless convenience ("unbound means all") and it silently forces a
   sequential scan forever. At fixture scale a seq scan is the *correct* plan, so
