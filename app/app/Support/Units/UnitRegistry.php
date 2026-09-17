@@ -86,6 +86,60 @@ final class UnitRegistry
         return array_values($this->byQuantity[$quantity]);
     }
 
+    /**
+     * The units a user may actually choose between for a quantity.
+     *
+     * Distinct from unitsFor() on purpose. The pack still CONVERTS every unit
+     * it knows - data already stored in kPa, or arriving from an import in
+     * kg/cm2, must keep converting correctly forever. What the user decision
+     * of 2026-09-17 narrowed is the MENU: pressure is offered as bar or psi,
+     * temperature as C or F, and nothing else.
+     *
+     * Deleting the other units from the pack instead would have been the
+     * cheaper edit and the wrong one: it turns every historic value and every
+     * import in a retired unit into an unreadable number.
+     *
+     * @return list<array<string, mixed>>
+     * @throws UnknownUnitException
+     */
+    public function selectableUnitsFor(string $quantity): array
+    {
+        return array_values(array_filter(
+            $this->unitsFor($quantity),
+            static fn (array $u): bool => ($u['selectable'] ?? true) !== false,
+        ));
+    }
+
+    /** Is this unit one a user is allowed to pick? */
+    public function isSelectable(string $unit): bool
+    {
+        return ($this->unit($unit)['selectable'] ?? true) !== false;
+    }
+
+    /**
+     * The unit a quantity is displayed in when nobody has expressed a choice.
+     *
+     * NOT the same as the canonical unit. Canonical is a storage decision
+     * (kPa, because SI and because it sidesteps the bar/barg ambiguity in a
+     * column name); the default display is what an engineer expects to read.
+     * Since kPa is no longer selectable, falling back to it would show every
+     * unconfigured project a unit the user cannot pick - visibly broken.
+     *
+     * @throws UnknownUnitException
+     */
+    public function defaultDisplayUnit(string $quantity): string
+    {
+        $this->index();
+
+        foreach ((array) ($this->pack['quantities'] ?? []) as $q) {
+            if (($q['quantity'] ?? null) === $quantity) {
+                return (string) ($q['default_display'] ?? $q['canonical']);
+            }
+        }
+
+        throw new UnknownUnitException("There is no quantity '{$quantity}' in the units pack.");
+    }
+
     /** @throws UnknownUnitException */
     public function canonicalUnit(string $quantity): string
     {

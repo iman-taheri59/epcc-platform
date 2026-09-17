@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-09-17** · Status: **prototype + working vertical slice** · Tests: **758 passed / 2980 assertions** (+83 jsdom)
+Last updated: **2026-09-17** · Status: **prototype + working vertical slice** · Tests: **767 passed / 2998 assertions** (+83 jsdom)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -1776,6 +1776,26 @@ ADR-012 already measured as 0.12 ms vs 1690 ms under RLS.
    −400 °F (−240 °C) passes. Enforced in the service *and* as a `CHECK`, so an import path that
    skips the service still cannot write impossible data.
 
+### The menu is narrower than the engine (user decision, 2026-09-17)
+
+Choosable: **pressure → `bar` or `psi`; temperature → `C` or `F`.** Nothing else.
+
+Everything else is retired with `"selectable": false` in the pack — **not deleted**. The engine
+still converts kPa, kg/cm², barg, K and the rest, forever, because values already stored and
+values arriving from imports must stay readable. Deleting a unit turns historic data into an
+unreadable number; hiding it does not.
+
+**Consequence worth remembering: canonical ≠ default display.** Pressure is stored in kPa and read
+in bar. Falling back to the canonical unit would show an unconfigured project a unit that is not in
+its own dropdown, so the pack carries `default_display` per quantity and `UnitRegistry` has
+`defaultDisplayUnit()` separate from `canonicalUnit()`. If you add a quantity, set both.
+
+A refused choice says "kPa is not one of the units this project uses — choose one of: bar, psi",
+never "unknown unit", which would be false.
+
+`validate_packs.py` asserts the agreed menu, that every quantity offers at least one unit, and that
+`default_display` is itself selectable. Widening the menu is an edit to that file, not a drift.
+
 ### Preference resolution
 
 ```
@@ -1817,9 +1837,9 @@ quantity keys the PHP names still exist; and anchor conversions (285 psi, 1 bar,
 `app/Support/Units/{Quantity,UnitRegistry,Measurement}.php` · `app/Services/UnitPreferenceService.php`
 · `PipingLineService::{canonicalValues,updateDesign}` · migration `2026_09_15_160000_…` ·
 `resources/views/piping/index.blade.php` · `lang/{en,fa}/epcc.php` under `units.*` ·
-`tests/Feature/{UnitRegistryTest,UnitPreferenceTest}.php` (63 + 28).
+`tests/Feature/{UnitRegistryTest,UnitPreferenceTest}.php` (63 + 37).
 
-**Mutation testing: 38 mutants on the units layer, 0 survivors.** Two survived first pass: M28 (the
+**Mutation testing: 43 mutants on the units layer, 0 survivors.** Two survived first pass: M28 (the
 cross-quantity check was masked by the datum check — only PRESSURE has non-NONE datums, so
 isolating it needed `mm→kg` and `barg→bara`) and M38 (`updateDesign` had no archive-gate test).
 
@@ -2399,6 +2419,23 @@ repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
 
+
+
+### 2026-09-17 (later) — units menu narrowed to bar/psi and C/F
+
+User: «فقط واحدهای سلسیوس و فارنهایت را برای دما و bar و psi برای فشار را در نظر بگیر».
+
+Retired the other units with a `selectable: false` flag rather than deleting them, so stored and
+imported values in kPa/kg/cm²/barg/K keep converting. That exposed a distinction the original
+design had glossed over: the canonical storage unit (kPa) is no longer a legal *display* unit, so
+the fallback for an unconfigured project had to become a new `default_display` (bar).
+
+**Sandbox reset #32 at the start of this turn** — rebuilt PHP 8.4, Composer, vendor, PostgreSQL,
+the database, and (newly) **chromium + poppler-utils + fonts-vazirmatn**, which brought 13
+previously self-skipping PDF tests back to life. Full suite now **767 passed / 2998 assertions,
+zero skipped** (was 758 passed with 13 silently skipped).
+
+5 new mutants on the narrowing logic, all caught; 4 new pack-corruption probes, all caught.
 
 ### 2026-09-17 — units of measure (ADR-014) wired end to end
 

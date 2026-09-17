@@ -1,7 +1,7 @@
 # ADR-EPCC-014 — User-selectable units of measure
 
 **Status:** **ACCEPTED AND BUILT** — engine, storage, preferences and UI are in place (see §9).
-**Date:** 2026-09-15 (built out 2026-09-17)
+**Date:** 2026-09-15 (built out 2026-09-17; menu narrowed 2026-09-17 — see §3.1)
 **Depends on:** ADR-007 (reference packs — units ship as one), ADR-006 (piping lines carry the first values)
 **Relates to:** ADR-001 (RLS — preferences are per user and per project, both tenant-scoped)
 
@@ -74,6 +74,34 @@ plus a table rewrite. **The application owns the conversion; the database owns t
 Factors live in `standards-packs/reference/units.ref.json`, validated by `validate_packs.py`.
 Verified anchors: psi `6.89475729`, kg/cm² `98.0665`, in `25.4`, ft `304.8`, lb `0.45359237`.
 **285 psi = 1965.0058277 kPa.**
+
+### 3.1 The menu is narrower than the engine — user decision, 2026-09-17
+
+The user narrowed what may be **chosen**:
+
+| Quantity | Offered | Still converts, never offered |
+|---|---|---|
+| PRESSURE | `bar`, `psi` | kPa, MPa, barg, bara, psia, kg/cm², mmH2O, mmHg |
+| TEMPERATURE | `C`, `F` | K |
+
+**Retired by a flag (`"selectable": false`), not by deletion.** Deleting them from the pack would
+have been the smaller edit and the wrong one: every value already stored in kPa, and every future
+import arriving in kg/cm², would become a number nobody can read. The engine must keep converting
+units it no longer offers, permanently.
+
+A refused choice therefore says *"kPa is not one of the units this project uses — choose one of:
+bar, psi"*, not *"unknown unit"*. The latter would be a lie about a unit the engine converts fine.
+
+**This forced a distinction that did not exist before: canonical ≠ default display.**
+Pressure is *stored* in kPa and *read* in bar. Before this change the fallback for an unconfigured
+project was the canonical unit; now that kPa is unselectable, that fallback would have shown every
+such project a unit missing from its own dropdown. Hence `default_display` in the pack, and
+`UnitRegistry::defaultDisplayUnit()` distinct from `canonicalUnit()`.
+
+Kelvin was kept in the engine at the user's request, against a future cryogenic (LNG) scope.
+
+The agreed menu is asserted in `validate_packs.py`, so widening it is a deliberate edit to that
+file rather than a quiet drift in the pack.
 
 ---
 
@@ -165,9 +193,9 @@ up in a barg column.
 | Canonical on write | `PipingLineService::canonicalValues()` + `updateDesign()` |
 | Migration | `2026_09_15_160000_add_unit_preferences_and_canonical_values.php` |
 | UI | `resources/views/piping/index.blade.php` (columns, inputs, selector) |
-| Tests | `UnitRegistryTest` (63), `UnitPreferenceTest` (28) |
+| Tests | `UnitRegistryTest` (63), `UnitPreferenceTest` (37) |
 
-**Mutation testing: 38 mutants run against the units layer, 0 survivors.** Two survived on first
+**Mutation testing: 43 mutants run against the units layer, 0 survivors.** Two survived on first
 pass and both revealed real gaps — M28 (a cross-quantity check masked by the datum check) and M38
 (`updateDesign` had no archive test). Both are now covered.
 

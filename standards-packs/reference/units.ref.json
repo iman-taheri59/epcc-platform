@@ -14,6 +14,7 @@
     {
       "quantity": "PRESSURE",
       "canonical": "kPa",
+      "default_display": "bar",
       "label": {
         "en": "Pressure",
         "fa": "فشار"
@@ -30,7 +31,8 @@
           "aliases": [
             "kpa",
             "KPA"
-          ]
+          ],
+          "selectable": false
         },
         {
           "code": "MPa",
@@ -43,7 +45,8 @@
           "aliases": [
             "mpa",
             "MPA"
-          ]
+          ],
+          "selectable": false
         },
         {
           "code": "bar",
@@ -70,7 +73,8 @@
             "BARG",
             "bar g",
             "bar-g"
-          ]
+          ],
+          "selectable": false
         },
         {
           "code": "bara",
@@ -84,7 +88,8 @@
             "BARA",
             "bar a",
             "bar-a"
-          ]
+          ],
+          "selectable": false
         },
         {
           "code": "psi",
@@ -111,7 +116,8 @@
           "datum": "ABSOLUTE",
           "aliases": [
             "PSIA"
-          ]
+          ],
+          "selectable": false
         },
         {
           "code": "kg/cm2",
@@ -125,7 +131,8 @@
             "kgf/cm2",
             "kg/cm²",
             "KG/CM2"
-          ]
+          ],
+          "selectable": false
         },
         {
           "code": "mmH2O",
@@ -138,7 +145,8 @@
           "aliases": [
             "mmwc",
             "mmWC"
-          ]
+          ],
+          "selectable": false
         },
         {
           "code": "mmHg",
@@ -151,13 +159,15 @@
           "aliases": [
             "torr",
             "Torr"
-          ]
+          ],
+          "selectable": false
         }
       ]
     },
     {
       "quantity": "TEMPERATURE",
       "canonical": "C",
+      "default_display": "C",
       "label": {
         "en": "Temperature",
         "fa": "دما"
@@ -204,7 +214,8 @@
           "aliases": [
             "kelvin",
             "KELVIN"
-          ]
+          ],
+          "selectable": false
         }
       ],
       "minimum_canonical": -273.15,

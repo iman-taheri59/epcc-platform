@@ -133,6 +133,7 @@ return [
     ],
 
     'units' => [
+        'not_selectable' => ':unit is not one of the units this project uses. Choose one of: :allowed.',
         'title' => 'Units of measure',
         'intro' => 'Values are stored exactly as entered, together with their unit. These settings only change how they are displayed and compared.',
         'project_defaults' => 'Project defaults',

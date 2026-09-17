@@ -483,6 +483,58 @@ def check_units(refs: dict) -> None:
                 fail(f"[ref:units] {name}: unit {u['code']} declares datum "
                      f"{u['datum']}, but only pressure has a datum")
 
+    # 5b. A quantity must offer at least one selectable unit, and its default
+    #     display unit must be one of them. Retiring units is a pack edit, so
+    #     it is entirely possible to retire the very unit the screen falls back
+    #     to - which renders a dropdown whose current value is not in the list.
+    for q in units["quantities"]:
+        name = q["quantity"]
+        codes = [u["code"] for u in q["units"]]
+        selectable = [u["code"] for u in q["units"] if u.get("selectable", True)]
+
+        if not selectable:
+            fail(f"[ref:units] {name}: every unit is marked unselectable - "
+                 f"the user would face an empty dropdown")
+            continue
+
+        default = q.get("default_display", q["canonical"])
+        if default not in codes:
+            fail(f"[ref:units] {name}: default_display '{default}' is not one of its units")
+        elif default not in selectable:
+            fail(f"[ref:units] {name}: default_display '{default}' is not selectable - "
+                 f"an unconfigured project would show a unit the user cannot choose "
+                 f"(selectable: {selectable})")
+
+        # The canonical unit may be unselectable - that is the point of
+        # separating storage from display - but it must still exist.
+        if q["canonical"] not in codes:
+            fail(f"[ref:units] {name}: canonical '{q['canonical']}' is not one of its units")
+
+    # 5c. The user decision of 2026-09-17: pressure is offered as bar or psi,
+    #     temperature as C or F. Encoded here so that widening the menu is a
+    #     deliberate edit to this file rather than an accident in the pack.
+    expected_menu = {
+        "PRESSURE": {"bar", "psi"},
+        "TEMPERATURE": {"C", "F"},
+    }
+    for name, want in expected_menu.items():
+        q = next((x for x in units["quantities"] if x["quantity"] == name), None)
+        if not q:
+            continue
+        got = {u["code"] for u in q["units"] if u.get("selectable", True)}
+        if got != want:
+            fail(f"[ref:units] {name} offers {sorted(got)}, but the agreed menu is "
+                 f"{sorted(want)} - update validate_packs.py if this was intended")
+
+    # 5d. A retired unit must still CONVERT. The whole reason for retiring via
+    #     a flag rather than deletion is that stored and imported values in
+    #     that unit stay readable.
+    for q in units["quantities"]:
+        for u in q["units"]:
+            if u.get("selectable", True) is False and "factor" not in u:
+                fail(f"[ref:units] {q['quantity']}: retired unit {u['code']} has no factor - "
+                     f"historic values in it could not be read")
+
     # 6. The quantities the application names in code must exist. Renaming one
     #    in the pack without renaming it in PHP fails here rather than at the
     #    moment a user opens the units screen.

@@ -193,13 +193,14 @@ final class PipingLineController extends Controller
         foreach ($this->units->quantities() as $quantity) {
             $out[$quantity] = [
                 'label' => __('epcc.units.quantities.'.$quantity),
-                // unitsFor() returns whole unit definitions, not codes.
+                // Only what the user may pick - the engine still converts the
+                // rest (stored kPa, imported kg/cm2) but never offers them.
                 'units' => array_map(
                     fn (array $unit): array => [
                         'code' => (string) $unit['code'],
                         'label' => $this->units->label((string) $unit['code'], $lang),
                     ],
-                    $this->units->unitsFor($quantity),
+                    $this->units->selectableUnitsFor($quantity),
                 ),
             ];
         }

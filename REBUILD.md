@@ -13,6 +13,10 @@ cd app && composer install
 
 # 3. Run
 php artisan serve --host=0.0.0.0 --port=8000
+
+# 4. PDF toolchain - WITHOUT THESE, 13 tests SILENTLY SKIP rather than fail.
+#    The suite still reports green, so the loss is easy to miss.
+sudo apt-get install -y chromium poppler-utils fonts-vazirmatn
 ```
 
 Verified working versions (2026-09-09): PHP 8.4.24, Composer 2.10.3,

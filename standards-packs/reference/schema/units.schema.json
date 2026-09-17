@@ -54,6 +54,11 @@
           "minLength": 1,
           "description": "Code of the unit every value of this quantity is stored in for comparison. Must appear in units[].code - enforced in validate_packs.py."
         },
+        "default_display": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unit shown when no one has expressed a preference. Distinct from canonical: canonical is a storage choice (kPa), default_display is what an engineer expects to read (bar). Must be selectable, or an unconfigured project renders a unit the user cannot pick."
+        },
         "label": { "$ref": "#/$defs/label" },
         "minimum_canonical": {
           "type": "number",
@@ -99,6 +104,11 @@
           "default": "NONE"
         },
         "label": { "$ref": "#/$defs/label" },
+        "selectable": {
+          "type": "boolean",
+          "default": true,
+          "description": "False means the engine still converts this unit but never offers it in a menu. Retiring a unit this way keeps historic and imported values readable; deleting it from the pack would not."
+        },
         "aliases": {
           "type": "array",
           "description": "Spellings accepted on input and normalised to code. Matching ignores spaces, hyphens and underscores only - never all punctuation.",

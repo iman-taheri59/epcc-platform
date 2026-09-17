@@ -61,7 +61,9 @@ final class UnitPreferenceService
             }
         }
 
-        return $this->units->canonicalUnit($quantity);
+        // The pack's default DISPLAY unit, not its canonical one. kPa is how
+        // pressure is stored; bar is how it is read.
+        return $this->units->defaultDisplayUnit($quantity);
     }
 
     /**
@@ -181,6 +183,21 @@ final class UnitPreferenceService
                         'unit' => $resolved['code'],
                         'belongs' => $resolved['quantity'],
                         'chosen' => $quantity,
+                    ]),
+                ]);
+            }
+
+            if (! $this->units->isSelectable($resolved['code'])) {
+                // The unit is real and still converts - it is simply not on
+                // the menu. Saying so beats "unknown unit", which would be a
+                // lie about a unit the engine can convert perfectly well.
+                throw ValidationException::withMessages([
+                    'units' => __('epcc.units.not_selectable', [
+                        'unit' => $resolved['code'],
+                        'allowed' => implode(', ', array_map(
+                            static fn (array $u): string => (string) $u['code'],
+                            $this->units->selectableUnitsFor($resolved['quantity']),
+                        )),
                     ]),
                 ]);
             }

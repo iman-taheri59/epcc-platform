@@ -15,6 +15,7 @@ use App\Services\UnitPreferenceService;
 use App\Support\LineReleaseState;
 use App\Support\TenantContext;
 use App\Support\Units\Quantity;
+use App\Support\Units\UnitRegistry;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
 use Illuminate\Support\Facades\DB;
@@ -90,25 +91,42 @@ final class UnitPreferenceTest extends TestCase
 
     // ------------------------------------------------ resolution order --
 
-    public function test_without_any_preference_the_canonical_unit_is_used(): void
+    public function test_without_any_preference_the_default_display_unit_is_used(): void
     {
-        // The floor. A project that never configures units still has to render
-        // something, and the canonical unit is the only always-defined answer.
-        $this->assertSame('kPa', $this->prefs()->displayUnit(Quantity::PRESSURE));
+        // The floor - and it is the default DISPLAY unit, not the canonical
+        // one. Pressure is stored in kPa but read in bar; falling back to kPa
+        // would show every unconfigured project a unit that is not even on the
+        // menu.
+        $this->assertSame('bar', $this->prefs()->displayUnit(Quantity::PRESSURE));
         $this->assertSame('C', $this->prefs()->displayUnit(Quantity::TEMPERATURE));
     }
 
-    public function test_the_project_default_overrides_the_canonical(): void
+    public function test_the_fallback_unit_is_always_one_the_user_could_have_picked(): void
+    {
+        // Retiring a unit is a pack edit, so it is possible to retire the very
+        // unit the screen falls back to. That would render a dropdown whose
+        // current value is missing from its own list.
+        $registry = app(UnitRegistry::class);
+
+        foreach ([Quantity::PRESSURE, Quantity::TEMPERATURE] as $quantity) {
+            $fallback = $this->prefs()->displayUnit($quantity);
+            $offered = array_column($registry->selectableUnitsFor($quantity), 'code');
+
+            $this->assertContains($fallback, $offered, "{$quantity} falls back to an unpickable unit");
+        }
+    }
+
+    public function test_the_project_default_overrides_the_fallback(): void
     {
         $project = $this->project();
 
         $this->asOwner(fn () => $this->prefs()->setProjectPreferences(
             $project,
             $this->owner(),
-            [Quantity::PRESSURE => 'barg'],
+            [Quantity::PRESSURE => 'psi'],
         ));
 
-        $this->assertSame('barg', $this->asOwner(
+        $this->assertSame('psi', $this->asOwner(
             fn () => $this->prefs()->displayUnit(Quantity::PRESSURE, $project),
         ));
     }
@@ -121,7 +139,7 @@ final class UnitPreferenceTest extends TestCase
         $owner = $this->owner();
 
         $this->asOwner(fn () => $this->prefs()->setProjectPreferences($project, $owner, [
-            Quantity::PRESSURE => 'barg',
+            Quantity::PRESSURE => 'bar',
         ]));
 
         $contractor = $this->userByEmail('rezaei@pars.example');
@@ -132,7 +150,7 @@ final class UnitPreferenceTest extends TestCase
         $this->assertSame('psi', $this->asOwner(
             fn () => $this->prefs()->displayUnit(Quantity::PRESSURE, $project, $saved),
         ));
-        $this->assertSame('barg', $this->asOwner(
+        $this->assertSame('bar', $this->asOwner(
             fn () => $this->prefs()->displayUnit(Quantity::PRESSURE, $project, $owner),
         ));
     }
@@ -145,7 +163,7 @@ final class UnitPreferenceTest extends TestCase
         $owner = $this->owner();
 
         $this->asOwner(fn () => $this->prefs()->setProjectPreferences($project, $owner, [
-            Quantity::PRESSURE => 'barg',
+            Quantity::PRESSURE => 'bar',
         ]));
 
         $user = $this->userByEmail('rezaei@pars.example');
@@ -153,7 +171,7 @@ final class UnitPreferenceTest extends TestCase
         $cleared = $this->prefs()->setUserPreferences($user, [Quantity::PRESSURE => '']);
 
         $this->assertNull($cleared->unit_preferences);
-        $this->assertSame('barg', $this->asOwner(
+        $this->assertSame('bar', $this->asOwner(
             fn () => $this->prefs()->displayUnit(Quantity::PRESSURE, $project, $cleared),
         ));
     }
@@ -298,7 +316,7 @@ final class UnitPreferenceTest extends TestCase
             ->only(['design_pressure', 'design_pressure_unit', 'design_pressure_kpa']);
 
         $this->asOwner(fn () => $this->prefs()->setProjectPreferences($this->project(), $this->owner(), [
-            Quantity::PRESSURE => 'barg',
+            Quantity::PRESSURE => 'bar',
         ]));
 
         $after = $this->asOwner(fn () => PipingLine::findOrFail($line->id));
@@ -496,15 +514,15 @@ final class UnitPreferenceTest extends TestCase
         $this->makeLine(['design_pressure' => 150, 'design_pressure_unit' => 'psi']);
 
         $owner = $this->owner();
-        $this->prefs()->setUserPreferences($owner, [Quantity::PRESSURE => 'barg']);
+        $this->prefs()->setUserPreferences($owner, [Quantity::PRESSURE => 'bar']);
 
         $html = $this->actingAs($owner->fresh() ?? $owner)
             ->get('/projects/PH-14/piping?lang=en')
             ->assertOk()
             ->getContent();
 
-        // 150 psi = 10.34 barg, and the entered figure stays visible beside it.
-        $this->assertStringContainsString('10.34 barg', $html);
+        // 150 psi = 10.34 bar, and the entered figure stays visible beside it.
+        $this->assertStringContainsString('10.34 bar', $html);
         $this->assertStringContainsString('150 psi', $html);
     }
 
@@ -569,5 +587,114 @@ final class UnitPreferenceTest extends TestCase
             ])
             ->assertRedirect()
             ->assertSessionHasErrors('design_pressure_unit');
+    }
+
+    // ------------------------------------------------ the narrowed menu --
+
+    public function test_the_menu_offers_only_bar_and_psi_for_pressure(): void
+    {
+        // User decision, 2026-09-17.
+        $codes = array_column(app(UnitRegistry::class)->selectableUnitsFor(Quantity::PRESSURE), 'code');
+
+        $this->assertEqualsCanonicalizing(['bar', 'psi'], $codes);
+    }
+
+    public function test_the_menu_offers_only_celsius_and_fahrenheit(): void
+    {
+        $codes = array_column(app(UnitRegistry::class)->selectableUnitsFor(Quantity::TEMPERATURE), 'code');
+
+        $this->assertEqualsCanonicalizing(['C', 'F'], $codes);
+    }
+
+    public function test_a_retired_unit_cannot_be_chosen(): void
+    {
+        // barg is a real unit the engine converts perfectly well. It is simply
+        // not on the menu any more.
+        $this->expectException(ValidationException::class);
+
+        $this->asOwner(fn () => $this->prefs()->setProjectPreferences(
+            $this->project(),
+            $this->owner(),
+            [Quantity::PRESSURE => 'barg'],
+        ));
+    }
+
+    public function test_kelvin_cannot_be_chosen(): void
+    {
+        $this->expectException(ValidationException::class);
+
+        $this->prefs()->setUserPreferences(
+            $this->userByEmail('rezaei@pars.example'),
+            [Quantity::TEMPERATURE => 'K'],
+        );
+    }
+
+    public function test_refusing_a_retired_unit_names_the_ones_that_work(): void
+    {
+        // "Unknown unit" would be a lie - the engine knows kPa. The message has
+        // to distinguish "does not exist" from "not on this menu", and say what
+        // to pick instead.
+        try {
+            $this->prefs()->setUserPreferences(
+                $this->userByEmail('rezaei@pars.example'),
+                [Quantity::PRESSURE => 'kPa'],
+            );
+            $this->fail('kPa should not be selectable');
+        } catch (ValidationException $e) {
+            $message = implode(' ', $e->errors()['units'] ?? []);
+
+            $this->assertStringContainsString('kPa', $message);
+            $this->assertStringContainsString('bar', $message);
+            $this->assertStringContainsString('psi', $message);
+        }
+    }
+
+    public function test_a_retired_unit_still_converts(): void
+    {
+        // The whole reason for retiring via a flag instead of deleting the unit:
+        // values already stored in kPa, or arriving from an import in kg/cm2,
+        // must stay readable forever.
+        $registry = app(UnitRegistry::class);
+
+        $this->assertEqualsWithDelta(1000.0, $registry->convert(10, 'bar', 'kPa'), 1e-9);
+        $this->assertEqualsWithDelta(98.0665, $registry->convert(1, 'kg/cm2', 'kPa'), 1e-9);
+        $this->assertEqualsWithDelta(-273.15, $registry->convert(0, 'K', 'C'), 1e-9);
+    }
+
+    public function test_a_line_stored_in_a_retired_unit_still_displays(): void
+    {
+        // An imported line whose unit is no longer on the menu must render, not
+        // blow up. This is the realistic case: the pack was narrowed AFTER data
+        // existed.
+        $line = $this->makeLine([
+            'design_pressure' => 10,
+            'design_pressure_unit' => 'barg',
+        ]);
+
+        $this->assertEqualsWithDelta(1000.0, (float) $line->design_pressure_kpa, 1e-6);
+
+        $html = $this->actingAs($this->owner())
+            ->get('/projects/PH-14/piping?lang=en')
+            ->assertOk()
+            ->getContent();
+
+        // Shown in the reader's unit (bar), with the entered figure preserved.
+        $this->assertStringContainsString('10 barg', $html);
+    }
+
+    public function test_the_creation_form_offers_only_the_agreed_units(): void
+    {
+        $html = $this->actingAs($this->owner())
+            ->get('/projects/PH-14/piping?lang=en')
+            ->assertOk()
+            ->getContent();
+
+        // Isolate the design-pressure select so other markup cannot mask a
+        // stray option.
+        preg_match('/<select name="design_pressure_unit".*?<\/select>/s', $html, $m);
+        $this->assertNotEmpty($m, 'the design pressure unit select is missing');
+
+        preg_match_all('/value="([^"]+)"/', $m[0], $opts);
+        $this->assertEqualsCanonicalizing(['bar', 'psi'], $opts[1]);
     }
 }
