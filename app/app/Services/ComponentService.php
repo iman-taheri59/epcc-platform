@@ -36,6 +36,7 @@ final class ComponentService
     public function __construct(
         private readonly PipeReference $reference,
         private readonly ProjectArchiveService $archives,
+        private readonly JointService $joints,
     ) {}
 
     // ------------------------------------------------------------ create --
@@ -199,7 +200,7 @@ final class ComponentService
      * discouraged.
      *
      * @param  array<string, mixed>  $attributes
-     * @return array{component: Component, parentPort: Port, childPort: Port}
+     * @return array{component: Component, parentPort: Port, childPort: Port, joint: \App\Models\Joint}
      */
     public function attach(Port $port, User $actor, string $templateCode, array $attributes = []): array
     {
@@ -235,26 +236,20 @@ final class ComponentService
                 ]);
             }
 
-            $this->markConnected($port, $childPort);
+            // Phase 3: the attachment IS a joint. Creating it here rather
+            // than flipping is_connected means the compatibility verdict, the
+            // joint number and the dia-inch all exist from the moment the
+            // connection does - there is no window in which the model has a
+            // connection the joint register has never heard of.
+            $joint = $this->joints->join($port, $childPort, $actor, $attributes);
 
             return [
                 'component' => $child->fresh(['ports']),
                 'parentPort' => $port->fresh(),
                 'childPort' => $childPort->fresh(),
+                'joint' => $joint,
             ];
         });
-    }
-
-    /**
-     * Record that two ports are now joined.
-     *
-     * The joint ROW arrives in phase 3; this is the seam it will plug into.
-     * Keeping the denormalised flag in one method means phase 3 changes one
-     * place, not every caller.
-     */
-    private function markConnected(Port $a, Port $b): void
-    {
-        Port::query()->whereIn('id', [$a->id, $b->id])->update(['is_connected' => true]);
     }
 
     /**
@@ -272,12 +267,18 @@ final class ComponentService
         $this->archives->assertWritable($project);
         $this->assertLineIsModellable($line);
 
-        DB::transaction(function () use ($component): void {
-            // Phase 3 will reopen the specific counterpart ports via the joint
-            // table. Until joints exist there is nothing recording WHICH port
-            // each of these was joined to, so this method can only free its
-            // own; the integration test asserts that limitation explicitly
-            // rather than leaving it to be discovered.
+        DB::transaction(function () use ($component, $actor): void {
+            // Phase 3 closes the hole phase 2 documented. Every joint touching
+            // this component is separated FIRST, which reopens the neighbour's
+            // port; only then do this component's own ports go. Deleting the
+            // ports first would cascade the joints away and leave the
+            // neighbour flagged connected with nothing attached - a port
+            // invisible to the open-ends worklist and therefore never
+            // finished.
+            foreach ($this->joints->jointsTouching($component) as $joint) {
+                $this->joints->separate($joint, $actor);
+            }
+
             Port::query()->where('component_id', $component->id)->delete();
             $component->delete();
         });

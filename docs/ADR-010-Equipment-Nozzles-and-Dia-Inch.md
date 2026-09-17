@@ -1,6 +1,6 @@
 # ADR-EPCC-010 — Equipment and nozzles, custom component templates, and the dia-inch convention
 
-**Status:** PROPOSED — analysis only, nothing implemented
+**Status:** **PARTLY BUILT** — section 1 (the dia-inch convention) is built and tested in phase 3; sections 2 (custom templates) and 3 (equipment and nozzles) remain proposed.
 **Date:** 2026-09-14
 **Depends on:** ADR-006 (piping model), ADR-007 (reference data), ADR-009 (manual modelling)
 
@@ -21,12 +21,20 @@ return min($j->portA->nps_decimal, $j->portB->nps_decimal);
 Trivial to implement, easy to get wrong later, and the error is invisible: it does not crash, it
 just inflates progress. Measured on a five-weld sample:
 
-| weld | A | B | dia-inch (smaller) |
-|---|---|---|---|
-| W-001 | 6" | 6" | 6.0 |
-| W-002 | 6" | **2"** | **2.0** |
-| W-004 | 12" | **8"** | **8.0** |
-| | | **total** | **19.0** |
+| weld | A | B | dia-inch (smaller) | dia-inch ("larger") |
+|---|---|---|---|---|
+| W-001 | 6" | 6" | 6.0 | 6.0 |
+| W-002 | 6" | **2"** | **2.0** | 6.0 |
+| W-003 | 2" | 2" | 2.0 | 2.0 |
+| W-004 | 12" | **8"** | **8.0** | 12.0 |
+| W-005 | 1" | 1" | 1.0 | 1.0 |
+| | | **total** | **19.0** | **27.0** |
+
+*(Corrected 2026-09-18: the table as first written printed only the three welds
+that differ between the two conventions, so its rows summed to 16 rather than
+the 19 quoted in the text. The equal-bore welds W-003 and W-005 were always part
+of the sample — they are what makes the point that a fixture of equal-bore welds
+alone would pass under either reading. `JointTest` now asserts the full five.)*
 
 The "larger governs" reading gives **27.0** — a **42% overstatement** on this sample. On a
 project where fabrication is paid or progressed by dia-inch, that is a commercial number.

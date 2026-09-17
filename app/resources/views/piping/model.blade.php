@@ -31,6 +31,18 @@
                        'en' => 'This line is released; changing its model needs a revert to draft first.'],
         'portsnote'=> ['fa' => 'تعداد پورت‌ها از نوع قطعه می‌آید — سه‌راه همیشه سه پورت دارد و کسی آن را وارد نمی‌کند.',
                        'en' => 'The port count comes from the component type — a tee always has three, and nobody types that.'],
+        'joints'   => ['fa' => 'اتصالات', 'en' => 'Joints'],
+        'jnone'    => ['fa' => 'هنوز اتصالی روی این خط ثبت نشده است.', 'en' => 'No joints on this line yet.'],
+        'jnum'     => ['fa' => 'شماره', 'en' => 'No.'],
+        'jtype'    => ['fa' => 'نوع', 'en' => 'Type'],
+        'jbetween' => ['fa' => 'بین', 'en' => 'Between'],
+        'jstate'   => ['fa' => 'وضعیت', 'en' => 'State'],
+        'jdia'     => ['fa' => 'قطر-اینچ', 'en' => 'Dia-inch'],
+        'junnum'   => ['fa' => 'بدون شماره', 'en' => 'not numbered'],
+        'jwelds'   => ['fa' => 'جوش', 'en' => 'welds'],
+        'jfitted'  => ['fa' => 'مونتاژشده', 'en' => 'fitted'],
+        'jdianote' => ['fa' => 'قطر-اینچ همیشه از سر کوچک‌تر گرفته می‌شود؛ ذخیره نمی‌شود و هر بار محاسبه می‌گردد.',
+                       'en' => 'Dia-inch always takes the smaller end; it is computed, never stored.'],
     ];
     $L = fn (string $k): string => $t[$k][$lang] ?? $t[$k]['en'];
     $num = fn ($v): string => \App\Support\JalaliDate::digits((string) $v, $lang);
@@ -196,6 +208,88 @@
       </tr>
     @empty
       <tr><td colspan="6" style="color:var(--muted);">{{ $L('none') }}</td></tr>
+    @endforelse
+    </tbody>
+  </table>
+
+  {{-- ------------------------------------------------------- joints ----- --}}
+  <h2 style="margin-top:28px;font-size:16px;">{{ $L('joints') }}
+    <span style="font-weight:400;font-size:11.5px;color:var(--muted);margin-inline-start:10px;">
+      {{-- Each metric is isolated WHOLE, number and label together. Isolating
+           only the number leaves the "·" separator as a neutral character
+           between a digit run and a word, and the bidi algorithm attaches it
+           to the digits: "6 welds · 2 fitted · 28" rendered in Farsi as
+           "۶ جوش ۲۰ مونتاژشده ۲۸۰". The numbers were right; the punctuation
+           moved. --}}
+      <bdi>{{ $num($metrics['welds']) }} {{ $L('jwelds') }}</bdi>
+      <span style="color:var(--line);">|</span>
+      <bdi>{{ $num($metrics['fitted']) }} {{ $L('jfitted') }}</bdi>
+      <span style="color:var(--line);">|</span>
+      <bdi>{{ $num(rtrim(rtrim(number_format($metrics['dia_inch'], 2, '.', ''), '0'), '.')) }} {{ $L('jdia') }}</bdi>
+    </span>
+  </h2>
+  <p style="color:var(--muted);font-size:11.5px;margin:4px 0 0;">{{ $L('jdianote') }}</p>
+
+  <table data-tt style="margin-top:10px;">
+    <thead>
+      <tr>
+        <th data-sort="number">{{ $L('jnum') }}</th>
+        <th data-sort="text" data-facet>{{ $L('jtype') }}</th>
+        <th>{{ $L('jbetween') }}</th>
+        <th data-sort="text" data-facet>{{ $L('jstate') }}</th>
+        <th data-sort="number">{{ $L('jdia') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+    @forelse($joints as $j)
+      @php
+        $dia = $diaInch($j);
+        $cA = $j->portA?->component;
+        $cB = $j->portB?->component;
+      @endphp
+      <tr>
+        <td class="mono">
+          @if($j->displayNumber())
+            <bdi>{{ $num($j->displayNumber()) }}</bdi>
+          @else
+            {{-- A flanged joint is NOT an unnumbered weld awaiting a number:
+                 it will never have one. Showing a blank cell would put it on
+                 somebody's chase-list forever. --}}
+            <span style="color:var(--muted);font-size:11px;">{{ $L('junnum') }}</span>
+          @endif
+        </td>
+        <td style="font-size:12px;"><bdi>{{ $j->joint_type }}</bdi>
+          @if($j->compatibility_state !== 'VALID')
+            <span style="display:inline-block;margin-inline-start:6px;padding:1px 7px;border-radius:999px;font-size:10.5px;
+                         border:1px dashed #f59e0b;background:rgba(245,158,11,.12);color:#fcd34d;"
+                  title="{{ implode(' · ', collect($j->compatibility_notes['reasons'] ?? [])->map(fn ($r) => __('epcc.joint.reason.'.$r['code'], $r['params']))->all()) }}">
+              ⚠ {{ $j->compatibility_state }}
+            </span>
+          @endif
+        </td>
+        <td style="font-size:12px;">
+          <bdi>{{ $cA ? $num($cA->sequence).' '.$cA->template_code : '?' }}</bdi>
+          <span style="color:var(--muted);">↔</span>
+          <bdi>{{ $cB ? $num($cB->sequence).' '.$cB->template_code : '?' }}</bdi>
+        </td>
+        <td style="font-size:12px;">
+          <span style="display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;
+                       border:1px {{ $j->isFitted() ? 'solid #15803d' : 'dashed var(--line)' }};
+                       background:{{ $j->isFitted() ? 'rgba(21,128,61,.28)' : 'transparent' }};
+                       color:{{ $j->isFitted() ? '#86efac' : 'var(--muted)' }};">
+            {{ $j->isFitted() ? '●' : '○' }} <bdi>{{ $j->state }}</bdi>
+          </span>
+        </td>
+        <td class="mono">
+          @if($dia !== null)
+            <bdi>{{ $num(rtrim(rtrim(number_format($dia, 2, '.', ''), '0'), '.')) }}</bdi>
+          @else
+            <span style="color:var(--muted);">—</span>
+          @endif
+        </td>
+      </tr>
+    @empty
+      <tr><td colspan="5" style="color:var(--muted);">{{ $L('jnone') }}</td></tr>
     @endforelse
     </tbody>
   </table>

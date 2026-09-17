@@ -35,6 +35,7 @@ final class ComponentController extends Controller
         private readonly ComponentService $components,
         private readonly TenantContext $tenant,
         private readonly PipeReference $reference,
+        private readonly \App\Services\JointService $joints,
     ) {}
 
     public function index(Request $request, string $projectCode, string $lineId): View
@@ -43,7 +44,7 @@ final class ComponentController extends Controller
         $user = $request->user();
         $project = $this->resolveProject($user, $projectCode);
 
-        [$line, $rows, $open] = $this->tenant->runAs(
+        [$line, $rows, $open, $joints, $metrics] = $this->tenant->runAs(
             $user->company_id,
             function () use ($lineId): array {
                 $line = PipingLine::with(['subsystem', 'pipingClass'])->findOrFail($lineId);
@@ -53,7 +54,21 @@ final class ComponentController extends Controller
                     ->orderBy('sequence')
                     ->get();
 
-                return [$line, $rows, $this->components->openPorts($line)];
+                // Eager-loaded through the ports to their components: the
+                // joint register names the two components, and without this
+                // the table issues four queries per row.
+                $joints = \App\Models\Joint::with(['portA.component', 'portB.component'])
+                    ->where('piping_line_id', $line->id)
+                    ->orderByRaw('joint_seq NULLS LAST')
+                    ->get();
+
+                return [
+                    $line,
+                    $rows,
+                    $this->components->openPorts($line),
+                    $joints,
+                    $this->joints->lineMetrics($line),
+                ];
             },
             $project->id,
         );
@@ -66,6 +81,9 @@ final class ComponentController extends Controller
             'line' => $line,
             'rows' => $rows,
             'open' => $open,
+            'joints' => $joints,
+            'metrics' => $metrics,
+            'diaInch' => fn (\App\Models\Joint $j): ?float => $this->joints->diaInch($j),
             'templates' => $this->components->placeableTemplates(),
             'sizes' => array_map(
                 static fn ($s): string => $s->nps,

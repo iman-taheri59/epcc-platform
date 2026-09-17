@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-09-17** · Status: **prototype + working vertical slice** · Tests: **806 passed / 3061 assertions** (+83 jsdom)
+Last updated: **2026-09-18** · Status: **prototype + working vertical slice** · Tests: **852 passed / 3136 assertions** (+83 jsdom)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -1936,6 +1936,97 @@ Reachable from the line register: each row has a **Model** button.
 **Mutation testing: 13 mutants, 0 survivors** (M44–M56).
 
 
+## 5v. Joints, compatibility and dia-inch (ADR-006 phase 3) — BUILT
+
+The model stops being a parts list here. Every connection is now a row with a number, a state and
+a measurable size — the entity Plant 3D does not have, because there a connection is geometry and
+here it is a construction object.
+
+### The table
+
+`joints`: uuid pk, `project_id`/`company_id`/**`piping_line_id`** (denormalised — a joint never
+moves between lines, and every read is line-scoped), `port_a_id`/`port_b_id`, nullable
+`joint_seq`, `numbering_policy`, `joint_type`, `state`, `fitted_by_code`+`fitted_at`, frozen
+`nominal_size`/`nominal_size_decimal`/`schedule`/`thickness_mm`, `shop_field`, `spool_id`,
+`isometric_sheet_no`, `compatibility_state`+`compatibility_notes jsonb`, `source`, `external_ref`.
+
+Constraints that carry weight:
+
+- **`CHECK (port_a_id < port_b_id)`** plus `UNIQUE(port_a_id, port_b_id)`. Without the CHECK,
+  (A,B) and (B,A) both satisfy the UNIQUE and the same weld is counted twice in dia-inch.
+  `JointService::orderedPair()` sorts before every write so no caller can get it wrong.
+- **Two separate unique indexes on `port_a_id` and on `port_b_id`.** The pair-unique does not give
+  this: (A,B) and (A,C) are distinct pairs, so without them port A could be welded to two things.
+- `joints_unnumbered_policy_has_no_seq` — a NOT_APPLICABLE joint must not be carrying a number.
+  Switching a weld to a flanged connection otherwise leaves the old number on reports forever.
+- `joints_fitted_needs_evidence` — FITTED demands **both** `fitted_by_code` and `fitted_at`, the
+  same shape as the AFC gate. Who-but-not-when is not auditable.
+- Partial unique `joints_line_seq_unique WHERE joint_seq IS NOT NULL`, partial index
+  `joints_awaiting_number_idx` for the chase-list.
+
+### Three rules worth not re-deriving
+
+**Dia-inch: the smaller diameter governs, and it is never stored.** `min(portA, portB)`, computed
+every time. A stored copy drifts from the ports and the error does not crash — it inflates
+progress, which on a job paid by dia-inch is an invoice. Only an approved progress snapshot
+freezes it. Flanged joints contribute **nothing**: bolt-up is real work but it is not welding.
+
+**Frozen vs computed is a deliberate split.** `nominal_size`/`schedule`/`thickness_mm` are frozen
+onto the joint at creation — a joint accepted at 6"/SCH40 must keep saying so even if a port is
+later edited. Dia-inch is the opposite. The distinction: those columns record what was **built**,
+dia-inch **measures** it.
+
+**A number nobody uses is a lie that costs.** Welded joints get a per-line sequence from a shared
+counter (welded + threaded), allocated under `lockForUpdate()` on the line row. Flanged joints get
+`numbering_policy = NOT_APPLICABLE` and **no** number — they are not welds awaiting one. Next
+number is **`max()+1`, never `count()+1`**: joints get deleted during modelling and a reissued
+number means two different welds on two drawings.
+
+### PortCompatibility — a pure function with three outcomes
+
+`app/Support/Piping/{PortCompatibility,Verdict}.php`. No DB, no locale — the verdict carries
+reason **codes**, and translation happens in `Verdict::messages()`, so tests compare verdicts
+without string-matching a language file.
+
+| Verdict | Example |
+|---|---|
+| INVALID | BW onto FL · size mismatch · unknown end code · port joined to itself |
+| WARNING | schedule break at equal bore · SW/SW gender unverified |
+| VALID | BW/BW equal bore · **PL onto BW** (a field-cut pipe) · anything against `**` |
+
+The schedule check compares the **resolved wall from the reference pack**, not the schedule name.
+STD vs SCH 40 at 6" is the same wall and must not nag; at 12" it is 10.31 vs 9.53 and must. Two
+tests pin both halves, which is what stops it being "optimised" into a string comparison later.
+
+### What phase 3 fixed in phase 2
+
+`ComponentService::remove()` can now reopen the counterpart port. It separates every joint
+touching the component **first**, then deletes its ports — the other order cascades the joints
+away and leaves the neighbour flagged connected with nothing attached, invisible to the open-ends
+worklist. `markConnected()` is gone; `attach()` returns a `joint` key alongside the component.
+
+### Files
+
+`app/Models/Joint.php` · `app/Services/JointService.php` ·
+`app/Support/Piping/{PortCompatibility,Verdict}.php` · migration
+`2026_09_18_090000_create_joints.php` · `lang/{en,fa}/epcc.php` under `joint.*` ·
+`resources/views/piping/model.blade.php` (joints table + metrics header) ·
+`app/Http/Controllers/ComponentController.php` · `tests/Feature/JointTest.php` (**46**).
+
+**Mutation testing: 23 mutants, 0 survivors** (M57–M78), harness restored at **`mutate.sh`**.
+
+Screenshots: `docs/screens/joints-{en,fa}.png`.
+
+### Two things the mutants and the demo caught
+
+- **M64 found a missing test, not a missing guard.** The self-joint check existed; nothing
+  asserted it. A PCF import with colliding END-POINT coordinates would have booked dia-inch for a
+  weld that does not exist.
+- **The demo script's first version was engineering-wrong, and the engine said so.** Welding a
+  flanged valve straight onto a pipe was refused; the fixture needed a flange, exactly as site
+  would. When a refusal looks like a bug, check the pipework before the code.
+
+
 ## 6. The preview iframe (read before debugging "login is broken")
 
 The preview serves the app in an **iframe whose top-level document is a
@@ -2051,6 +2142,48 @@ The app's `package.json` sets `"type": "module"`, hence the `.cjs` extension.
 ---
 
 ## 8. Known traps (non-obvious, will cost you an hour each)
+
+- **A bidi-isolated NUMBER is not enough — isolate the whole phrase.** `<bdi>6</bdi> welds ·
+  <bdi>2</bdi> fitted` renders in Farsi as **"۶ جوش ۲۰ مونتاژشده ۲۸۰"**: the `·` separator is a
+  neutral character sitting between a digit run and a word, so the algorithm attaches it to the
+  digits and it reads as part of the next number. The digits were right; the punctuation moved.
+  Wrap `number + label` together in one `<bdi>`, and use a separator inside its own element.
+
+- **A mutation run killed by a timeout leaves the mutant IN THE SOURCE.** The harness restores the
+  file after each test run; kill it mid-run and the last edit survives. It then looks like working
+  code — `if (false) {` sat in `JointService::join()` and the next partial run reported SKIP
+  ("pattern did not apply") rather than a failure. After any interrupted run:
+  `grep -rn "if (false)" app/app/` and check `git diff` before believing anything.
+
+- **A SKIP from the mutation harness is not a pass.** It means the pattern never applied, so
+  nothing was broken and the test suite proved nothing. Treat SKIP as loudly as SURVIVED — the
+  harness exits non-zero on either.
+
+- **An equivalent mutant is not a surviving test gap.** `min(null, 6.0)` is already `null` in PHP,
+  so deleting the null guard in `diaInch()` changes no observable behaviour. Before writing a test
+  to kill a survivor, check the mutation actually alters the result — otherwise you are adding a
+  test that asserts the language spec. Retarget the mutant instead (`return 0.0`).
+
+- **`LineReleaseState` is a class of string constants, not an enum.** `LineReleaseState::RELEASED->value`
+  throws "Attempt to read property value on string". Use the constant directly.
+
+- **Forcing `release_state = RELEASED` needs TWO provenance pairs, not one.** `afc_confirmed_at`
+  + `afc_confirmed_by` **and** `released_at` + `released_by`. Supplying only the AFC pair fails
+  with a 23514 that looks exactly like the guard you are trying to test firing.
+
+- **A standalone bootstrap script needs its own `<?php` tag and absolute paths.** `php artisan
+  tinker --execute="require '/tmp/x.php'"` printed the file instead of running it (no opening
+  tag), and `__DIR__` inside a `/tmp` script resolves to `/tmp`, not the app.
+
+- **Outside a tenant binding, `firstOrFail()` on an RLS table looks exactly like "the seeder never
+  ran".** The rows are there; the role cannot see them. Use
+  `TenantContext::forIdentityLookup(...)` to resolve the project and user, then `runAs(...)`.
+  Confirm with `sudo -u postgres psql` before re-seeding — re-running the seeder hits
+  `companies_code_unique` and buries the real cause.
+
+- **When the engine refuses your demo data, check the pipework before the code.** Welding a
+  flanged valve directly onto a pipe was refused by `PortCompatibility`; the model was wrong, not
+  the rule. The fixture needed a flange, exactly as site would.
 
 - **PCRE alternation is first-match, and backtracking usually hides it.**
   `A1|A1B` against `A1B-…` *works* — the engine tries `A1`, fails the next
@@ -2199,7 +2332,7 @@ reference packs: 36 sizes, 355 schedule pairs, 13 end types, 20 component templa
 `PipeReference`. See §5m for the traps. **This is phase 0 of the consolidated build order in
 ADR-010 §5.**
 
-ADR-006 is now **PARTLY BUILT** (phase 1 of 7). ADRs 008, 009 and 010 remain PROPOSED (analysis only). Three questions at the end of
+ADR-006 is now **PARTLY BUILT** (phases 1, 1b, 2 and 3 of 7). ADRs 008, 009 and 010 remain PROPOSED (analysis only). Three questions at the end of
 ADR-010 are still unanswered by the user: equipment tag uniqueness (per project vs per
 facility — I lean per facility), whether an instrument register is needed now, and whether
 equipment tags are imported-and-validated rather than allocated.
@@ -2524,7 +2657,7 @@ ports" question is answered structurally — the template declares them and no A
 of ten minutes of remembering; it also verifies chromium/poppler and warns that their absence makes
 13 tests skip silently rather than fail.
 
-Full suite **806 passed / 3061 assertions**, zero skipped. 13 new mutants on the modelling service,
+Full suite **852 passed / 3136 assertions**, zero skipped. 13 new mutants on the modelling service,
 all caught.
 
 ### 2026-09-17 (later) — units menu narrowed to bar/psi and C/F
