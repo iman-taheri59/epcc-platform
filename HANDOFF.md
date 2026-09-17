@@ -1907,6 +1907,23 @@ import validator.
   port 2 on an OLET, and a REDUCER has no branch at all. The controller resolves the role to a seq
   from the template; a positional guess would put a branch size on a reducer's large port.
 
+### Two display bugs the screenshot caught that no test would have
+
+Both were found by *looking* at the rendered page, not by running the suite — worth remembering
+when a feature is "done and green".
+
+1. **Open and connected ports were near-identical pills.** Both used `var(--line)` borders on a
+   dark background. Colour alone also fails a colour-blind reader. Fixed with a dashed amber
+   border and a `○` / `●` glyph, plus a legend next to the heading, so the state is readable
+   without relying on hue.
+2. **RTL reordered the inch mark.** `P2 RUN 6"` rendered in Farsi as `"P2 RUN 6` — the quote
+   floated to the visual start of the line. Latin-plus-digit tokens inside an RTL paragraph need
+   `<bdi>`; inside an `<option>`, where markup is not allowed, they need a trailing **U+200E LRM**
+   instead. Six places on this page were affected. **Check every mixed-script token in FA, not
+   just the prose.**
+
+Screenshots of both languages: `docs/screens/model-page-{en,fa}.png`.
+
 ### Files
 
 `app/Models/{Component,Port}.php` · `app/Services/ComponentService.php` ·

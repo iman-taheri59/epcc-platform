@@ -35,6 +35,11 @@
     $L = fn (string $k): string => $t[$k][$lang] ?? $t[$k]['en'];
     $num = fn ($v): string => \App\Support\JalaliDate::digits((string) $v, $lang);
 
+    // Inch marks inside an <option>: no markup is allowed there, so <bdi> is
+    // out. A trailing LRM pins the quote to its number rather than letting
+    // the bidi algorithm float it to the visual start of the line.
+    $inch = fn ($v): string => \App\Support\JalaliDate::digits((string) $v, $lang).'"'.($lang === 'fa' ? "\u{200E}" : '');
+
     $tplName = function (string $code) use ($templates, $lang): string {
         foreach ($templates as $tpl) {
             if ($tpl['code'] === $code) {
@@ -66,7 +71,7 @@
   <div class="sub">
     <span class="mono">{{ $line->line_number }}</span>
     · {{ $line->subsystem?->code }}
-    @if($line->nominal_size) · {{ $num($line->nominal_size) }}" @endif
+    @if($line->nominal_size) · <bdi>{{ $num($line->nominal_size) }}"</bdi> @endif
     @if($line->pipingClass) · {{ $line->pipingClass->code }} @endif
   </div>
   <p style="color:var(--muted);font-size:13px;line-height:1.8;margin:6px 0 0;">{{ $L('sub') }}</p>
@@ -100,8 +105,8 @@
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:10px;">
       @foreach($open as $port)
         <div style="border:1px solid var(--line);border-radius:10px;background:var(--card);padding:10px 12px;">
-          <div class="mono" style="font-size:13px;">{{ $port->component->label() }}</div>
-          <div style="color:var(--muted);font-size:12px;margin-top:2px;">{{ $port->label() }}
+          <div class="mono" style="font-size:13px;"><bdi>{{ $port->component->label() }}</bdi></div>
+          <div style="color:var(--muted);font-size:12px;margin-top:2px;"><bdi>{{ $port->label() }}</bdi>
             @if($port->end_type) · {{ $port->end_type }} @endif
           </div>
 
@@ -129,7 +134,12 @@
   @endif
 
   {{-- ------------------------------------------------ components -------- --}}
-  <h2 style="margin-top:28px;font-size:16px;">{{ $L('title') }}</h2>
+  <h2 style="margin-top:28px;font-size:16px;">{{ $L('title') }}
+    <span style="font-weight:400;font-size:11.5px;color:var(--muted);margin-inline-start:10px;">
+      <span style="color:#86efac;">●</span> {{ $fa ? 'متصل' : 'connected' }}
+      &nbsp;<span style="color:#fcd34d;">○</span> {{ $fa ? 'باز' : 'open' }}
+    </span>
+  </h2>
 
   <table data-tt style="margin-top:10px;">
     <thead>
@@ -149,15 +159,24 @@
         <td>{{ $tplName($c->template_code) }}
           <div style="color:var(--muted);font-size:11px;" class="mono">{{ $c->template_code }}</div>
         </td>
-        <td class="mono">{{ $c->nominal_size ? $num($c->nominal_size).'"' : '—' }}</td>
+        <td class="mono">@if($c->nominal_size)<bdi>{{ $num($c->nominal_size) }}"</bdi>@else—@endif</td>
         <td style="font-size:12px;">
           @foreach($c->ports as $p)
-            <span style="display:inline-block;margin:1px 3px 1px 0;padding:1px 6px;border-radius:999px;font-size:11px;
-                         border:1px solid {{ $p->is_connected ? '#14532d' : 'var(--line)' }};
-                         background:{{ $p->is_connected ? 'rgba(20,83,45,.3)' : 'transparent' }};
-                         color:{{ $p->is_connected ? '#86efac' : 'inherit' }};"
-                  title="{{ $p->is_connected ? 'connected' : 'open' }}">
-              P{{ $num($p->seq) }} {{ $p->role }}{{ $p->nominal_size ? ' '.$num($p->nominal_size).'"' : '' }}
+            {{-- Open vs connected must be legible at a glance, and colour
+                 alone does not do it: on a dark background the two pills were
+                 near-identical in a screenshot, and a colour-blind reader gets
+                 nothing from green-vs-grey either. So the OPEN state also
+                 carries a dashed border and a bullet glyph. --}}
+            <span style="display:inline-block;margin:1px 3px 1px 0;padding:1px 7px;border-radius:999px;font-size:11px;
+                         border:1px {{ $p->is_connected ? 'solid #15803d' : 'dashed #f59e0b' }};
+                         background:{{ $p->is_connected ? 'rgba(21,128,61,.28)' : 'rgba(245,158,11,.12)' }};
+                         color:{{ $p->is_connected ? '#86efac' : '#fcd34d' }};"
+                  title="{{ $p->is_connected ? ($fa ? 'متصل' : 'connected') : ($fa ? 'باز' : 'open') }}">
+              {{-- bdi, because this is a latin-and-digits token inside an RTL
+                   paragraph: without it the trailing inch mark is reordered to
+                   the front and the pill reads  "P2 RUN 6  in Farsi. --}}
+              {{ $p->is_connected ? '●' : '○' }}
+              <bdi>P{{ $num($p->seq) }} {{ $p->role }}{{ $p->nominal_size ? ' '.$num($p->nominal_size).'"' : '' }}</bdi>
             </span>
           @endforeach
         </td>
@@ -208,7 +227,7 @@
         <select name="nominal_size"
                 style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
           @foreach($sizes as $s)
-            <option value="{{ $s }}" @selected(old('nominal_size', $line->nominal_size) === $s)>{{ $num($s) }}"</option>
+            <option value="{{ $s }}" @selected(old('nominal_size', $line->nominal_size) === $s)>{{ $inch($s) }}</option>
           @endforeach
         </select>
       </label>
@@ -219,7 +238,7 @@
                 style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
           <option value="">—</option>
           @foreach($sizes as $s)
-            <option value="{{ $s }}" @selected(old('branch_size') === $s)>{{ $num($s) }}"</option>
+            <option value="{{ $s }}" @selected(old('branch_size') === $s)>{{ $inch($s) }}</option>
           @endforeach
         </select>
       </label>
@@ -230,7 +249,7 @@
                 style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
           <option value="">—</option>
           @foreach($sizes as $s)
-            <option value="{{ $s }}" @selected(old('small_size') === $s)>{{ $num($s) }}"</option>
+            <option value="{{ $s }}" @selected(old('small_size') === $s)>{{ $inch($s) }}</option>
           @endforeach
         </select>
       </label>
