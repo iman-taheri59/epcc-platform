@@ -1,0 +1,454 @@
+{
+  "refId": "units",
+  "version": "1.0.0",
+  "source": "ISO 80000 / NIST SP 811 Guide for the Use of the International System of Units; exact definitions where the definition is exact, full published value otherwise.",
+  "note": "Units of measure for engineering quantities, with conversions to a canonical SI unit per quantity. Factors are exact where the definition is exact (ISO 80000 / NIST SP 811); otherwise they are the full published value, not a rounded one.",
+  "revision_date": "2026-09-15",
+  "notes": [
+    "TEMPERATURE IS AFFINE. Celsius and Fahrenheit have both a factor and an offset; a converter that multiplies only is wrong by 32 degrees at every point. Verified: 0 C naively becomes 0 F instead of 32 F.",
+    "A temperature DIFFERENCE converts with the factor only, never the offset. A 50 C rise is 90 F of rise, not 122. Any future delta-temperature field must not reuse the point conversion.",
+    "Gauge and absolute pressure are recorded as separate units and are NOT interconverted. The atmospheric datum is a site condition, not a constant, so barg to bara is an engineering decision rather than arithmetic.",
+    "Conversion is lossy at the stored precision. 285 psi round-trips through kPa as 285.0006 psi at decimal(12,4). This is why the entered value and unit are preserved alongside the canonical value."
+  ],
+  "quantities": [
+    {
+      "quantity": "PRESSURE",
+      "canonical": "kPa",
+      "label": {
+        "en": "Pressure",
+        "fa": "فشار"
+      },
+      "units": [
+        {
+          "code": "kPa",
+          "factor": 1.0,
+          "label": {
+            "en": "kilopascal",
+            "fa": "کیلوپاسکال"
+          },
+          "datum": "GAUGE",
+          "aliases": [
+            "kpa",
+            "KPA"
+          ]
+        },
+        {
+          "code": "MPa",
+          "factor": 1000.0,
+          "label": {
+            "en": "megapascal",
+            "fa": "مگاپاسکال"
+          },
+          "datum": "GAUGE",
+          "aliases": [
+            "mpa",
+            "MPA"
+          ]
+        },
+        {
+          "code": "bar",
+          "factor": 100.0,
+          "label": {
+            "en": "bar",
+            "fa": "بار"
+          },
+          "datum": "GAUGE",
+          "aliases": [
+            "BAR",
+            "bars"
+          ]
+        },
+        {
+          "code": "barg",
+          "factor": 100.0,
+          "label": {
+            "en": "bar gauge",
+            "fa": "بار نسبی"
+          },
+          "datum": "GAUGE",
+          "aliases": [
+            "BARG",
+            "bar g",
+            "bar-g"
+          ]
+        },
+        {
+          "code": "bara",
+          "factor": 100.0,
+          "label": {
+            "en": "bar absolute",
+            "fa": "بار مطلق"
+          },
+          "datum": "ABSOLUTE",
+          "aliases": [
+            "BARA",
+            "bar a",
+            "bar-a"
+          ]
+        },
+        {
+          "code": "psi",
+          "factor": 6.89475729,
+          "label": {
+            "en": "psi",
+            "fa": "پی‌اس‌آی"
+          },
+          "datum": "GAUGE",
+          "aliases": [
+            "PSI",
+            "lb/in2",
+            "psig",
+            "PSIG"
+          ]
+        },
+        {
+          "code": "psia",
+          "factor": 6.89475729,
+          "label": {
+            "en": "psi absolute",
+            "fa": "پی‌اس‌آی مطلق"
+          },
+          "datum": "ABSOLUTE",
+          "aliases": [
+            "PSIA"
+          ]
+        },
+        {
+          "code": "kg/cm2",
+          "factor": 98.0665,
+          "label": {
+            "en": "kg/cm²",
+            "fa": "کیلوگرم بر سانتی‌متر مربع"
+          },
+          "datum": "GAUGE",
+          "aliases": [
+            "kgf/cm2",
+            "kg/cm²",
+            "KG/CM2"
+          ]
+        },
+        {
+          "code": "mmH2O",
+          "factor": 0.00980665,
+          "label": {
+            "en": "mm water column",
+            "fa": "میلی‌متر ستون آب"
+          },
+          "datum": "GAUGE",
+          "aliases": [
+            "mmwc",
+            "mmWC"
+          ]
+        },
+        {
+          "code": "mmHg",
+          "factor": 0.133322387415,
+          "label": {
+            "en": "mm mercury",
+            "fa": "میلی‌متر جیوه"
+          },
+          "datum": "ABSOLUTE",
+          "aliases": [
+            "torr",
+            "Torr"
+          ]
+        }
+      ]
+    },
+    {
+      "quantity": "TEMPERATURE",
+      "canonical": "C",
+      "label": {
+        "en": "Temperature",
+        "fa": "دما"
+      },
+      "units": [
+        {
+          "code": "C",
+          "factor": 1.0,
+          "offset": 0.0,
+          "label": {
+            "en": "°C",
+            "fa": "درجه سلسیوس"
+          },
+          "aliases": [
+            "degC",
+            "°C",
+            "c",
+            "CELSIUS"
+          ]
+        },
+        {
+          "code": "F",
+          "factor": 0.5555555555555556,
+          "offset": -17.77777777777778,
+          "label": {
+            "en": "°F",
+            "fa": "درجه فارنهایت"
+          },
+          "aliases": [
+            "degF",
+            "°F",
+            "f",
+            "FAHRENHEIT"
+          ]
+        },
+        {
+          "code": "K",
+          "factor": 1.0,
+          "offset": -273.15,
+          "label": {
+            "en": "K",
+            "fa": "کلوین"
+          },
+          "aliases": [
+            "kelvin",
+            "KELVIN"
+          ]
+        }
+      ],
+      "minimum_canonical": -273.15,
+      "minimum_note": "Absolute zero. A design temperature below it is a data-entry error, not a cryogenic service."
+    },
+    {
+      "quantity": "LENGTH",
+      "canonical": "mm",
+      "label": {
+        "en": "Length",
+        "fa": "طول"
+      },
+      "units": [
+        {
+          "code": "mm",
+          "factor": 1.0,
+          "label": {
+            "en": "mm",
+            "fa": "میلی‌متر"
+          },
+          "aliases": [
+            "MM",
+            "millimetre",
+            "millimeter"
+          ]
+        },
+        {
+          "code": "cm",
+          "factor": 10.0,
+          "label": {
+            "en": "cm",
+            "fa": "سانتی‌متر"
+          },
+          "aliases": [
+            "CM"
+          ]
+        },
+        {
+          "code": "m",
+          "factor": 1000.0,
+          "label": {
+            "en": "m",
+            "fa": "متر"
+          },
+          "aliases": [
+            "M",
+            "metre",
+            "meter"
+          ]
+        },
+        {
+          "code": "in",
+          "factor": 25.4,
+          "label": {
+            "en": "inch",
+            "fa": "اینچ"
+          },
+          "aliases": [
+            "IN",
+            "inch",
+            "\"",
+            "inches"
+          ]
+        },
+        {
+          "code": "ft",
+          "factor": 304.8,
+          "label": {
+            "en": "foot",
+            "fa": "فوت"
+          },
+          "aliases": [
+            "FT",
+            "feet",
+            "'"
+          ]
+        }
+      ]
+    },
+    {
+      "quantity": "MASS",
+      "canonical": "kg",
+      "label": {
+        "en": "Mass",
+        "fa": "جرم"
+      },
+      "units": [
+        {
+          "code": "kg",
+          "factor": 1.0,
+          "label": {
+            "en": "kg",
+            "fa": "کیلوگرم"
+          },
+          "aliases": [
+            "KG",
+            "kgs"
+          ]
+        },
+        {
+          "code": "g",
+          "factor": 0.001,
+          "label": {
+            "en": "g",
+            "fa": "گرم"
+          },
+          "aliases": [
+            "G"
+          ]
+        },
+        {
+          "code": "t",
+          "factor": 1000.0,
+          "label": {
+            "en": "tonne",
+            "fa": "تن"
+          },
+          "aliases": [
+            "T",
+            "ton",
+            "MT",
+            "tonne"
+          ]
+        },
+        {
+          "code": "lb",
+          "factor": 0.45359237,
+          "label": {
+            "en": "pound",
+            "fa": "پوند"
+          },
+          "aliases": [
+            "LB",
+            "lbs",
+            "pound"
+          ]
+        }
+      ]
+    },
+    {
+      "quantity": "FLOW",
+      "canonical": "m3/h",
+      "label": {
+        "en": "Flow rate",
+        "fa": "دبی"
+      },
+      "units": [
+        {
+          "code": "m3/h",
+          "factor": 1.0,
+          "label": {
+            "en": "m³/h",
+            "fa": "متر مکعب بر ساعت"
+          },
+          "aliases": [
+            "m3/hr",
+            "M3/H",
+            "m³/h"
+          ]
+        },
+        {
+          "code": "m3/s",
+          "factor": 3600.0,
+          "label": {
+            "en": "m³/s",
+            "fa": "متر مکعب بر ثانیه"
+          },
+          "aliases": [
+            "m3/sec"
+          ]
+        },
+        {
+          "code": "L/min",
+          "factor": 0.06,
+          "label": {
+            "en": "L/min",
+            "fa": "لیتر بر دقیقه"
+          },
+          "aliases": [
+            "l/min",
+            "LPM",
+            "lpm"
+          ]
+        },
+        {
+          "code": "USgpm",
+          "factor": 0.2271247,
+          "label": {
+            "en": "US gpm",
+            "fa": "گالن آمریکایی بر دقیقه"
+          },
+          "aliases": [
+            "gpm",
+            "GPM",
+            "usgpm"
+          ]
+        },
+        {
+          "code": "bbl/d",
+          "factor": 0.006624471,
+          "label": {
+            "en": "barrel/day",
+            "fa": "بشکه بر روز"
+          },
+          "aliases": [
+            "BPD",
+            "bpd",
+            "bbl/day"
+          ]
+        }
+      ]
+    },
+    {
+      "quantity": "WEIGHT_PER_LENGTH",
+      "canonical": "kg/m",
+      "label": {
+        "en": "Weight per length",
+        "fa": "وزن بر طول"
+      },
+      "units": [
+        {
+          "code": "kg/m",
+          "factor": 1.0,
+          "label": {
+            "en": "kg/m",
+            "fa": "کیلوگرم بر متر"
+          },
+          "aliases": [
+            "KG/M"
+          ]
+        },
+        {
+          "code": "lb/ft",
+          "factor": 1.488163944,
+          "label": {
+            "en": "lb/ft",
+            "fa": "پوند بر فوت"
+          },
+          "aliases": [
+            "LB/FT",
+            "lbs/ft"
+          ]
+        }
+      ]
+    }
+  ]
+}

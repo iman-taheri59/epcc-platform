@@ -35,9 +35,50 @@
         'config'  => ['fa' => 'تنظیم شماره‌گذاری', 'en' => 'Numbering setup'],
         'noreg'   => ['fa' => 'این فهرست برای پروژه تعریف نشده است؛ تا تعریف نشود شماره‌گذاری خودکار ممکن نیست.',
                       'en' => 'Not set up for this project yet - automatic numbering needs it first.'],
+        'dp'      => ['fa' => 'فشار طراحی', 'en' => 'Design pressure'],
+        'dt'      => ['fa' => 'دمای طراحی', 'en' => 'Design temperature'],
+        'tp'      => ['fa' => 'فشار تست', 'en' => 'Test pressure'],
+        'cond'    => ['fa' => 'شرایط طراحی', 'en' => 'Design conditions'],
+        'units'   => ['fa' => 'واحدها', 'en' => 'Units'],
+        'unitsave'=> ['fa' => 'ذخیرهٔ واحدها', 'en' => 'Save units'],
+        'mine'    => ['fa' => 'فقط برای من', 'en' => 'Just for me'],
+        'forproj' => ['fa' => 'پیش‌فرض پروژه', 'en' => 'Project default'],
+        'asent'   => ['fa' => 'ثبت‌شده', 'en' => 'as entered'],
+        'unitsnote'=> ['fa' => 'مقدار همان‌طور که وارد شده ذخیره می‌شود؛ این انتخاب فقط نحوهٔ نمایش را عوض می‌کند.',
+                       'en' => 'The value is stored exactly as entered; this choice only changes how it is displayed.'],
     ];
     $L = fn (string $k): string => $t[$k][$lang] ?? $t[$k]['en'];
     $num = fn ($v): string => \App\Support\JalaliDate::digits((string) $v, $lang);
+
+    // Render a stored value in the reader's chosen unit, and say what was
+    // actually typed when the two differ. Showing only the converted number
+    // would quietly replace the figure that appears on the drawing.
+    $reg = app(\App\Support\Units\UnitRegistry::class);
+    $show = function ($value, ?string $unit, string $quantity) use ($reg, $displayUnits, $num, $t, $lang): string {
+        if ($value === null || $unit === null || $unit === '') {
+            return '—';
+        }
+        $want = $displayUnits[$quantity] ?? $unit;
+        $entered = rtrim(rtrim(number_format((float) $value, 4, '.', ''), '0'), '.');
+
+        if ($want === $unit || ! $reg->knows($unit)) {
+            return $num($entered).' '.$unit;
+        }
+
+        try {
+            $converted = $reg->convert((float) $value, $unit, $want);
+        } catch (\Throwable $e) {
+            // Gauge/absolute, most likely: refusing is correct, so show the
+            // original rather than a number nobody can defend.
+            return $num($entered).' '.$unit;
+        }
+
+        $shown = rtrim(rtrim(number_format($converted, 2, '.', ''), '0'), '.');
+        $note = $t['asent'][$lang] ?? 'as entered';
+
+        return $num($shown).' '.$want
+            .' <span style="color:var(--muted);font-size:11px;" title="'.$note.'">('.$num($entered).' '.$unit.')</span>';
+    };
 @endphp
 <!doctype html>
 <html lang="{{ $lang }}" dir="{{ $dir }}">
@@ -88,6 +129,8 @@
         <th data-sort="text" data-facet>{{ $L('subsys') }}</th>
         <th data-sort="text">{{ $L('size') }}</th>
         <th data-sort="text" data-facet>{{ $L('class') }}</th>
+        <th data-sort="text">{{ $L('dp') }}</th>
+        <th data-sort="text">{{ $L('dt') }}</th>
         <th data-sort="text" data-facet>{{ $L('state') }}</th>
         <th>{{ $L('evidence') }}</th>
         <th>{{ $L('actions') }}</th>
@@ -111,6 +154,12 @@
         <td>{{ $line->subsystem?->code }}</td>
         <td>{{ $line->nominal_size ? $num($line->nominal_size).'"' : '—' }}</td>
         <td>{{ $line->pipingClass?->code ?? '—' }}</td>
+        <td class="mono" style="white-space:nowrap;">
+          {!! $show($line->design_pressure, $line->design_pressure_unit, 'PRESSURE') !!}
+        </td>
+        <td class="mono" style="white-space:nowrap;">
+          {!! $show($line->design_temperature, $line->design_temperature_unit, 'TEMPERATURE') !!}
+        </td>
         <td>
           @if($line->release_state === \App\Support\LineReleaseState::RELEASED)
             <span class="pill ok">{{ $fa ? $label['fa'] : $label['en'] }}</span>
@@ -285,6 +334,29 @@
       </label>
       @endif
 
+      {{-- Design conditions. Value and unit are one control, because a
+           pressure without its unit is not a pressure - the service will
+           refuse to guess one rather than assume the project default. --}}
+      @foreach([['design_pressure','dp','PRESSURE'],['design_temperature','dt','TEMPERATURE'],['test_pressure','tp','PRESSURE']] as [$field, $key, $qty])
+      <label style="font-size:12px;color:var(--muted);">
+        {{ $L($key) }}
+        <span style="display:flex;gap:4px;margin-top:4px;">
+          <input type="number" step="any" name="{{ $field }}" value="{{ old($field) }}"
+                 style="flex:1 1 60%;min-width:0;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+          <select name="{{ $field }}_unit"
+                  style="flex:0 0 38%;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+            @foreach($unitMenu[$qty]['units'] as $u)
+              <option value="{{ $u['code'] }}"
+                @selected(old($field.'_unit', $displayUnits[$qty] ?? '') === $u['code'])>{{ $u['code'] }}</option>
+            @endforeach
+          </select>
+        </span>
+        @error($field.'_unit')
+          <span style="display:block;margin-top:3px;color:#fca5a5;font-size:11px;">{{ $message }}</span>
+        @enderror
+      </label>
+      @endforeach
+
       <label style="font-size:12px;color:var(--muted);grid-column:span 2;">
         {{ $L('orsupply') }}
         <input type="text" name="line_number" placeholder="{{ $L('autonum') }}" style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
@@ -295,6 +367,51 @@
       </button>
     </form>
   </div>
+
+  {{-- Unit preferences. Two scopes on purpose: the employer sets what the
+       project speaks in, and any reader may override it for themselves
+       without touching a single stored value. --}}
+  <details style="margin-top:18px;border:1px solid var(--line);border-radius:10px;background:var(--card);">
+    <summary style="padding:10px 14px;cursor:pointer;font-weight:600;">{{ $L('units') }}</summary>
+    <form method="POST" action="{{ route('piping.units', ['projectCode' => $project->code, 'lang' => $lang]) }}"
+          style="padding:0 14px 14px;">
+      @csrf
+      <p style="font-size:12px;color:var(--muted);line-height:1.7;margin:4px 0 12px;">{{ $L('unitsnote') }}</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;">
+        @foreach($unitMenu as $qty => $meta)
+        <label style="font-size:12px;color:var(--muted);">
+          {{ $meta['label'] }}
+          <select name="units[{{ $qty }}]"
+                  style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+            @foreach($meta['units'] as $u)
+              <option value="{{ $u['code'] }}" @selected(($displayUnits[$qty] ?? '') === $u['code'])>
+                {{ $u['label'] }} ({{ $u['code'] }})
+              </option>
+            @endforeach
+          </select>
+        </label>
+        @endforeach
+      </div>
+
+      @error('units')
+        <p style="margin:10px 0 0;color:#fca5a5;font-size:12px;">{{ $message }}</p>
+      @enderror
+
+      <div style="display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap;">
+        <button type="submit" name="scope" value="user"
+                style="padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:inherit;font:inherit;cursor:pointer;">
+          {{ $L('unitsave') }} — {{ $L('mine') }}
+        </button>
+        @unless($unitsLocked)
+          <button type="submit" name="scope" value="project"
+                  style="padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;cursor:pointer;">
+            {{ $L('unitsave') }} — {{ $L('forproj') }}
+          </button>
+        @endunless
+      </div>
+    </form>
+  </details>
 
   <div class="foot">
     {{ $fa

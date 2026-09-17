@@ -14,10 +14,13 @@ use App\Services\PipingLineService;
 use App\Support\AuthorizationPipeline;
 use App\Support\LineReleaseState;
 use App\Support\Numbering\Exceptions\UnknownTokenValueException;
+use App\Services\UnitPreferenceService;
+use App\Support\Units\UnitRegistry;
 use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Morilog\Jalali\CalendarUtils;
 use Morilog\Jalali\Jalalian;
@@ -36,6 +39,8 @@ final class PipingLineController extends Controller
         private readonly PipingLineService $lines,
         private readonly TenantContext $tenant,
         private readonly AuthorizationPipeline $authz,
+        private readonly UnitPreferenceService $unitPrefs,
+        private readonly UnitRegistry $units,
     ) {}
 
     public function index(Request $request, string $projectCode): View
@@ -136,7 +141,70 @@ final class PipingLineController extends Controller
             'requiredKinds' => LineDocument::requiredForAfc(),
             'patternTokens' => $this->lines->configFor($project)->pattern()->tokenNames(),
             'jalaliDate' => $this->today($lang),
+            'displayUnits' => $this->unitPrefs->displayUnits($project, $user),
+            'unitMenu' => $this->unitMenu($lang),
+            'unitsLocked' => $user->company_id !== $project->owner_company_id,
         ]);
+    }
+
+    /** Save unit preferences - either the project defaults or the user's own. */
+    public function updateUnits(Request $request, string $projectCode): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+
+        $data = $request->validate([
+            'scope' => ['required', 'in:project,user'],
+            'units' => ['nullable', 'array'],
+            'units.*' => ['nullable', 'string', 'max:16'],
+        ]);
+
+        $units = array_map(strval(...), $data['units'] ?? []);
+
+        try {
+            if ($data['scope'] === 'project') {
+                $this->tenant->runAs(
+                    $user->company_id,
+                    fn () => $this->unitPrefs->setProjectPreferences($project, $user, $units),
+                    $project->id,
+                );
+            } else {
+                $this->unitPrefs->setUserPreferences($user, $units);
+            }
+        } catch (ValidationException $e) {
+            return redirect($this->backTo($projectCode, $lang, $request))
+                ->withErrors($e->errors());
+        }
+
+        return redirect($this->backTo($projectCode, $lang, $request))
+            ->with('status', __('epcc.units.saved'));
+    }
+
+    /**
+     * Units grouped by quantity, labelled in the active language.
+     *
+     * @return array<string, array{label: string, units: list<array{code: string, label: string}>}>
+     */
+    private function unitMenu(string $lang): array
+    {
+        $out = [];
+
+        foreach ($this->units->quantities() as $quantity) {
+            $out[$quantity] = [
+                'label' => __('epcc.units.quantities.'.$quantity),
+                // unitsFor() returns whole unit definitions, not codes.
+                'units' => array_map(
+                    fn (array $unit): array => [
+                        'code' => (string) $unit['code'],
+                        'label' => $this->units->label((string) $unit['code'], $lang),
+                    ],
+                    $this->units->unitsFor($quantity),
+                ),
+            ];
+        }
+
+        return $out;
     }
 
     public function store(Request $request, string $projectCode): RedirectResponse
@@ -154,6 +222,20 @@ final class PipingLineController extends Controller
             'line_number' => ['nullable', 'string', 'max:128'],
             'from_ref' => ['nullable', 'string', 'max:255'],
             'to_ref' => ['nullable', 'string', 'max:255'],
+
+            // Design conditions. The unit travels WITH the value: a pressure
+            // without its unit is not a pressure, and the service refuses to
+            // guess one.
+            'design_pressure' => ['nullable', 'numeric'],
+            'design_pressure_unit' => ['nullable', 'string', 'max:16'],
+            'design_temperature' => ['nullable', 'numeric'],
+            'design_temperature_unit' => ['nullable', 'string', 'max:16'],
+            'operating_pressure' => ['nullable', 'numeric'],
+            'operating_pressure_unit' => ['nullable', 'string', 'max:16'],
+            'operating_temperature' => ['nullable', 'numeric'],
+            'operating_temperature_unit' => ['nullable', 'string', 'max:16'],
+            'test_pressure' => ['nullable', 'numeric'],
+            'test_pressure_unit' => ['nullable', 'string', 'max:16'],
         ]);
 
         try {
@@ -170,6 +252,12 @@ final class PipingLineController extends Controller
                     $this->lines->create($subsystem, $user, $data);
                 }
             }, $project->id);
+        } catch (ValidationException $e) {
+            // An unknown unit or a temperature below absolute zero. Same
+            // treatment as a bad token: a form error to correct, not a crash.
+            return redirect($this->backTo($projectCode, $lang, $request))
+                ->withInput()
+                ->withErrors($e->errors());
         } catch (UnknownTokenValueException $e) {
             // The engine is right to refuse: a value outside the project
             // register would put an unrecognisable number on a drawing. But

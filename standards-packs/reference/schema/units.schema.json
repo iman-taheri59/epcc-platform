@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epcc.local/schema/reference/units.schema.json",
+  "title": "Units of measure reference pack",
+  "description": "Engineering quantities and the units they may be expressed in, each with an exact conversion to one canonical unit per quantity (ADR-014). This schema constrains SHAPE; the physical cross-checks that JSON Schema cannot express (canonical exists, canonical factor is 1, no alias collides with a code) live in validate_packs.py.",
+  "type": "object",
+  "required": ["refId", "version", "source", "quantities"],
+  "additionalProperties": false,
+  "properties": {
+    "refId": { "const": "units" },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "source": { "type": "string", "minLength": 10 },
+    "note": { "type": "string" },
+    "revision_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "quantities": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/quantity" }
+    }
+  },
+  "$defs": {
+    "label": {
+      "type": "object",
+      "description": "Bilingual label. Both languages are required everywhere: a half-translated pack ships a screen that is half English, which is worse than either language alone.",
+      "required": ["en", "fa"],
+      "additionalProperties": false,
+      "properties": {
+        "en": { "type": "string", "minLength": 1 },
+        "fa": { "type": "string", "minLength": 1 }
+      }
+    },
+    "quantity": {
+      "type": "object",
+      "required": ["quantity", "canonical", "label", "units"],
+      "additionalProperties": false,
+      "properties": {
+        "quantity": {
+          "type": "string",
+          "description": "Stable machine key. Also the key used in unit_preferences JSON, so renaming one silently orphans every stored preference.",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "canonical": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Code of the unit every value of this quantity is stored in for comparison. Must appear in units[].code - enforced in validate_packs.py."
+        },
+        "label": { "$ref": "#/$defs/label" },
+        "minimum_canonical": {
+          "type": "number",
+          "description": "Physical floor in canonical units, e.g. -273.15 for temperature. Checked on the CONVERTED value, so -500 F is caught even though -500 is an unremarkable number."
+        },
+        "minimum_note": {
+          "type": "string",
+          "description": "Why the floor exists, for whoever next reads the pack and wonders whether it can be relaxed.",
+          "minLength": 1
+        },
+        "units": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/unit" }
+        }
+      }
+    },
+    "unit": {
+      "type": "object",
+      "required": ["code", "factor", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16,
+          "description": "Canonical spelling, stored verbatim in *_unit columns. Case and punctuation are meaningful: \" is inches and ' is feet."
+        },
+        "factor": {
+          "type": "number",
+          "description": "canonical = value * factor + offset. Must be non-zero; a zero factor would map every value onto the offset.",
+          "not": { "const": 0 }
+        },
+        "offset": {
+          "type": "number",
+          "default": 0,
+          "description": "Affine term, non-zero only for temperature. A DIFFERENCE uses the factor alone - see convertDifference()."
+        },
+        "datum": {
+          "type": "string",
+          "description": "GAUGE and ABSOLUTE pressures are never interconverted: the gap between them is site atmospheric pressure, not a constant. NONE means the distinction does not apply.",
+          "enum": ["NONE", "GAUGE", "ABSOLUTE"],
+          "default": "NONE"
+        },
+        "label": { "$ref": "#/$defs/label" },
+        "aliases": {
+          "type": "array",
+          "description": "Spellings accepted on input and normalised to code. Matching ignores spaces, hyphens and underscores only - never all punctuation.",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}

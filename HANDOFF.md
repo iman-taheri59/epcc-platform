@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-09-15** · Status: **prototype + working vertical slice** · Tests: **667 passed / 2751 assertions** (+83 jsdom)
+Last updated: **2026-09-17** · Status: **prototype + working vertical slice** · Tests: **758 passed / 2980 assertions** (+83 jsdom)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -1736,6 +1736,94 @@ and says why. Verified the guard still bites: removing `data-tt` from the real r
 still fails the test, and there is exactly **one** exemption in the codebase.
 
 
+
+## 5t. Units of measure (ADR-014) — BUILT
+
+**User request:** «قابلیت تغییر واحدها مثل فشار، دما و غیره رو ایجاد کن».
+
+### What it does
+
+An engineer types `285 psi`; the owner reads `1965.01 kPa (285 psi)`; a contractor who prefers barg
+reads `19.65 barg (285 psi)`. **Nothing in the database changed between those two readings.**
+
+### The storage shape — copy this for every future physical quantity
+
+Three columns per value, not one:
+
+| Column | Example | Role |
+|---|---|---|
+| `design_pressure` | `285` | **source of truth** — what the datasheet says |
+| `design_pressure_unit` | `psi` | **source of truth** — a number without this is not a pressure |
+| `design_pressure_kpa` | `1965.005828` | derived mirror, for `WHERE`/`ORDER BY`/indexes |
+
+Storing only the canonical loses the engineer's number: 285 psi round-trips to **285.0006** at
+`decimal(12,4)`, so a 150#/300# rating lookup keyed on "285" or "740" misses. Storing only the
+entered pair makes "every line above 10 barg" a full scan with a unit-dependent predicate — which
+ADR-012 already measured as 0.12 ms vs 1690 ms under RLS.
+
+**A value with no unit gets no canonical.** Guessing is how a psi number lands in a barg column.
+
+### Four rules the engine enforces
+
+1. **Temperature is affine.** `canonical = value × factor + offset`. Multiply-only is wrong by 32
+   degrees everywhere (it maps 0 °C to 0 °F). One code path: offset defaults to 0 and collapses.
+2. **A difference is not a temperature.** A 50 °C rise is 90 °F, not 122. `convertDifference()`
+   uses the factor alone. Nothing calls it yet — it exists so the first delta field finds it.
+3. **Gauge never converts to absolute.** They differ by *site* atmospheric pressure, not a
+   constant. The converter refuses and the message names atmospheric pressure, so the reader knows
+   it is a missing input rather than a missing feature.
+4. **Absolute zero is checked on the CONVERTED value**, so −500 °F (−295.6 °C) is caught while
+   −400 °F (−240 °C) passes. Enforced in the service *and* as a `CHECK`, so an import path that
+   skips the service still cannot write impossible data.
+
+### Preference resolution
+
+```
+user override  →  project default  →  pack canonical
+```
+
+`users.unit_preferences` is **nullable**; `project_piping_config.unit_preferences` defaults to `{}`.
+**Null ≠ `{}`.** Null on a user means "inherit"; `{}` means "I have chosen". Collapsing them would
+freeze a user's display at whatever the project default was the day they first opened the screen.
+
+Project defaults are employer-only and blocked on an archived project. A *personal* preference is
+neither gated — it changes no stored value.
+
+### Gotchas found while building this
+
+- **`unitsFor()` returns whole unit definitions, not codes.** Passing them to a `string $code`
+  callback is a 500 on page render, not a type error at compile time.
+- **`$user->fresh()` returns null after updating a preference.** `users` carries RLS and a bare
+  re-read outside a tenant scope sees nothing. `setUserPreferences()` returns the updated model;
+  use it. Same trap as the one already recorded for `fresh()` outside `runAs()`.
+- **`decimal(16,6)` rounds the mirror.** 150 psi stores as `1034.213594`, not `1034.2135935`.
+  Comparing an in-memory value against a stored one fails on the last digit — compare a stored
+  read against a stored read. **Reports must print the entered value**, never the mirror.
+- **RELEASED has a `CHECK` demanding AFC provenance.** A test that forces `release_state` directly
+  must supply `afc_confirmed_at`/`_by` too.
+- **The auth proxy on 8099 does not forward POST bodies.** Test write paths directly against 8000
+  with a real login, or the CSRF failure looks like a token bug.
+
+### Pack validation
+
+`standards-packs/reference/schema/units.schema.json` + `check_units()` in `validate_packs.py`.
+Beyond shape, it verifies: the canonical unit exists and has factor exactly 1.0; no alias collides
+with another unit's code; offsets appear only on temperature and datums only on pressure; the six
+quantity keys the PHP names still exist; and anchor conversions (285 psi, 1 bar, 1 kg/cm², 1 in,
+1 ft, 1 lb, 100 °F, 0 K). **Verified by breaking the pack six ways — all six were caught.**
+
+### Files
+
+`app/Support/Units/{Quantity,UnitRegistry,Measurement}.php` · `app/Services/UnitPreferenceService.php`
+· `PipingLineService::{canonicalValues,updateDesign}` · migration `2026_09_15_160000_…` ·
+`resources/views/piping/index.blade.php` · `lang/{en,fa}/epcc.php` under `units.*` ·
+`tests/Feature/{UnitRegistryTest,UnitPreferenceTest}.php` (63 + 28).
+
+**Mutation testing: 38 mutants on the units layer, 0 survivors.** Two survived first pass: M28 (the
+cross-quantity check was masked by the datum check — only PRESSURE has non-NONE datums, so
+isolating it needed `mm→kg` and `barg→bara`) and M38 (`updateDesign` had no archive-gate test).
+
+
 ## 6. The preview iframe (read before debugging "login is broken")
 
 The preview serves the app in an **iframe whose top-level document is a
@@ -2310,6 +2398,25 @@ of them as compromised and rotate it once the push is confirmed — a PAT with
 repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
+
+
+### 2026-09-17 — units of measure (ADR-014) wired end to end
+
+Built on the previous session's engine: `UnitPreferenceService` (user → project → canonical),
+canonical mirror columns populated on every write via `PipingLineService::canonicalValues()`, a new
+`updateDesign()` path (there was none — design conditions could only be set at creation), the pack
+schema + `check_units()` CI gate, FA/EN keys, and the register UI (two new columns, value+unit
+inputs, a units panel with separate "just for me" and "project default" buttons).
+
+Verified end to end over HTTP against a real login: created a line at 285 psi / 650 °F, switched
+the reader's units to barg, confirmed the display changed to `19.65 barg (285 psi)` and the stored
+row did not change at all.
+
+Full suite **758 passed / 2980 assertions** (was 667 / 2751). Units mutation total **38 run, 0
+survivors**; M28 and M38 survived first pass and both exposed real gaps. Pack validator proved by
+breaking `units.ref.json` six ways — all six caught.
+
+ADR-014 written (it had been referenced in docblocks but did not exist).
 
 Append one row per session. Keep it terse.
 

@@ -37,6 +37,7 @@ REF_PACKS = {
     "pipe-schedules": REF_DIR / "pipe-schedules.ref.json",
     "end-types": REF_DIR / "end-types.ref.json",
     "component-templates": REF_DIR / "component-templates.ref.json",
+    "units": REF_DIR / "units.ref.json",
 }
 
 # Packs that must remain loadable even though the module is deferred.
@@ -414,6 +415,132 @@ def check_reference_integrity(refs: dict) -> None:
                      f"{sum(len(t['ports']) for t in templates['templates'])} port definitions")
 
 
+
+def check_units(refs: dict) -> None:
+    """
+    Physical checks on the units pack that a JSON-schema cannot express.
+
+    Every assertion here is a way the pack can be well-formed and still
+    silently produce a wrong number on a drawing.
+    """
+    units = refs.get("units")
+    if not units:
+        return
+
+    seen_quantities = set()
+
+    for q in units["quantities"]:
+        name = q["quantity"]
+        if name in seen_quantities:
+            fail(f"[ref:units] quantity {name} is declared twice")
+        seen_quantities.add(name)
+
+        codes = [u["code"] for u in q["units"]]
+
+        # 1. The canonical unit must actually exist, or every conversion for
+        #    this quantity divides by a unit that is not there.
+        if q["canonical"] not in codes:
+            fail(f"[ref:units] {name}: canonical '{q['canonical']}' is not one of its units")
+            continue
+
+        canon = next(u for u in q["units"] if u["code"] == q["canonical"])
+
+        # 2. The canonical unit must be the identity. A factor of anything but
+        #    1.0 means converting a value to its OWN unit changes it.
+        if canon["factor"] != 1.0:
+            fail(f"[ref:units] {name}: canonical {canon['code']} has factor "
+                 f"{canon['factor']}, must be exactly 1.0")
+        if canon.get("offset", 0) != 0:
+            fail(f"[ref:units] {name}: canonical {canon['code']} has a non-zero offset")
+
+        # 3. No duplicate codes, and no alias that collides with any code or
+        #    with another alias. A collision makes resolution order decide the
+        #    answer, which is how 'bar' quietly becomes 'bara'.
+        dupes = {c for c in codes if codes.count(c) > 1}
+        if dupes:
+            fail(f"[ref:units] {name}: duplicate unit codes {sorted(dupes)}")
+
+        lowered = {}
+        for u in q["units"]:
+            for spelling in [u["code"], *u.get("aliases", [])]:
+                key = spelling.lower().replace(" ", "").replace("-", "").replace("_", "")
+                if key in lowered and lowered[key] != u["code"]:
+                    fail(f"[ref:units] {name}: '{spelling}' resolves to both "
+                         f"{lowered[key]} and {u['code']}")
+                lowered[key] = u["code"]
+
+        # 4. An offset outside TEMPERATURE is almost certainly a mistake: no
+        #    other engineering quantity here has a shifted zero.
+        for u in q["units"]:
+            if u.get("offset", 0) != 0 and name != "TEMPERATURE":
+                fail(f"[ref:units] {name}: unit {u['code']} has an offset, but only "
+                     f"temperature is affine - check this is not a typo")
+
+        # 5. Datum is a pressure concept. Marking a length GAUGE would make the
+        #    converter refuse conversions for no reason.
+        for u in q["units"]:
+            if u.get("datum", "NONE") != "NONE" and name != "PRESSURE":
+                fail(f"[ref:units] {name}: unit {u['code']} declares datum "
+                     f"{u['datum']}, but only pressure has a datum")
+
+    # 6. The quantities the application names in code must exist. Renaming one
+    #    in the pack without renaming it in PHP fails here rather than at the
+    #    moment a user opens the units screen.
+    required = {"PRESSURE", "TEMPERATURE", "LENGTH", "MASS", "FLOW", "WEIGHT_PER_LENGTH"}
+    missing = required - seen_quantities
+    if missing:
+        fail(f"[ref:units] missing quantities referenced by App\\Support\\Units\\Quantity: "
+             f"{sorted(missing)}")
+
+    # 7. Temperature must be affine and floored. Both were real bugs during
+    #    development: a multiply-only converter is wrong by 32 degrees
+    #    everywhere, and without a floor -500 F stores as a valid temperature.
+    temp = next((q for q in units["quantities"] if q["quantity"] == "TEMPERATURE"), None)
+    if temp:
+        if "minimum_canonical" not in temp:
+            fail("[ref:units] TEMPERATURE has no minimum_canonical - absolute zero is unguarded")
+        elif abs(temp["minimum_canonical"] + 273.15) > 1e-9:
+            fail(f"[ref:units] TEMPERATURE floor is {temp['minimum_canonical']}, expected -273.15")
+
+        f = next((u for u in temp["units"] if u["code"] == "F"), None)
+        if f is None:
+            fail("[ref:units] TEMPERATURE has no Fahrenheit unit")
+        else:
+            got = 100 * f["factor"] + f.get("offset", 0)
+            if abs(got - 37.77777777777778) > 1e-9:
+                fail(f"[ref:units] 100 F converts to {got} C, expected 37.7777...")
+
+        k = next((u for u in temp["units"] if u["code"] == "K"), None)
+        if k and abs((0 * k["factor"] + k.get("offset", 0)) + 273.15) > 1e-9:
+            fail("[ref:units] 0 K does not convert to -273.15 C")
+
+    # 8. Anchor conversions, spot-checked against published values. These are
+    #    the numbers a piping engineer would recognise on sight.
+    anchors = [
+        ("PRESSURE", "psi", 285, 1965.0058277, 1e-6),
+        ("PRESSURE", "bar", 1, 100.0, 1e-9),
+        ("PRESSURE", "kg/cm2", 1, 98.0665, 1e-9),
+        ("LENGTH", "in", 1, 25.4, 1e-9),
+        ("LENGTH", "ft", 1, 304.8, 1e-9),
+        ("MASS", "lb", 1, 0.45359237, 1e-9),
+    ]
+    for qname, code, value, expected, tol in anchors:
+        q = next((x for x in units["quantities"] if x["quantity"] == qname), None)
+        if not q:
+            continue
+        u = next((x for x in q["units"] if x["code"] == code), None)
+        if not u:
+            fail(f"[ref:units] {qname} has no unit '{code}' - anchor cannot be checked")
+            continue
+        got = value * u["factor"] + u.get("offset", 0)
+        if abs(got - expected) > tol:
+            fail(f"[ref:units] {value} {code} = {got}, expected {expected}")
+
+    total = sum(len(q["units"]) for q in units["quantities"])
+    notes.append(f"[ref:units] {len(units['quantities'])} quantities, {total} units, "
+                 f"anchors and absolute zero verified")
+
+
 # --------------------------------------------------------------- main ------
 def main() -> int:
     packs = check_schema()
@@ -425,6 +552,7 @@ def main() -> int:
     refs = check_reference_schema()
     check_bilingual(refs)
     check_reference_integrity(refs)
+    check_units(refs)
 
     for n in notes:
         print(f"  ok  {n}")

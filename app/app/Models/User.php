@@ -23,13 +23,14 @@ final class User extends Authenticatable implements FilamentUser
 {
     use HasUuid, Notifiable;
 
-    protected $fillable = ['company_id', 'name', 'email', 'password', 'locale', 'is_active'];
+    protected $fillable = ['company_id', 'name', 'email', 'password', 'locale', 'is_active', 'unit_preferences'];
 
     protected $hidden = ['password', 'remember_token'];
 
     protected function casts(): array
     {
         return [
+            'unit_preferences' => 'array',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',

@@ -25,7 +25,7 @@ final class ProjectPipingConfig extends Model
 
     protected $fillable = [
         'project_id', 'company_id',
-        'line_number_pattern', 'services', 'coatings', 'insulation_types',
+        'line_number_pattern', 'services', 'coatings', 'insulation_types', 'unit_preferences',
     ];
 
     protected $casts = [
@@ -33,6 +33,7 @@ final class ProjectPipingConfig extends Model
         'services' => 'array',
         'coatings' => 'array',
         'insulation_types' => 'array',
+        'unit_preferences' => 'array',
     ];
 
     public function project(): BelongsTo

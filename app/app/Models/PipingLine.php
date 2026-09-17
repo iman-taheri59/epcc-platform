@@ -20,6 +20,8 @@ final class PipingLine extends Model
     use HasUuid;
 
     protected $fillable = [
+        'design_pressure_kpa', 'operating_pressure_kpa', 'test_pressure_kpa',
+        'design_temperature_c', 'operating_temperature_c',
         'project_id', 'company_id', 'subsystem_id',
         'line_number', 'number_tokens', 'sequence',
         'nominal_size', 'service_code', 'piping_class_id', 'coating_code',

@@ -18,6 +18,9 @@ use App\Support\Numbering\NumberEngine;
 use App\Support\Numbering\NumberPattern;
 use App\Support\Numbering\ParsedNumber;
 use App\Support\Reference\PipeReference;
+use App\Support\Units\Exceptions\IncompatibleUnitException;
+use App\Support\Units\Exceptions\UnknownUnitException;
+use App\Support\Units\UnitRegistry;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -42,6 +45,7 @@ final class PipingLineService
         private readonly NumberEngine $engine,
         private readonly PipeReference $reference,
         private readonly ProjectArchiveService $archives,
+        private readonly UnitRegistry $units,
     ) {}
 
     // ------------------------------------------------------------ create --
@@ -274,6 +278,42 @@ final class PipingLineService
             'released_by' => null,
             'release_note' => $reason,
         ])->save();
+
+        return $line->refresh();
+    }
+
+    /**
+     * Update a line's design conditions and descriptive fields.
+     *
+     * Deliberately NOT a general-purpose update: it cannot touch the number,
+     * the sequence, the subsystem or the release state. Those have their own
+     * guarded paths, and the number in particular is what everything else
+     * references.
+     *
+     * A RELEASED line is not editable. Changing the design pressure of a line
+     * that has been issued for construction is a revision, not an edit, and
+     * the revert-to-draft path already exists and demands a reason.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function updateDesign(PipingLine $line, User $actor, array $attributes): PipingLine
+    {
+        $project = Project::query()->findOrFail($line->project_id);
+        $this->archives->assertWritable($project);
+
+        if ($line->release_state === LineReleaseState::RELEASED) {
+            throw ValidationException::withMessages([
+                'release_state' => __('epcc.line.released_not_editable'),
+            ]);
+        }
+
+        $changes = $this->designAttributes($attributes);
+
+        if ($changes === []) {
+            return $line;
+        }
+
+        $line->forceFill($changes)->save();
 
         return $line->refresh();
     }
@@ -514,6 +554,63 @@ final class PipingLineService
             if (array_key_exists($key, $attributes)) {
                 $out[$key] = $attributes[$key];
             }
+        }
+
+        return $out + $this->canonicalValues($out);
+    }
+
+    /**
+     * Derive the canonical (kPa / degrees C) mirror of every value/unit pair.
+     *
+     * ADR-014: the entered value and unit are the source of truth - they are
+     * what the drawing says - and these columns exist so that "every line above
+     * 10 barg" is an indexed comparison rather than a join against a unit table
+     * with arithmetic in the WHERE clause.
+     *
+     * Derived on every write, never read back as authority. A value with no
+     * unit produces no canonical: guessing the unit is exactly the class of
+     * assumption that puts a psi number in a barg column.
+     *
+     * @param  array<string, mixed>  $values
+     * @return array<string, float|null>
+     */
+    private function canonicalValues(array $values): array
+    {
+        $pairs = [
+            'design_pressure' => ['design_pressure_unit', 'design_pressure_kpa'],
+            'operating_pressure' => ['operating_pressure_unit', 'operating_pressure_kpa'],
+            'test_pressure' => ['test_pressure_unit', 'test_pressure_kpa'],
+            'design_temperature' => ['design_temperature_unit', 'design_temperature_c'],
+            'operating_temperature' => ['operating_temperature_unit', 'operating_temperature_c'],
+        ];
+
+        $out = [];
+
+        foreach ($pairs as $valueKey => [$unitKey, $canonicalKey]) {
+            if (! array_key_exists($valueKey, $values)) {
+                continue;
+            }
+
+            $value = $values[$valueKey];
+            $unit = $values[$unitKey] ?? null;
+
+            if ($value === null || $value === '' || ! is_string($unit) || trim($unit) === '') {
+                // Clearing the value must clear the mirror too, or a stale
+                // canonical would outlive the number it describes.
+                $out[$canonicalKey] = null;
+
+                continue;
+            }
+
+            try {
+                $measurement = $this->units->measure((float) $value, $unit);
+            } catch (UnknownUnitException|IncompatibleUnitException $e) {
+                // An unknown unit or an impossible temperature is a user
+                // error, not a crash: surface it on the field it came from.
+                throw ValidationException::withMessages([$unitKey => $e->getMessage()]);
+            }
+
+            $out[$canonicalKey] = $measurement->canonical;
         }
 
         return $out;

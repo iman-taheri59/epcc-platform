@@ -79,6 +79,10 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
 
     Route::post('/projects/{projectCode}/piping/{lineId}/evidence/{linkId}/detach', [PipingLineController::class, 'detach'])->name('piping.evidence.detach');
 
+    // Unit preferences (ADR-014). Declared before {lineId} routes for the same
+    // reason config is: a literal segment must not be eaten as an id.
+    Route::post('/projects/{projectCode}/piping/units', [PipingLineController::class, 'updateUnits'])->name('piping.units');
+
     // The numbering editor is a setup screen, not part of daily line entry.
     Route::get('/projects/{projectCode}/piping/config', [PipingConfigController::class, 'edit'])->name('piping.config');
     Route::post('/projects/{projectCode}/piping/config/pattern', [PipingConfigController::class, 'updatePattern'])->name('piping.config.pattern');

@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Services\StandardsPackRepository;
 use App\Support\Reference\PipeReference;
+use App\Support\Units\UnitRegistry;
 use App\Support\TenantContext;
 use Epcc\StandardsEngine\ReleaseGateEvaluator;
 use Illuminate\Support\ServiceProvider;
@@ -27,6 +28,15 @@ final class EpccServiceProvider extends ServiceProvider
         $this->app->singleton(
             PipeReference::class,
             fn (): PipeReference => new PipeReference(
+                (string) config('epcc.reference_dir', base_path('../standards-packs/reference')),
+            ),
+        );
+
+        // Units of measure (ADR-014). Same reasoning as PipeReference: the
+        // pack is universal reference data, decoded once per process.
+        $this->app->singleton(
+            UnitRegistry::class,
+            fn (): UnitRegistry => new UnitRegistry(
                 (string) config('epcc.reference_dir', base_path('../standards-packs/reference')),
             ),
         );

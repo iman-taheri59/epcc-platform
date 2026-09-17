@@ -132,7 +132,32 @@ return [
         'show_archived' => 'Show archived projects',
     ],
 
+    'units' => [
+        'title' => 'Units of measure',
+        'intro' => 'Values are stored exactly as entered, together with their unit. These settings only change how they are displayed and compared.',
+        'project_defaults' => 'Project defaults',
+        'my_units' => 'My display units',
+        'inherit' => 'Use the project default',
+        'quantity' => 'Quantity',
+        'unit' => 'Unit',
+        'save' => 'Save',
+        'saved' => 'Unit preferences saved.',
+        'owner_only' => 'Only the employer can change the project unit defaults.',
+        'unknown_quantity' => 'There is no quantity called :name.',
+        'wrong_quantity' => ':unit is a unit of :belongs, not :chosen.',
+        'gauge_note' => 'Gauge and absolute pressures are kept separate and are never converted into one another automatically, because the difference between them is the site atmospheric pressure rather than a fixed constant.',
+        'as_entered' => 'as entered',
+        'quantities' => [
+            'PRESSURE' => 'Pressure',
+            'TEMPERATURE' => 'Temperature',
+            'LENGTH' => 'Length',
+            'MASS' => 'Mass',
+            'FLOW' => 'Flow rate',
+            'WEIGHT_PER_LENGTH' => 'Weight per length',
+        ],
+    ],
     'line' => [
+        'released_not_editable' => 'A released line cannot be edited. Revert it to draft first, giving a reason.',
         'config' => [
             'title' => 'Line numbering',
             'intro' => 'The line number format belongs to this project, not to the standard. Editing it changes how NEW lines are numbered; numbers already issued are never rewritten.',
