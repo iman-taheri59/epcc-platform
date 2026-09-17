@@ -5,6 +5,7 @@ use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\MaterialsController;
 use App\Http\Controllers\PipingConfigController;
+use App\Http\Controllers\ComponentController;
 use App\Http\Controllers\PipingLineController;
 use App\Http\Controllers\PunchController;
 use App\Http\Controllers\TransmittalController;
@@ -82,6 +83,14 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     // Unit preferences (ADR-014). Declared before {lineId} routes for the same
     // reason config is: a literal segment must not be eaten as an id.
     Route::post('/projects/{projectCode}/piping/units', [PipingLineController::class, 'updateUnits'])->name('piping.units');
+
+    // ADR-006 phase 2: what a line is MADE OF. A separate page from the
+    // register on purpose - "which lines exist" and "what is this one made of"
+    // are different working sessions.
+    Route::get('/projects/{projectCode}/piping/{lineId}/model', [ComponentController::class, 'index'])->name('piping.model');
+    Route::post('/projects/{projectCode}/piping/{lineId}/model', [ComponentController::class, 'store'])->name('piping.model.store');
+    Route::post('/projects/{projectCode}/piping/{lineId}/model/attach', [ComponentController::class, 'attach'])->name('piping.model.attach');
+    Route::post('/projects/{projectCode}/piping/{lineId}/model/{componentId}/delete', [ComponentController::class, 'destroy'])->name('piping.model.destroy');
 
     // The numbering editor is a setup screen, not part of daily line entry.
     Route::get('/projects/{projectCode}/piping/config', [PipingConfigController::class, 'edit'])->name('piping.config');

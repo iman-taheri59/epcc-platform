@@ -33,6 +33,7 @@
         'link'    => ['fa' => 'پیوست', 'en' => 'Link'],
         'unlink'  => ['fa' => 'حذف پیوست', 'en' => 'Remove link'],
         'config'  => ['fa' => 'تنظیم شماره‌گذاری', 'en' => 'Numbering setup'],
+        'model'   => ['fa' => 'مدل', 'en' => 'Model'],
         'noreg'   => ['fa' => 'این فهرست برای پروژه تعریف نشده است؛ تا تعریف نشود شماره‌گذاری خودکار ممکن نیست.',
                       'en' => 'Not set up for this project yet - automatic numbering needs it first.'],
         'dp'      => ['fa' => 'فشار طراحی', 'en' => 'Design pressure'],
@@ -229,6 +230,11 @@
         </td>
         <td>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          {{-- The way into ADR-006 phase 2: what this line is made of. --}}
+          <a href="/projects/{{ $project->code }}/piping/{{ $line->id }}/model?lang={{ $lang }}"
+             style="padding:4px 9px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font-size:11.5px;text-decoration:none;">
+            {{ $L('model') }}
+          </a>
           @foreach(\App\Support\LineReleaseState::nextStates((string) $line->release_state) as $next)
             <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/transition?lang={{ $lang }}"
                   style="display:inline-flex;gap:4px;align-items:center;">

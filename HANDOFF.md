@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-09-17** · Status: **prototype + working vertical slice** · Tests: **767 passed / 2998 assertions** (+83 jsdom)
+Last updated: **2026-09-17** · Status: **prototype + working vertical slice** · Tests: **806 passed / 3061 assertions** (+83 jsdom)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -1844,6 +1844,81 @@ cross-quantity check was masked by the datum check — only PRESSURE has non-NON
 isolating it needed `mm→kg` and `barg→bara`) and M38 (`updateDesign` had no archive-gate test).
 
 
+
+## 5u. Components and ports (ADR-006 phase 2) — BUILT
+
+**The user's question this answers:** «چطور سیستم تشخیص بده که لوله دو port و Tee سه port داره؟»
+
+**It never asks.** The port count, the port roles and the default end types all come from the
+component template in the reference pack. `ComponentService::place()` takes a template code and
+creates the ports itself; there is no parameter anywhere that accepts a port count, and
+`test_the_service_exposes_no_way_to_set_a_port_count` exists to keep it that way.
+
+### The gesture
+
+Pick a component type, pick an open port to attach it to. Everything else is derived:
+
+| Derived | From |
+|---|---|
+| number and roles of ports | the template |
+| the connecting port's size | **inherited from the parent port** — never typed |
+| the other ports' sizes | the template's `sizeRule` |
+| which end is "branch" / "small" | the port ROLE, not its number |
+
+Size inheritance is what makes *"6″ pipe onto a 2″ branch"* structurally impossible rather than
+merely discouraged. An explicit `nominal_size` passed to `attach()` is **discarded**, and a test
+asserts the discard.
+
+### Schema
+
+`components` (per line, `UNIQUE(piping_line_id, sequence)`) and **one** `ports` table with an
+`owner_kind` discriminator. The nozzle side lands at phase 3b; the column and its CHECK exist now
+so that arrival is an INSERT, not a migration. ADR-010 §3.2 rejected sibling tables because every
+joint query would then need a two-branch COALESCE.
+
+CHECKs worth knowing: `ports_exactly_one_owner` (a row cannot claim both a component and a nozzle),
+`components_size_pair_complete` (NPS string and decimal travel together or not at all — a decimal
+without the string cannot be displayed, a string without the decimal cannot be compared, and
+dia-inch needs the comparison), `components_length_not_negative`.
+
+`is_connected` is denormalised **on purpose**: "every open end on this line" is the single
+most-used query in the system (ADR-009 §2.3) and drives the worklist, the progress metric and the
+import validator.
+
+### Rules enforced
+
+- branch ≤ run on a TEE/OLET (`BRANCH_LE_RUN`)
+- a REDUCER's two ends must differ — a 6×6 "reducer" is a spool nobody ordered
+- a per-port override on a `SAME_AS_FIRST` component (a "6×4 valve") is **ignored**, not honoured
+- a length on a component whose template has none is dropped
+- NOZZLE is in the pack but **not placeable on a line** — it belongs to equipment
+- an unrecognised size is refused, never silently nulled
+- RELEASED lines and ARCHIVED projects refuse modelling
+
+### Gotchas found while building this
+
+- **There is no `epcc_can_read_project()` helper.** I invented it from memory and the migration
+  failed on `CREATE POLICY`. The real read rule is spelled out inline from `current_setting` —
+  copy it from `create_piping_lines`, do not reconstruct it.
+- **`->sortBy([fn, fn])` silently does nothing useful.** The array form of `sortBy` expects
+  *property/comparison pairs*, not a list of key closures. It presented as P2 listed before P1 in
+  the open-ends panel. Use one closure returning a composite sort key.
+- **Form vocabulary must map to port ROLES, not port numbers.** The branch is port 3 on a TEE but
+  port 2 on an OLET, and a REDUCER has no branch at all. The controller resolves the role to a seq
+  from the template; a positional guess would put a branch size on a reducer's large port.
+
+### Files
+
+`app/Models/{Component,Port}.php` · `app/Services/ComponentService.php` ·
+`app/Http/Controllers/ComponentController.php` · `resources/views/piping/model.blade.php` ·
+migration `2026_09_17_120000_create_components_and_ports.php` · routes `piping.model*` ·
+`lang/{en,fa}/epcc.php` under `component.*` · `tests/Feature/ComponentModellingTest.php` (39).
+
+Reachable from the line register: each row has a **Model** button.
+
+**Mutation testing: 13 mutants, 0 survivors** (M44–M56).
+
+
 ## 6. The preview iframe (read before debugging "login is broken")
 
 The preview serves the app in an **iframe whose top-level document is a
@@ -2420,6 +2495,20 @@ repo scope on a private commercial codebase is the whole product.
 ## 10. Session log
 
 
+
+
+### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
+
+Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,
+a per-line model screen, and the attach gesture. The user's "how does it know a tee has three
+ports" question is answered structurally — the template declares them and no API accepts a count.
+
+**Sandbox reset #33 mid-turn.** Wrote `rebuild-env.sh` so the next one is a single command instead
+of ten minutes of remembering; it also verifies chromium/poppler and warns that their absence makes
+13 tests skip silently rather than fail.
+
+Full suite **806 passed / 3061 assertions**, zero skipped. 13 new mutants on the modelling service,
+all caught.
 
 ### 2026-09-17 (later) — units menu narrowed to bar/psi and C/F
 

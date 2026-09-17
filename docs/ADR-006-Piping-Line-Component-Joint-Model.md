@@ -1,6 +1,6 @@
 # ADR-EPCC-006 — Piping: lines, components, ports and joints
 
-**Status:** PROPOSED — analysis only, nothing implemented.
+**Status:** **PARTLY BUILT** — phase 1 (lines + numbering + AFC gate), phase 1b (numbering editor + evidence) and **phase 2 (components + ports)** are built and shipped. Phases 3-7 remain proposed.
 **Revised 2026-09-14** with two rounds of user answers — **§10** (first five) and **§11**
 (second five, all resolved). Both override §5 where they differ. Spawned **ADR-007** for
 universal reference data.
