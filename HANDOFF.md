@@ -2570,20 +2570,26 @@ module still in `PLANNED_MODULES`.
 
 ## 9a. Git remote — and why the config keeps disappearing
 
-> **State as of 2026-09-15 (end of phase 1):** local `main` is at **`fe8156c`**
-> (ADR-006 phase 1), **one commit ahead of the remote**, which is still at
-> `edc2925`. The push could not be made because the fine-grained PAT was
-> shredded at the end of the previous session, as intended — credentials are
-> not left lying in the sandbox. To publish, mint a new fine-grained PAT with
-> **Contents: Read and write** scoped to **`epcc-platform`** (an unlisted repo
-> 404s rather than 403s — see below), then `git push origin main`. Never put
-> the token in the remote URL; use `git credential approve` or a prompt.
-> The work is not at risk in the meantime: `source-backup.tar.gz` (3,547,088 B,
-> 449 entries) is current and extraction-verified.
+> **State as of 2026-09-18 (end of phase 3): PUSHED AND IN SYNC.** Remote `main` and local
+> `main` are both at **`c442de8`** (phase 3 — joints, compatibility, dia-inch), **376 files**.
+> The eight-commit backlog that had built up since `edc2925` is gone: the range
+> `edc2925..c442de8` covers phase 1, phase 1b, ADR-014 units, the units menu narrowing,
+> phase 2 components/ports, the RTL/legibility fixes and phase 3.
+>
+> Verified after pushing, not assumed: `git ls-remote` returns the same SHA as `git rev-parse
+> HEAD`; the pushed tree contains **no** `.env`, `.netrc`, credentials file or
+> `source-backup.tar.gz` — only `app/.env.example`, whose secret-shaped keys are all empty.
+>
+> **The token was not persisted, by design.** It was passed inline to a single `git push` via a
+> one-shot `https://x-access-token:TOKEN@…` URL and never written to `.git/config`,
+> `.git-credentials` or the `origin` remote (confirmed by grep). `origin` is registered with the
+> plain HTTPS URL, so it is usable for `fetch`/`ls-remote` but a future push will ask for a
+> credential again — which is the intended posture. Expect to mint a fresh fine-grained PAT
+> (**Contents: Read and write**, scoped to `epcc-platform`) next time; assume this one is spent.
 
 
 **`github.com/iman-taheri59/epcc-platform`** (private). Current `main` =
-**`cf99f0f`**, 295 files. `app/.env` and `source-backup.tar.gz` are gitignored
+**`c442de8`**, 376 files. `app/.env` and `source-backup.tar.gz` are gitignored
 and have been confirmed absent from the remote tree.
 
 **The recurring trap:** `.git/config` is on the snapshot exclusion list (along
