@@ -2677,7 +2677,11 @@ have drifted behind the real Laravel/Iran-first implementation; ADR-003 main is 
 A; ADR-006 is stale because phases 1/1b/2/3 are now built; SRS needs release-phase tags and the pack
 list aligned to `ips-iran`/`iso`/`awp`. Requirement recommendations recorded there: defer visual BPM,
 phase OCR/search/digital signature/offline sync, keep the visibility matrix constrained for MVP, and
-do not promise direct NWD parsing.
+do not promise direct NWD parsing. User then clarified the product priority: all EPCC disciplines
+must remain in scope, but Piping should be completed first. Added
+`docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-FA.md` and
+`docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-EN.md`; updated TODO/roadmap/SRS/Architecture and ADR
+status notes accordingly.
 
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 

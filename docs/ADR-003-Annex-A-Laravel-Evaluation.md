@@ -1,5 +1,8 @@
 # ADR-003 Annex A — Laravel evaluated as the backend stack
 
+> **Status — 2026-10-05:** Accepted and implemented as the current stack direction. The application under `app/` is Laravel/Filament. Parent architecture/SRS documents must treat this Annex as superseding the stack section of ADR-003.
+
+
 | Field | Value |
 |---|---|
 | Document ID | ADR-EPCC-003-A |

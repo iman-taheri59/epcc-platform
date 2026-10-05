@@ -50,6 +50,11 @@ MVP این پروژه نباید «همهٔ ماژول‌های EPCC» باشد.
 
 ---
 
+
+### تصمیم تکمیلی 2026-10-05 — پایپینگ اول کامل می‌شود
+
+همهٔ دیسیپلین‌های EPCC در scope محصول باقی می‌مانند، اما از این نقطه به بعد اولویت اجرای عمیق با **تکمیل دیسیپلین پایپینگ** است. جزئیات فازبندی در `docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-FA.md` آمده و نسخهٔ انگلیسی متناظر `docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-EN.md` است.
+
 ## 3. اصول اجرای ادامه کار
 
 ### 3.1 قاعده‌های غیرقابل مذاکره
@@ -127,161 +132,83 @@ MVP این پروژه نباید «همهٔ ماژول‌های EPCC» باشد.
 
 ---
 
-## 6. فاز 2 — PDFهای کم‌ریسک و پربازده
+## 6. فاز 2 — تکمیل پایپینگ P1: PMS و Branch Table
 
-**هدف:** خروجی‌های رسمی‌ای که در demo و تحویل مشتری فوراً دیده می‌شوند کامل شوند.
+**هدف:** پایپینگ از «مدل‌سازی» به «اعتبارسنجی مهندسی» برسد. جزئیات در `docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-FA.md`.
 
 ### آیتم‌ها
 
-1. **PDF صورت‌وضعیت**
-   - مبتنی بر `PaymentCertificate`
-   - فارسی/انگلیسی
-   - Jalali، ارقام فارسی، IRR formatting
-   - snapshot اگر داده قراردادی قابل تغییر است
-
-2. **PDF دفتر نواقص**
-   - register snapshot یا فیلتر قابل چاپ
-   - دسته A/B/C، وضعیت، مسئول، subsystem، تاریخ‌ها
-
-3. **PDF/print برای GRN/MIV یا اسناد warehouse**
-   - دریافت انبار، خروج انبار، تحویل سایت
-   - شماره heat/lot و لینک MTC
-
-### تست‌های لازم
-
-- `%PDF-` magic byte
-- access control از project participant و non-participant
-- فارسی/RTL smoke
-- عدم وابستگی شبکه/CDN
+- `piping_classes` و `piping_class_rules`
+- بازه‌های DN نیمه‌باز `[from, to)`
+- `EXCLUDE USING gist` برای جلوگیری از overlap در ruleهای یک‌بعدی
+- gap detection هنگام publish
+- branch table با resolution بر اساس specificity-wins
+- اتصال validation به component attach و joint compatibility
 
 ---
 
-## 7. فاز 3 — تکمیل زنجیره commissioning
+## 7. فاز 3 — تکمیل پایپینگ P2-P4: Equipment/nozzles، Fit-up، Supports/Spools
 
-**هدف:** بعد از MCC، مسیر RFSU/PAC/FAC ساخته شود.
+**هدف:** endpointهای واقعی و دادهٔ field وارد مدل پایپینگ شوند.
 
 ### آیتم‌ها
 
-1. **RFSU certificate**
-   - استفاده از `blocksReadyForStartUp()` موجود
-   - gate بر اساس A+B items
-   - snapshot از punch/material/subsystem readiness
-
-2. **PAC**
-   - تحویل موقت
-   - exception/condition list
-   - امضای کارفرما/PMC/Contractor طبق roleها
-
-3. **FAC**
-   - تحویل قطعی
-   - closeout conditionها
-   - عدم rewrite مدارک قبلی
-
-### نکته طراحی
-
-MCC/RFSU/PAC/FAC نباید یک enum ساده روی یک جدول واحد باشند اگر evidence، gate و امضای هرکدام متفاوت است. بهتر است ابتدا domain serviceها و snapshot contract روشن شوند.
+- equipment register حداقلی
+- equipment nozzles و nozzle ports
+- ارتقای free-text endpointها به FK در صورت وجود equipment/nozzle
+- nozzle schedule report
+- fit-up capture برای joints
+- support register با numbering engine
+- spool grouping اختیاری
 
 ---
 
-## 8. فاز 4 — PMS و قواعد پایپینگ
+## 8. فاز 4 — تکمیل پایپینگ P5-P8: Welding/NDT، Test Pack، PCF Import، Roll-ups
 
-**هدف:** از «مدل‌سازی اجزا» به «اعتبارسنجی مهندسی» برسیم.
+**هدف:** پایپینگ برای construction و commissioning واقعاً end-to-end شود.
 
 ### آیتم‌ها
 
-1. `piping_class_rules`
-   - half-open DN ranges `[from, to)`
-   - `EXCLUDE USING gist`
-   - `btree_gist` در migration
-   - publish gate برای gap detection
+- weld log، welder code، WPS reference
+- NDT request/result و repair cycle
+- test pack / hydrotest package
+- PCF upload → preview → commit
+- import batches immutable
+- incremental roll-ups برای dia-inch، joint، test pack و subsystem readiness
 
-2. Branch table
-   - هم‌پوشانی مجاز به‌عنوان general + exception
-   - exact duplicate ممنوع
-   - resolver با «specificity wins»
+### نکته
 
-3. Validation integration
-   - ASME/reference existence = INVALID
-   - PMS/spec mismatch = DEVIATION/WARNING
-   - line/component attach UI باید distinction را نشان دهد
-
-### تست‌های لازم
-
-- overlapping schedule bands rejected
-- adjacent half-open bands accepted
-- gap detection
-- branch table specific rule wins
-- RLS positive/negative
-- migration rollback/fresh
+Welding/NDT احتمالاً ADR مستقل لازم دارد، چون خودش workflow، KPI و traceability حساس دارد.
 
 ---
 
-## 9. فاز 5 — Engineering import phase 1
+## 9. فاز 5 — خروجی‌های رسمی و Completion Certificates
 
-**هدف:** ورود داده قبل از ساخت/نصب، از Excel/PCF/property export.
-
-### پیش‌نیاز واقعی
-
-حداقل یک نمونه از هرکدام:
-
-- line list Excel
-- MTO Excel
-- PCF واقعی از Plant 3D/CADWorx/AVEVA
-- Navisworks property export، نه NWD/NWC/NWF
+**هدف:** بعد از اتصال پایپینگ به دادهٔ واقعی، خروجی‌ها و گواهی‌ها ارزش عملیاتی پیدا کنند.
 
 ### آیتم‌ها
 
-1. `import_batches`
-   - immutable
-   - source_kind
-   - uploaded_by
-   - checksum
-   - status: uploaded/previewed/committed/rejected
-
-2. staging tables
-   - raw row JSON
-   - normalized fields
-   - row-level validation messages
-
-3. preview → commit flow
-   - هیچ truncate-and-reload مجاز نیست
-   - commit باید idempotency/checksum داشته باشد
-
-4. import profiles
-   - mapping ستون‌های مشتری
-   - configuration over code
-
-### نکته ممنوع
-
-آپلود و parse مستقیم NWD/NWF/NWC وعده داده نشود؛ مسیر صحیح property export یا PCF است.
+- PDFهای line/test pack/weld log در کنار PDFهای قبلی
+- PDF صورت‌وضعیت، punch register، GRN/MIV
+- RFSU/PAC/FAC با readiness مبتنی بر line/material/weld/test status
 
 ---
 
-## 10. فاز 6 — Equipment / nozzles
+## 10. فاز 6 — Engineering Import و دیسیپلین بعدی
 
-**هدف:** equipment وارد همان completion و piping compatibility شود.
-
-### طراحی پذیرفته‌شده از ADR-010
-
-- nozzle مالک port است.
-- joints table نیاز به تغییر ساختاری ندارد.
-- port owner می‌تواند COMPONENT یا NOZZLE باشد.
-- mismatch مثل 6 inch 300# RF nozzle به 150# flange باید در entry hard INVALID شود.
+**هدف:** بعد از validatorهای پایپینگ، import داده مهندسی و تعمیم الگو به دیسیپلین بعدی آغاز شود.
 
 ### آیتم‌ها
 
-1. equipment register
-2. nozzles table
-3. nozzle ports
-4. compatibility با component ports
-5. اتصال equipment به subsystem
-6. UI برای انتخاب nozzle به‌عنوان endpoint/open port
+- نمونه فایل واقعی line list، MTO، PCF، Navisworks property export
+- import profiles
+- discipline pattern extraction برای Electrical/I&C یا دیسیپلین منتخب بعدی
 
 ---
 
 ## 11. فاز 7 — HSE حداقلی
 
-**هدف:** حداقل چیزی که برای demo نفت‌وگاز ایران قابل قبول است.
+**هدف:** حداقل HSE معتبر برای demo نفت‌وگاز ایران بعد از تثبیت الگوی پایپینگ.
 
 ### MVP HSE
 
@@ -289,11 +216,6 @@ MCC/RFSU/PAC/FAC نباید یک enum ساده روی یک جدول واحد ب�
 2. Incident report
 3. HSE observation
 4. Toolbox talk attendance
-
-### نکات
-
-- HSE هم cross-company است، پس RLS و confidentiality حساس‌اند.
-- بعضی incidentها باید visibility کنترل‌شده داشته باشند؛ همهٔ پیمانکاران نباید همه چیز را ببینند.
 
 ---
 
@@ -336,9 +258,9 @@ MCC/RFSU/PAC/FAC نباید یک enum ساده روی یک جدول واحد ب�
 
 ## 14. تصمیمات باز که بهتر است کاربر/مالک محصول مشخص کند
 
-1. اولویت بین RFSU/PAC/FAC و PMS چیست؟
+1. تصمیم گرفته شد: PMS و تکمیل پایپینگ قبل از RFSU/PAC/FAC عمیق انجام شود، مگر اینکه demo/customer خلافش را تحمیل کند.
 2. آیا نمونه فایل واقعی engineering import موجود است؟
 3. اولین فرم قرارداد/صورت‌وضعیت هدف دقیقاً کدام است؟ شرایط عمومی پیمان 4311 یا فرم NOC خاص؟
 4. اولین NOC numbering scheme کدام است؟
-5. HSE MVP باید زودتر از PMS بیاید یا بعد از آن؟
+5. HSE MVP بعد از تثبیت الگوی پایپینگ می‌آید، مگر الزام pilot client آن را جلو بکشد.
 6. برای توسعه بعدی، Docker/devcontainer قابل قبول است یا محیط نصب دستی ترجیح دارد؟

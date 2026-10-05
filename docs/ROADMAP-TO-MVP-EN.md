@@ -49,6 +49,11 @@ Anything that does not strengthen these three promises is second priority for th
 
 ---
 
+
+### Additional decision — 2026-10-05: complete Piping first
+
+All EPCC disciplines remain in product scope, but the deep implementation priority from this point is **completing the Piping discipline**. Detailed phasing is recorded in `docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-EN.md`; the Persian counterpart is `docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-FA.md`.
+
 ## 3. Execution Principles
 
 ### 3.1 Non-negotiable rules
@@ -126,161 +131,83 @@ High initial setup cost, but without it every later migration is risky.
 
 ---
 
-## 6. Phase 2 — Low-risk, High-value PDFs
+## 6. Phase 2 — Piping Completion P1: PMS and Branch Table
 
-**Goal:** Complete official outputs that matter immediately in demos and customer handover.
+**Goal:** Move Piping from modelling to engineering validation. Details are in `docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-EN.md`.
 
 ### Items
 
-1. **Payment certificate PDF**
-   - Based on `PaymentCertificate`
-   - Persian/English
-   - Jalali, Persian digits, IRR formatting
-   - Snapshot if contractual data can change
-
-2. **Punch register PDF**
-   - Printable register snapshot or selected filters
-   - A/B/C category, state, responsible company, subsystem, dates
-
-3. **GRN/MIV or warehouse document PDF/print outputs**
-   - Warehouse receipt, warehouse issue, site delivery
-   - Heat/lot number and MTC link
-
-### Required tests
-
-- `%PDF-` magic byte
-- Access control for project participant and non-participant
-- Persian/RTL smoke test
-- No network/CDN dependency
+- `piping_classes` and `piping_class_rules`
+- DN half-open ranges `[from, to)`
+- `EXCLUDE USING gist` to prevent overlap in one-dimensional rules
+- Gap detection at publish time
+- Branch table resolved by specificity-wins
+- Validation integration with component attach and joint compatibility
 
 ---
 
-## 7. Phase 3 — Complete the Commissioning Certificate Chain
+## 7. Phase 3 — Piping Completion P2-P4: Equipment/nozzles, Fit-up, Supports/Spools
 
-**Goal:** Build the path after MCC: RFSU/PAC/FAC.
+**Goal:** Bring real endpoints and field data into the Piping model.
 
 ### Items
 
-1. **RFSU certificate**
-   - Use the existing `blocksReadyForStartUp()` logic
-   - Gate based on A+B items
-   - Snapshot punch/material/subsystem readiness
-
-2. **PAC**
-   - Provisional acceptance
-   - Exception/condition list
-   - Owner/PMC/Contractor signatures according to roles
-
-3. **FAC**
-   - Final acceptance
-   - Closeout conditions
-   - No rewriting of earlier evidence
-
-### Design note
-
-MCC/RFSU/PAC/FAC should not be treated as a simple enum if each has different evidence, gates, and signatures. Clarify domain services and snapshot contracts first.
+- Minimal equipment register
+- Equipment nozzles and nozzle ports
+- Upgrade free-text endpoints to FKs when equipment/nozzle data exists
+- Nozzle schedule report
+- Fit-up capture for joints
+- Support register with numbering engine
+- Optional spool grouping
 
 ---
 
-## 8. Phase 4 — PMS and Piping Rules
+## 8. Phase 4 — Piping Completion P5-P8: Welding/NDT, Test Packs, PCF Import, Roll-ups
 
-**Goal:** Move from “modelling components” to “engineering validation”.
+**Goal:** Make Piping truly end-to-end for construction and commissioning.
 
 ### Items
 
-1. `piping_class_rules`
-   - Half-open DN ranges `[from, to)`
-   - `EXCLUDE USING gist`
-   - `btree_gist` in the migration
-   - Publish gate for gap detection
+- Weld log, welder code, WPS reference
+- NDT request/result and repair cycle
+- Test pack / hydrotest package
+- PCF upload → preview → commit
+- Immutable import batches
+- Incremental roll-ups for dia-inch, joints, test packs, and subsystem readiness
 
-2. Branch table
-   - Overlap is allowed as general rule + exception
-   - Exact duplicate is forbidden
-   - Resolver uses “specificity wins”
+### Note
 
-3. Validation integration
-   - ASME/reference existence = INVALID
-   - PMS/spec mismatch = DEVIATION/WARNING
-   - Line/component attach UI must show the distinction
-
-### Required tests
-
-- Overlapping schedule bands rejected
-- Adjacent half-open bands accepted
-- Gap detection
-- Branch table specific rule wins
-- Positive and negative RLS
-- Migration fresh/rollback
+Welding/NDT likely needs its own ADR because it contains sensitive workflows, KPIs, and traceability requirements.
 
 ---
 
-## 9. Phase 5 — Engineering Import Phase 1
+## 9. Phase 5 — Official Outputs and Completion Certificates
 
-**Goal:** Ingest data before construction/installation from Excel/PCF/property exports.
-
-### Real prerequisite
-
-At least one real sample of each:
-
-- Line list Excel
-- MTO Excel
-- Real PCF from Plant 3D/CADWorx/AVEVA
-- Navisworks property export, not NWD/NWC/NWF
+**Goal:** Once Piping is connected to real data, outputs and certificates become operationally meaningful.
 
 ### Items
 
-1. `import_batches`
-   - Immutable
-   - `source_kind`
-   - `uploaded_by`
-   - checksum
-   - status: uploaded/previewed/committed/rejected
-
-2. Staging tables
-   - Raw row JSON
-   - Normalised fields
-   - Row-level validation messages
-
-3. Preview → commit flow
-   - No truncate-and-reload
-   - Commit must have idempotency/checksum behaviour
-
-4. Import profiles
-   - Customer column mapping
-   - Configuration over code
-
-### Forbidden promise
-
-Do not promise direct upload and parsing of NWD/NWF/NWC. The correct path is property export or PCF.
+- Line/test pack/weld log PDFs alongside previously planned PDFs
+- Payment certificate, punch register, GRN/MIV PDFs
+- RFSU/PAC/FAC driven by line/material/weld/test status
 
 ---
 
-## 10. Phase 6 — Equipment / Nozzles
+## 10. Phase 6 — Engineering Import and the Next Discipline
 
-**Goal:** Bring equipment into the same completion and piping compatibility model.
-
-### Accepted design from ADR-010
-
-- A nozzle owns a port.
-- The joints table does not need a structural change.
-- A port owner can be COMPONENT or NOZZLE.
-- A mismatch such as a 6 inch 300# RF nozzle connected to a 150# flange must be a hard INVALID at entry time.
+**Goal:** After Piping validators are in place, begin engineering import and generalise the pattern to the next discipline.
 
 ### Items
 
-1. Equipment register
-2. Nozzles table
-3. Nozzle ports
-4. Compatibility with component ports
-5. Equipment connected to subsystem
-6. UI for selecting a nozzle as an endpoint/open port
+- Real sample line list, MTO, PCF, and Navisworks property export files
+- Import profiles
+- Discipline pattern extraction for Electrical/I&C or the next selected discipline
 
 ---
 
 ## 11. Phase 7 — Minimal HSE
 
-**Goal:** Deliver the minimum HSE surface that is credible for an Iranian oil and gas demo.
+**Goal:** Deliver the minimum HSE surface credible for an Iranian oil and gas demo after the Piping pattern is stabilised.
 
 ### MVP HSE
 
@@ -288,11 +215,6 @@ Do not promise direct upload and parsing of NWD/NWF/NWC. The correct path is pro
 2. Incident report
 3. HSE observation
 4. Toolbox talk attendance
-
-### Notes
-
-- HSE is cross-company, so RLS and confidentiality are sensitive.
-- Some incidents need controlled visibility; not all contractors should see every incident.
 
 ---
 
@@ -335,9 +257,9 @@ Before a real pilot, at least these must be true:
 
 ## 14. Open Product Decisions for the Owner
 
-1. Should RFSU/PAC/FAC or PMS come first?
+1. Decided: PMS and Piping completion come before deep RFSU/PAC/FAC work unless a demo/customer need reverses it.
 2. Are real engineering import sample files available?
 3. Which first contract/payment-certificate form is the target: Conditions of Contract 4311 or a specific NOC form?
 4. Which NOC numbering scheme should be implemented first?
-5. Should minimal HSE come before or after PMS?
+5. Minimal HSE comes after the Piping pattern is stabilised, unless a pilot client pulls it forward.
 6. Is Docker/devcontainer acceptable, or is a manual installation path preferred?

@@ -157,9 +157,11 @@
 
 | # | کار | چرا مهم است | تخمین/ریسک |
 |---|---|---|---|
-| ⏳ | **RFSU + PAC + FAC** | زنجیرهٔ commissioning بعد از MCC نیمه‌کاره است؛ `blocksReadyForStartUp()` طبق مستندات نوشته و تست شده ولی هنوز در flow/UI مصرف نمی‌شود | کوچک تا متوسط؛ نیازمند اجرای PHPUnit |
-| ⏳ | **PDF صورت‌وضعیت** | زیرساخت PDF هست اما قالب قراردادی صورت‌وضعیت هنوز نیست؛ برای demo و تحویل ایران ارزش فوری دارد | کوچک |
-| ⏳ | **PDF دفتر نواقص / GRN / MIV** | فرم‌های قابل چاپ/بایگانی برای quality و materials لازم‌اند؛ موتور PDF موجود است | کوچک تا متوسط |
+| ⏳ | **تکمیل دیسیپلین پایپینگ** | تصمیم محصولی جدید: همهٔ دیسیپلین‌های EPCC در scope می‌مانند، اما پایپینگ اول عمیق و کامل می‌شود؛ جزئیات در `docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-FA.md` و نسخهٔ EN | بزرگ؛ نیازمند محیط کامل PostgreSQL/PHP |
+| ⏳ | **PMS + branch table** | اولین فاز پایپینگ کامل؛ بدون PMS، import و مدل‌سازی فقط دادهٔ غلط را سریع‌تر وارد می‌کنند | متوسط تا بالا؛ PostgreSQL-heavy |
+| ⏳ | **Equipment / nozzles** | دومین فاز پایپینگ؛ endpoint compatibility خطاهای پرهزینهٔ flange/nozzle را قبل از bolt-up می‌گیرد | متوسط |
+| ⏳ | **RFSU + PAC + FAC** | زنجیرهٔ commissioning بعد از MCC نیمه‌کاره است؛ برای پایپینگ باید readiness از line/material/weld/test هم تغذیه شود | کوچک تا متوسط؛ بعد از baseline پایپینگ بهتر است |
+| ⏳ | **PDF صورت‌وضعیت / دفتر نواقص / GRN / MIV** | خروجی‌های رسمی مهم‌اند، اما بعد از تصمیم piping-first، PDFهای line/test pack/weld log هم به backlog اضافه می‌شوند | کوچک تا متوسط |
 | ⏳ | **Bulk import سیستم/زیرسیستم** | الان شکست سیستم/زیرسیستم عمدتاً seeded است؛ منبع ادمین عمداً create ندارد چون داده باید از مهندسی بیاید، نه تایپ دستی | متوسط |
 | ⏳ | **عکس نقص روی `DocumentFileStore`** | زیرساخت فایل وجود دارد ولی punch photos هنوز به همان store و ACL وصل نیست | کوچک |
 | ⏳ | **RFQ/مناقصه و تکمیل Procurement** | زنجیرهٔ پایه ساخته شده، اما RFQ/tendering، مقایسه پیشنهادها و بعضی خروجی‌های خرید باقی است | متوسط |
@@ -209,11 +211,11 @@
 |---|---|---|---|
 | ۰ | **محیط اجرای کامل Laravel/PostgreSQL** | بدون اجرای migration/RLS/PHPUnit، تغییرات دیتابیس و دسترسی قابل اعتماد نیست | PHP، Composer، PostgreSQL یا Docker/devcontainer |
 | ۱ | **Reconcile مستندات و backlog** | وضعیت واقعی با `HANDOFF.md` جلوتر از TODO قبلی بود؛ تصمیم‌گیری باید روی سند همگام باشد | همین بازنگری |
-| ۲ | **PDFهای کوچک باقی‌مانده** | ارزش demo/تحویل زیاد، دامنه کم، زیرساخت موجود | محیط PHP + Chromium |
-| ۳ | **RFSU/PAC/FAC** | تکمیل زنجیره commissioning و استفاده از gate نوشته‌شده | اجرای کامل تست |
-| ۴ | **PMS / branch table** | پایپینگ بدون PMS فقط مدل می‌سازد؛ PMS جلوی دادهٔ غلط را می‌گیرد | PostgreSQL کامل + migration tests |
-| ۵ | **Engineering import phase 1** | Excel/PCF/property export ارزش تجاری بالایی دارد، اما بدون نمونه واقعی فایل ریسک طراحی دارد | نمونه فایل واقعی |
-| ۶ | **HSE حداقلی** | برای بازار نفت‌وگاز ایران الزام عملیاتی/قانونی دارد | پس از تثبیت هسته |
+| ۲ | **تکمیل پایپینگ — PMS و branch table** | تصمیم فعلی محصول: همهٔ دیسیپلین‌ها دیده شوند، اما پایپینگ اول کامل شود | PostgreSQL کامل + migration tests |
+| ۳ | **تکمیل پایپینگ — Equipment/nozzles، fit-up، supports/spools** | endpoint واقعی، دادهٔ field و support/spool مسیر پایپینگ را عملیاتی می‌کند | تصمیم‌های ADR-010 |
+| ۴ | **تکمیل پایپینگ — welding/NDT، test packs، PCF import، roll-ups** | پایپینگ بدون weld/NDT/test pack هنوز برای construction/commissioning کامل نیست | ADR تکمیلی welding/NDT + نمونه PCF |
+| ۵ | **PDFهای رسمی و RFSU/PAC/FAC** | بعد از پایپینگ، certificate/readiness و خروجی‌ها به دادهٔ واقعی متصل می‌شوند | اجرای کامل تست |
+| ۶ | **HSE حداقلی و دیسیپلین بعدی** | بعد از تثبیت الگوی پایپینگ، قابلیت‌ها به دیسیپلین‌های دیگر تعمیم داده می‌شوند | انتخاب product owner |
 
 ---
 

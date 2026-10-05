@@ -187,3 +187,7 @@ Last reviewed:
 The project direction is sound: Iran-first, Laravel/Filament, real RLS, standards packs, CDE, commissioning, and piping. The largest current risk is not code; it is **parent-document drift**. If the SRS and Architecture document are not aligned with `HANDOFF.md` and the current code, future decisions may be made against an obsolete reality.
 
 My recommendation: before the next large feature, do a short pass to correct Architecture and SRS; then continue with Phase 0 runtime environment and the smaller PDF/RFSU features.
+
+## 8. Follow-up Product Decision — Complete Piping First
+
+After this audit, the product owner clarified that all disciplines required by EPCC projects must remain represented, but the current goal is to complete the Piping discipline first. This is consistent with the audit: Piping is the strongest template discipline for proving the engineering → procurement/materials → construction → QA/QC → commissioning chain. See `docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-EN.md` and its Persian counterpart.

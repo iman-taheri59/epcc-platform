@@ -1,5 +1,8 @@
 # ADR-EPCC-006 — Piping: lines, components, ports and joints
 
+> **Status — 2026-10-05:** Accepted and partially built. Built: ADR-007 phase 0 reference packs, phase 1 piping lines/numbering/AFC gate, phase 1b numbering editor/evidence attachment, phase 2 components/ports/manual modelling, and phase 3 joints/compatibility/dia-inch. Pending: PMS rules, equipment/nozzles, fit-up capture, supports/spools, welding/NDT, test packs, PCF import, and incremental roll-ups. Piping is now the first discipline targeted for deep completion.
+
+
 **Status:** **PARTLY BUILT** — phase 1 (lines + numbering + AFC gate), phase 1b (numbering editor + evidence), phase 2 (components + ports) and **phase 3 (joints + compatibility + dia-inch)** are built and shipped. Phases 3b-7 remain proposed.
 **Revised 2026-09-14** with two rounds of user answers — **§10** (first five) and **§11**
 (second five, all resolved). Both override §5 where they differ. Spawned **ADR-007** for

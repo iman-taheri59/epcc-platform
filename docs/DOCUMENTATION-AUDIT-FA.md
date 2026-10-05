@@ -187,3 +187,7 @@ Last reviewed:
 جهت کلی پروژه درست است: Iran-first، Laravel/Filament، RLS واقعی، standards packs، CDE، commissioning و piping. بزرگ‌ترین خطر فعلی کدنویسی نیست؛ **drift مستندات مادر** است. اگر SRS و Architecture با `HANDOFF.md` و کد فعلی همگام نشوند، تصمیم‌های بعدی ممکن است بر اساس واقعیت قدیمی گرفته شوند.
 
 پیشنهاد من: قبل از feature بزرگ بعدی، یک pass کوتاه برای اصلاح Architecture و SRS انجام شود؛ سپس Phase 0 runtime environment و بعد featureهای کوچک PDF/RFSU ادامه پیدا کند.
+
+## 8. تصمیم تکمیلی کاربر — پایپینگ اول کامل شود
+
+پس از این ممیزی، مالک محصول تصریح کرد که همهٔ دیسیپلین‌های لازم پروژه‌های EPCC باید در نظر گرفته شوند، اما فعلاً هدف، کامل‌کردن دیسیپلین پایپینگ است. این تصمیم با audit سازگار است: پایپینگ بهترین template discipline برای اثبات زنجیرهٔ engineering → procurement/materials → construction → QA/QC → commissioning است. سند متناظر: `docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-FA.md` و نسخهٔ انگلیسی آن.
