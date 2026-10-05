@@ -2670,6 +2670,15 @@ document created from now on must have an English counterpart. Added the corresp
 versions `docs/ARENA-INITIAL-ANALYSIS-EN.md` and `docs/ROADMAP-TO-MVP-EN.md`; keep this bilingual
 pairing rule for future docs.
 
+Follow-up documentation audit: reviewed all 15 ADRs and the parent docs (`SRS`, `Architecture`,
+`Prototype-Coverage-Map`, `Spike-RLS-Results`, `Infra-Cost-Model-Iran`, `Iran-First`). Added
+`docs/DOCUMENTATION-AUDIT-FA.md` and `docs/DOCUMENTATION-AUDIT-EN.md`. Key findings: parent docs
+have drifted behind the real Laravel/Iran-first implementation; ADR-003 main is superseded by Annex
+A; ADR-006 is stale because phases 1/1b/2/3 are now built; SRS needs release-phase tags and the pack
+list aligned to `ips-iran`/`iso`/`awp`. Requirement recommendations recorded there: defer visual BPM,
+phase OCR/search/digital signature/offline sync, keep the visibility matrix constrained for MVP, and
+do not promise direct NWD parsing.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,
