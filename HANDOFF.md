@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-05** · Status: **prototype + working vertical slices** · Tests: **856 passed / 3153 assertions** (+83 jsdom; full Laravel/PostgreSQL suite runnable after `restore.sh`)
+Last updated: **2026-10-05** · Status: **prototype + working vertical slices** · Tests: **858 passed / 3166 assertions** (+83 jsdom; full Laravel/PostgreSQL suite runnable after `restore.sh`)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -2688,6 +2688,9 @@ summary cards, blocker-first views, detail drawers, deviation inbox and test-pac
 
 
 Runtime restoration is now fixed and repeatable in this sandbox. `restore.sh` now creates `app/.env` when missing, forces Laravel onto PostgreSQL (`epcc` / `epcc_test`, user `epcc`, password `epcc_dev`), generates the app key, migrates/seeds, and publishes Filament assets; this closes the prior SQLite/PDO-driver restore failure. After the fix, `bash restore.sh` completed, and the full Laravel/PostgreSQL suite ran green: **856 passed / 3153 assertions**. Also added the first real Laravel version of the Piping Workspace at `/projects/{code}/piping/workspace`, linked it from the sidebar before the line register, and backed it with real project data: summary cards, blocker-first worklist, AFC evidence gaps, joint fit-up progress and subsystem-grouped test-pack readiness. New HTTP assertions pin EN/FA rendering, tenant isolation, sidebar discoverability and blocked-line worklist behaviour.
+
+
+Next main slice: turned test-pack readiness from a derived placeholder into a real Laravel object. Added `piping_test_packs` with RLS/archive-freeze policies, `piping_lines.test_pack_id`, `PipingTestPack` and `PipingTestPackService`. The workspace can now create hydrotest/test packs, assign/unassign lines, show unassigned-line counts, and move packs through `DRAFT → READY → TESTED → ACCEPTED`; `READY` is blocked until the pack has at least one line and all assigned lines are released. Added HTTP coverage for pack creation, assignment, and refusing readiness while a line is not released. Full suite after this slice: **858 passed / 3166 assertions**. Note: Laravel DB tests must not be run in parallel against the same `epcc_test` database; doing so produced expected migration/drop-schema races, then sequential reruns were green.
 
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 

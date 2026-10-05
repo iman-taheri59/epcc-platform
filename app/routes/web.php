@@ -75,9 +75,12 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     // Piping line register + AFC gate (ADR-006 phase 1).
     Route::get('/projects/{projectCode}/piping', [PipingLineController::class, 'index'])->name('piping');
     Route::get('/projects/{projectCode}/piping/workspace', [PipingLineController::class, 'workspace'])->name('piping.workspace');
+    Route::post('/projects/{projectCode}/piping/workspace/packs', [PipingLineController::class, 'storeTestPack'])->name('piping.test-packs.store');
+    Route::post('/projects/{projectCode}/piping/workspace/packs/{packId}/transition', [PipingLineController::class, 'transitionTestPack'])->name('piping.test-packs.transition');
     Route::post('/projects/{projectCode}/piping', [PipingLineController::class, 'store'])->name('piping.store');
     Route::post('/projects/{projectCode}/piping/{lineId}/transition', [PipingLineController::class, 'transition'])->name('piping.transition');
     Route::post('/projects/{projectCode}/piping/{lineId}/evidence', [PipingLineController::class, 'attach'])->name('piping.evidence');
+    Route::post('/projects/{projectCode}/piping/{lineId}/test-pack', [PipingLineController::class, 'assignTestPack'])->name('piping.test-packs.assign');
 
     Route::post('/projects/{projectCode}/piping/{lineId}/evidence/{linkId}/detach', [PipingLineController::class, 'detach'])->name('piping.evidence.detach');
 

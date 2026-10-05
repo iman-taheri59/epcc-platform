@@ -9,9 +9,11 @@ use App\Models\LineDocument;
 use App\Models\Joint;
 use App\Models\PipingClass;
 use App\Models\PipingLine;
+use App\Models\PipingTestPack;
 use App\Models\Project;
 use App\Models\Subsystem;
 use App\Services\PipingLineService;
+use App\Services\PipingTestPackService;
 use App\Support\AuthorizationPipeline;
 use App\Support\LineReleaseState;
 use App\Support\Numbering\Exceptions\UnknownTokenValueException;
@@ -38,6 +40,7 @@ final class PipingLineController extends Controller
 {
     public function __construct(
         private readonly PipingLineService $lines,
+        private readonly PipingTestPackService $testPacks,
         private readonly TenantContext $tenant,
         private readonly AuthorizationPipeline $authz,
         private readonly UnitPreferenceService $unitPrefs,
@@ -161,11 +164,17 @@ final class PipingLineController extends Controller
         $user = $request->user();
         $project = $this->resolveProject($user, $projectCode);
 
-        $lines = $this->tenant->runAs(
+        [$lines, $packs, $subsystems] = $this->tenant->runAs(
             $user->company_id,
-            fn () => PipingLine::with(['subsystem', 'pipingClass'])
-                ->orderBy('line_number')
-                ->get(),
+            fn (): array => [
+                PipingLine::with(['subsystem', 'pipingClass', 'testPack'])
+                    ->orderBy('line_number')
+                    ->get(),
+                PipingTestPack::with('subsystem')
+                    ->orderBy('code')
+                    ->get(),
+                Subsystem::orderBy('code')->get(),
+            ],
             $project->id,
         );
 
@@ -233,23 +242,23 @@ final class PipingLineController extends Controller
             'joints_fitted' => array_sum(array_column($jointStats, 'fitted')),
         ];
 
-        $packs = $rows
-            ->groupBy(fn (array $row): string => $row['line']->subsystem?->code ?? 'UNASSIGNED')
-            ->map(function ($group, string $code): array {
-                $total = $group->count();
-                $released = $group->filter(fn (array $row): bool => $row['line']->release_state === LineReleaseState::RELEASED)->count();
-                $blocked = $group->where('is_blocked', true)->count();
+        $packCards = $packs->map(function (PipingTestPack $pack) use ($rows): array {
+            $group = $rows->filter(fn (array $row): bool => $row['line']->test_pack_id === $pack->id);
+            $total = $group->count();
+            $released = $group->filter(fn (array $row): bool => $row['line']->release_state === LineReleaseState::RELEASED)->count();
+            $blocked = $group->where('is_blocked', true)->count();
 
-                return [
-                    'code' => $code,
-                    'total' => $total,
-                    'released' => $released,
-                    'blocked' => $blocked,
-                    'percent' => $total === 0 ? 0 : (int) round(($released / $total) * 100),
-                ];
-            })
-            ->sortByDesc('blocked')
-            ->values();
+            return [
+                'pack' => $pack,
+                'code' => $pack->code,
+                'total' => $total,
+                'released' => $released,
+                'blocked' => $blocked,
+                'percent' => $total === 0 ? 0 : (int) round(($released / $total) * 100),
+            ];
+        });
+
+        $unassigned = $rows->filter(fn (array $row): bool => $row['line']->test_pack_id === null);
 
         return view('piping.workspace', [
             'lang' => $lang,
@@ -258,7 +267,10 @@ final class PipingLineController extends Controller
             'project' => $project,
             'rows' => $rows,
             'stats' => $stats,
-            'packs' => $packs,
+            'packs' => $packCards,
+            'allPacks' => $packs,
+            'subsystems' => $subsystems,
+            'unassignedCount' => $unassigned->count(),
             'jalaliDate' => $this->today($lang),
         ]);
     }
@@ -456,6 +468,88 @@ final class PipingLineController extends Controller
         return redirect($this->backTo($projectCode, $lang, $request));
     }
 
+
+    /** Create a hydrotest/test pack from the workspace. */
+    public function storeTestPack(Request $request, string $projectCode): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:64'],
+            'title_en' => ['nullable', 'string', 'max:255'],
+            'title_fa' => ['nullable', 'string', 'max:255'],
+            'subsystem_id' => ['nullable', 'uuid'],
+            'test_pressure' => ['nullable', 'numeric'],
+            'test_pressure_unit' => ['nullable', 'string', 'max:16'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        try {
+            $this->tenant->runAs(
+                $user->company_id,
+                fn () => $this->testPacks->create($project, $user, $data),
+                $project->id,
+            );
+        } catch (ValidationException $e) {
+            return redirect($this->workspaceBackTo($projectCode, $lang, $request))
+                ->withInput()
+                ->withErrors($e->errors());
+        }
+
+        return redirect($this->workspaceBackTo($projectCode, $lang, $request));
+    }
+
+    /** Assign or remove one line from a test pack. */
+    public function assignTestPack(Request $request, string $projectCode, string $lineId): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+
+        $data = $request->validate([
+            'test_pack_id' => ['nullable', 'uuid'],
+        ]);
+
+        try {
+            $this->tenant->runAs($user->company_id, function () use ($data, $lineId, $user): void {
+                $line = PipingLine::findOrFail($lineId);
+                $pack = ($data['test_pack_id'] ?? null) ? PipingTestPack::findOrFail((string) $data['test_pack_id']) : null;
+                $this->testPacks->assignLine($line, $user, $pack);
+            }, $project->id);
+        } catch (ValidationException $e) {
+            return redirect($this->workspaceBackTo($projectCode, $lang, $request))
+                ->withErrors($e->errors());
+        }
+
+        return redirect($this->workspaceBackTo($projectCode, $lang, $request));
+    }
+
+    /** Move a test pack through DRAFT -> READY -> TESTED -> ACCEPTED. */
+    public function transitionTestPack(Request $request, string $projectCode, string $packId): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+
+        $data = $request->validate([
+            'to' => ['required', 'string'],
+        ]);
+
+        try {
+            $this->tenant->runAs($user->company_id, function () use ($data, $packId, $user): void {
+                $pack = PipingTestPack::findOrFail($packId);
+                $this->testPacks->transition($pack, $user, (string) $data['to']);
+            }, $project->id);
+        } catch (ValidationException $e) {
+            return redirect($this->workspaceBackTo($projectCode, $lang, $request))
+                ->withErrors($e->errors());
+        }
+
+        return redirect($this->workspaceBackTo($projectCode, $lang, $request));
+    }
+
     // ---------------------------------------------------------- internals --
 
     private function resolveProject($user, string $projectCode): Project
@@ -486,6 +580,17 @@ final class PipingLineController extends Controller
         }
 
         return "/projects/{$projectCode}/piping?".http_build_query($query);
+    }
+
+    private function workspaceBackTo(string $projectCode, string $lang, Request $request): string
+    {
+        $query = ['lang' => $lang];
+
+        if ($request->has('sid')) {
+            $query['sid'] = $request->query('sid');
+        }
+
+        return "/projects/{$projectCode}/piping/workspace?".http_build_query($query);
     }
 
     private function lang(Request $request): string

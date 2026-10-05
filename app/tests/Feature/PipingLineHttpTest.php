@@ -10,6 +10,7 @@ use App\Models\LineDocument;
 use App\Support\CdeState;
 use App\Models\PipingClass;
 use App\Models\PipingLine;
+use App\Models\PipingTestPack;
 use App\Models\Project;
 use App\Models\Subsystem;
 use App\Models\User;
@@ -283,6 +284,86 @@ final class PipingLineHttpTest extends TestCase
             ->assertSee('ISOMETRIC')
             ->assertSee('PID')
             ->assertSee('Line model');
+    }
+
+    public function test_a_test_pack_can_be_created_and_a_line_assigned_from_the_workspace(): void
+    {
+        $line = $this->aLine();
+        $owner = $this->owner();
+
+        $this->actingAs($owner)
+            ->post('/projects/PH-14/piping/workspace/packs?lang=en', [
+                'code' => 'tp-2201-a',
+                'title_en' => 'Hydrotest pack 2201 A',
+                'title_fa' => 'تست‌پک ۲۲۰۱ الف',
+                'test_pressure' => 16,
+                'test_pressure_unit' => 'bar',
+            ])
+            ->assertRedirect('/projects/PH-14/piping/workspace?lang=en');
+
+        $pack = app(TenantContext::class)->runAs(
+            $owner->company_id,
+            fn () => PipingTestPack::where('code', 'TP-2201-A')->firstOrFail(),
+            $this->project()->id,
+        );
+
+        $this->actingAs($owner)
+            ->post("/projects/PH-14/piping/{$line->id}/test-pack?lang=en", [
+                'test_pack_id' => $pack->id,
+            ])
+            ->assertRedirect('/projects/PH-14/piping/workspace?lang=en');
+
+        $assigned = app(TenantContext::class)->runAs(
+            $owner->company_id,
+            fn () => PipingLine::findOrFail($line->id)->test_pack_id,
+            $this->project()->id,
+        );
+
+        $this->assertSame($pack->id, $assigned);
+
+        $this->actingAs($owner)
+            ->get('/projects/PH-14/piping/workspace?lang=en')
+            ->assertOk()
+            ->assertSee('TP-2201-A')
+            ->assertSee('Hydrotest pack 2201 A');
+    }
+
+    public function test_a_test_pack_cannot_be_marked_ready_while_its_line_is_not_released(): void
+    {
+        $line = $this->aLine();
+        $owner = $this->owner();
+
+        $pack = app(TenantContext::class)->runAs(
+            $owner->company_id,
+            function () use ($owner, $line): PipingTestPack {
+                $pack = PipingTestPack::create([
+                    'project_id' => $this->project()->id,
+                    'company_id' => $owner->company_id,
+                    'code' => 'TP-BLOCKED',
+                    'title_en' => 'Blocked pack',
+                    'state' => PipingTestPack::DRAFT,
+                ]);
+                $line->forceFill(['test_pack_id' => $pack->id])->save();
+
+                return $pack;
+            },
+            $this->project()->id,
+        );
+
+        $this->actingAs($owner)
+            ->post("/projects/PH-14/piping/workspace/packs/{$pack->id}/transition?lang=en", [
+                'to' => PipingTestPack::READY,
+            ])
+            ->assertRedirect('/projects/PH-14/piping/workspace?lang=en')
+            ->assertSessionHasErrors('state');
+
+        $state = app(TenantContext::class)->runAs(
+            $owner->company_id,
+            fn () => PipingTestPack::findOrFail($pack->id)->state,
+            $this->project()->id,
+        );
+
+        $this->assertSame(PipingTestPack::DRAFT, $state);
     }
 
     public function test_evidence_can_be_attached_and_the_gate_then_passes(): void
