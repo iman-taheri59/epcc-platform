@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "test:prototype": "node prototype/test/sidebar.test.js && node prototype/test/piping-workspace.test.js"
+  },
   "dependencies": {
     "jsdom": "^29.1.1"
   }

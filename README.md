@@ -27,8 +27,10 @@ Bilingual (EN/FA) modular platform for large industrial EPCC projects — oil, g
 | `standards-packs/iso.pack.json` | ISO Framework Pack v1.0.0 — ISO 21502, 19650, 9001, 31000, 45001, 15926/CFIHOS |
 | `standards-packs/awp.pack.json` | AWP / WFP Pack v1.0.0 — **deferred to the international phase but kept in CI** as a genericity guard (ADR-002) |
 | `standards-packs/validate_packs.py` | CI gate — schema validation, bilingual-parity enforcement, progress-weight checks, and the ADR-002 seam guards |
-| `prototype/index.html` | Clickable bilingual prototype — 9 screens, live language / company-role / standards-pack switching, collapsible sidebar with mobile drawer |
+| `prototype/index.html` | Clickable bilingual prototype — 9 screens, live language / company-role / standards-pack switching, collapsible sidebar with mobile drawer. Links to the newer Piping Workspace preview. |
+| `prototype/piping-workspace.html` | **Synthetic-data Piping Workspace preview** — task-first UI concept for the piping-first strategy: summary cards, blocker-first filters, readiness bars, deviation inbox, test-pack board and line detail drawer. Self-contained and air-gap safe. |
 | `prototype/test/sidebar.test.js` | jsdom behaviour test — 19 assertions covering the sidebar rail/drawer, RTL, keyboard and navigation behaviour |
+| `prototype/test/piping-workspace.test.js` | jsdom behaviour test — 16 assertions pinning Piping Workspace localisation, mobile filter layout, card rows, drawer behaviour and air-gap safety |
 
 ## Prototype — scope warning
 
@@ -43,6 +45,7 @@ Open `prototype/index.html`. It boots **Persian-first with the IPS / Iran pack a
 3. **Standard** — IPS / Iran, ISO, or AWP. KPIs, terminology, document lifecycle, numbering rule and available modules all change. Under IPS and ISO the AWP screens correctly report the module as inactive.
 
 Key screens for a demo:
+- **Piping Workspace preview** — open `prototype/piping-workspace.html` directly, or use the Piping Workspace link in the prototype sidebar. Shows the new task-first UX with synthetic PH-14 data.
 - **صورت‌وضعیت / Payment Certificate** — the Iranian payment build-up with تعدیل, حسن انجام کار and advance recovery, plus an authority-limit escalation. IPS pack only.
 - **IWP Release Gate** — AWP constraint hard-block in action. AWP pack only.
 - **Quality & Punch** — MC certificate blocked by failed guards.
@@ -50,10 +53,11 @@ Key screens for a demo:
 
 **Sidebar:** the ☰ button collapses the sidebar to a 56px icon rail on desktop, and turns it into an off-canvas drawer below 820px — opening from the right in Persian/RTL and the left in English/LTR. The drawer closes on navigation, on scrim tap, and on Escape.
 
-Tested: 324 render combinations (3 packs × 2 languages × 6 company roles × 9 pages) plus 19 jsdom behaviour assertions:
+Tested: 324 render combinations (3 packs × 2 languages × 6 company roles × 9 pages), 19 sidebar jsdom assertions, and 16 Piping Workspace jsdom assertions:
 
 ```bash
-npm install jsdom && node prototype/test/sidebar.test.js
+npm install
+npm run test:prototype
 ```
 
 ## Validating the packs
