@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-09-18** · Status: **prototype + working vertical slice** · Tests: **852 passed / 3136 assertions** (+83 jsdom)
+Last updated: **2026-10-05** · Status: **prototype + working vertical slices** · Tests: **852 passed / 3136 assertions** (+83 jsdom; full Laravel suite not runnable in the current sandbox)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -2650,8 +2650,22 @@ repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
 
+### 2026-10-05 — external repo handoff, backlog reconciliation and MVP roadmap
 
+Cloned the private GitHub repo in a fresh Arena workspace, confirmed local and remote `main` are in
+sync at `61093dd3f9a8e146161e288e2857c9dc372e6b4d`, and kept the PAT out of git config/remotes.
+Workspace footprint stayed small (~15 MB; no `vendor`/`node_modules` committed). The current sandbox
+has Node/Python but no PHP, Composer or PostgreSQL, so the full Laravel/RLS test suite was not run
+here. What could be verified was verified: `python3 standards-packs/validate_packs.py` passed for all
+3 standards packs and 5 reference packs, and `node prototype/test/sidebar.test.js` passed 19/19.
 
+Reconciled `docs/TODO.md` with the newer state already recorded in this handoff: procurement is no
+longer a zero-page module, ADR-006 phases 1/1b/2/3 are built, physical breakdown/reference data/units
+/components/ports/joints are now listed as done, and the open backlog is split into real gaps instead
+of stale module labels. Added `docs/ROADMAP-TO-MVP.md` with the recommended sequence: first restore a
+real Laravel/PostgreSQL test environment, then finish small PDFs, RFSU/PAC/FAC, PMS rules, engineering
+imports, equipment/nozzles and HSE. Also saved the initial Arena analysis as
+`docs/ARENA-INITIAL-ANALYSIS-FA.md`.
 
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 

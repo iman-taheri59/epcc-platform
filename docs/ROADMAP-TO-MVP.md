@@ -1,0 +1,344 @@
+# ROADMAP TO MVP — EPCC Platform
+
+Last updated: **2026-10-05**  
+Language note: this roadmap is Persian because it is an internal execution document for the current team conversation. Requirements/ADR documents remain English where already mandated.
+
+---
+
+## 1. هدف MVP
+
+MVP این پروژه نباید «همهٔ ماژول‌های EPCC» باشد. MVP باید یک محصول قابل نصب و قابل demo برای بازار ایران باشد که این سه وعده را واقعاً نگه دارد:
+
+1. **کنترل محرمانگی بین شرکت‌ها** با PostgreSQL RLS و authorization شش‌دروازه‌ای.
+2. **جریان قراردادی/مهندسی قابل اتکا**: مدارک، بازبینی، ترنسمیتال، punch، MCC، procurement/materials پایه و پایپینگ پایه.
+3. **قابل تحویل در محیط on-prem/air-gapped ایران**: فارسی/RTL/Jalali، بدون CDN، قابل backup، قابل restore، و با خروجی‌های PDF اصلی.
+
+هر چیزی که این سه را تقویت نکند، برای MVP اولویت دوم است؛ حتی اگر برای نسخه نهایی لازم باشد.
+
+---
+
+## 2. وضعیت فعلی بسیار خلاصه
+
+### ساخته‌شده و قابل اتکا در vertical slice
+
+- Auth/session login
+- ARC §5 six-gate authorization
+- PostgreSQL RLS و tenant context
+- Portfolio / project setup / team / archive-reopen
+- CDE / document register / revisions / file attachments
+- Review comments و publication gate
+- Contractor transmittals و vendor transmittals
+- Punch list و Mechanical Completion certificate
+- PDF infrastructure و چند خروجی PDF
+- Filament admin محدود و RLS-aware
+- Procurement/materials پایه: requisition → PO → inspection → warehouse → site
+- Facility / area / subsystem physical breakdown
+- Piping line register، numbering، AFC gate، evidence attachment
+- Unit preferences
+- Components / ports / joints / compatibility / dia-inch
+- Standards packs و reference packs
+
+### شکاف‌های MVP
+
+- محیط اجرای کامل در sandbox فعلی موجود نیست؛ PHP/Composer/PostgreSQL باید فراهم شود.
+- TODO/coverage باید بعد از ساخت procurement و piping دوباره به FRها نگاشت شود.
+- چند PDF قراردادی/عملیاتی هنوز وجود ندارد.
+- RFSU/PAC/FAC هنوز در flow نیست.
+- PMS/piping class rules هنوز فقط ADR است.
+- Import مهندسی هنوز شروع نشده و به نمونه فایل واقعی نیاز دارد.
+- HSE و Schedule هنوز صفر صفحه‌اند.
+
+---
+
+## 3. اصول اجرای ادامه کار
+
+### 3.1 قاعده‌های غیرقابل مذاکره
+
+1. **هیچ قابلیت tenant-scoped بدون تست PostgreSQL/RLS کامل merge نشود.**
+2. **هیچ صفحه‌ای بدون shell contract اضافه نشود.**
+3. **هیچ وابستگی CDN/فونت/آواتار خارجی اضافه نشود.**
+4. **خروجی‌های قراردادی snapshot شوند، نه اینکه بعداً با داده زنده بازنویسی شوند.**
+5. **planned و locked در navigation قاطی نشوند.**
+6. **هر قابلیت جدید باید در فارسی/RTL و انگلیسی/LTR قابل استفاده باشد.**
+7. **هر migration جدید باید RLS، archive-readonly و project/company scope را صریح بررسی کند.**
+
+### 3.2 تعریف Done برای هر قابلیت
+
+برای اینکه یک آیتم «ساخته‌شده» حساب شود:
+
+- migration/model/service/controller/view کامل باشد، اگر لازم است؛
+- HTTP path واقعی تست شده باشد، نه فقط service مستقیم؛
+- RLS مثبت و منفی تست شده باشد: «خودش را می‌بیند» و «دیگری را نمی‌بیند»؛
+- فارسی/انگلیسی و RTL/LTR در view پوشش داده شود؛
+- اگر table/register دارد، filter/sort/tabletools بررسی شود؛
+- اگر PDF/فایل دارد، magic byte، access control و air-gap constraints بررسی شوند؛
+- `HANDOFF.md` و `docs/TODO.md` به‌روزرسانی شوند.
+
+---
+
+## 4. فاز 0 — محیط اجرای قابل اعتماد
+
+**هدف:** قبل از تغییرات سنگین DB/RLS، اجرای کامل پروژه ممکن شود.
+
+### کارها
+
+1. یکی از این دو مسیر انتخاب شود:
+   - Docker/devcontainer رسمی برای Laravel + PostgreSQL + Composer + Node + Chromium؛ یا
+   - سند نصب محلی دقیق برای Linux server/WSL.
+2. دستور smoke test تعریف شود:
+   ```bash
+   cd app
+   php artisan migrate:fresh --seed
+   php artisan test
+   node tests/Browser/sidebar-toggle.test.cjs
+   node tests/Browser/table-tools.test.cjs
+   python3 ../standards-packs/validate_packs.py
+   ```
+3. اگر Docker انتخاب شد، CI محلی/گیت‌هاب باید از همان image استفاده کند تا «روی سیستم من کار می‌کند» حذف شود.
+
+### خروجی قابل قبول
+
+- یک دستور documented برای rebuild کامل.
+- اجرای کامل PHPUnit با PostgreSQL واقعی.
+- اجرای PDF tests بدون skip پنهان.
+
+### ریسک
+
+بالا از نظر زمان اولیه، اما بدون آن هر migration بعدی پرریسک است.
+
+---
+
+## 5. فاز 1 — همگام‌سازی مستندات و backlog
+
+**وضعیت:** این فاز با این commit شروع شده است.
+
+### کارها
+
+1. `docs/TODO.md` با `HANDOFF.md` و کد فعلی همگام شود.
+2. status قدیمی Procurement و Piping اصلاح شود.
+3. roadmap MVP در همین فایل تثبیت شود.
+4. اگر لازم شد `docs/Prototype-Coverage-Map.md` بعداً با نگاشت FR به code به‌روزرسانی شود.
+
+### خروجی قابل قبول
+
+- سند TODO دیگر ادعا نکند Procurement صفر صفحه است.
+- ADR-006 phases 1/1b/2/3 به‌عنوان built شناخته شوند.
+- شکاف‌های واقعی واضح باشند.
+
+---
+
+## 6. فاز 2 — PDFهای کم‌ریسک و پربازده
+
+**هدف:** خروجی‌های رسمی‌ای که در demo و تحویل مشتری فوراً دیده می‌شوند کامل شوند.
+
+### آیتم‌ها
+
+1. **PDF صورت‌وضعیت**
+   - مبتنی بر `PaymentCertificate`
+   - فارسی/انگلیسی
+   - Jalali، ارقام فارسی، IRR formatting
+   - snapshot اگر داده قراردادی قابل تغییر است
+
+2. **PDF دفتر نواقص**
+   - register snapshot یا فیلتر قابل چاپ
+   - دسته A/B/C، وضعیت، مسئول، subsystem، تاریخ‌ها
+
+3. **PDF/print برای GRN/MIV یا اسناد warehouse**
+   - دریافت انبار، خروج انبار، تحویل سایت
+   - شماره heat/lot و لینک MTC
+
+### تست‌های لازم
+
+- `%PDF-` magic byte
+- access control از project participant و non-participant
+- فارسی/RTL smoke
+- عدم وابستگی شبکه/CDN
+
+---
+
+## 7. فاز 3 — تکمیل زنجیره commissioning
+
+**هدف:** بعد از MCC، مسیر RFSU/PAC/FAC ساخته شود.
+
+### آیتم‌ها
+
+1. **RFSU certificate**
+   - استفاده از `blocksReadyForStartUp()` موجود
+   - gate بر اساس A+B items
+   - snapshot از punch/material/subsystem readiness
+
+2. **PAC**
+   - تحویل موقت
+   - exception/condition list
+   - امضای کارفرما/PMC/Contractor طبق roleها
+
+3. **FAC**
+   - تحویل قطعی
+   - closeout conditionها
+   - عدم rewrite مدارک قبلی
+
+### نکته طراحی
+
+MCC/RFSU/PAC/FAC نباید یک enum ساده روی یک جدول واحد باشند اگر evidence، gate و امضای هرکدام متفاوت است. بهتر است ابتدا domain serviceها و snapshot contract روشن شوند.
+
+---
+
+## 8. فاز 4 — PMS و قواعد پایپینگ
+
+**هدف:** از «مدل‌سازی اجزا» به «اعتبارسنجی مهندسی» برسیم.
+
+### آیتم‌ها
+
+1. `piping_class_rules`
+   - half-open DN ranges `[from, to)`
+   - `EXCLUDE USING gist`
+   - `btree_gist` در migration
+   - publish gate برای gap detection
+
+2. Branch table
+   - هم‌پوشانی مجاز به‌عنوان general + exception
+   - exact duplicate ممنوع
+   - resolver با «specificity wins»
+
+3. Validation integration
+   - ASME/reference existence = INVALID
+   - PMS/spec mismatch = DEVIATION/WARNING
+   - line/component attach UI باید distinction را نشان دهد
+
+### تست‌های لازم
+
+- overlapping schedule bands rejected
+- adjacent half-open bands accepted
+- gap detection
+- branch table specific rule wins
+- RLS positive/negative
+- migration rollback/fresh
+
+---
+
+## 9. فاز 5 — Engineering import phase 1
+
+**هدف:** ورود داده قبل از ساخت/نصب، از Excel/PCF/property export.
+
+### پیش‌نیاز واقعی
+
+حداقل یک نمونه از هرکدام:
+
+- line list Excel
+- MTO Excel
+- PCF واقعی از Plant 3D/CADWorx/AVEVA
+- Navisworks property export، نه NWD/NWC/NWF
+
+### آیتم‌ها
+
+1. `import_batches`
+   - immutable
+   - source_kind
+   - uploaded_by
+   - checksum
+   - status: uploaded/previewed/committed/rejected
+
+2. staging tables
+   - raw row JSON
+   - normalized fields
+   - row-level validation messages
+
+3. preview → commit flow
+   - هیچ truncate-and-reload مجاز نیست
+   - commit باید idempotency/checksum داشته باشد
+
+4. import profiles
+   - mapping ستون‌های مشتری
+   - configuration over code
+
+### نکته ممنوع
+
+آپلود و parse مستقیم NWD/NWF/NWC وعده داده نشود؛ مسیر صحیح property export یا PCF است.
+
+---
+
+## 10. فاز 6 — Equipment / nozzles
+
+**هدف:** equipment وارد همان completion و piping compatibility شود.
+
+### طراحی پذیرفته‌شده از ADR-010
+
+- nozzle مالک port است.
+- joints table نیاز به تغییر ساختاری ندارد.
+- port owner می‌تواند COMPONENT یا NOZZLE باشد.
+- mismatch مثل 6 inch 300# RF nozzle به 150# flange باید در entry hard INVALID شود.
+
+### آیتم‌ها
+
+1. equipment register
+2. nozzles table
+3. nozzle ports
+4. compatibility با component ports
+5. اتصال equipment به subsystem
+6. UI برای انتخاب nozzle به‌عنوان endpoint/open port
+
+---
+
+## 11. فاز 7 — HSE حداقلی
+
+**هدف:** حداقل چیزی که برای demo نفت‌وگاز ایران قابل قبول است.
+
+### MVP HSE
+
+1. PTW / Permit to Work
+2. Incident report
+3. HSE observation
+4. Toolbox talk attendance
+
+### نکات
+
+- HSE هم cross-company است، پس RLS و confidentiality حساس‌اند.
+- بعضی incidentها باید visibility کنترل‌شده داشته باشند؛ همهٔ پیمانکاران نباید همه چیز را ببینند.
+
+---
+
+## 12. Backlog بعد از MVP
+
+- Schedule: P6/MSP sync، lookahead، baseline، delay analysis
+- NCR/CAPA و ITP/ITR کامل
+- Welding/NDT و calibration
+- Contract register، VO/change order، claims
+- Full-text/OCR
+- Offline field app
+- BIM/CAD viewer
+- LDAP/ERP/P6 integrations
+- Notification engine
+- Workflow/BPM
+- سامانه مؤدیان/شاپرک
+- Billing/metering/customer onboarding
+
+---
+
+## 13. شاخص‌های آمادگی برای Pilot
+
+قبل از pilot واقعی، حداقل این‌ها باید برقرار باشند:
+
+1. نصب/restore کامل در محیط جدا از توسعه.
+2. اجرای کامل تست‌ها با PostgreSQL واقعی.
+3. حداقل یک project seed/demo ایرانی با سناریوهای:
+   - document lifecycle
+   - transmittal
+   - punch/MCC
+   - procurement/material to site
+   - piping line/component/joint
+4. PDFهای رسمی اصلی.
+5. air-gap verification سبز.
+6. backup/export و restore پروژه.
+7. راهنمای admin فارسی.
+8. لیست محدودیت‌های صادقانه برای مشتری pilot.
+
+---
+
+## 14. تصمیمات باز که بهتر است کاربر/مالک محصول مشخص کند
+
+1. اولویت بین RFSU/PAC/FAC و PMS چیست؟
+2. آیا نمونه فایل واقعی engineering import موجود است؟
+3. اولین فرم قرارداد/صورت‌وضعیت هدف دقیقاً کدام است؟ شرایط عمومی پیمان 4311 یا فرم NOC خاص؟
+4. اولین NOC numbering scheme کدام است؟
+5. HSE MVP باید زودتر از PMS بیاید یا بعد از آن؟
+6. برای توسعه بعدی، Docker/devcontainer قابل قبول است یا محیط نصب دستی ترجیح دارد؟
