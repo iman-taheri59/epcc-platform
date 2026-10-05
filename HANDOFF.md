@@ -2681,7 +2681,10 @@ do not promise direct NWD parsing. User then clarified the product priority: all
 must remain in scope, but Piping should be completed first. Added
 `docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-FA.md` and
 `docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-EN.md`; updated TODO/roadmap/SRS/Architecture and ADR
-status notes accordingly.
+status notes accordingly. User then requested synthetic data for testing/preview and noted the UI feels
+cluttered. Added `docs/UI-UX-IMPROVEMENT-PLAN-FA.md` and `docs/UI-UX-IMPROVEMENT-PLAN-EN.md`: use
+realistic demo data, shift from register-first to task-first UX, build a Piping Workspace first, add
+summary cards, blocker-first views, detail drawers, deviation inbox and test-pack board.
 
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 

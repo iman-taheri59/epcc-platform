@@ -54,6 +54,11 @@ Anything that does not strengthen these three promises is second priority for th
 
 All EPCC disciplines remain in product scope, but the deep implementation priority from this point is **completing the Piping discipline**. Detailed phasing is recorded in `docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-EN.md`; the Persian counterpart is `docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-FA.md`.
 
+
+### Additional decision — 2026-10-05: synthetic preview data and UX redesign
+
+Testing and previews will use realistic synthetic data. Because the current UI feels cluttered, the UX direction shifts from register-first to task-first. The proposed plan is recorded in `docs/UI-UX-IMPROVEMENT-PLAN-EN.md` with the Persian counterpart `docs/UI-UX-IMPROVEMENT-PLAN-FA.md`.
+
 ## 3. Execution Principles
 
 ### 3.1 Non-negotiable rules
