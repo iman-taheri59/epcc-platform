@@ -2665,7 +2665,10 @@ longer a zero-page module, ADR-006 phases 1/1b/2/3 are built, physical breakdown
 of stale module labels. Added `docs/ROADMAP-TO-MVP.md` with the recommended sequence: first restore a
 real Laravel/PostgreSQL test environment, then finish small PDFs, RFSU/PAC/FAC, PMS rules, engineering
 imports, equipment/nozzles and HSE. Also saved the initial Arena analysis as
-`docs/ARENA-INITIAL-ANALYSIS-FA.md`.
+`docs/ARENA-INITIAL-ANALYSIS-FA.md`. User then set a standing documentation rule: every new
+document created from now on must have an English counterpart. Added the corresponding English
+versions `docs/ARENA-INITIAL-ANALYSIS-EN.md` and `docs/ROADMAP-TO-MVP-EN.md`; keep this bilingual
+pairing rule for future docs.
 
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
