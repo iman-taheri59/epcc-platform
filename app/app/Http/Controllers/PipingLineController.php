@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Document;
 use App\Models\LineDocument;
+use App\Models\Joint;
 use App\Models\PipingClass;
 use App\Models\PipingLine;
 use App\Models\Project;
@@ -144,6 +145,121 @@ final class PipingLineController extends Controller
             'displayUnits' => $this->unitPrefs->displayUnits($project, $user),
             'unitMenu' => $this->unitMenu($lang),
             'unitsLocked' => $user->company_id !== $project->owner_company_id,
+        ]);
+    }
+
+    /**
+     * Task-first piping workspace.
+     *
+     * The register remains the system of record for line creation/editing; this
+     * view answers the field question first: which lines are ready, blocked or
+     * need construction/QA attention today?
+     */
+    public function workspace(Request $request, string $projectCode): View
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+
+        $lines = $this->tenant->runAs(
+            $user->company_id,
+            fn () => PipingLine::with(['subsystem', 'pipingClass'])
+                ->orderBy('line_number')
+                ->get(),
+            $project->id,
+        );
+
+        $blockers = $this->tenant->runAs(
+            $user->company_id,
+            function () use ($lines): array {
+                $out = [];
+                foreach ($lines as $line) {
+                    $out[$line->id] = [
+                        'missing' => $line->release_state === LineReleaseState::DRAFT ? $this->lines->missingEvidence($line) : [],
+                        'unapproved' => $line->release_state === LineReleaseState::DRAFT ? $this->lines->unapprovedEvidence($line) : [],
+                    ];
+                }
+
+                return $out;
+            },
+            $project->id,
+        );
+
+        $jointStats = $this->tenant->runAs(
+            $user->company_id,
+            fn () => Joint::query()
+                ->select('piping_line_id')
+                ->selectRaw('count(*) as total')
+                ->selectRaw("sum(case when state = 'FITTED' then 1 else 0 end) as fitted")
+                ->selectRaw("sum(case when compatibility_state = 'INVALID' then 1 else 0 end) as invalid")
+                ->selectRaw("sum(case when numbering_policy = 'REQUIRED' and joint_seq is null then 1 else 0 end) as awaiting_number")
+                ->groupBy('piping_line_id')
+                ->get()
+                ->keyBy('piping_line_id')
+                ->map(fn ($row): array => [
+                    'total' => (int) $row->total,
+                    'fitted' => (int) $row->fitted,
+                    'invalid' => (int) $row->invalid,
+                    'awaiting_number' => (int) $row->awaiting_number,
+                ])
+                ->all(),
+            $project->id,
+        );
+
+        $rows = $lines->map(function (PipingLine $line) use ($blockers, $jointStats): array {
+            $b = $blockers[$line->id] ?? ['missing' => [], 'unapproved' => []];
+            $j = $jointStats[$line->id] ?? ['total' => 0, 'fitted' => 0, 'invalid' => 0, 'awaiting_number' => 0];
+            $evidenceReady = $b['missing'] === [] && $b['unapproved'] === [];
+            $fitPercent = $j['total'] === 0 ? 0 : (int) round(($j['fitted'] / $j['total']) * 100);
+            $isBlocked = ! $evidenceReady || $j['invalid'] > 0 || $j['awaiting_number'] > 0 || $line->sequence === null;
+
+            return [
+                'line' => $line,
+                'evidence_ready' => $evidenceReady,
+                'is_blocked' => $isBlocked,
+                'missing' => $b['missing'],
+                'unapproved' => $b['unapproved'],
+                'joints' => $j,
+                'fit_percent' => $fitPercent,
+            ];
+        })->values();
+
+        $stats = [
+            'total' => $rows->count(),
+            'ready' => $rows->where('evidence_ready', true)->count(),
+            'blocked' => $rows->where('is_blocked', true)->count(),
+            'released' => $lines->where('release_state', LineReleaseState::RELEASED)->count(),
+            'joints_total' => array_sum(array_column($jointStats, 'total')),
+            'joints_fitted' => array_sum(array_column($jointStats, 'fitted')),
+        ];
+
+        $packs = $rows
+            ->groupBy(fn (array $row): string => $row['line']->subsystem?->code ?? 'UNASSIGNED')
+            ->map(function ($group, string $code): array {
+                $total = $group->count();
+                $released = $group->filter(fn (array $row): bool => $row['line']->release_state === LineReleaseState::RELEASED)->count();
+                $blocked = $group->where('is_blocked', true)->count();
+
+                return [
+                    'code' => $code,
+                    'total' => $total,
+                    'released' => $released,
+                    'blocked' => $blocked,
+                    'percent' => $total === 0 ? 0 : (int) round(($released / $total) * 100),
+                ];
+            })
+            ->sortByDesc('blocked')
+            ->values();
+
+        return view('piping.workspace', [
+            'lang' => $lang,
+            'dir' => $lang === 'fa' ? 'rtl' : 'ltr',
+            'user' => $user,
+            'project' => $project,
+            'rows' => $rows,
+            'stats' => $stats,
+            'packs' => $packs,
+            'jalaliDate' => $this->today($lang),
         ]);
     }
 

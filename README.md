@@ -46,6 +46,7 @@ Open `prototype/index.html`. It boots **Persian-first with the IPS / Iran pack a
 
 Key screens for a demo:
 - **Piping Workspace preview** — open `prototype/piping-workspace.html` directly, or use the Piping Workspace link in the prototype sidebar. Shows the new task-first UX with synthetic PH-14 data.
+- **Laravel Piping Workspace** — after `./restore.sh` and login, open `/projects/PH-14/piping/workspace?lang=en` (or `lang=fa`). It is the first task-first workspace in the real app, derived from project line/evidence/joint data.
 - **صورت‌وضعیت / Payment Certificate** — the Iranian payment build-up with تعدیل, حسن انجام کار and advance recovery, plus an authority-limit escalation. IPS pack only.
 - **IWP Release Gate** — AWP constraint hard-block in action. AWP pack only.
 - **Quality & Punch** — MC certificate blocked by failed guards.

@@ -107,6 +107,36 @@ final class PipingLineHttpTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_the_workspace_renders_for_a_participant_and_is_in_the_sidebar(): void
+    {
+        $this->actingAs($this->owner())
+            ->get('/projects/PH-14/piping/workspace?lang=en')
+            ->assertOk()
+            ->assertSee('Piping workspace')
+            ->assertSee('Today’s blockers')
+            ->assertSee('Test pack readiness')
+            ->assertSee('/projects/PH-14/piping/workspace?lang=en', false);
+    }
+
+    public function test_the_workspace_is_localised_to_persian(): void
+    {
+        $this->actingAs($this->owner())
+            ->get('/projects/PH-14/piping/workspace?lang=fa')
+            ->assertOk()
+            ->assertSee('فضای کار پایپینگ')
+            ->assertSee('موانع امروز')
+            ->assertDontSee('Today’s blockers');
+    }
+
+    public function test_a_non_participant_cannot_reach_the_workspace(): void
+    {
+        $outsider = $this->userByEmail('hosseini@arvand.example');
+
+        $this->actingAs($outsider)
+            ->get('/projects/PH-14/piping/workspace?lang=en')
+            ->assertNotFound();
+    }
+
     public function test_posting_a_line_allocates_the_next_number(): void
     {
         $class = $this->seedRegisters();
@@ -239,6 +269,20 @@ final class PipingLineHttpTest extends TestCase
             fn () => PipingLine::firstOrFail(),
             $this->project()->id,
         );
+    }
+
+    public function test_the_workspace_puts_blocked_lines_on_the_worklist(): void
+    {
+        $line = $this->aLine();
+
+        $this->actingAs($this->owner())
+            ->get('/projects/PH-14/piping/workspace?lang=en')
+            ->assertOk()
+            ->assertSee($line->line_number)
+            ->assertSee('Missing docs')
+            ->assertSee('ISOMETRIC')
+            ->assertSee('PID')
+            ->assertSee('Line model');
     }
 
     public function test_evidence_can_be_attached_and_the_gate_then_passes(): void
