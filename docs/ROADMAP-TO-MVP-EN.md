@@ -59,6 +59,11 @@ All EPCC disciplines remain in product scope, but the deep implementation priori
 
 Testing and previews will use realistic synthetic data. Because the current UI feels cluttered, the UX direction shifts from register-first to task-first. The proposed plan is recorded in `docs/UI-UX-IMPROVEMENT-PLAN-EN.md` with the Persian counterpart `docs/UI-UX-IMPROVEMENT-PLAN-FA.md`.
 
+
+### Additional decision — 2026-10-05: planning and sales infrastructure
+
+Product planning, sales, deployment, licensing, demo, support, and commercial readiness infrastructure must be built alongside the product. Iran is the first market, while the international path must remain open. Detailed document: `docs/PRODUCT-PLANNING-AND-SALES-INFRA-EN.md` with Persian counterpart `docs/PRODUCT-PLANNING-AND-SALES-INFRA-FA.md`.
+
 ## 3. Execution Principles
 
 ### 3.1 Non-negotiable rules

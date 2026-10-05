@@ -169,6 +169,7 @@
 | ⏳ | **Equipment / nozzles** | ADR-010 طراحی کرده که nozzle مالک port است و joints تغییر نمی‌کند؛ برای گرفتن mismatch ریتینگ/فلنج قبل از bolt-up مهم است | متوسط؛ بعد از تثبیت PMS بهتر است |
 | ⏳ | **درون‌ریزی مهندسی Excel/PCF/property export** | ADR-005 آماده است؛ بیشترین ارزش وقتی دارد که نمونه فایل واقعی مشتری موجود باشد. NWD/NWF/NWC نباید به‌عنوان مسیر ingest وعده داده شود | بالا؛ نیازمند نمونه فایل |
 | ⚠️ | **محیط اجرای کامل تست** | در این sandbox فعلی PHP/Composer/PostgreSQL نصب نیست؛ بدون آن تغییرات migration/RLS پرریسک‌اند | پیش‌نیاز توسعه سنگین |
+| ⏳ | **زیرساخت planning و فروش نرم‌افزار** | برای بازار ایران باید demo seed، sales deck، offline license، installer، support diagnostics، pilot checklist و اسناد تحویل ساخته شود؛ مسیر international هم باز بماند | تجاری/محصولی؛ موازی با توسعه فنی |
 
 ### ۳.۲ وضعیت گروه‌های ماژول
 

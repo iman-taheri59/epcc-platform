@@ -2684,7 +2684,7 @@ must remain in scope, but Piping should be completed first. Added
 status notes accordingly. User then requested synthetic data for testing/preview and noted the UI feels
 cluttered. Added `docs/UI-UX-IMPROVEMENT-PLAN-FA.md` and `docs/UI-UX-IMPROVEMENT-PLAN-EN.md`: use
 realistic demo data, shift from register-first to task-first UX, build a Piping Workspace first, add
-summary cards, blocker-first views, detail drawers, deviation inbox and test-pack board.
+summary cards, blocker-first views, detail drawers, deviation inbox and test-pack board. User also added that product planning and sales infrastructure must be completed: Iran-first requirements now, international readiness later. Added `docs/PRODUCT-PLANNING-AND-SALES-INFRA-FA.md` and `docs/PRODUCT-PLANNING-AND-SALES-INFRA-EN.md`, covering on-prem/air-gap sales, offline licensing, demo seed, sales collateral, implementation methodology, support diagnostics, and international commercial readiness.
 
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
