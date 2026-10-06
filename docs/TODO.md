@@ -27,10 +27,11 @@
 | ✅ | بنیاد Material Library ساخته شد: `material_items`، مدل `MaterialItem`، سرویس `MaterialCatalogueService`، seeder synthetic و تست هدفمند. | `app/database/migrations/2026_10_06_100000_create_material_catalogue.php`, `app/app/Models/MaterialItem.php`, `app/app/Services/MaterialCatalogueService.php`, `app/tests/Feature/MaterialLibraryTest.php` |
 | ✅ | MTO document/revision/staging ساخته شد: `mto_documents`، `mto_revisions`، `mto_staging_rows`، سرویس staging و validation اولیه. | `app/database/migrations/2026_10_06_110000_create_mto_staging.php`, `app/app/Services/MtoStagingService.php`, `app/tests/Feature/MtoStagingTest.php` |
 | ✅ | Slice 4 accepted immutable rows ساخته شد: `accepted_mto_batches`، `accepted_mto_rows`، acceptance تراکنشی all-or-nothing، snapshot labels/hash، RLS و rollback tests. | `app/database/migrations/2026_10_06_120000_create_accepted_mto_snapshots.php`, `app/app/Services/MtoAcceptanceService.php`, `app/tests/Feature/MtoAcceptanceTest.php` |
-| ❌ | gross/net comparison، PO attribution/order gap و usable gap هنوز ساخته نشده‌اند. | — |
+| ✅ | Slice 5 ساخته شد: `engineering_estimate_rows`، provenance منبع، لینک اختیاری به `accepted_mto_row_id` و مقایسهٔ gross/net بدون tolerance. | `app/database/migrations/2026_10_06_130000_create_engineering_estimates.php`, `app/app/Services/EngineeringEstimateService.php`, `app/tests/Feature/EngineeringEstimateTest.php` |
+| ❌ | PO attribution/order gap و usable gap هنوز ساخته نشده‌اند. | — |
 | ❌ | تعریف وضعیت‌های material قابل مصرف/usable هنوز تصمیم کاربر می‌خواهد. | `docs/MTO-REQUIREMENTS-FA.md` §A6 |
 
-گام پیشنهادی بعدی: Slice 5 یعنی `engineering_estimate_rows` و مقایسهٔ gross MTO با net engineering need؛ percentage tolerance نباید shortage مثبت را پنهان کند.
+گام پیشنهادی بعدی: Slice 6 یعنی attribution خطوط PO و order gap بر اساس مقدارهای issued/in-force؛ PO بیشتر از MTO باید over-plan جداگانه باشد.
 
 ---
 

@@ -200,7 +200,7 @@ Project
 
 ## A2. MTO Document, Revision and Staging
 
-**وضعیت پیاده‌سازی در 2026-10-06:** اولین برش staging در کد ساخته شد. branch فعلی اکنون `mto_documents`، `mto_revisions`، `mto_staging_rows`، مدل‌های `MtoDocument` / `MtoRevision` / `MtoStagingRow`، سرویس `MtoStagingService` و تست `MtoStagingTest` دارد. این لایهٔ editable DRAFT/staging است؛ Slice 4 در ادامه immutable acceptance را اضافه کرده و gross/net comparison هنوز برای slice بعدی است.
+**وضعیت پیاده‌سازی در 2026-10-06:** اولین برش staging در کد ساخته شد. branch فعلی اکنون `mto_documents`، `mto_revisions`، `mto_staging_rows`، مدل‌های `MtoDocument` / `MtoRevision` / `MtoStagingRow`، سرویس `MtoStagingService` و تست `MtoStagingTest` دارد. این لایهٔ editable DRAFT/staging است؛ Slice 4 immutable acceptance و Slice 5 مقایسهٔ net estimate با gross را اضافه کرده‌اند.
 
 ### هدف
 
@@ -317,7 +317,9 @@ Immutable snapshot:
 2. derived simple quantity از components فعلی فقط جایی که داده کافی است؛
 3. PCF import بعداً، مگر تصمیم جداگانه گرفته شود.
 
-### موجودیت پیشنهادی: `engineering_estimate_rows`
+### موجودیت: `engineering_estimate_rows`
+
+**در Slice 5 (2026-10-06) ساخته شد:** جدول، مدل و سرویس برای ردیف‌های manual/model/PCF-labelled، identity دقیق متریال، provenance، لینک اختیاری به accepted row و مقایسهٔ gross/net.
 
 - project_id
 - source_type: `MANUAL_ISO`, `MODEL_DERIVED`, `PCF_IMPORT`
@@ -524,9 +526,14 @@ Workflow فعلی test pack فقط فاز اول است. تکمیل بعدی ب�
 
 ### Slice 5 — Net estimate and gross/net comparison
 
-- `engineering_estimate_rows`؛
-- linkage به accepted MTO row؛
-- no-tolerance shortage logic.
+**در 2026-10-06 در همین branch ساخته شد:**
+
+- `engineering_estimate_rows`، `EngineeringEstimateRow` و `EngineeringEstimateService`؛
+- source typeهای `MANUAL_ISO`، `MODEL_DERIVED` و `PCF_IMPORT` بدون ادعای وجود parser برای PCF؛
+- لینک اختیاری به `accepted_mto_row_id` immutable و provenance ساختاریافته؛
+- وقتی net از gross بیشتر باشد، `SHORTAGE` بدون percentage tolerance؛
+- وقتی gross برابر یا بیشتر باشد، `DELTA_ONLY` و بدون استنباط علت؛
+- تست برای provisional row، identity/unit دقیق، shortage بدون tolerance، over-plan delta و RLS isolation.
 
 ### Slice 6 — PO attribution and order gap
 

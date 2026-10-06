@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-06** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom); Slice 4 targeted tests are pending runtime restoration
+Last updated: **2026-10-06** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom); Slice 4/5 targeted tests are pending runtime restoration
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -24,7 +24,7 @@ Important current-state rule: these MTO/MR/PMS items are **requirements/design o
 - `BaselineService`, `baseline_batches`, `baseline_discrepancies`;
 - `PcfParser`, `ModelImportService`, `model_imports`;
 - PMS services and NDT models mentioned in the uploaded package;
-- gross/net comparison, PO attribution/order gap, or usable-material gap.
+- PO attribution/order gap, or usable-material gap.
 
 Slice 4 accepted immutable MTO snapshots are now built and are described below.
 
@@ -66,7 +66,11 @@ Validation: `restore.sh` passed; `MtoStagingTest` passed 8 tests / 21 assertions
 
 Added `accepted_mto_batches` and `accepted_mto_rows`, `MtoAcceptanceService`, and `MtoAcceptanceTest`. Only non-empty DRAFT revisions with all rows in `ACCEPTABLE` state are accepted. The service locks and validates the full revision, copies frozen source/material labels plus a source-row SHA-256 hash, marks the revision `ACCEPTED`, and performs every write in one transaction. A blocked or duplicate row leaves zero accepted rows and the revision in DRAFT. PostgreSQL RLS, immutable triggers, and model guards prevent later mutation/deletion; no MTO permissions were added.
 
-Next slice: `engineering_estimate_rows` and gross MTO versus net engineering need; positive shortage must not be hidden by a percentage tolerance.
+### Slice 5 — net engineering estimate and gross/net comparison
+
+Added `engineering_estimate_rows` and `EngineeringEstimateService`. Estimates preserve source type, revision/evidence and structured provenance, can remain provisional until linked to an `accepted_mto_row_id`, and use exact material/unit identity only. Linked rows report `SHORTAGE` when net exceeds gross, with no tolerance, or `DELTA_ONLY` when gross is equal to or greater than net. No waste, contingency, or cause is inferred.
+
+Next slice: PO attribution and order gap against effective issued/in-force quantities.
 
 ---
 

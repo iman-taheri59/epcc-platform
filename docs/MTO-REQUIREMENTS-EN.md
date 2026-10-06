@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-The uploaded MTO documents contain important and product-relevant decisions, but they must not be copied over the current repository as wholesale replacements. Several files in the package appear to come from a different documentation/code baseline and describe some features as `BUILT` that do not exist in the current branch, such as `BaselineService`, `PcfParser`, `ModelImportService`, `accepted_mto_rows`, and multiple PMS services. This document reconciles the useful requirements from the package with the real state of the current repository.
+The uploaded MTO documents contain important and product-relevant decisions, but they must not be copied over the current repository as wholesale replacements. Several files in the package appear to come from a different documentation/code baseline and describe some features as `BUILT` that do not exist in the current branch, such as `BaselineService`, `PcfParser`, `ModelImportService`, and multiple PMS services. This document reconciles the useful requirements from the package with the real state of the current repository.
 
 The next target is to make the following Piping material-planning chain reliable and testable:
 
@@ -200,7 +200,7 @@ Minimum fields:
 
 ## A2. MTO Document, Revision and Staging
 
-**Implementation status as of 2026-10-06:** first staging slice is built in code. The current branch now has `mto_documents`, `mto_revisions`, `mto_staging_rows`, models `MtoDocument` / `MtoRevision` / `MtoStagingRow`, service `MtoStagingService`, and `MtoStagingTest`. This is the editable DRAFT/staging layer; Slice 4 below now provides immutable acceptance, while gross/net comparison remains a later slice.
+**Implementation status as of 2026-10-06:** first staging slice is built in code. The current branch now has `mto_documents`, `mto_revisions`, `mto_staging_rows`, models `MtoDocument` / `MtoRevision` / `MtoStagingRow`, service `MtoStagingService`, and `MtoStagingTest`. This is the editable DRAFT/staging layer; Slice 4 below provides immutable acceptance and Slice 5 provides the net-estimate comparison.
 
 ### Goal
 
@@ -317,7 +317,9 @@ Net engineering need from model/isometric/manual take-off must be comparable to 
 2. derived simple quantity from existing components where enough data exists;
 3. PCF import later unless separately approved.
 
-### Proposed entity: `engineering_estimate_rows`
+### Entity: `engineering_estimate_rows`
+
+**Built in Slice 5 (2026-10-06):** the table, model and service now support manual/model/PCF-labelled rows, exact material identity, provenance, optional immutable accepted-row linkage, and gross/net comparison.
 
 - project_id
 - source_type: `MANUAL_ISO`, `MODEL_DERIVED`, `PCF_IMPORT`
@@ -524,9 +526,14 @@ This slice deliberately does not accept or mutate a staging row.
 
 ### Slice 5 — Net estimate and gross/net comparison
 
-- `engineering_estimate_rows`;
-- link to accepted MTO row;
-- no-tolerance shortage logic.
+**Built 2026-10-06 in this branch:**
+
+- `engineering_estimate_rows`, `EngineeringEstimateRow`, `EngineeringEstimateService`;
+- source types `MANUAL_ISO`, `MODEL_DERIVED`, and `PCF_IMPORT` without claiming a PCF parser;
+- optional link to an immutable `accepted_mto_row_id` and structured provenance;
+- `SHORTAGE` when net exceeds gross, with no percentage tolerance;
+- `DELTA_ONLY` when gross is equal to or greater than net; no cause is inferred;
+- tests for provisional rows, exact identity/unit matching, no-tolerance shortage, over-plan delta and RLS isolation.
 
 ### Slice 6 — PO attribution and order gap
 
