@@ -161,6 +161,8 @@ Project
 
 ## A1. Material Library
 
+**وضعیت پیاده‌سازی در 2026-10-06:** اولین برش foundation در کد ساخته شد. branch فعلی اکنون `material_items`، مدل `MaterialItem`، سرویس `MaterialCatalogueService`، seeder `MaterialCatalogueSeeder` و تست `MaterialLibraryTest` دارد. این فقط foundation هویت کالا در کاتالوگ است؛ به‌معنای پیاده‌سازی MTO document/staging/acceptance نیست.
+
 ### هدف
 
 هیچ MTO row رسمی نباید بدون تطبیق با material library accepted شود. unmatched rows می‌توانند در DRAFT باقی بمانند و به‌عنوان کار باز دیده شوند.
@@ -191,8 +193,8 @@ Project
 
 ### سؤال‌های تصمیمی
 
-1. material library در MVP دو سطحی باشد؟ پیشنهاد: global/reference + project overlay.
-2. آیا project overlay برای ایران/کارگاه‌ها اجباری باشد؟ پیشنهاد: بله، چون کدینگ کالا در شرکت‌ها متفاوت است.
+1. material library در MVP دو سطحی باشد؟ **تصمیم اعمال‌شده در foundation slice:** بله — `project_id = NULL` برای global/reference rows رزرو شد و `project_id != NULL` برای project overlay است.
+2. آیا project overlay برای ایران/کارگاه‌ها اجباری باشد؟ **تصمیم اعمال‌شده در foundation slice:** بله — مسیر writable فعلی project overlay row می‌سازد، چون کدینگ کالا در شرکت‌ها متفاوت است.
 
 ---
 
@@ -486,9 +488,13 @@ Workflow فعلی test pack فقط فاز اول است. تکمیل بعدی ب�
 
 ### Slice 2 — Material Library foundation
 
+**در 2026-10-06 در همین branch ساخته شد:**
+
 - migration/model/service برای `material_items`؛
-- seed synthetic piping catalogue؛
-- tests برای identity/alias/status.
+- ساختار هویت دو سطحی: global/reference rows + project overlay rows؛
+- RLS برای project participants و project overlays؛
+- seed synthetic piping catalogue برای PH-14؛
+- تست برای identity، exact commodity lookup، alias-not-identity، validation، RLS isolation و seed path.
 
 ### Slice 3 — MTO document/revision/staging
 

@@ -3,11 +3,12 @@
 **سند وضعیت پروژهٔ سامانهٔ مدیریت پروژه‌های EPCC**
 آخرین به‌روزرسانی: **۱۴۰۵/۰۷/۱۴** (2026-10-06)
 وضعیت کلی: **نمونهٔ اولیه + چند برش عمودی کارکرد** · پوشش مستند قبلی **~۴۰–۴۵٪** هنوز بازشماری نشده
-تست‌ها طبق `HANDOFF.md`: **۸۵۸ قبول / ۳۱۶۶ ادعا** (+ jsdom) · **۱۵۳+ جهش تأییدشده**
+تست‌ها طبق `HANDOFF.md`: **۸۶۴ قبول / ۳۱۸۱ ادعا** (+ jsdom) · **۱۵۳+ جهش تأییدشده**
 
 > بازنگری 2026-10-05: این سند با `HANDOFF.md` و کد فعلی همگام شد.
 > بازنگری 2026-10-06: runtime Laravel/PostgreSQL با `restore.sh` قابل بازیابی شد و full suite اجرا شد.
 > بستهٔ نیازمندی‌های MTO آپلودی تحلیل شد؛ نتیجه در `docs/MTO-REQUIREMENTS-FA.md` و `docs/MTO-REQUIREMENTS-EN.md` ثبت شد.
+> Slice 2 بنیاد Material Library در کد اضافه شد؛ full suite تا زمان timeout شکست نشان نداد اما کامل نشد، تست‌های هدفمند پاس شدند.
 
 > این سند مکمل `HANDOFF.md` است، نه جایگزین آن. HANDOFF می‌گوید *چطور* کار می‌کند؛
 > این سند می‌گوید *چه چیزی هست و چه چیزی نیست*.
@@ -23,10 +24,11 @@
 | ✅ | تشخیص داده شد که بسته نباید مستقیم روی repo overwrite شود، چون بخشی از آن از baseline دیگری آمده و قابلیت‌هایی را `BUILT` می‌نامد که در branch فعلی کد ندارند. | `docs/MTO-REQUIREMENTS-FA.md` |
 | ✅ | اصول دامنه‌ای MTO ثبت شد: gross approved MTO با net engineering need یکی نیست؛ order gap و physical usable-material gap جدا هستند؛ `mto_item_no` کلید کافی نیست؛ accepted row باید immutable snapshot باشد؛ acceptance باید all-or-nothing باشد. | `docs/MTO-REQUIREMENTS-FA.md` / `EN` |
 | ✅ | ترتیب پیشنهادی اجرا تعریف شد: Material Library → MTO Document/Revision/Staging → Accepted immutable rows → Net estimate reconciliation → PO attribution/order gap → usable material decision. | `docs/MTO-REQUIREMENTS-FA.md` / `EN` |
-| ❌ | MTO schema/service/UI هنوز ساخته نشده است. هیچ سندی نباید این نیازمندی‌ها را `BUILT` بنامد تا migration/code/UI/tests در همین branch اضافه شوند. | — |
+| ✅ | بنیاد Material Library ساخته شد: `material_items`، مدل `MaterialItem`، سرویس `MaterialCatalogueService`، seeder synthetic و تست هدفمند. | `app/database/migrations/2026_10_06_100000_create_material_catalogue.php`, `app/app/Models/MaterialItem.php`, `app/app/Services/MaterialCatalogueService.php`, `app/tests/Feature/MaterialLibraryTest.php` |
+| ❌ | MTO document/revision/staging، accepted immutable rows، gross/net comparison، PO attribution/order gap و usable gap هنوز ساخته نشده‌اند. هیچ سندی نباید آن‌ها را `BUILT` بنامد تا migration/code/UI/tests در همین branch اضافه شوند. | — |
 | ❌ | تعریف وضعیت‌های material قابل مصرف/usable هنوز تصمیم کاربر می‌خواهد. | `docs/MTO-REQUIREMENTS-FA.md` §A6 |
 
-گام پیشنهادی بعدی: شروع Slice 2 با `material_items` و project catalogue overlay، پس از تصمیم درباره دو سطحی بودن Material Library.
+گام پیشنهادی بعدی: شروع Slice 3 با `mto_documents`، `mto_revisions` و `mto_staging_rows` برای ثبت MTO به‌عنوان سند versioned؛ acceptance هنوز در Slice 4 می‌آید.
 
 ---
 

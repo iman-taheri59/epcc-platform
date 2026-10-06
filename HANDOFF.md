@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-06** · Status: **prototype + working vertical slices** · Tests: **858 passed / 3166 assertions** (+83 jsdom; full Laravel/PostgreSQL suite runnable after `restore.sh`)
+Last updated: **2026-10-06** · Status: **prototype + working vertical slices** · Tests: **864 passed / 3181 assertions** (+83 jsdom; full Laravel/PostgreSQL suite runnable after `restore.sh`)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -38,7 +38,19 @@ Accepted MTO principles for future work:
 - aggregation across accepted MTOs requires disjoint scope or exact immutable pair-level additivity evidence;
 - MTO permissions/access design is deferred.
 
-Recommended next slice: implement `material_items` and project catalogue overlay first, then MTO document/revision/staging, then immutable accepted rows.
+Material Library foundation was implemented after this reconciliation:
+
+- `app/database/migrations/2026_10_06_100000_create_material_catalogue.php`
+- `app/app/Models/MaterialItem.php`
+- `app/app/Services/MaterialCatalogueService.php`
+- `app/database/seeders/MaterialCatalogueSeeder.php`
+- `app/tests/Feature/MaterialLibraryTest.php`
+
+Built behavior: two-level catalogue identity shape (`project_id IS NULL` reserved for global/reference, project rows for project overlays), exact commodity-code lookup, alias-not-identity, controlled categories/status/source/unit, bilingual descriptions, RLS isolation, synthetic PH-14 piping catalogue.
+
+Validation: `restore.sh` passed; `MaterialLibraryTest` passed 6 tests / 15 assertions; `SeedPathTest` passed 2 tests / 6 assertions; standards validator passed. Full Laravel suite was started and showed no failures before the sandbox timeout, but it did not complete.
+
+Recommended next slice: implement MTO document/revision/staging (`mto_documents`, `mto_revisions`, `mto_staging_rows`) against the new material catalogue. Immutable accepted rows remain the slice after that.
 
 ---
 

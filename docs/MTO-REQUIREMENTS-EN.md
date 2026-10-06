@@ -161,6 +161,8 @@ An additive relationship requires:
 
 ## A1. Material Library
 
+**Implementation status as of 2026-10-06:** first foundation slice is built in code. The current branch now has `material_items`, `MaterialItem`, `MaterialCatalogueService`, `MaterialCatalogueSeeder`, and `MaterialLibraryTest`. This is only the catalogue identity foundation; it does **not** yet mean MTO document/staging/acceptance exists.
+
 ### Goal
 
 No official MTO row should be accepted without matching a material library item. Unmatched rows may remain DRAFT and visible as open work.
@@ -191,8 +193,8 @@ Minimum fields:
 
 ### Decision questions
 
-1. Should the material library be two-level? Recommended: global/reference + project overlay.
-2. Should project overlay be mandatory for Iranian deployments? Recommended: yes, because commodity coding differs by customer/company.
+1. Should the material library be two-level? **Decision applied for the foundation slice:** yes — `project_id = NULL` is reserved for global/reference rows and `project_id != NULL` is project overlay.
+2. Should project overlay be mandatory for Iranian deployments? **Decision applied for the foundation slice:** yes — the writable path currently creates project overlay rows because commodity coding differs by customer/company.
 
 ---
 
@@ -486,9 +488,13 @@ For Iran-first sales and later international readiness:
 
 ### Slice 2 — Material Library foundation
 
+**Built 2026-10-06 in this branch:**
+
 - migration/model/service for `material_items`;
-- synthetic piping catalogue seed;
-- tests for identity/alias/status.
+- two-level identity shape: global/reference rows plus project overlay rows;
+- RLS for project participants and project overlays;
+- synthetic PH-14 piping catalogue seed;
+- tests for identity, exact commodity lookup, alias-not-identity, validation, RLS isolation and seed path.
 
 ### Slice 3 — MTO document/revision/staging
 
