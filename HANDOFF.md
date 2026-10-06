@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-06** · Status: **prototype + working vertical slices** · Tests: **864 passed / 3181 assertions** (+83 jsdom; full Laravel/PostgreSQL suite runnable after `restore.sh`)
+Last updated: **2026-10-06** · Status: **prototype + working vertical slices** · Tests: **872 passed / 3202 assertions** (+83 jsdom; full Laravel/PostgreSQL suite runnable after `restore.sh`)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -50,7 +50,18 @@ Built behavior: two-level catalogue identity shape (`project_id IS NULL` reserve
 
 Validation: `restore.sh` passed; `MaterialLibraryTest` passed 6 tests / 15 assertions; `SeedPathTest` passed 2 tests / 6 assertions; standards validator passed. Full Laravel suite was started and showed no failures before the sandbox timeout, but it did not complete.
 
-Recommended next slice: implement MTO document/revision/staging (`mto_documents`, `mto_revisions`, `mto_staging_rows`) against the new material catalogue. Immutable accepted rows remain the slice after that.
+Recommended next slice: implement MTO document/revision/staging (`mto_documents`, `mto_revisions`, `mto_staging_rows`) against the new material catalogue. MTO document/revision/staging was implemented after the material catalogue:
+
+- `app/database/migrations/2026_10_06_110000_create_mto_staging.php`
+- `app/app/Models/MtoDocument.php`, `MtoRevision.php`, `MtoStagingRow.php`
+- `app/app/Services/MtoStagingService.php`
+- `app/tests/Feature/MtoStagingTest.php`
+
+Built behavior: versioned MTO document header, DRAFT revisions, editable staging rows, exact material resolution via `material_items`, validation states for unmatched material, alias-not-identity, unit mismatch, duplicate `mto_item_no`, invalid quantity, and project-participant RLS. This still does not create accepted immutable MTO snapshots.
+
+Validation: `restore.sh` passed; `MtoStagingTest` passed 8 tests / 21 assertions; `MaterialLibraryTest` passed 6 tests / 15 assertions; `SeedPathTest` passed 2 tests / 6 assertions; standards validator passed.
+
+Recommended next slice: implement immutable accepted MTO snapshots (`accepted_mto_batches`, `accepted_mto_rows`) with all-or-nothing acceptance and rollback tests.
 
 ---
 

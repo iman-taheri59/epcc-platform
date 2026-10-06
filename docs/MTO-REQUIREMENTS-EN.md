@@ -200,6 +200,8 @@ Minimum fields:
 
 ## A2. MTO Document, Revision and Staging
 
+**Implementation status as of 2026-10-06:** first staging slice is built in code. The current branch now has `mto_documents`, `mto_revisions`, `mto_staging_rows`, models `MtoDocument` / `MtoRevision` / `MtoStagingRow`, service `MtoStagingService`, and `MtoStagingTest`. This is DRAFT/staging only; immutable acceptance, all-or-nothing snapshots and gross/net comparison are not built yet.
+
 ### Goal
 
 MTO must be handled as a versioned engineering document, not as a free spreadsheet.
@@ -498,9 +500,16 @@ For Iran-first sales and later international readiness:
 
 ### Slice 3 — MTO document/revision/staging
 
+**Built 2026-10-06 in this branch:**
+
 - `mto_documents`, `mto_revisions`, `mto_staging_rows`;
-- manual entry/import placeholder;
-- initial validation workspace.
+- DRAFT revision staging through `MtoStagingService`;
+- exact material lookup against `material_items`;
+- validation states for unmatched material, unit mismatch, duplicate `mto_item_no`, invalid quantity and acceptable rows;
+- RLS isolation for project participants;
+- tests for raw-text preservation, alias-not-identity and non-participant isolation.
+
+No accepted immutable snapshot is created by this slice.
 
 ### Slice 4 — Accepted immutable snapshots
 

@@ -19,7 +19,7 @@ Bilingual (EN/FA) modular platform for large industrial EPCC projects — oil, g
 | `docs/ADR-003-Annex-A-Laravel-Evaluation.md` | **Annex to ADR-003** — Laravel/Filament assessed as the backend. Makes Laravel the primary alternative to TypeScript, overturns the ADR-003 §3.1 argument, and ties the choice to the team's actual language |
 | `docs/ADR-003-Technology-Stack.md` | **Decision record** — TypeScript end-to-end (NestJS + React + PostgreSQL 18), why not .NET, the five P0 spikes that must pass, and the reversal conditions |
 | `docs/Prototype-Coverage-Map.md` | **Read before demoing** — module-by-module map of what the prototype shows vs what the system specifies, and what is deliberately absent |
-| `docs/MTO-REQUIREMENTS-FA.md` / `docs/MTO-REQUIREMENTS-EN.md` | **Piping MTO Foundation requirements** — reconciled from the uploaded 2026-10-06 MTO docs package against the actual current branch. Material Library foundation is now implemented; MTO document/revision/staging, immutable accepted rows, gross/net comparison, PO order gap, and usable-material decision remain later slices. |
+| `docs/MTO-REQUIREMENTS-FA.md` / `docs/MTO-REQUIREMENTS-EN.md` | **Piping MTO Foundation requirements** — reconciled from the uploaded 2026-10-06 MTO docs package against the actual current branch. Material Library foundation and MTO document/revision/staging are now implemented; immutable accepted rows, gross/net comparison, PO order gap, and usable-material decision remain later slices. |
 | `docs/ADR-002-Defer-AWP.md` | **Decision record** — AWP methodology deferred to the international phase; the two architectural seams that keep revival at ~6–10 weeks instead of a rewrite |
 | `docs/ADR-001-AWP-Packaging.md` | **Decision record** — how AWP is decomposed and licensed: constraint engine in core, AWP methodology as a project-level add-on, model-based scoping with the BIM viewer. Includes the falsifiers that would reverse it. |
 | `docs/Iran-First-Market-Addendum.md` | **Decision record (MKT-EPCC-001)** — dependency substitution table, air-gap requirements, Jalali/Nowruz calendar rules, IPS pack scope, revised commercial model and roadmap |
@@ -86,7 +86,7 @@ Verified: all four erosion scenarios (disabled IWP, stripped constraint engine, 
 
 The uploaded package `epcc-platform-mto-docs-changes-2026-10-06.txt` was analyzed as a requirements source, not applied as a direct replacement. It contains complete replacement documents from a different baseline and mentions several MTO/PMS/MR capabilities that are **not implemented** in this branch. The reconciled, branch-safe requirements are in `docs/MTO-REQUIREMENTS-FA.md` and `docs/MTO-REQUIREMENTS-EN.md`.
 
-Current implementation status: Material Library foundation is built with a two-level catalogue shape, project overlays, synthetic PH-14 piping catalogue, RLS isolation and tests. Next implementation direction: MTO document/revision/staging, then immutable accepted MTO snapshots, gross-vs-net comparison, PO attribution/order gap, and only after a user decision, usable-material gap.
+Current implementation status: Material Library foundation is built with a two-level catalogue shape, project overlays, synthetic PH-14 piping catalogue, RLS isolation and tests. MTO document/revision/staging is also built as DRAFT-only rows with material validation. Next implementation direction: immutable accepted MTO snapshots, then gross-vs-net comparison, PO attribution/order gap, and only after a user decision, usable-material gap.
 
 ## Decisions — closed and open
 
@@ -97,6 +97,6 @@ Current implementation status: Material Library foundation is built with a two-l
 2. **Contract forms beyond شرایط عمومی پیمان** — do target clients use bespoke NOC forms (POGC, PEDEC) needing preload?
 3. **Which NOC numbering scheme to build first** — the first one shapes the engine's flexibility.
 4. **GPU budget** — determines whether self-hosted AI ships in P4 or slips.
-5. **MTO staging design** — decide whether the first MTO entry path is manual UI, CSV/Excel import placeholder, or both.
+5. **MTO acceptance design** — confirm the first all-or-nothing accepted snapshot workflow and whether acceptance is service-only before UI.
 6. **Usable-material definition** — decide which warehouse/inspection/reservation states count as usable for the future physical material gap.
 7. **On-premise support staffing** — the top margin risk, and a headcount question rather than an engineering one.

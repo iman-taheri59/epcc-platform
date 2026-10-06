@@ -200,6 +200,8 @@ Project
 
 ## A2. MTO Document, Revision and Staging
 
+**وضعیت پیاده‌سازی در 2026-10-06:** اولین برش staging در کد ساخته شد. branch فعلی اکنون `mto_documents`، `mto_revisions`، `mto_staging_rows`، مدل‌های `MtoDocument` / `MtoRevision` / `MtoStagingRow`، سرویس `MtoStagingService` و تست `MtoStagingTest` دارد. این فقط DRAFT/staging است؛ immutable acceptance، all-or-nothing snapshots و gross/net comparison هنوز ساخته نشده‌اند.
+
 ### هدف
 
 MTO باید به‌عنوان سند مهندسی versioned دیده شود، نه spreadsheet آزاد.
@@ -498,9 +500,16 @@ Workflow فعلی test pack فقط فاز اول است. تکمیل بعدی ب�
 
 ### Slice 3 — MTO document/revision/staging
 
+**در 2026-10-06 در همین branch ساخته شد:**
+
 - `mto_documents`, `mto_revisions`, `mto_staging_rows`؛
-- manual entry/import placeholder؛
-- validation UI/workspace ابتدایی.
+- staging بازنگری‌های DRAFT با `MtoStagingService`؛
+- exact material lookup بر اساس `material_items`؛
+- validation states برای unmatched material، unit mismatch، duplicate `mto_item_no`، invalid quantity و acceptable rows؛
+- RLS isolation برای project participants؛
+- تست برای حفظ raw text، alias-not-identity و non-participant isolation.
+
+این slice هیچ accepted immutable snapshot نمی‌سازد.
 
 ### Slice 4 — Accepted immutable snapshots
 
