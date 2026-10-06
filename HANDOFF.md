@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-06** · Status: **prototype + working vertical slices** · Tests: **872 passed / 3202 assertions** (+83 jsdom; full Laravel/PostgreSQL suite runnable after `restore.sh`)
+Last updated: **2026-10-06** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom); Slice 4 targeted tests are pending runtime restoration
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -21,11 +21,12 @@ Reconciled MTO foundation requirements are now recorded in:
 
 Important current-state rule: these MTO/MR/PMS items are **requirements/design only**, not implemented in the current branch unless code/migration/test is later added. Do not describe them as `BUILT`:
 
-- accepted immutable MTO snapshots;
 - `BaselineService`, `baseline_batches`, `baseline_discrepancies`;
 - `PcfParser`, `ModelImportService`, `model_imports`;
 - PMS services and NDT models mentioned in the uploaded package;
-- MTO acceptance, gross/net comparison, PO attribution/order gap, or usable-material gap.
+- gross/net comparison, PO attribution/order gap, or usable-material gap.
+
+Slice 4 accepted immutable MTO snapshots are now built and are described below.
 
 Accepted MTO principles for future work:
 
@@ -57,11 +58,15 @@ Recommended next slice: implement MTO document/revision/staging (`mto_documents`
 - `app/app/Services/MtoStagingService.php`
 - `app/tests/Feature/MtoStagingTest.php`
 
-Built behavior: versioned MTO document header, DRAFT revisions, editable staging rows, exact material resolution via `material_items`, validation states for unmatched material, alias-not-identity, unit mismatch, duplicate `mto_item_no`, invalid quantity, and project-participant RLS. This still does not create accepted immutable MTO snapshots.
+Built behavior: versioned MTO document header, DRAFT revisions, editable staging rows, exact material resolution via `material_items`, validation states for unmatched material, alias-not-identity, unit mismatch, duplicate `mto_item_no`, invalid quantity, and project-participant RLS. This is the editable source for Slice 4 acceptance.
 
 Validation: `restore.sh` passed; `MtoStagingTest` passed 8 tests / 21 assertions; `MaterialLibraryTest` passed 6 tests / 15 assertions; `SeedPathTest` passed 2 tests / 6 assertions; standards validator passed.
 
-Recommended next slice: implement immutable accepted MTO snapshots (`accepted_mto_batches`, `accepted_mto_rows`) with all-or-nothing acceptance and rollback tests.
+### Slice 4 — accepted immutable MTO snapshots
+
+Added `accepted_mto_batches` and `accepted_mto_rows`, `MtoAcceptanceService`, and `MtoAcceptanceTest`. Only non-empty DRAFT revisions with all rows in `ACCEPTABLE` state are accepted. The service locks and validates the full revision, copies frozen source/material labels plus a source-row SHA-256 hash, marks the revision `ACCEPTED`, and performs every write in one transaction. A blocked or duplicate row leaves zero accepted rows and the revision in DRAFT. PostgreSQL RLS, immutable triggers, and model guards prevent later mutation/deletion; no MTO permissions were added.
+
+Next slice: `engineering_estimate_rows` and gross MTO versus net engineering need; positive shortage must not be hidden by a percentage tolerance.
 
 ---
 

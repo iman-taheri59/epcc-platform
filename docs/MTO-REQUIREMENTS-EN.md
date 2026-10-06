@@ -1,7 +1,7 @@
 # Remaining Requirements for Piping MTO and Material Management
 
 **Date:** 2026-10-06  
-**Status:** requirements proposal and staged design; not implemented unless explicitly stated as present in the current codebase.  
+**Status:** requirements proposal and staged design; implementation status is stated per slice below.
 **Scope:** Piping first; all EPCC disciplines remain in product scope, but Piping is the deep/template discipline for the current MVP.  
 **Inputs:** uploaded package `epcc-platform-mto-docs-changes-2026-10-06.txt`, current branch `arena/roadmap-reconciliation`, existing ADRs, and prior user decisions.
 
@@ -47,7 +47,7 @@ The current branch actually contains and tests the following capabilities:
   - first test-pack workflow: create pack, assign line, and transition `DRAFT → READY → TESTED → ACCEPTED`.
 - Latest full suite: `858 passed / 3166 assertions`.
 
-### 2.2 Claims in the uploaded package that are not built in this branch
+### 2.2 Claims in the uploaded package that are still not built in this branch
 
 The following must not be documented as built in this branch unless their code is imported or implemented:
 
@@ -57,7 +57,7 @@ The following must not be documented as built in this branch unless their code i
 | `baseline_batches` / `baseline_discrepancies` | absent |
 | `PcfParser` / `ModelImportService` / `model_imports` | absent |
 | quarantine for unknown imported lines | absent |
-| immutable accepted-MTO-row snapshot store | absent |
+| immutable accepted-MTO-row snapshot store | built in Slice 4: `accepted_mto_batches`, `accepted_mto_rows`, transactional acceptance, frozen labels/hash and rollback tests |
 | PMS entry/access/bulk services from the package | absent |
 | NDT requirement model from the package | absent |
 | `material_requisition_sequence` from the package | absent |
@@ -200,7 +200,7 @@ Minimum fields:
 
 ## A2. MTO Document, Revision and Staging
 
-**Implementation status as of 2026-10-06:** first staging slice is built in code. The current branch now has `mto_documents`, `mto_revisions`, `mto_staging_rows`, models `MtoDocument` / `MtoRevision` / `MtoStagingRow`, service `MtoStagingService`, and `MtoStagingTest`. This is DRAFT/staging only; immutable acceptance, all-or-nothing snapshots and gross/net comparison are not built yet.
+**Implementation status as of 2026-10-06:** first staging slice is built in code. The current branch now has `mto_documents`, `mto_revisions`, `mto_staging_rows`, models `MtoDocument` / `MtoRevision` / `MtoStagingRow`, service `MtoStagingService`, and `MtoStagingTest`. This is the editable DRAFT/staging layer; Slice 4 below now provides immutable acceptance, while gross/net comparison remains a later slice.
 
 ### Goal
 
@@ -509,13 +509,18 @@ For Iran-first sales and later international readiness:
 - RLS isolation for project participants;
 - tests for raw-text preservation, alias-not-identity and non-participant isolation.
 
-No accepted immutable snapshot is created by this slice.
+This slice deliberately does not accept or mutate a staging row.
 
 ### Slice 4 — Accepted immutable snapshots
 
+**Built 2026-10-06 in this branch:**
+
 - `accepted_mto_batches`, `accepted_mto_rows`;
-- all-or-nothing transaction;
-- full rollback tests.
+- `MtoAcceptanceService` accepts only non-empty DRAFT revisions;
+- all acceptable rows are copied in one transaction, otherwise the revision stays DRAFT and no batch/row is left behind;
+- accepted rows freeze source text, material labels, commodity code, scope provenance and a source-row SHA-256 hash;
+- PostgreSQL RLS plus database/model immutability guards;
+- `MtoAcceptanceTest` covers atomic acceptance, blocked/duplicate rollback, frozen catalogue labels, UUID identity and non-participant isolation.
 
 ### Slice 5 — Net estimate and gross/net comparison
 

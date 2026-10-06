@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /** Draft MTO row loaded from a manual entry/import before immutable acceptance. */
 final class MtoStagingRow extends Model
@@ -46,4 +47,5 @@ final class MtoStagingRow extends Model
     public function materialItem(): BelongsTo { return $this->belongsTo(MaterialItem::class); }
     public function rowScope(): BelongsTo { return $this->belongsTo(Subsystem::class, 'row_scope_id'); }
     public function pipingClass(): BelongsTo { return $this->belongsTo(PipingClass::class); }
+    public function acceptedRow(): HasOne { return $this->hasOne(AcceptedMtoRow::class, 'source_staging_row_id'); }
 }

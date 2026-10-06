@@ -8,7 +8,7 @@
 > بازنگری 2026-10-05: این سند با `HANDOFF.md` و کد فعلی همگام شد.
 > بازنگری 2026-10-06: runtime Laravel/PostgreSQL با `restore.sh` قابل بازیابی شد و full suite اجرا شد.
 > بستهٔ نیازمندی‌های MTO آپلودی تحلیل شد؛ نتیجه در `docs/MTO-REQUIREMENTS-FA.md` و `docs/MTO-REQUIREMENTS-EN.md` ثبت شد.
-> Slice 2 بنیاد Material Library و Slice 3 MTO document/revision/staging در کد اضافه شدند؛ full suite قبلی تا زمان timeout شکست نشان نداد اما کامل نشد، تست‌های هدفمند پاس شدند.
+> Slice 2 بنیاد Material Library و Slice 3 MTO document/revision/staging در کد اضافه شدند؛ full suite قبلی تا زمان timeout شکست نشان نداد اما کامل نشد، تست‌های Slice 2/3 هدفمند پاس شدند. Slice 4 هم اضافه شد و تست هدفمند آن پس از restore runtime اجرا می‌شود.
 
 > این سند مکمل `HANDOFF.md` است، نه جایگزین آن. HANDOFF می‌گوید *چطور* کار می‌کند؛
 > این سند می‌گوید *چه چیزی هست و چه چیزی نیست*.
@@ -26,10 +26,11 @@
 | ✅ | ترتیب پیشنهادی اجرا تعریف شد: Material Library → MTO Document/Revision/Staging → Accepted immutable rows → Net estimate reconciliation → PO attribution/order gap → usable material decision. | `docs/MTO-REQUIREMENTS-FA.md` / `EN` |
 | ✅ | بنیاد Material Library ساخته شد: `material_items`، مدل `MaterialItem`، سرویس `MaterialCatalogueService`، seeder synthetic و تست هدفمند. | `app/database/migrations/2026_10_06_100000_create_material_catalogue.php`, `app/app/Models/MaterialItem.php`, `app/app/Services/MaterialCatalogueService.php`, `app/tests/Feature/MaterialLibraryTest.php` |
 | ✅ | MTO document/revision/staging ساخته شد: `mto_documents`، `mto_revisions`، `mto_staging_rows`، سرویس staging و validation اولیه. | `app/database/migrations/2026_10_06_110000_create_mto_staging.php`, `app/app/Services/MtoStagingService.php`, `app/tests/Feature/MtoStagingTest.php` |
-| ❌ | accepted immutable rows، gross/net comparison، PO attribution/order gap و usable gap هنوز ساخته نشده‌اند. هیچ سندی نباید آن‌ها را `BUILT` بنامد تا migration/code/UI/tests در همین branch اضافه شوند. | — |
+| ✅ | Slice 4 accepted immutable rows ساخته شد: `accepted_mto_batches`، `accepted_mto_rows`، acceptance تراکنشی all-or-nothing، snapshot labels/hash، RLS و rollback tests. | `app/database/migrations/2026_10_06_120000_create_accepted_mto_snapshots.php`, `app/app/Services/MtoAcceptanceService.php`, `app/tests/Feature/MtoAcceptanceTest.php` |
+| ❌ | gross/net comparison، PO attribution/order gap و usable gap هنوز ساخته نشده‌اند. | — |
 | ❌ | تعریف وضعیت‌های material قابل مصرف/usable هنوز تصمیم کاربر می‌خواهد. | `docs/MTO-REQUIREMENTS-FA.md` §A6 |
 
-گام پیشنهادی بعدی: شروع Slice 4 با `accepted_mto_batches` و `accepted_mto_rows` برای all-or-nothing immutable snapshots؛ acceptance هنوز نباید partial باشد.
+گام پیشنهادی بعدی: Slice 5 یعنی `engineering_estimate_rows` و مقایسهٔ gross MTO با net engineering need؛ percentage tolerance نباید shortage مثبت را پنهان کند.
 
 ---
 
