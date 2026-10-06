@@ -1,11 +1,44 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-05** · Status: **prototype + working vertical slices** · Tests: **858 passed / 3166 assertions** (+83 jsdom; full Laravel/PostgreSQL suite runnable after `restore.sh`)
+Last updated: **2026-10-06** · Status: **prototype + working vertical slices** · Tests: **858 passed / 3166 assertions** (+83 jsdom; full Laravel/PostgreSQL suite runnable after `restore.sh`)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
 do next. Everything else is detail hanging off `README.md`.
+
+
+---
+
+## 0a. 2026-10-06 MTO requirements reconciliation
+
+User uploaded `epcc-platform-mto-docs-changes-2026-10-06.txt`, which is a ZIP package renamed as `.txt`. It contains complete replacement documentation files, not patches. It must **not** be blindly copied over this repository because it would contradict the current branch and could erase the real Piping Workspace / Test Pack status added in `f33c9a7`.
+
+Reconciled MTO foundation requirements are now recorded in:
+
+- `docs/MTO-REQUIREMENTS-FA.md`
+- `docs/MTO-REQUIREMENTS-EN.md`
+
+Important current-state rule: these MTO/MR/PMS items are **requirements/design only**, not implemented in the current branch unless code/migration/test is later added. Do not describe them as `BUILT`:
+
+- accepted immutable MTO snapshots;
+- `BaselineService`, `baseline_batches`, `baseline_discrepancies`;
+- `PcfParser`, `ModelImportService`, `model_imports`;
+- PMS services and NDT models mentioned in the uploaded package;
+- MTO acceptance, gross/net comparison, PO attribution/order gap, or usable-material gap.
+
+Accepted MTO principles for future work:
+
+- approved MTO = gross procurement-planning quantity;
+- model/isometric estimate = net engineering need;
+- positive `net > gross` is a shortage and percentage tolerance must not suppress it;
+- `mto_item_no` is not globally unique and cannot be the sole downstream key;
+- accepted MTO rows must be immutable snapshots;
+- acceptance is all-or-nothing per MTO document/sub-MTO revision;
+- aggregation across accepted MTOs requires disjoint scope or exact immutable pair-level additivity evidence;
+- MTO permissions/access design is deferred.
+
+Recommended next slice: implement `material_items` and project catalogue overlay first, then MTO document/revision/staging, then immutable accepted rows.
 
 ---
 

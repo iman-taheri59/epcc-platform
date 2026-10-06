@@ -19,6 +19,7 @@ Bilingual (EN/FA) modular platform for large industrial EPCC projects — oil, g
 | `docs/ADR-003-Annex-A-Laravel-Evaluation.md` | **Annex to ADR-003** — Laravel/Filament assessed as the backend. Makes Laravel the primary alternative to TypeScript, overturns the ADR-003 §3.1 argument, and ties the choice to the team's actual language |
 | `docs/ADR-003-Technology-Stack.md` | **Decision record** — TypeScript end-to-end (NestJS + React + PostgreSQL 18), why not .NET, the five P0 spikes that must pass, and the reversal conditions |
 | `docs/Prototype-Coverage-Map.md` | **Read before demoing** — module-by-module map of what the prototype shows vs what the system specifies, and what is deliberately absent |
+| `docs/MTO-REQUIREMENTS-FA.md` / `docs/MTO-REQUIREMENTS-EN.md` | **Piping MTO Foundation requirements** — reconciled from the uploaded 2026-10-06 MTO docs package against the actual current branch. Documentation/design only: material library, MTO document/revision/staging, immutable accepted rows, gross/net comparison, PO order gap, and deferred usable-material decision. |
 | `docs/ADR-002-Defer-AWP.md` | **Decision record** — AWP methodology deferred to the international phase; the two architectural seams that keep revival at ~6–10 weeks instead of a rewrite |
 | `docs/ADR-001-AWP-Packaging.md` | **Decision record** — how AWP is decomposed and licensed: constraint engine in core, AWP methodology as a project-level add-on, model-based scoping with the BIM viewer. Includes the falsifiers that would reverse it. |
 | `docs/Iran-First-Market-Addendum.md` | **Decision record (MKT-EPCC-001)** — dependency substitution table, air-gap requirements, Jalali/Nowruz calendar rules, IPS pack scope, revised commercial model and roadmap |
@@ -79,13 +80,23 @@ Point 4 is the mechanism that makes deferring AWP safe. If someone bakes Iran-sp
 
 Verified: all four erosion scenarios (disabled IWP, stripped constraint engine, English-only label, broken weights) are caught by the gate.
 
+
+
+## MTO requirements note — 2026-10-06
+
+The uploaded package `epcc-platform-mto-docs-changes-2026-10-06.txt` was analyzed as a requirements source, not applied as a direct replacement. It contains complete replacement documents from a different baseline and mentions several MTO/PMS/MR capabilities that are **not implemented** in this branch. The reconciled, branch-safe requirements are in `docs/MTO-REQUIREMENTS-FA.md` and `docs/MTO-REQUIREMENTS-EN.md`.
+
+Next implementation direction: material library foundation first, then MTO document/revision/staging, immutable accepted MTO snapshots, gross-vs-net comparison, PO attribution/order gap, and only after a user decision, usable-material gap.
+
 ## Decisions — closed and open
 
 **Closed:** Technology stack — **Laravel 13 + Filament v4 + PHP 8.4** (user decision; ADR-003 superseded by its Annex A). Rule engine kept framework-free per Annex A §6, with a conformance corpus so the offline TS app can be proven to agree · Iran-first launch market · AWP split three ways with the methodology as a **project-level** add-on (ADR-001) · AWP methodology **deferred to the international phase**, constraint engine / lookahead / package-based field execution stay in core (ADR-002) · on-premise primary with no foreign cloud dependency · modular monolith · RabbitMQ default with Kafka optional.
 
 **Open, and now blocking P0:**
 1. **Pilot clients** — which NOC or affiliate, and which private EPC? Everything sharpens once these are named.
-3. **Contract forms beyond شرایط عمومی پیمان** — do target clients use bespoke NOC forms (POGC, PEDEC) needing preload?
-4. **Which NOC numbering scheme to build first** — the first one shapes the engine's flexibility.
-5. **GPU budget** — determines whether self-hosted AI ships in P4 or slips.
-6. **On-premise support staffing** — the top margin risk, and a headcount question rather than an engineering one.
+2. **Contract forms beyond شرایط عمومی پیمان** — do target clients use bespoke NOC forms (POGC, PEDEC) needing preload?
+3. **Which NOC numbering scheme to build first** — the first one shapes the engine's flexibility.
+4. **GPU budget** — determines whether self-hosted AI ships in P4 or slips.
+5. **MTO material library design** — confirm whether to start with a two-level global/reference library plus project overlay.
+6. **Usable-material definition** — decide which warehouse/inspection/reservation states count as usable for the future physical material gap.
+7. **On-premise support staffing** — the top margin risk, and a headcount question rather than an engineering one.
