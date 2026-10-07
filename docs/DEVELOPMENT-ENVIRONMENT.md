@@ -264,9 +264,16 @@ on demand:
 | `prototype` | `prototype/test/render.test.js` + `npm run test:prototype` | Node 22, root `jsdom` |
 | `laravel` | The full PHPUnit suite | `postgres:17` service, non-superuser `epcc` role, PDF toolchain, skip gate. Runs `vendor/bin/phpunit` with `--log-junit` so every failing test becomes a PR annotation, and the run fails on any failure, error **or** skip |
 | `image` | Builds `docker/php/Dockerfile`, smoke-checks it, `docker compose config`, `shellcheck` | Proves the dev image still contains what §8 depends on |
+| `stack` | Boots the real compose stack, loads `/login`, queries the database as `epcc`, runs a slice of the suite | Proves `dev-up.sh` works end to end, that RLS is fail-closed inside the container, and that the suite cannot reach the development database (§6.1) |
 
 The suite is large and several tests call `migrate:fresh` in `setUp()`, so the
-`laravel` job is given 90 minutes. That is expected, not a leak.
+`laravel` job runs ~19 minutes and is given 90. That is expected, not a leak.
+
+The `stack` job is the one that validates this document's central claim. It
+plants a sentinel table in the **development** database, runs a slice of the
+suite — which calls `migrate:fresh` — and then requires the sentinel to survive.
+A suite that had leaked onto `epcc` would have dropped it, so §6.1 is enforced by
+an assertion rather than by a comment.
 
 ## 10. Troubleshooting
 

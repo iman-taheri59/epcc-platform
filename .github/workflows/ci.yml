@@ -409,3 +409,106 @@ jobs:
           for f in scripts/dev-up.sh scripts/dev-down.sh scripts/dev-seed.sh scripts/dev-test.sh docker/php/entrypoint.sh; do
             shellcheck --severity=warning -x "$f"
           done
+
+  # -------------------------------------------------------------------------
+  # The claim this whole change makes is that `scripts/dev-up.sh` produces a
+  # working system. The `image` job proves the toolchain is IN the image; this
+  # one proves the stack BOOTS - the postgres init SQL, the entrypoint's .env
+  # generation and dependency install, migrate:fresh --seed against a
+  # non-superuser role, and `artisan serve` answering on port 8000.
+  #
+  # It also proves trap 6.1 for real rather than by argument: a sentinel table
+  # is planted in the DEVELOPMENT database, a slice of the suite is run (which
+  # calls migrate:fresh), and the sentinel must survive. If DB_DATABASE ever
+  # leaked into the container environment, the suite would run against `epcc`
+  # and drop it.
+  # -------------------------------------------------------------------------
+  stack:
+    name: Compose stack boots and serves
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    needs: image
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Built with the gha cache the `image` job just populated, and tagged with
+      # the name compose.yaml expects, so `up --no-build` uses it instead of
+      # compiling the image a second time.
+      - name: Build the image compose will run
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/php/Dockerfile
+          push: false
+          load: true
+          tags: epcc/app:dev
+          cache-from: type=gha
+
+      - name: Bring the stack up and wait for healthy
+        run: |
+          set -euo pipefail
+          docker compose up -d --no-build --wait --wait-timeout 1500
+          docker compose ps
+
+      - name: Prove the app serves the login page
+        run: |
+          set -euo pipefail
+          code="$(curl -s -o /tmp/login.html -w '%{http_code}' http://localhost:8000/login)"
+          echo "GET /login -> HTTP $code, $(wc -c < /tmp/login.html) bytes"
+          [ "$code" = "200" ] || { echo "::error::/login returned $code"; exit 1; }
+          grep -qi '<form' /tmp/login.html || { echo "::error::/login rendered no form"; exit 1; }
+
+      # The two assertions that matter, straight from the database, as the
+      # application role rather than as a superuser.
+      - name: Prove the fixture is seeded and RLS is fail-closed
+        run: |
+          set -euo pipefail
+          psql_q() {
+            docker compose exec -T -e PGPASSWORD=epcc_dev db \
+              psql -U epcc -d epcc -tAc "$1"
+          }
+          echo "role posture:      $(psql_q "select 'superuser='||rolsuper::text||' bypassrls='||rolbypassrls::text from pg_roles where rolname = current_user")"
+          companies="$(psql_q 'select count(*) from companies')"
+          projects="$(psql_q 'select count(*) from projects')"
+          # payment_certificates is RLS-protected and FORCEd, so an unbound read
+          # must return 0. A non-zero answer means the role can see through RLS.
+          unbound="$(psql_q 'select count(*) from payment_certificates')"
+          echo "companies:         $companies"
+          echo "projects:          $projects"
+          echo "unbound certs:     $unbound  (must be 0 - fail-closed)"
+          [ "$companies" -ge 8 ] || { echo "::error::fixture not seeded: $companies companies"; exit 1; }
+          [ "$projects" -ge 3 ]  || { echo "::error::fixture not seeded: $projects projects"; exit 1; }
+          [ "$unbound" = "0" ]   || { echo "::error::RLS is not fail-closed - is epcc a superuser?"; exit 1; }
+
+      - name: Prove the suite cannot reach the development database
+        run: |
+          set -euo pipefail
+          psql_q() {
+            docker compose exec -T -e PGPASSWORD=epcc_dev db \
+              psql -U epcc -d epcc -tAc "$1"
+          }
+          # A table the migrations know nothing about. If the suite ever ran
+          # against `epcc` instead of `epcc_test`, its migrate:fresh drops this.
+          psql_q 'create table if not exists ci_sentinel (id int primary key);'
+          psql_q 'insert into ci_sentinel values (1) on conflict do nothing;'
+          echo "sentinel planted in the development database"
+
+          docker compose exec -T app bash -c \
+            'cd /srv/epcc/app && vendor/bin/phpunit --colors=never --filter SeedPathTest'
+
+          survivors="$(psql_q 'select count(*) from ci_sentinel')"
+          echo "sentinel rows after the suite ran: $survivors (must be 1)"
+          [ "$survivors" = "1" ] || {
+            echo "::error::the suite ran against the DEVELOPMENT database - a DB_* variable has leaked into the container environment (docs/DEVELOPMENT-ENVIRONMENT.md §6.1)"
+            exit 1
+          }
+
+      - name: Dump the logs on failure
+        if: failure()
+        run: |
+          docker compose ps || true
+          docker compose logs --tail=250 app || true
+          docker compose logs --tail=100 db || true

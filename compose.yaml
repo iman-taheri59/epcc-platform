@@ -128,10 +128,16 @@ services:
         - CMD-SHELL
         - "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/login | grep -qE '^(200|302)$$'"
       interval: 10s
-      timeout: 5s
-      retries: 12
-      # First boot installs Composer and npm dependencies and builds assets.
-      start_period: 240s
+      timeout: 10s
+      retries: 30
+      # Generous on purpose, and it costs nothing: during start_period a failing
+      # probe reports "starting" rather than counting toward retries, and the
+      # container flips to "healthy" the moment a probe passes. The first boot
+      # runs composer install (~16,500 files), npm install, vite build, and
+      # migrate:fresh --seed, which on a slow disk or a cold cache is a ten
+      # minute job. A tight window here does not make boot faster - it just
+      # marks a healthy container unhealthy and makes dev-up.sh report failure.
+      start_period: 900s
 
 volumes:
   db-data:

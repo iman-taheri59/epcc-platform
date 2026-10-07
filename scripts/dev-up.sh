@@ -119,8 +119,13 @@ say "Waiting for the first boot to finish (dependencies, migrations, seed, asset
 container_id=$("${COMPOSE[@]}" ps -q app)
 [ -n "$container_id" ] || die "the app container did not start; see: ${COMPOSE[*]} logs app"
 
+# Up to ~20 minutes. The budget is deliberately much larger than a normal boot:
+# composer install, npm install, vite build and migrate:fresh --seed on a cold
+# cache and a slow disk is a ten minute job, and giving up at six would report
+# failure on a container that is about to succeed. The loop breaks the moment
+# the healthcheck passes, so a warm boot still returns in seconds.
 status="starting"
-for _ in $(seq 1 120); do
+for _ in $(seq 1 400); do
     status=$(docker inspect -f \
         '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' \
         "$container_id" 2>/dev/null || echo unknown)
@@ -136,7 +141,7 @@ for _ in $(seq 1 120); do
 done
 
 if [ "$status" != "healthy" ]; then
-    warn "not healthy yet after ~6 minutes (status: $status) - the first boot can be slow."
+    warn "not healthy yet after ~20 minutes (status: $status) - the first boot can be slow."
     warn "Keep watching with: ${COMPOSE[*]} logs -f app"
 else
     say "Stack is healthy"
