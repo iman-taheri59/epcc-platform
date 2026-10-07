@@ -185,10 +185,15 @@ jobs:
           SQL
           # Prove the posture the whole tenancy model depends on: a superuser
           # would bypass RLS and the fail-closed assertions would go red.
-          psql -h 127.0.0.1 -U postgres -tAc \
-            "select rolname || ' superuser=' || rolsuper || ' bypassrls=' || rolbypassrls from pg_roles where rolname='epcc'" \
-            | grep -q 'superuser=f bypassrls=f' \
-            || { echo "::error::the epcc role must be neither superuser nor BYPASSRLS"; exit 1; }
+          # Counted rather than concatenated - PostgreSQL has no text||boolean
+          # operator, so building the message inline just errors out.
+          psql -h 127.0.0.1 -U postgres -c \
+            "select rolname, rolsuper, rolbypassrls, rolcreatedb, rolcreaterole from pg_roles where rolname = 'epcc'"
+          role_ok="$(psql -h 127.0.0.1 -U postgres -tAc \
+            "select count(*) from pg_roles where rolname = 'epcc' and not rolsuper and not rolbypassrls")"
+          [ "$role_ok" = "1" ] \
+            || { echo "::error::the epcc role must exist and be neither superuser nor BYPASSRLS"; exit 1; }
+          echo "epcc role posture verified (non-superuser, no BYPASSRLS)"
 
       # ---- dependencies and .env ---------------------------------------------
       # --no-scripts, then the artisan steps explicitly: composer's

@@ -56,11 +56,15 @@ RUN ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
 # --- Composer ---------------------------------------------------------------
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# --- System packages + PHP extensions ---------------------------------------
-# gd needs libpng/libjpeg/libfreetype/libwebp; intl needs libicu; zip needs
-# libzip. The *-dev packages stay installed: `apt-get --auto-remove` on them can
-# take the matching RUNTIME library with it and break gd at request time, which
-# is a much more confusing failure than a slightly larger image.
+# --- System packages --------------------------------------------------------
+# The *-dev packages stay installed: `apt-get --auto-remove` on them can take
+# the matching RUNTIME library with it and break gd at request time, which is a
+# much more confusing failure than a slightly larger image.
+#
+# libpq-dev is not optional and is easy to miss: postgresql-client supplies
+# psql, but building ext/pgsql and ext/pdo_pgsql needs the server headers
+# (libpq-fe.h). Without it the extension step below dies with
+# "Cannot find libpq-fe.h".
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
@@ -71,6 +75,7 @@ RUN set -eux; \
         unzip \
         python3 \
         postgresql-client \
+        libpq-dev \
         libicu-dev \
         libzip-dev \
         libpng-dev \
@@ -98,7 +103,19 @@ RUN set -eux; \
         cd /; \
         rm -rf /tmp/vazir; \
     }; \
-    \
+    fc-cache -f >/dev/null; \
+    fc-list | grep -qi vazirmatn \
+        || { echo "Vazirmatn still not visible to fontconfig after both install paths"; exit 1; }; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*
+
+# --- PHP extensions ---------------------------------------------------------
+# A separate layer from the packages above: this is the slow step, and it only
+# needs re-running when the extension list changes.
+#
+# gd needs libpng/libjpeg/libfreetype/libwebp; intl needs libicu; zip needs
+# libzip; pgsql/pdo_pgsql need libpq - all installed above.
+RUN set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
     docker-php-ext-install -j"$(nproc)" \
         bcmath \
@@ -113,9 +130,7 @@ RUN set -eux; \
         zip; \
     # mbstring is compiled into the base image; install it only if that ever
     # stops being true, rather than failing the build on a duplicate.
-    php -m | grep -qx mbstring || docker-php-ext-install -j"$(nproc)" mbstring; \
-    apt-get clean; \
-    rm -rf /var/lib/apt/lists/*
+    php -m | grep -qx mbstring || docker-php-ext-install -j"$(nproc)" mbstring
 
 # --- Optional operator-supplied fonts (air-gapped builds) --------------------
 # See docker/php/fonts/README.md. A directory with no TTFs in it is normal.
