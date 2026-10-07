@@ -62,6 +62,45 @@ mkdir -p /home/user/.cache/epcc-vendor
 [ -L app/vendor ] || { rm -rf app/vendor; ln -s /home/user/.cache/epcc-vendor app/vendor; }
 ( cd app && composer install --no-interaction --no-progress -q )
 
+# The Laravel skeleton defaults .env.example to SQLite. This product never
+# proves tenancy on SQLite: RLS does not exist there, and a missing sqlite PDO
+# driver makes a fresh restore fail before the first migration. Keep .env
+# generated and PostgreSQL-bound before any artisan command touches the DB.
+say "Ensuring Laravel .env uses PostgreSQL"
+[ -f app/.env ] || cp app/.env.example app/.env
+python3 - <<'PYENV'
+from pathlib import Path
+p = Path('app/.env')
+s = p.read_text()
+lines = s.splitlines()
+out = []
+skip_prefixes = {'DB_CONNECTION','DB_HOST','DB_PORT','DB_DATABASE','DB_USERNAME','DB_PASSWORD'}
+for line in lines:
+    if line.split('=',1)[0] in skip_prefixes:
+        continue
+    out.append(line)
+# Insert DB block after APP_URL when possible, otherwise append.
+db = [
+    'DB_CONNECTION=pgsql',
+    'DB_HOST=127.0.0.1',
+    'DB_PORT=5432',
+    'DB_DATABASE=epcc',
+    'DB_USERNAME=epcc',
+    'DB_PASSWORD=epcc_dev',
+]
+inserted = False
+new = []
+for line in out:
+    new.append(line)
+    if line.startswith('APP_URL='):
+        new.extend([''] + db)
+        inserted = True
+if not inserted:
+    new.extend([''] + db)
+p.write_text('\n'.join(new).rstrip() + '\n')
+PYENV
+( cd app && php artisan key:generate --force -q )
+
 say "Migrating + seeding"
 ( cd app && php artisan migrate:fresh --force --seed )
 # The procurement fixture is a separate seeder so the core demo stays small.

@@ -19,6 +19,7 @@ Bilingual (EN/FA) modular platform for large industrial EPCC projects — oil, g
 | `docs/ADR-003-Annex-A-Laravel-Evaluation.md` | **Annex to ADR-003** — Laravel/Filament assessed as the backend. Makes Laravel the primary alternative to TypeScript, overturns the ADR-003 §3.1 argument, and ties the choice to the team's actual language |
 | `docs/ADR-003-Technology-Stack.md` | **Decision record** — TypeScript end-to-end (NestJS + React + PostgreSQL 18), why not .NET, the five P0 spikes that must pass, and the reversal conditions |
 | `docs/Prototype-Coverage-Map.md` | **Read before demoing** — module-by-module map of what the prototype shows vs what the system specifies, and what is deliberately absent |
+| `docs/MTO-REQUIREMENTS-FA.md` / `docs/MTO-REQUIREMENTS-EN.md` | **Piping MTO Foundation requirements** — reconciled from the uploaded 2026-10-06 MTO docs package against the actual current branch. Material Library, MTO document/revision/staging, Slice 4 immutable accepted snapshots, and Slice 5 gross/net comparison are implemented; PO order gap and usable-material decision remain later slices. |
 | `docs/ADR-002-Defer-AWP.md` | **Decision record** — AWP methodology deferred to the international phase; the two architectural seams that keep revival at ~6–10 weeks instead of a rewrite |
 | `docs/ADR-001-AWP-Packaging.md` | **Decision record** — how AWP is decomposed and licensed: constraint engine in core, AWP methodology as a project-level add-on, model-based scoping with the BIM viewer. Includes the falsifiers that would reverse it. |
 | `docs/Iran-First-Market-Addendum.md` | **Decision record (MKT-EPCC-001)** — dependency substitution table, air-gap requirements, Jalali/Nowruz calendar rules, IPS pack scope, revised commercial model and roadmap |
@@ -27,8 +28,10 @@ Bilingual (EN/FA) modular platform for large industrial EPCC projects — oil, g
 | `standards-packs/iso.pack.json` | ISO Framework Pack v1.0.0 — ISO 21502, 19650, 9001, 31000, 45001, 15926/CFIHOS |
 | `standards-packs/awp.pack.json` | AWP / WFP Pack v1.0.0 — **deferred to the international phase but kept in CI** as a genericity guard (ADR-002) |
 | `standards-packs/validate_packs.py` | CI gate — schema validation, bilingual-parity enforcement, progress-weight checks, and the ADR-002 seam guards |
-| `prototype/index.html` | Clickable bilingual prototype — 9 screens, live language / company-role / standards-pack switching, collapsible sidebar with mobile drawer |
+| `prototype/index.html` | Clickable bilingual prototype — 9 screens, live language / company-role / standards-pack switching, collapsible sidebar with mobile drawer. Links to the newer Piping Workspace preview. |
+| `prototype/piping-workspace.html` | **Synthetic-data Piping Workspace preview** — task-first UI concept for the piping-first strategy: summary cards, blocker-first filters, readiness bars, deviation inbox, test-pack board and line detail drawer. Self-contained and air-gap safe. |
 | `prototype/test/sidebar.test.js` | jsdom behaviour test — 19 assertions covering the sidebar rail/drawer, RTL, keyboard and navigation behaviour |
+| `prototype/test/piping-workspace.test.js` | jsdom behaviour test — 16 assertions pinning Piping Workspace localisation, mobile filter layout, card rows, drawer behaviour and air-gap safety |
 
 ## Prototype — scope warning
 
@@ -43,6 +46,8 @@ Open `prototype/index.html`. It boots **Persian-first with the IPS / Iran pack a
 3. **Standard** — IPS / Iran, ISO, or AWP. KPIs, terminology, document lifecycle, numbering rule and available modules all change. Under IPS and ISO the AWP screens correctly report the module as inactive.
 
 Key screens for a demo:
+- **Piping Workspace preview** — open `prototype/piping-workspace.html` directly, or use the Piping Workspace link in the prototype sidebar. Shows the new task-first UX with synthetic PH-14 data.
+- **Laravel Piping Workspace** — after `./restore.sh` and login, open `/projects/PH-14/piping/workspace?lang=en` (or `lang=fa`). It is the first task-first workspace in the real app, derived from project line/evidence/joint/test-pack data; hydrotest packs can now be created and lines assigned there.
 - **صورت‌وضعیت / Payment Certificate** — the Iranian payment build-up with تعدیل, حسن انجام کار and advance recovery, plus an authority-limit escalation. IPS pack only.
 - **IWP Release Gate** — AWP constraint hard-block in action. AWP pack only.
 - **Quality & Punch** — MC certificate blocked by failed guards.
@@ -50,10 +55,11 @@ Key screens for a demo:
 
 **Sidebar:** the ☰ button collapses the sidebar to a 56px icon rail on desktop, and turns it into an off-canvas drawer below 820px — opening from the right in Persian/RTL and the left in English/LTR. The drawer closes on navigation, on scrim tap, and on Escape.
 
-Tested: 324 render combinations (3 packs × 2 languages × 6 company roles × 9 pages) plus 19 jsdom behaviour assertions:
+Tested: 324 render combinations (3 packs × 2 languages × 6 company roles × 9 pages), 19 sidebar jsdom assertions, and 16 Piping Workspace jsdom assertions:
 
 ```bash
-npm install jsdom && node prototype/test/sidebar.test.js
+npm install
+npm run test:prototype
 ```
 
 ## Validating the packs
@@ -74,13 +80,23 @@ Point 4 is the mechanism that makes deferring AWP safe. If someone bakes Iran-sp
 
 Verified: all four erosion scenarios (disabled IWP, stripped constraint engine, English-only label, broken weights) are caught by the gate.
 
+
+
+## MTO requirements note — 2026-10-06
+
+The uploaded package `epcc-platform-mto-docs-changes-2026-10-06.txt` was analyzed as a requirements source, not applied as a direct replacement. It contains complete replacement documents from a different baseline and mentions several MTO/PMS/MR capabilities that are **not implemented** in this branch. The reconciled, branch-safe requirements are in `docs/MTO-REQUIREMENTS-FA.md` and `docs/MTO-REQUIREMENTS-EN.md`.
+
+Current implementation status: Material Library foundation is built with a two-level catalogue shape, project overlays, synthetic PH-14 piping catalogue, RLS isolation and tests. MTO document/revision/staging is built as DRAFT-only rows with material validation. Slice 4 creates immutable accepted MTO batches and row snapshots atomically. Slice 5 records provenance-bearing net estimates and reports exact gross/net shortages or deltas without tolerance. Next implementation direction: PO attribution/order gap, and only after a user decision, usable-material gap.
+
 ## Decisions — closed and open
 
 **Closed:** Technology stack — **Laravel 13 + Filament v4 + PHP 8.4** (user decision; ADR-003 superseded by its Annex A). Rule engine kept framework-free per Annex A §6, with a conformance corpus so the offline TS app can be proven to agree · Iran-first launch market · AWP split three ways with the methodology as a **project-level** add-on (ADR-001) · AWP methodology **deferred to the international phase**, constraint engine / lookahead / package-based field execution stay in core (ADR-002) · on-premise primary with no foreign cloud dependency · modular monolith · RabbitMQ default with Kafka optional.
 
 **Open, and now blocking P0:**
 1. **Pilot clients** — which NOC or affiliate, and which private EPC? Everything sharpens once these are named.
-3. **Contract forms beyond شرایط عمومی پیمان** — do target clients use bespoke NOC forms (POGC, PEDEC) needing preload?
-4. **Which NOC numbering scheme to build first** — the first one shapes the engine's flexibility.
-5. **GPU budget** — determines whether self-hosted AI ships in P4 or slips.
-6. **On-premise support staffing** — the top margin risk, and a headcount question rather than an engineering one.
+2. **Contract forms beyond شرایط عمومی پیمان** — do target clients use bespoke NOC forms (POGC, PEDEC) needing preload?
+3. **Which NOC numbering scheme to build first** — the first one shapes the engine's flexibility.
+4. **GPU budget** — determines whether self-hosted AI ships in P4 or slips.
+5. **MTO acceptance UI/workflow** — the service-only all-or-nothing accepted snapshot slice is built; decide when the first user-facing workspace should expose it.
+6. **Usable-material definition** — decide which warehouse/inspection/reservation states count as usable for the future physical material gap.
+7. **On-premise support staffing** — the top margin risk, and a headcount question rather than an engineering one.
