@@ -262,7 +262,7 @@ on demand:
 |---|---|---|
 | `static` | `standards-packs/validate_packs.py`, `packages/standards-engine/conformance/run.php` | No database, no vendor directory |
 | `prototype` | `prototype/test/render.test.js` + `npm run test:prototype` | Node 22, root `jsdom` |
-| `laravel` | The full PHPUnit suite | `postgres:17` service, non-superuser `epcc` role, PDF toolchain, skip gate |
+| `laravel` | The full PHPUnit suite | `postgres:17` service, non-superuser `epcc` role, PDF toolchain, skip gate. Runs `vendor/bin/phpunit` with `--log-junit` so every failing test becomes a PR annotation, and the run fails on any failure, error **or** skip |
 | `image` | Builds `docker/php/Dockerfile`, smoke-checks it, `docker compose config`, `shellcheck` | Proves the dev image still contains what §8 depends on |
 
 The suite is large and several tests call `migrate:fresh` in `setUp()`, so the

@@ -237,43 +237,112 @@ jobs:
           php artisan filament:assets --no-interaction
 
       # ---- the suite ---------------------------------------------------------
-      - name: Run the Laravel suite
+      # PHPUnit directly rather than `artisan test`, for two reasons: it writes
+      # a JUnit log that the next step can parse structurally, and it avoids
+      # Collision's ANSI formatting, which phpunit.xml enables with
+      # colors="true" and which would wrap the summary line in escape codes.
+      # Locally, scripts/dev-test.sh keeps using `artisan test` because that
+      # output is nicer to read - and its gate handles both summary shapes.
+      - name: Run the suite
         working-directory: app
         run: |
           set -uo pipefail
-          php artisan test --no-ansi 2>&1 | tee ../test-output.log
-          exit "${PIPESTATUS[0]}"
+          php artisan config:clear --no-interaction >/dev/null 2>&1 || true
+          vendor/bin/phpunit --colors=never --log-junit ../junit.xml 2>&1 | tee ../test-output.log
+          code="${PIPESTATUS[0]}"
+          echo "$code" > ../phpunit-exit-code
+          echo "PHPUnit exit code: $code (0=success, 1=failures, 2=errors)"
+          # Deliberately not `exit $code`: the reporting step below owns the
+          # verdict, so that failures are annotated even when the suite is red.
+          exit 0
 
-      # Read the summary line rather than trusting the exit code. This is the
-      # gate REBUILD.md §4 exists to justify.
-      - name: Fail on skipped tests
+      # One step owns the verdict, and it reads the JUnit log rather than
+      # scraping text: every failing test becomes a PR annotation, and the run
+      # fails on any failure, error OR skip. The skip half is the gate
+      # REBUILD.md §4 exists to justify - markTestSkipped() exits zero.
+      - name: Report results, annotate failures, gate on skips
         if: always()
+        env:
+          ALLOW_SKIPS: "0"
         run: |
-          set -euo pipefail
-          summary="$(grep -E '^[[:space:]]*Tests:' test-output.log | tail -1 || true)"
-          if [ -z "$summary" ]; then
-            echo "::error::No PHPUnit summary line found - the suite did not report a result."
-            exit 1
-          fi
-          echo "Suite summary: $summary"
-          # Two summary shapes exist and the gate has to read both:
-          #   Collision (artisan test):  Tests:    13 skipped, 843 passed (2998 assertions)
-          #   PHPUnit   (vendor/bin):    Tests: 843, Assertions: 2998, Skipped: 13.
-          skipped="$(printf '%s' "$summary" \
-            | grep -oiE '[0-9]+[[:space:]]+skipped|skipped:[[:space:]]*[0-9]+' \
-            | grep -oE '[0-9]+' | head -1 || true)"
-          if [ -n "$skipped" ] && [ "$skipped" -gt 0 ]; then
-            echo "::error::$skipped test(s) SKIPPED. Almost always a missing PDF toolchain (chromium, poppler-utils, Vazirmatn) - see the two verification steps above."
-            exit 1
-          fi
-          echo "No skipped tests."
+          set -uo pipefail
+          python3 - <<'PY'
+          import os, sys, xml.etree.ElementTree as ET
+
+          def emit(level, title, msg):
+              # Workflow-command escaping: % first, then the control chars.
+              clean = lambda t: str(t).replace('%', '%25').replace(':', '%3A').replace(',', '%2C').replace('\n', ' ').strip()
+              msg = str(msg).replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print(f"::{level} title={clean(title)[:180]}::{msg[:1200]}")
+
+          if not os.path.exists('junit.xml'):
+              emit('error', 'suite did not produce junit.xml',
+                   'PHPUnit never wrote its log. See the test-output.log artifact - the suite '
+                   'crashed or could not start, which is an environment failure, not a test failure.')
+              sys.exit(1)
+
+          root = ET.parse('junit.xml').getroot()
+          tests = sum(int(t.get('tests', 0)) for t in root.iter('testsuite'))
+          assertions = sum(int(t.get('assertions', 0)) for t in root.iter('testsuite'))
+          failures = sum(int(t.get('failures', 0)) for t in root.iter('testsuite'))
+          errors = sum(int(t.get('errors', 0)) for t in root.iter('testsuite'))
+          skipped = sum(int(t.get('skipped', 0)) for t in root.iter('testsuite'))
+
+          print(f"Suite: tests={tests} assertions={assertions} "
+                f"failures={failures} errors={errors} skipped={skipped}")
+
+          exit_code = open('phpunit-exit-code').read().strip() if os.path.exists('phpunit-exit-code') else '?'
+          print(f"PHPUnit exit code: {exit_code}")
+
+          annotated = 0
+          for tc in root.iter('testcase'):
+              for kind in ('failure', 'error'):
+                  el = tc.find(kind)
+                  if el is None:
+                      continue
+                  cls = tc.get('classname') or tc.get('class') or '?'
+                  name = tc.get('name') or '?'
+                  body = (el.get('message') or el.text or '').strip()
+                  body = ' '.join(body.split()) or el.get('type', kind)
+                  emit('error', f"{cls} {name}", f"[{kind}] {body}")
+                  annotated += 1
+              if annotated >= 40:
+                  break
+          if failures + errors > 40:
+              print(f"::notice::{failures + errors - 40} more failing tests not annotated; "
+                    f"see the test-output.log artifact")
+
+          bad = False
+          if failures or errors:
+              emit('error', 'suite is red',
+                   f"{failures} failure(s) and {errors} error(s) out of {tests} tests")
+              bad = True
+          if skipped and os.environ.get('ALLOW_SKIPS') != '1':
+              emit('error', f'{skipped} test(s) SKIPPED',
+                   'The suite is not proving what it claims to. Nearly always a missing PDF '
+                   'toolchain (chromium, poppler-utils, Vazirmatn) - both are verified earlier '
+                   'in this job. Set ALLOW_SKIPS=1 only if you know why they skipped.')
+              bad = True
+          elif skipped:
+              print(f"::warning::{skipped} test(s) skipped (allowed by ALLOW_SKIPS)")
+
+          if tests == 0:
+              emit('error', 'no tests ran', 'junit.xml reports zero tests - the suite did not collect.')
+              bad = True
+
+          if bad:
+              sys.exit(1)
+          print(f"All green: {tests} tests, {assertions} assertions, 0 failures, 0 errors, 0 skipped.")
+          PY
 
       - name: Upload the suite output
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: laravel-test-output
-          path: test-output.log
+          path: |
+            test-output.log
+            junit.xml
           if-no-files-found: ignore
           retention-days: 14
 
@@ -305,17 +374,29 @@ jobs:
       - name: Smoke-check the image
         run: |
           set -euo pipefail
-          docker run --rm epcc/app:ci php -v | head -1
-          docker run --rm epcc/app:ci composer --version
-          docker run --rm epcc/app:ci node --version
-          docker run --rm epcc/app:ci bash -c '
+          # --entrypoint is required. The image's ENTRYPOINT is the dev
+          # bootstrap, so `docker run image php -v` would wait 60s for a
+          # PostgreSQL that is not there and then exit 1 - testing the
+          # entrypoint's database handling when the point of this step is
+          # whether the TOOLCHAIN is in the image. Use SKIP_BOOTSTRAP=1 with
+          # `docker compose run` to get a shell without the bootstrap.
+          docker run --rm --entrypoint php epcc/app:ci -v | head -1
+          docker run --rm --entrypoint composer epcc/app:ci --version
+          docker run --rm --entrypoint node epcc/app:ci --version
+          docker run --rm --entrypoint npm epcc/app:ci --version
+          docker run --rm --entrypoint bash epcc/app:ci -c '
             set -euo pipefail
             command -v chromium
             command -v pdffonts
             command -v pdftotext
+            command -v setpriv
+            command -v psql
+            command -v python3
             fc-list | grep -qi vazirmatn
-            php -m | grep -qxi pdo_pgsql
-            echo "PDF toolchain + pgsql driver OK inside the image"
+            for ext in pdo_pgsql pgsql intl gd zip bcmath mbstring pcntl sockets; do
+              php -m | grep -qxi "$ext" || { echo "MISSING EXTENSION: $ext"; exit 1; }
+            done
+            echo "PDF toolchain + Vazirmatn + PHP extensions OK inside the image"
           '
 
       - name: Validate compose.yaml
