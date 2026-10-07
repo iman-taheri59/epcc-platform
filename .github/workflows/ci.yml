@@ -1,0 +1,321 @@
+# ---------------------------------------------------------------------------
+# EPCC Platform - continuous integration
+#
+# Four things are verified, and the split mirrors prototype/test/run-all.sh so
+# that "green in CI" and "green locally" mean the same thing:
+#
+#   static     standards-pack validator + rule-engine conformance corpus
+#   laravel    the full PHPUnit suite against a real PostgreSQL 17 with RLS
+#   prototype  the jsdom harnesses over prototype/*.html
+#   image      the development image still builds and still contains the PDF
+#              toolchain, and compose.yaml still parses
+#
+# TWO RULES THIS FILE IS BUILT AROUND
+#
+# 1. No silent skips. PdfExportTest and VendorTransmittalTest call
+#    markTestSkipped() when a headless browser, poppler-utils or Vazirmatn is
+#    missing, and PHPUnit STILL EXITS ZERO. REBUILD.md §4 records 13 tests
+#    vanishing that way. The `laravel` job installs the toolchain, verifies it,
+#    and then fails the build if the summary line reports a single skip.
+#
+# 2. The application database role is NOT a superuser. A superuser bypasses
+#    row-level security even with FORCE ROW LEVEL SECURITY, so a CI database
+#    wired up the convenient way would turn the tenancy assertions -
+#    SeedPathTest's "unbound read must be fail-closed" among them - red, and
+#    invite someone to weaken them. See docker/postgres/init/01-*.sql.
+# ---------------------------------------------------------------------------
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PHP_VERSION: "8.3"
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Standards packs and the framework-free rule engine. No database, no vendor
+  # directory: packages/standards-engine has no dependencies by design
+  # (ADR-003 Annex A §6), so this job stays fast enough to be worth running
+  # first.
+  # -------------------------------------------------------------------------
+  static:
+    name: Standards packs + rule engine
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate the standards packs
+        run: python3 standards-packs/validate_packs.py
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+
+      - name: Run the rule-engine conformance corpus
+        run: php packages/standards-engine/conformance/run.php
+
+  # -------------------------------------------------------------------------
+  # The jsdom harnesses over the HTML prototype. jsdom comes from the ROOT
+  # package.json (not app/), which is why cache-dependency-path points there.
+  # -------------------------------------------------------------------------
+  prototype:
+    name: HTML prototype
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install jsdom
+        run: npm ci --no-audit --no-fund
+
+      - name: Render matrix
+        run: node prototype/test/render.test.js
+
+      - name: Sidebar, piping workspace and MTO acceptance previews
+        run: npm run test:prototype
+
+  # -------------------------------------------------------------------------
+  # The real suite: PostgreSQL 17, RLS, and the PDF toolchain.
+  # -------------------------------------------------------------------------
+  laravel:
+    name: Laravel suite (PostgreSQL + RLS)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_pgsql, pgsql, intl, bcmath, gd, zip, pcntl, sockets, mbstring, exif
+          tools: composer:v2
+          coverage: none
+
+      # ---- the PDF toolchain -------------------------------------------------
+      # poppler-utils gives pdffonts/pdftotext. Vazirmatn comes from the archive
+      # where the distro has it and from the upstream npm tarball where it does
+      # not - either way the step ends by proving fontconfig can see the family,
+      # because PdfExportTest asserts on `pdffonts` output by NAME.
+      - name: Install poppler-utils and Vazirmatn
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils fontconfig fonts-dejavu-core
+          if ! sudo apt-get install -y --no-install-recommends fonts-vazirmatn; then
+            echo "fonts-vazirmatn is not in this archive - installing from the npm release tarball"
+            tmp="$(mktemp -d)"
+            ( cd "$tmp" \
+              && npm pack vazirmatn@33.0.3 --silent \
+              && tar xzf vazirmatn-*.tgz \
+              && sudo mkdir -p /usr/share/fonts/truetype/vazirmatn \
+              && sudo cp package/fonts/ttf/Vazirmatn-*.ttf /usr/share/fonts/truetype/vazirmatn/ )
+            sudo fc-cache -f
+          fi
+          fc-list | grep -qi vazirmatn || { echo "::error::Vazirmatn is not visible to fontconfig"; exit 1; }
+          echo "Vazirmatn: $(fc-list | grep -i vazirmatn | head -1)"
+
+      # PdfRenderer searches this exact list, in this order. GitHub's Ubuntu
+      # runners ship google-chrome-stable; the apt `chromium` package on Ubuntu
+      # is a snap stub and is not usable inside a workflow.
+      - name: Verify a headless browser is reachable
+        run: |
+          set -euo pipefail
+          for candidate in chromium chromium-browser google-chrome google-chrome-stable headless-shell; do
+            if command -v "$candidate" >/dev/null 2>&1; then
+              echo "PDF renderer will use: $candidate ($($candidate --version 2>/dev/null || true))"
+              exit 0
+            fi
+          done
+          echo "::error::No headless browser found. The 13 PDF tests would SILENTLY SKIP."
+          exit 1
+
+      # ---- the database ------------------------------------------------------
+      - name: Create the non-superuser epcc role and both databases
+        env:
+          PGPASSWORD: postgres
+        run: |
+          set -euo pipefail
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE ROLE epcc LOGIN PASSWORD 'epcc_dev';
+          CREATE DATABASE epcc OWNER epcc;
+          CREATE DATABASE epcc_test OWNER epcc;
+          SQL
+          # Prove the posture the whole tenancy model depends on: a superuser
+          # would bypass RLS and the fail-closed assertions would go red.
+          psql -h 127.0.0.1 -U postgres -tAc \
+            "select rolname || ' superuser=' || rolsuper || ' bypassrls=' || rolbypassrls from pg_roles where rolname='epcc'" \
+            | grep -q 'superuser=f bypassrls=f' \
+            || { echo "::error::the epcc role must be neither superuser nor BYPASSRLS"; exit 1; }
+
+      # ---- dependencies and .env ---------------------------------------------
+      # --no-scripts, then the artisan steps explicitly: composer's
+      # post-autoload-dump boots Laravel, and a boot before .env exists
+      # configures the app from defaults (DB_CONNECTION=sqlite).
+      - name: Install Composer dependencies
+        working-directory: app
+        run: composer install --no-scripts --no-interaction --no-progress --prefer-dist
+
+      - name: Point Laravel at PostgreSQL
+        working-directory: app
+        run: |
+          set -euo pipefail
+          cp .env.example .env
+          # Replace, do not append: .env.example ships DB_CONNECTION=sqlite
+          # uncommented and Dotenv keeps the FIRST of a duplicated key.
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
+          cat >> .env <<'ENV'
+          DB_HOST=127.0.0.1
+          DB_PORT=5432
+          DB_DATABASE=epcc
+          DB_USERNAME=epcc
+          DB_PASSWORD=epcc_dev
+          ENV
+          grep -E '^(APP_ENV|DB_)' .env
+
+      - name: Generate APP_KEY
+        working-directory: app
+        run: php artisan key:generate --force --no-interaction
+
+      - name: Migrate and seed the development database
+        working-directory: app
+        run: |
+          set -euo pipefail
+          php artisan migrate:fresh --force --seed --no-interaction
+          php artisan db:seed --class=ProcurementSeeder --force --no-interaction
+          php artisan filament:assets --no-interaction
+
+      # ---- the suite ---------------------------------------------------------
+      - name: Run the Laravel suite
+        working-directory: app
+        run: |
+          set -uo pipefail
+          php artisan test --no-ansi 2>&1 | tee ../test-output.log
+          exit "${PIPESTATUS[0]}"
+
+      # Read the summary line rather than trusting the exit code. This is the
+      # gate REBUILD.md §4 exists to justify.
+      - name: Fail on skipped tests
+        if: always()
+        run: |
+          set -euo pipefail
+          summary="$(grep -E '^[[:space:]]*Tests:' test-output.log | tail -1 || true)"
+          if [ -z "$summary" ]; then
+            echo "::error::No PHPUnit summary line found - the suite did not report a result."
+            exit 1
+          fi
+          echo "Suite summary: $summary"
+          # Two summary shapes exist and the gate has to read both:
+          #   Collision (artisan test):  Tests:    13 skipped, 843 passed (2998 assertions)
+          #   PHPUnit   (vendor/bin):    Tests: 843, Assertions: 2998, Skipped: 13.
+          skipped="$(printf '%s' "$summary" \
+            | grep -oiE '[0-9]+[[:space:]]+skipped|skipped:[[:space:]]*[0-9]+' \
+            | grep -oE '[0-9]+' | head -1 || true)"
+          if [ -n "$skipped" ] && [ "$skipped" -gt 0 ]; then
+            echo "::error::$skipped test(s) SKIPPED. Almost always a missing PDF toolchain (chromium, poppler-utils, Vazirmatn) - see the two verification steps above."
+            exit 1
+          fi
+          echo "No skipped tests."
+
+      - name: Upload the suite output
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: laravel-test-output
+          path: test-output.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # -------------------------------------------------------------------------
+  # The development image itself. Cheap insurance that a Dockerfile edit did
+  # not quietly drop the PDF toolchain, and that compose.yaml still parses.
+  # -------------------------------------------------------------------------
+  image:
+    name: Development image + compose.yaml
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build the development image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/php/Dockerfile
+          push: false
+          load: true
+          tags: epcc/app:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke-check the image
+        run: |
+          set -euo pipefail
+          docker run --rm epcc/app:ci php -v | head -1
+          docker run --rm epcc/app:ci composer --version
+          docker run --rm epcc/app:ci node --version
+          docker run --rm epcc/app:ci bash -c '
+            set -euo pipefail
+            command -v chromium
+            command -v pdffonts
+            command -v pdftotext
+            fc-list | grep -qi vazirmatn
+            php -m | grep -qx pdo_pgsql
+            echo "PDF toolchain + pgsql driver OK inside the image"
+          '
+
+      - name: Validate compose.yaml
+        run: docker compose config --quiet
+
+      - name: Lint the entrypoint and dev scripts
+        run: |
+          set -euo pipefail
+          bash -n docker/php/entrypoint.sh
+          for f in scripts/dev-up.sh scripts/dev-down.sh scripts/dev-seed.sh scripts/dev-test.sh docker/php/entrypoint.sh; do
+            shellcheck --severity=warning -x "$f"
+          done

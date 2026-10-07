@@ -1,0 +1,140 @@
+# ---------------------------------------------------------------------------
+# EPCC Platform - local development stack
+#
+#   scripts/dev-up.sh        build + start + seed the demo fixture
+#   scripts/dev-test.sh      run every suite in the repo
+#   scripts/dev-seed.sh      rebuild the demo database from scratch
+#   scripts/dev-down.sh      stop (add --volumes to destroy the data)
+#
+# Everything here is development-only. Credentials are the same
+# epcc/epcc_dev pair that restore.sh and rebuild-env.sh already use on a bare
+# sandbox, so a container and a native checkout can point at the same schema
+# documentation without translation. Production posture (RLS, per-project
+# databases, PgBouncer) is described in docs/ADR-011, ADR-012 and
+# docs/Spike-RLS-Results.md.
+#
+# Read docs/DEVELOPMENT-ENVIRONMENT.md before changing a port, a credential or
+# the db service's user - there are two traps in this file that look like
+# simplification opportunities and are not.
+# ---------------------------------------------------------------------------
+
+name: epcc
+
+services:
+  # -------------------------------------------------------------------------
+  # PostgreSQL 17 - the version the RLS spike, the partial-unique indexes and
+  # the pg_dump/restore paths were all verified against.
+  # -------------------------------------------------------------------------
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    # POSTGRES_USER is deliberately the superuser, NOT the application role.
+    # A superuser bypasses RLS even with FORCE ROW LEVEL SECURITY, which would
+    # turn every fail-closed tenancy assertion in the suite red. The `epcc`
+    # role is created non-privileged by docker/postgres/init/01-*.sql.
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      # C.UTF-8 rather than a glibc locale: collation then cannot drift between
+      # a laptop, a CI runner and a customer datacentre, and ORDER BY on text is
+      # reproducible everywhere. The application sorts Jalali dates and Persian
+      # labels in its own code, not by relying on the cluster's collation.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      # Published on loopback only, and on 5433 by default so that a PostgreSQL
+      # already running on the host (very common - this project's own sandbox
+      # has one) is not fought over.
+      - "127.0.0.1:${DB_FORWARD_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  # -------------------------------------------------------------------------
+  # Application: PHP 8.3, Composer, Node 22, headless Chromium + Vazirmatn.
+  # -------------------------------------------------------------------------
+  app:
+    build:
+      # Repository root, not app/: composer.json resolves
+      # epcc/standards-engine from the path repository ../packages/standards-engine.
+      context: .
+      dockerfile: docker/php/Dockerfile
+    image: epcc/app:dev
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    # `init` reaps the headless Chromium processes that PdfRenderer spawns.
+    # Without it, a long-lived dev server accumulates zombies and eventually
+    # runs out of PIDs mid-test-run.
+    init: true
+    environment:
+      # NOTHING in this list may be a name Laravel itself reads. Every one is
+      # either EPCC_* (consumed by the entrypoint, which writes the real value
+      # into app/.env) or a PHP/Composer setting PHPUnit does not touch.
+      #
+      # Why that rule is absolute: Laravel loads .env through an IMMUTABLE
+      # Dotenv repository, and PHPUnit's <env> entries are set with
+      # force="false", so a real environment variable beats BOTH of them.
+      # Export DB_DATABASE=epcc and the suite runs migrate:fresh against the
+      # development database. Export APP_ENV=local and the suite stops running
+      # in the `testing` environment that phpunit.xml asks for. Both stay green
+      # or half-green, which is what makes them expensive to find later.
+      # See docs/DEVELOPMENT-ENVIRONMENT.md §6.1.
+      EPCC_APP_ENV: "${EPCC_APP_ENV:-local}"
+      EPCC_APP_DEBUG: "${EPCC_APP_DEBUG:-true}"
+      EPCC_APP_URL: "http://localhost:${APP_PORT:-8000}"
+      EPCC_DB_HOST: db
+      EPCC_DB_PORT: "5432"
+      EPCC_DB_DATABASE: "${DB_DATABASE:-epcc}"
+      EPCC_DB_USERNAME: "${DB_USERNAME:-epcc}"
+      EPCC_DB_PASSWORD: "${DB_PASSWORD:-epcc_dev}"
+      # `php artisan serve` forks this many workers; the default of 1 makes an
+      # asset-heavy Filament page load serially and feels like a hang. It is an
+      # .env knob in .env.example, so it travels the same route as the rest.
+      EPCC_SERVER_WORKERS: "${PHP_CLI_SERVER_WORKERS:-4}"
+
+      # Host uid/gid, so files written through the bind mount come out owned by
+      # the developer rather than by root. dev-up.sh fills these in on Linux.
+      # Left empty on macOS/Windows, where Docker Desktop already maps ownership.
+      EPCC_UID: "${EPCC_UID:-}"
+      EPCC_GID: "${EPCC_GID:-}"
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    volumes:
+      # Live source: edit on the host, see it in the container.
+      - .:/srv/epcc
+      # Named volumes for the dependency trees. Three reasons:
+      #   * app/vendor on a sandbox host is a SYMLINK into ~/.cache (REBUILD.md
+      #     §0) and is meaningless inside a container.
+      #   * Composer writes ~16,500 files; on a bind mount over a network
+      #     filesystem (Docker Desktop, WSL2) that costs seconds on every
+      #     include-stat and makes the suite crawl.
+      #   * It keeps platform-specific binaries out of the host checkout.
+      - epcc-vendor:/srv/epcc/app/vendor
+      - epcc-app-node-modules:/srv/epcc/app/node_modules
+      - epcc-root-node-modules:/srv/epcc/node_modules
+    working_dir: /srv/epcc
+    # Headless Chromium needs real /dev/shm; the 64 MB default makes large PDF
+    # renders die with a renderer crash rather than an error we can read.
+    shm_size: "1gb"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/login | grep -qE '^(200|302)$$'"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      # First boot installs Composer and npm dependencies and builds assets.
+      start_period: 240s
+
+volumes:
+  db-data:
+  epcc-vendor:
+  epcc-app-node-modules:
+  epcc-root-node-modules:

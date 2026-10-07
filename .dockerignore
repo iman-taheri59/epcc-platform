@@ -1,0 +1,46 @@
+# ---------------------------------------------------------------------------
+# Build context is the repository root (composer.json resolves
+# epcc/standards-engine from ../packages/standards-engine), so this file decides
+# how much of the checkout the image build has to ship to the daemon.
+# ---------------------------------------------------------------------------
+
+# Version control. Not needed at runtime and by far the largest thing in the
+# context on a repo with a 200 KB HANDOFF.md and years of history.
+.git
+.gitignore
+.gitattributes
+
+# Secrets and per-developer config. An app/.env baked into an image is how a
+# development APP_KEY and a database password end up in a registry.
+.env
+.env.*
+!.env.example
+app/.env
+app/.env.backup
+auth.json
+.netrc
+
+# Dependencies. Both are recreated inside the container (app/vendor is a named
+# volume, filled by the entrypoint). On a sandbox host app/vendor is a SYMLINK
+# into ~/.cache - following it into an image would embed another machine's
+# absolute paths.
+app/vendor
+vendor
+node_modules
+**/node_modules
+
+# Laravel runtime state: regenerable, and full of per-boot caches.
+app/storage/logs/*.log
+app/storage/framework/cache/data/*
+app/storage/framework/sessions/*
+app/storage/framework/views/*.php
+app/storage/framework/testing/*
+app/public/build
+app/public/hot
+app/public/storage
+app/storage/pail
+.phpunit.result.cache
+
+# CI and local tooling that the image never runs.
+.github
+.dockerignore
