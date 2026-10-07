@@ -22,7 +22,7 @@ final class PipingLine extends Model
     protected $fillable = [
         'design_pressure_kpa', 'operating_pressure_kpa', 'test_pressure_kpa',
         'design_temperature_c', 'operating_temperature_c',
-        'project_id', 'company_id', 'subsystem_id',
+        'project_id', 'company_id', 'subsystem_id', 'test_pack_id',
         'line_number', 'number_tokens', 'sequence',
         'nominal_size', 'service_code', 'piping_class_id', 'coating_code',
         'design_pressure', 'design_pressure_unit',
@@ -59,6 +59,11 @@ final class PipingLine extends Model
     public function pipingClass(): BelongsTo
     {
         return $this->belongsTo(PipingClass::class, 'piping_class_id');
+    }
+
+    public function testPack(): BelongsTo
+    {
+        return $this->belongsTo(PipingTestPack::class, 'test_pack_id');
     }
 
     public function documents(): HasMany

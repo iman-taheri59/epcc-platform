@@ -1,11 +1,76 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-09-18** · Status: **prototype + working vertical slice** · Tests: **852 passed / 3136 assertions** (+83 jsdom)
+Last updated: **2026-10-07** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom); Slice 4/5 targeted tests are pending runtime restoration
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
 do next. Everything else is detail hanging off `README.md`.
+
+
+---
+
+## 0a. 2026-10-06 MTO requirements reconciliation
+
+User uploaded `epcc-platform-mto-docs-changes-2026-10-06.txt`, which is a ZIP package renamed as `.txt`. It contains complete replacement documentation files, not patches. It must **not** be blindly copied over this repository because it would contradict the current branch and could erase the real Piping Workspace / Test Pack status added in `f33c9a7`.
+
+Reconciled MTO foundation requirements are now recorded in:
+
+- `docs/MTO-REQUIREMENTS-FA.md`
+- `docs/MTO-REQUIREMENTS-EN.md`
+
+Important current-state rule: these MTO/MR/PMS items are **requirements/design only**, not implemented in the current branch unless code/migration/test is later added. Do not describe them as `BUILT`:
+
+- `BaselineService`, `baseline_batches`, `baseline_discrepancies`;
+- `PcfParser`, `ModelImportService`, `model_imports`;
+- PMS services and NDT models mentioned in the uploaded package;
+- PO attribution/order gap, or usable-material gap.
+
+Slice 4 accepted immutable MTO snapshots are now built and are described below.
+
+Accepted MTO principles for future work:
+
+- approved MTO = gross procurement-planning quantity;
+- model/isometric estimate = net engineering need;
+- positive `net > gross` is a shortage and percentage tolerance must not suppress it;
+- `mto_item_no` is not globally unique and cannot be the sole downstream key;
+- accepted MTO rows must be immutable snapshots;
+- acceptance is all-or-nothing per MTO document/sub-MTO revision;
+- aggregation across accepted MTOs requires disjoint scope or exact immutable pair-level additivity evidence;
+- MTO permissions/access design is deferred.
+
+Material Library foundation was implemented after this reconciliation:
+
+- `app/database/migrations/2026_10_06_100000_create_material_catalogue.php`
+- `app/app/Models/MaterialItem.php`
+- `app/app/Services/MaterialCatalogueService.php`
+- `app/database/seeders/MaterialCatalogueSeeder.php`
+- `app/tests/Feature/MaterialLibraryTest.php`
+
+Built behavior: two-level catalogue identity shape (`project_id IS NULL` reserved for global/reference, project rows for project overlays), exact commodity-code lookup, alias-not-identity, controlled categories/status/source/unit, bilingual descriptions, RLS isolation, synthetic PH-14 piping catalogue.
+
+Validation: `restore.sh` passed; `MaterialLibraryTest` passed 6 tests / 15 assertions; `SeedPathTest` passed 2 tests / 6 assertions; standards validator passed. Full Laravel suite was started and showed no failures before the sandbox timeout, but it did not complete.
+
+Recommended next slice: implement MTO document/revision/staging (`mto_documents`, `mto_revisions`, `mto_staging_rows`) against the new material catalogue. MTO document/revision/staging was implemented after the material catalogue:
+
+- `app/database/migrations/2026_10_06_110000_create_mto_staging.php`
+- `app/app/Models/MtoDocument.php`, `MtoRevision.php`, `MtoStagingRow.php`
+- `app/app/Services/MtoStagingService.php`
+- `app/tests/Feature/MtoStagingTest.php`
+
+Built behavior: versioned MTO document header, DRAFT revisions, editable staging rows, exact material resolution via `material_items`, validation states for unmatched material, alias-not-identity, unit mismatch, duplicate `mto_item_no`, invalid quantity, and project-participant RLS. This is the editable source for Slice 4 acceptance.
+
+Validation: `restore.sh` passed; `MtoStagingTest` passed 8 tests / 21 assertions; `MaterialLibraryTest` passed 6 tests / 15 assertions; `SeedPathTest` passed 2 tests / 6 assertions; standards validator passed.
+
+### Slice 4 — accepted immutable MTO snapshots
+
+Added `accepted_mto_batches` and `accepted_mto_rows`, `MtoAcceptanceService`, and `MtoAcceptanceTest`. Only non-empty DRAFT revisions with all rows in `ACCEPTABLE` state are accepted. The service locks and validates the full revision, copies frozen source/material labels plus a source-row SHA-256 hash, marks the revision `ACCEPTED`, and performs every write in one transaction. A blocked or duplicate row leaves zero accepted rows and the revision in DRAFT. PostgreSQL RLS, immutable triggers, and model guards prevent later mutation/deletion; no MTO permissions were added.
+
+### Slice 5 — net engineering estimate and gross/net comparison
+
+Added `engineering_estimate_rows` and `EngineeringEstimateService`. Estimates preserve source type, revision/evidence and structured provenance, can remain provisional until linked to an `accepted_mto_row_id`, and use exact material/unit identity only. Linked rows report `SHORTAGE` when net exceeds gross, with no tolerance, or `DELTA_ONLY` when gross is equal to or greater than net. No waste, contingency, or cause is inferred.
+
+Next slice: PO attribution and order gap against effective issued/in-force quantities.
 
 ---
 
@@ -2650,8 +2715,47 @@ repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
 
+### 2026-10-05 — external repo handoff, backlog reconciliation and MVP roadmap
+
+Cloned the private GitHub repo in a fresh Arena workspace, confirmed local and remote `main` are in
+sync at `61093dd3f9a8e146161e288e2857c9dc372e6b4d`, and kept the PAT out of git config/remotes.
+Workspace footprint stayed small (~15 MB; no `vendor`/`node_modules` committed). The current sandbox
+has Node/Python but no PHP, Composer or PostgreSQL, so the full Laravel/RLS test suite was not run
+here. What could be verified was verified: `python3 standards-packs/validate_packs.py` passed for all
+3 standards packs and 5 reference packs, and `node prototype/test/sidebar.test.js` passed 19/19.
+
+Reconciled `docs/TODO.md` with the newer state already recorded in this handoff: procurement is no
+longer a zero-page module, ADR-006 phases 1/1b/2/3 are built, physical breakdown/reference data/units
+/components/ports/joints are now listed as done, and the open backlog is split into real gaps instead
+of stale module labels. Added `docs/ROADMAP-TO-MVP.md` with the recommended sequence: first restore a
+real Laravel/PostgreSQL test environment, then finish small PDFs, RFSU/PAC/FAC, PMS rules, engineering
+imports, equipment/nozzles and HSE. Also saved the initial Arena analysis as
+`docs/ARENA-INITIAL-ANALYSIS-FA.md`. User then set a standing documentation rule: every new
+document created from now on must have an English counterpart. Added the corresponding English
+versions `docs/ARENA-INITIAL-ANALYSIS-EN.md` and `docs/ROADMAP-TO-MVP-EN.md`; keep this bilingual
+pairing rule for future docs.
+
+Follow-up documentation audit: reviewed all 15 ADRs and the parent docs (`SRS`, `Architecture`,
+`Prototype-Coverage-Map`, `Spike-RLS-Results`, `Infra-Cost-Model-Iran`, `Iran-First`). Added
+`docs/DOCUMENTATION-AUDIT-FA.md` and `docs/DOCUMENTATION-AUDIT-EN.md`. Key findings: parent docs
+have drifted behind the real Laravel/Iran-first implementation; ADR-003 main is superseded by Annex
+A; ADR-006 is stale because phases 1/1b/2/3 are now built; SRS needs release-phase tags and the pack
+list aligned to `ips-iran`/`iso`/`awp`. Requirement recommendations recorded there: defer visual BPM,
+phase OCR/search/digital signature/offline sync, keep the visibility matrix constrained for MVP, and
+do not promise direct NWD parsing. User then clarified the product priority: all EPCC disciplines
+must remain in scope, but Piping should be completed first. Added
+`docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-FA.md` and
+`docs/PIPING-DISCIPLINE-COMPLETION-ROADMAP-EN.md`; updated TODO/roadmap/SRS/Architecture and ADR
+status notes accordingly. User then requested synthetic data for testing/preview and noted the UI feels
+cluttered. Added `docs/UI-UX-IMPROVEMENT-PLAN-FA.md` and `docs/UI-UX-IMPROVEMENT-PLAN-EN.md`: use
+realistic demo data, shift from register-first to task-first UX, build a Piping Workspace first, add
+summary cards, blocker-first views, detail drawers, deviation inbox and test-pack board. User also added that product planning and sales infrastructure must be completed: Iran-first requirements now, international readiness later. Added `docs/PRODUCT-PLANNING-AND-SALES-INFRA-FA.md` and `docs/PRODUCT-PLANNING-AND-SALES-INFRA-EN.md`, covering on-prem/air-gap sales, offline licensing, demo seed, sales collateral, implementation methodology, support diagnostics, and international commercial readiness. Built the first static, air-gap-safe Piping Workspace preview at `prototype/piping-workspace.html` using synthetic PH-14 data: bilingual FA/EN, RTL/LTR, summary cards, blocker-first filters, readiness bars, deviation inbox, test-pack board and a line detail drawer. Verified it contains no external refs and the existing pack validator/sidebar tests remain green. Follow-up: user reported the demo was not responsive; fixed the prototype with a compact mobile nav, stacked filters, card-style line rows under 760px, responsive metrics and full-width drawer. Second follow-up: filter checkbox labels overflowed and Persian mode still showed English literals such as “All subsystems”; localized those UI strings and made checkbox text wrap safely; also replaced remaining Persian-mode English labels in the filter/tabs/panels where they were not deliberate domain acronyms. Second pass made the filter bar a constrained grid, added a Persian static fallback for the subsystem option before JS runs, and made checkbox labels impossible to overflow on narrow widths. Added `prototype/test/piping-workspace.test.js` so Persian filter labels, language switching, mobile-card structure, drawer behaviour and air-gap safety are pinned by jsdom (16 assertions). Made the new Piping Workspace discoverable from `prototype/index.html`, added `npm run test:prototype`, and updated `README.md` so reviewers know which preview to open and which tests to run.
 
 
+Runtime restoration is now fixed and repeatable in this sandbox. `restore.sh` now creates `app/.env` when missing, forces Laravel onto PostgreSQL (`epcc` / `epcc_test`, user `epcc`, password `epcc_dev`), generates the app key, migrates/seeds, and publishes Filament assets; this closes the prior SQLite/PDO-driver restore failure. After the fix, `bash restore.sh` completed, and the full Laravel/PostgreSQL suite ran green: **856 passed / 3153 assertions**. Also added the first real Laravel version of the Piping Workspace at `/projects/{code}/piping/workspace`, linked it from the sidebar before the line register, and backed it with real project data: summary cards, blocker-first worklist, AFC evidence gaps, joint fit-up progress and subsystem-grouped test-pack readiness. New HTTP assertions pin EN/FA rendering, tenant isolation, sidebar discoverability and blocked-line worklist behaviour.
+
+
+Next main slice: turned test-pack readiness from a derived placeholder into a real Laravel object. Added `piping_test_packs` with RLS/archive-freeze policies, `piping_lines.test_pack_id`, `PipingTestPack` and `PipingTestPackService`. The workspace can now create hydrotest/test packs, assign/unassign lines, show unassigned-line counts, and move packs through `DRAFT → READY → TESTED → ACCEPTED`; `READY` is blocked until the pack has at least one line and all assigned lines are released. Added HTTP coverage for pack creation, assignment, and refusing readiness while a line is not released. Full suite after this slice: **858 passed / 3166 assertions**. Note: Laravel DB tests must not be run in parallel against the same `epcc_test` database; doing so produced expected migration/drop-schema races, then sequential reruns were green.
 
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 

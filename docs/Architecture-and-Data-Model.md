@@ -2,6 +2,10 @@
 ## Industrial EPCC Project Management & Automation Platform
 ### Companion to SRS-EPCC-001 v1.0
 
+> **Architecture status note — 2026-10-05:** The stack section in this document predates the Laravel decision. `ADR-003 Annex A` supersedes the original NestJS/React stack decision: the current implementation target is Laravel 13 + Filament v4 + PostgreSQL with a framework-free standards engine. The architectural principles, RLS model, standards-pack model and event/audit concepts remain relevant, but implementation examples that mention NestJS/React should be read as historical until this document is fully reconciled.
+>
+> **Discipline sequencing note:** all EPCC disciplines remain in scope, but Piping is now the first discipline to be completed deeply. Piping-specific implementation must leave generic seams for the remaining disciplines instead of hardcoding the platform around Piping.
+
 | Field | Value |
 |---|---|
 | Document ID | ARC-EPCC-001 |

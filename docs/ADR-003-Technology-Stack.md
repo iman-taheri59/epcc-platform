@@ -1,5 +1,8 @@
 # ADR-003 — Technology stack
 
+> **Status — 2026-10-05:** Superseded by `ADR-003 Annex A — Laravel evaluated as the backend stack`. The TypeScript/NestJS recommendation is retained as decision history, not as the current implementation target. Current stack: Laravel 13 + Filament v4 + PostgreSQL, with the framework-free standards engine preserved for future offline/TypeScript parity.
+
+
 | Field | Value |
 |---|---|
 | Document ID | ADR-EPCC-003 |

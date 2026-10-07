@@ -1,5 +1,8 @@
 # ADR-EPCC-010 — Equipment and nozzles, custom component templates, and the dia-inch convention
 
+> **Status — 2026-10-05:** Partially realised. Dia-inch using the smaller diameter is built through the joint model; equipment/nozzles remain pending and are now phase P2 of Piping completion. Open decisions before build: tag uniqueness scope, instrument register timing, and whether equipment tags are generated or imported/validated.
+
+
 **Status:** **PARTLY BUILT** — section 1 (the dia-inch convention) is built and tested in phase 3; sections 2 (custom templates) and 3 (equipment and nozzles) remain proposed.
 **Date:** 2026-09-14
 **Depends on:** ADR-006 (piping model), ADR-007 (reference data), ADR-009 (manual modelling)

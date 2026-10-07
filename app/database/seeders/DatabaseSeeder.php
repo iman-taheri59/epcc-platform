@@ -19,6 +19,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([EpccDemoSeeder::class, AuthSeeder::class]);
+        $this->call([EpccDemoSeeder::class, AuthSeeder::class, MaterialCatalogueSeeder::class]);
     }
 }

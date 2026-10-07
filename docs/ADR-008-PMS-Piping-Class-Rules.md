@@ -1,5 +1,8 @@
 # ADR-EPCC-008 — PMS piping classes: size-dependent rules and the branch table
 
+> **Status — 2026-10-05:** Proposed and now promoted to the next Piping completion phase after a full PHP/PostgreSQL test environment is available. Do not implement this against SQLite or without PostgreSQL migration/RLS tests.
+
+
 **Status:** PROPOSED — analysis only, nothing implemented
 **Date:** 2026-09-14
 **Depends on:** ADR-007 (reference data: NPS/DN/OD, schedules) — PROPOSED

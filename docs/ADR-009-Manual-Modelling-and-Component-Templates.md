@@ -1,5 +1,8 @@
 # ADR-EPCC-009 — Manual modelling, component templates, and the PCF-vs-Plant 3D question
 
+> **Status — 2026-10-05:** Partially built. The template-driven component/port modelling path is implemented; PCF import remains pending and should come after PMS validation so imports do not bypass engineering rules.
+
+
 **Status:** PROPOSED — analysis only, nothing implemented
 **Date:** 2026-09-14
 **Depends on:** ADR-006 (piping model), ADR-007 (reference data), ADR-008 (PMS class rules)

@@ -100,8 +100,11 @@ final class Navigation
                     $this->item('project.vendortr', 'doc', "/projects/{$code}/vendor-transmittals", [
                         'fa' => 'ترانسمیتال وندورها', 'en' => 'Vendor transmittals',
                     ], $plan, $lang, $currentPath),
+                    $this->item('project.piping.workspace', 'qaqc', "/projects/{$code}/piping/workspace", [
+                        'fa' => 'فضای کار پایپینگ', 'en' => 'Piping workspace',
+                    ], $plan, $lang, $currentPath),
                     $this->item('project.piping', 'qaqc', "/projects/{$code}/piping", [
-                        'fa' => 'خطوط لوله', 'en' => 'Piping lines',
+                        'fa' => 'رجیستر خطوط لوله', 'en' => 'Piping line register',
                     ], $plan, $lang, $currentPath),
                     $this->item('project.punch', 'qaqc', "/projects/{$code}/punch", [
                         'fa' => 'کنترل کیفیت و پانچ‌لیست', 'en' => 'QA/QC & punch list',

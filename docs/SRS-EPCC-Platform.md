@@ -281,6 +281,11 @@ All discipline-aware modules SHALL support at minimum:
 **FR-DIS-01 (M)** Discipline set is configurable per project; custom disciplines can be added with their own codes, deliverable types, and progress rules.
 **FR-DIS-02 (M)** Every object carries a discipline attribute enabling discipline-scoped dashboards, permissions and progress roll-up.
 
+**Implementation sequencing note — 2026-10-05.** All 18 disciplines remain in product scope. The implementation sequence is intentionally **Piping-first**: Piping is the first discipline to be completed deeply because it exercises the hardest cross-module chain (engineering data → PMS validation → material traceability → field fit-up/weld/NDT → test packs → commissioning readiness). This must not narrow the product scope to Piping; rather, Piping is the template discipline whose patterns will later be reused for Electrical, I&C, Civil, Mechanical and the other disciplines.
+
+**Release targeting rule.** The M/S/C priority remains a business criticality marker, not a promise that every M item ships in the first MVP. Each requirement should also carry a release target in future revisions: `P0 Pilot`, `P1 MVP`, `P2 Enterprise`, or `P3 International`.
+
+
 ### 6.4 Project & Portfolio Module (PROJECT)
 - **FR-PRJ-01 (M)** Project setup wizard: contract type (LSTK/EPC, EPCM, Reimbursable, Unit-rate, PC), standards pack, disciplines, currencies, calendars, breakdown structures, participating companies, gate model.
 - **FR-PRJ-02 (M)** Multi-level breakdowns: WBS, CBS, OBS, PBS, SBS (system), CWA/CWP (AWP), Area/Unit/Plant, with cross-mapping.
