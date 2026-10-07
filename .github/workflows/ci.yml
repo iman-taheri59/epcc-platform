@@ -41,7 +41,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PHP_VERSION: "8.3"
+  # 8.4, not the ^8.3 that composer.json advertises: composer.lock resolved
+  # Symfony 8.1, and 18 of those packages require php >=8.4.1, so `composer
+  # install` on 8.3 fails with "lock file does not contain a compatible set of
+  # packages". REBUILD.md and restore.sh already say 8.4. See the Dockerfile.
+  PHP_VERSION: "8.4"
 
 jobs:
   # -------------------------------------------------------------------------
@@ -310,7 +314,7 @@ jobs:
             command -v pdffonts
             command -v pdftotext
             fc-list | grep -qi vazirmatn
-            php -m | grep -qx pdo_pgsql
+            php -m | grep -qxi pdo_pgsql
             echo "PDF toolchain + pgsql driver OK inside the image"
           '
 

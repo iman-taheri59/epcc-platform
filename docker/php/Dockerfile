@@ -5,7 +5,7 @@
 # One container that can do everything the suite needs, so that "it works on my
 # machine" stops being a variable:
 #
-#   * PHP 8.3 CLI + every extension composer.lock actually asks for
+#   * PHP 8.4 CLI + every extension composer.lock actually asks for
 #   * Composer 2 (copied from the official image, not `curl | php`)
 #   * Node 22 (Vite 8 needs >= 22.12; Debian bookworm ships Node 18)
 #   * PostgreSQL 17 client (psql/pg_isready for the boot and dev scripts)
@@ -24,7 +24,22 @@
 # `../packages/standards-engine`.
 # ---------------------------------------------------------------------------
 
-FROM php:8.3-cli-bookworm
+# --- PHP 8.4, NOT 8.3 -------------------------------------------------------
+# app/composer.json asks for "php": "^8.3", which reads as though 8.3 is fine.
+# It is not: composer.lock RESOLVED Symfony 8.1, and 18 of those packages
+# declare `php >=8.4.1`. Installing the lock on 8.3 fails outright with
+# "Your lock file does not contain a compatible set of packages" - verified in
+# CI, not guessed.
+#
+# Every other source in this repository already says 8.4: REBUILD.md records
+# "PHP 8.4.24" as the verified version, restore.sh installs php8.4-cli, and
+# HANDOFF.md / docs/TODO.md both name the stack "Laravel 13.31 + Filament v4 +
+# PHP 8.4 + PostgreSQL 17". ^8.3 is a floor that the locked tree has outgrown.
+#
+# Tightening composer.json to ^8.4 and regenerating the lock is a separate
+# decision (it touches every environment, not just this one), so it is
+# deliberately NOT done here.
+FROM php:8.4-cli-bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive \
     COMPOSER_ALLOW_SUPERUSER=1 \
@@ -65,6 +80,18 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # psql, but building ext/pgsql and ext/pdo_pgsql needs the server headers
 # (libpq-fe.h). Without it the extension step below dies with
 # "Cannot find libpq-fe.h".
+#
+# Vazirmatn comes from the Debian archive where the release carries it and from
+# the upstream npm tarball where it does not (Node is already in the image, so
+# the fallback needs no extra tooling). Either way this layer ends by proving
+# fontconfig can see the family - print/layout.blade.php asks for it BY NAME
+# with no @font-face, because the renderer runs with networking disabled
+# (AG-01..AG-06).
+#
+# No comment lines appear INSIDE a RUN continuation anywhere in this file.
+# Docker strips them, but a line of prose between two backslash-continued
+# statements is only correct if the reader knows that, and every shell linter
+# and syntax checker on earth disagrees. Explanations live up here instead.
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
@@ -87,11 +114,6 @@ RUN set -eux; \
         poppler-utils \
         fonts-dejavu-core; \
     \
-    # Vazirmatn. From the Debian archive where the release carries it, otherwise
-    # from the upstream npm tarball (Node is already in the image, so this needs
-    # no extra tooling). Either way the build ends by proving fontconfig can see
-    # the family - print/layout.blade.php asks for it BY NAME with no @font-face,
-    # because the renderer runs with networking disabled (AG-01..AG-06).
     apt-get install -y --no-install-recommends fonts-vazirmatn || { \
         echo "fonts-vazirmatn is not in this archive - installing from the npm release"; \
         mkdir -p /tmp/vazir; \
@@ -115,6 +137,9 @@ RUN set -eux; \
 #
 # gd needs libpng/libjpeg/libfreetype/libwebp; intl needs libicu; zip needs
 # libzip; pgsql/pdo_pgsql need libpq - all installed above.
+#
+# mbstring is already compiled into the base image, so it is installed only if
+# that ever stops being true, rather than failing the build on a duplicate.
 RUN set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
     docker-php-ext-install -j"$(nproc)" \
@@ -128,9 +153,7 @@ RUN set -eux; \
         pgsql \
         sockets \
         zip; \
-    # mbstring is compiled into the base image; install it only if that ever
-    # stops being true, rather than failing the build on a duplicate.
-    php -m | grep -qx mbstring || docker-php-ext-install -j"$(nproc)" mbstring
+    php -m | grep -qxi mbstring || docker-php-ext-install -j"$(nproc)" mbstring
 
 # --- Optional operator-supplied fonts (air-gapped builds) --------------------
 # See docker/php/fonts/README.md. A directory with no TTFs in it is normal.
@@ -162,12 +185,18 @@ WORKDIR /srv/epcc
 # Every one of these has a silent-failure story behind it. Fail the BUILD here
 # instead of discovering it as a mysteriously green suite or a Persian PDF full
 # of boxes three weeks later.
+#
+# The `grep -qxi` in the extension loop is case-INsensitive on purpose: `php -m`
+# reports several extensions in mixed case (PDO, SimpleXML, Phar, SPL,
+# Reflection). A case-sensitive match failed this layer on pdo and simplexml
+# while both were installed and working - the verification was the only broken
+# thing, which is the worst possible place for a false alarm.
 RUN set -eux; \
     php -v | head -1; \
     for ext in bcmath ctype curl dom exif fileinfo gd intl json mbstring \
                openssl pcntl pdo pdo_pgsql pgsql posix session simplexml \
                sockets tokenizer xml zip; do \
-        php -m | grep -qx "$ext" || { echo "MISSING PHP EXTENSION: $ext"; exit 1; }; \
+        php -m | grep -qxi "$ext" || { echo "MISSING PHP EXTENSION: $ext"; exit 1; }; \
     done; \
     command -v chromium >/dev/null \
         || { echo "MISSING chromium - the 13 PDF tests would SILENTLY SKIP"; exit 1; }; \

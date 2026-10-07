@@ -9,7 +9,7 @@ Two environments are supported and they are kept in step deliberately:
 
 | | What it is | Entry point |
 |---|---|---|
-| **Containers** (this document) | PostgreSQL 17 + PHP 8.3 + Composer + Node 22 + headless Chromium, reproducible on any machine with Docker | `scripts/dev-up.sh` |
+| **Containers** (this document) | PostgreSQL 17 + PHP 8.4 + Composer + Node 22 + headless Chromium, reproducible on any machine with Docker | `scripts/dev-up.sh` |
 | **Bare sandbox** | The same stack installed directly onto a Debian/Ubuntu host, rebuilt after every sandbox wipe | `restore.sh` / `rebuild-env.sh`, see `REBUILD.md` |
 
 If you change a credential, a seeder, a port or a package in one, change it in
@@ -53,7 +53,7 @@ URL, so a printed URL is a working one.
 | `db` | `postgres:17` | `127.0.0.1:5433` → 5432 | `epcc` (development) and `epcc_test` (suite) |
 | `app` | built from `docker/php/Dockerfile` | `8000` → 8000 | `php artisan serve`, and the shell every script uses |
 
-The `app` image contains PHP 8.3 with `pdo_pgsql pgsql intl bcmath gd zip pcntl
+The `app` image contains PHP 8.4 with `pdo_pgsql pgsql intl bcmath gd zip pcntl
 sockets opcache exif mbstring`, Composer 2, Node 22, the PostgreSQL client,
 Python 3, headless Chromium, `poppler-utils` and the Vazirmatn font.
 
@@ -128,10 +128,12 @@ Opt out of any of it with `SKIP_COMPOSER=1`, `SKIP_NPM=1`, `SKIP_ASSETS=1`,
 SKIP_MIGRATE=1 docker compose up -d
 ```
 
-## 6. Two traps — read before changing `compose.yaml`
+## 6. Traps — read before changing anything here
 
-Both look like simplification opportunities. Both break the suite in a way that
-invites you to weaken the suite.
+Four decisions in this setup look like simplification opportunities and are not.
+Three of them break the suite in a way that *invites you to weaken the suite*
+rather than fix the environment, which is what makes them expensive: the symptom
+points at the assertion, not at the cause.
 
 ### 6.1 No variable Laravel reads may be exported to the container
 
@@ -183,6 +185,30 @@ That symlink is meaningless inside a container. Separately, `composer.json`
 resolves `epcc/standards-engine` from a path repository with `"symlink": true`,
 so the symlink is **absolute** — a `vendor/` built on the host points at a path
 that does not exist in the image. The entrypoint detects that and reinstalls.
+
+### 6.4 The runtime is PHP 8.4, even though `composer.json` says `^8.3`
+
+`app/composer.json` declares `"php": "^8.3"`, which reads as though a PHP 8.3
+image is the faithful choice. It is not, and the failure is total rather than
+subtle:
+
+```
+Your lock file does not contain a compatible set of packages. Please run composer update.
+  - symfony/console v8.1.6 requires php >=8.4.1 -> your php version (8.3.35) does not satisfy that requirement.
+```
+
+`composer.lock` resolved **Symfony 8.1**, and 18 of the locked packages declare
+`php >=8.4.1`. `^8.3` is a *floor* that the locked dependency tree has simply
+outgrown; nothing in the repository can install on 8.3.
+
+Every other source here already agrees: `REBUILD.md` records "PHP 8.4.24" as the
+verified version, `restore.sh` installs `php8.4-cli`, and `HANDOFF.md` and
+`docs/TODO.md` both name the stack "Laravel 13.31 + Filament v4 + **PHP 8.4** +
+PostgreSQL 17". The Dockerfile and CI are therefore pinned to 8.4.
+
+Tightening `composer.json` to `^8.4` and regenerating the lock would make the
+constraint tell the truth, but it touches every environment at once rather than
+just this one, so it is deliberately left as a separate decision.
 
 ## 7. Configuration
 
@@ -250,6 +276,8 @@ The suite is large and several tests call `migrate:fresh` in `setUp()`, so the
 | Page renders unstyled, `/admin` looks broken, but returns 200 | Filament assets never published | `docker compose exec app php artisan filament:assets` |
 | "Vite manifest not found" | `app/public/build` missing | `docker compose exec app npm run build` |
 | `SQLSTATE…could not connect to server` on boot | `db` not healthy yet, or the init scripts were changed after the volume existed | `docker compose logs db`; after editing `docker/postgres/init/*`, run `scripts/dev-down.sh --volumes` |
+| `composer install` fails: "Your lock file does not contain a compatible set of packages" | The runtime is PHP 8.3; the locked Symfony 8.1 tree needs `>=8.4.1` | Re-read §6.4 — the image and CI are pinned to 8.4 |
+| A `php -m` check fails on an extension that is installed | `php -m` prints `PDO`, `SimpleXML`, `Phar`, `SPL` in mixed case | Match case-insensitively (`grep -qxi`) |
 | Tenancy tests fail with rows visible where none should be | The role became a superuser | Re-read §6.2; `scripts/dev-down.sh --volumes && scripts/dev-up.sh` |
 | Tests wiped your demo data | `DB_DATABASE` exported as a real env var | Re-read §6.1 |
 | `EACCES` writing files on the host after a container run | Container ran as root (no `EPCC_UID`) | Check `./.env` has your uid, then `sudo chown -R $(id -u):$(id -g) app/storage app/.env` |
@@ -260,7 +288,7 @@ The suite is large and several tests call `migrate:fresh` in `setUp()`, so the
 
 ```
 compose.yaml                              the stack
-docker/php/Dockerfile                     PHP 8.3 runtime + PDF toolchain
+docker/php/Dockerfile                     PHP 8.4 runtime + PDF toolchain
 docker/php/entrypoint.sh                  first-boot bootstrap (restore.sh's counterpart)
 docker/php/epcc.ini                       upload/memory limits (mirrors restore.sh)
 docker/php/fonts/                         optional font drop-in for air-gapped builds

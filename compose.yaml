@@ -56,7 +56,7 @@ services:
       start_period: 10s
 
   # -------------------------------------------------------------------------
-  # Application: PHP 8.3, Composer, Node 22, headless Chromium + Vazirmatn.
+  # Application: PHP 8.4, Composer, Node 22, headless Chromium + Vazirmatn.
   # -------------------------------------------------------------------------
   app:
     build:
