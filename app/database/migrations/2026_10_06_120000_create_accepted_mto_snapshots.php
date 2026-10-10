@@ -173,8 +173,20 @@ return new class extends Migration
 
         // RLS is the tenant boundary; the trigger is the history boundary.
         // It also protects callers that run with a privileged role.
+        //
+        // OR REPLACE is not stylistic here. `migrate:fresh` drops every TABLE
+        // but a function is a schema-level object and survives it, so a plain
+        // CREATE FUNCTION dies with 42723 "already exists with same argument
+        // types" on the SECOND migrate:fresh against the same database. The
+        // suite calls migrate:fresh in setUp() (AirgapVerificationTest and
+        // others), and scripts/dev-seed.sh calls it on demand, so this ran
+        // exactly once per database before failing every time after. The three
+        // other function-creating migrations in this directory
+        // (epcc_membership_requires_company, transmittal_sync_issued_at,
+        // epcc_project_is_writable) already use OR REPLACE for this reason, and
+        // this migration's own down() already uses DROP FUNCTION IF EXISTS.
         DB::unprepared(<<<'SQL'
-            CREATE FUNCTION epcc_reject_accepted_mto_mutation()
+            CREATE OR REPLACE FUNCTION epcc_reject_accepted_mto_mutation()
             RETURNS trigger
             LANGUAGE plpgsql
             AS $$
