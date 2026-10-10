@@ -1,7 +1,7 @@
 # نیازمندی‌های تکمیلی MTO پایپینگ و مدیریت متریال
 
 **تاریخ:** 2026-10-06  
-**وضعیت:** پیشنهاد نیازمندی و طراحی مرحله‌ای؛ هنوز پیاده‌سازی نشده مگر مواردی که صریحاً در کد فعلی وجود دارند.  
+**وضعیت:** پیشنهاد نیازمندی و طراحی مرحله‌ای؛ وضعیت پیاده‌سازی هر slice در ادامه صریحاً ثبت شده است.
 **دامنه:** پایپینگ اول؛ سایر دیسیپلین‌های EPCC در محدوده محصول باقی می‌مانند اما فعلاً به‌صورت عمیق پیاده‌سازی نمی‌شوند.  
 **ورودی:** بستهٔ آپلودی `epcc-platform-mto-docs-changes-2026-10-06.txt`، کد فعلی branch `arena/roadmap-reconciliation`، ADRهای موجود و تصمیم‌های قبلی کاربر.
 
@@ -9,7 +9,7 @@
 
 ## 1. جمع‌بندی اجرایی
 
-نیازمندی‌های MTO آپلودشده از نظر محصولی دقیق و مهم هستند، اما با branch فعلی نباید به‌صورت جایگزینی کامل فایل‌ها اعمال شوند. بعضی فایل‌های بسته از وضعیت مستنداتی/کدی دیگری آمده‌اند و در آن‌ها چند قابلیت به‌صورت `BUILT` توصیف شده که در branch فعلی وجود ندارد؛ مانند `BaselineService`، `PcfParser`، `ModelImportService`، `accepted_mto_rows` و سرویس‌های PMS. بنابراین این سند نیازمندی‌ها را با وضعیت واقعی مخزن فعلی آشتی می‌دهد.
+نیازمندی‌های MTO آپلودشده از نظر محصولی دقیق و مهم هستند، اما با branch فعلی نباید به‌صورت جایگزینی کامل فایل‌ها اعمال شوند. بعضی فایل‌های بسته از وضعیت مستنداتی/کدی دیگری آمده‌اند و در آن‌ها چند قابلیت به‌صورت `BUILT` توصیف شده که در branch فعلی وجود ندارد؛ مانند `BaselineService`، `PcfParser`، `ModelImportService` و سرویس‌های PMS. بنابراین این سند نیازمندی‌ها را با وضعیت واقعی مخزن فعلی آشتی می‌دهد.
 
 هدف فاز بعدی این است که برای پایپینگ، زنجیرهٔ زیر قابل اتکا و قابل آزمون شود:
 
@@ -57,7 +57,7 @@ Material Library
 | `baseline_batches` / `baseline_discrepancies` | وجود ندارد |
 | `PcfParser` / `ModelImportService` / `model_imports` | وجود ندارد |
 | quarantine برای unknown imported line | وجود ندارد |
-| immutable accepted-MTO-row snapshot store | وجود ندارد |
+| immutable accepted-MTO-row snapshot store | در Slice 4 ساخته شد: `accepted_mto_batches`، `accepted_mto_rows`، پذیرش تراکنشی، label/hash منجمد و تست rollback |
 | PMS entry/access/bulk services ذکرشده در بسته | وجود ندارد |
 | NDT requirement model ذکرشده در بسته | وجود ندارد |
 | `material_requisition_sequence` ذکرشده در بسته | وجود ندارد |
@@ -200,7 +200,7 @@ Project
 
 ## A2. MTO Document, Revision and Staging
 
-**وضعیت پیاده‌سازی در 2026-10-06:** اولین برش staging در کد ساخته شد. branch فعلی اکنون `mto_documents`، `mto_revisions`، `mto_staging_rows`، مدل‌های `MtoDocument` / `MtoRevision` / `MtoStagingRow`، سرویس `MtoStagingService` و تست `MtoStagingTest` دارد. این فقط DRAFT/staging است؛ immutable acceptance، all-or-nothing snapshots و gross/net comparison هنوز ساخته نشده‌اند.
+**وضعیت پیاده‌سازی در 2026-10-06:** اولین برش staging در کد ساخته شد. branch فعلی اکنون `mto_documents`، `mto_revisions`، `mto_staging_rows`، مدل‌های `MtoDocument` / `MtoRevision` / `MtoStagingRow`، سرویس `MtoStagingService` و تست `MtoStagingTest` دارد. این لایهٔ editable DRAFT/staging است؛ Slice 4 immutable acceptance و Slice 5 مقایسهٔ net estimate با gross را اضافه کرده‌اند.
 
 ### هدف
 
@@ -317,7 +317,9 @@ Immutable snapshot:
 2. derived simple quantity از components فعلی فقط جایی که داده کافی است؛
 3. PCF import بعداً، مگر تصمیم جداگانه گرفته شود.
 
-### موجودیت پیشنهادی: `engineering_estimate_rows`
+### موجودیت: `engineering_estimate_rows`
+
+**در Slice 5 (2026-10-06) ساخته شد:** جدول، مدل و سرویس برای ردیف‌های manual/model/PCF-labelled، identity دقیق متریال، provenance، لینک اختیاری به accepted row و مقایسهٔ gross/net.
 
 - project_id
 - source_type: `MANUAL_ISO`, `MODEL_DERIVED`, `PCF_IMPORT`
@@ -509,19 +511,29 @@ Workflow فعلی test pack فقط فاز اول است. تکمیل بعدی ب�
 - RLS isolation برای project participants؛
 - تست برای حفظ raw text، alias-not-identity و non-participant isolation.
 
-این slice هیچ accepted immutable snapshot نمی‌سازد.
+این slice staging row را accept یا mutate نمی‌کند.
 
 ### Slice 4 — Accepted immutable snapshots
 
-- `accepted_mto_batches`, `accepted_mto_rows`؛
-- all-or-nothing transaction؛
-- tests برای rollback کامل.
+**در 2026-10-06 در همین branch ساخته شد:**
+
+- `accepted_mto_batches` و `accepted_mto_rows`؛
+- `MtoAcceptanceService` فقط revision غیرخالی در وضعیت DRAFT را می‌پذیرد؛
+- همهٔ rowهای معتبر در یک transaction کپی می‌شوند؛ در صورت خطا revision در DRAFT می‌ماند و batch/row ناقص باقی نمی‌ماند؛
+- متن خام، labelهای متریال، commodity code، provenance مربوط به scope و SHA-256 هر row منجمد می‌شوند؛
+- RLS PostgreSQL و نگهبان‌های immutability در database/model؛
+- `MtoAcceptanceTest` برای acceptance اتمی، rollback ردیف blocked/duplicate، ثابت‌ماندن label کاتالوگ، identity از نوع UUID و isolation غیرعضو تست دارد.
 
 ### Slice 5 — Net estimate and gross/net comparison
 
-- `engineering_estimate_rows`؛
-- linkage به accepted MTO row؛
-- no-tolerance shortage logic.
+**در 2026-10-06 در همین branch ساخته شد:**
+
+- `engineering_estimate_rows`، `EngineeringEstimateRow` و `EngineeringEstimateService`؛
+- source typeهای `MANUAL_ISO`، `MODEL_DERIVED` و `PCF_IMPORT` بدون ادعای وجود parser برای PCF؛
+- لینک اختیاری به `accepted_mto_row_id` immutable و provenance ساختاریافته؛
+- وقتی net از gross بیشتر باشد، `SHORTAGE` بدون percentage tolerance؛
+- وقتی gross برابر یا بیشتر باشد، `DELTA_ONLY` و بدون استنباط علت؛
+- تست برای provisional row، identity/unit دقیق، shortage بدون tolerance، over-plan delta و RLS isolation.
 
 ### Slice 6 — PO attribution and order gap
 

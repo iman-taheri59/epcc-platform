@@ -8,8 +8,9 @@ use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
-/** Editable MTO revision. Acceptance into immutable snapshots is a later slice. */
+/** Editable MTO revision with one immutable accepted snapshot at most. */
 final class MtoRevision extends Model
 {
     use HasUuid;
@@ -49,4 +50,5 @@ final class MtoRevision extends Model
     public function company(): BelongsTo { return $this->belongsTo(Company::class); }
     public function headerScope(): BelongsTo { return $this->belongsTo(Subsystem::class, 'header_scope_id'); }
     public function rows(): HasMany { return $this->hasMany(MtoStagingRow::class, 'mto_revision_id'); }
+    public function acceptedBatch(): HasOne { return $this->hasOne(AcceptedMtoBatch::class, 'mto_revision_id'); }
 }
