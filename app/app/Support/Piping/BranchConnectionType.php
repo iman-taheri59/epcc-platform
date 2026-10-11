@@ -7,11 +7,12 @@ namespace App\Support\Piping;
 /**
  * The closed vocabulary a branch-table cell may resolve to (ADR-008 §4.2).
  *
- * STUB_IN is the Pipe-to-Pipe outcome: the branch pipe is contoured and
- * welded straight into the header with no fitting in between. Downstream
- * (ADR-008 build phase 3) that difference is load-bearing — a STUB_IN cell
- * means "expect NO component at this branch", while every other type means
- * the modelled component must match the class.
+ * P2P is the Pipe-to-Pipe outcome (owner terminology, 2026-10-11): the
+ * branch pipe is contoured and welded onto/into the header with NO fitting
+ * in between. It comes in two kinds — see P2pKind — and is load-bearing for
+ * ADR-008 build phase 3: a P2P cell means "expect NO component at this
+ * branch", while every other type means the modelled component must match
+ * the class.
  *
  * A reducing tee is deliberately NOT its own type (ADR-008 §7 Q2): reduction
  * is derived from the port sizes, never stored, so a stored type cannot
@@ -22,14 +23,14 @@ final class BranchConnectionType
     public const TEE = 'TEE';
     public const WELDOLET = 'WELDOLET';
     public const SOCKOLET = 'SOCKOLET';
-    public const STUB_IN = 'STUB_IN';
+    public const P2P = 'P2P';
 
     /** @var list<string> */
     public const ALL = [
         self::TEE,
         self::WELDOLET,
         self::SOCKOLET,
-        self::STUB_IN,
+        self::P2P,
     ];
 
     /** @return array{fa:string,en:string} */
@@ -39,7 +40,7 @@ final class BranchConnectionType
             self::TEE => ['fa' => 'سه‌راهی', 'en' => 'Tee'],
             self::WELDOLET => ['fa' => 'ولدولت', 'en' => 'Weldolet'],
             self::SOCKOLET => ['fa' => 'ساکولت', 'en' => 'Sockolet'],
-            self::STUB_IN => ['fa' => 'لوله به لوله (Stub-in)', 'en' => 'Pipe-to-pipe (stub-in)'],
+            self::P2P => ['fa' => 'لوله به لوله (P2P)', 'en' => 'Pipe-to-pipe (P2P)'],
             default => ['fa' => $type, 'en' => $type],
         };
     }

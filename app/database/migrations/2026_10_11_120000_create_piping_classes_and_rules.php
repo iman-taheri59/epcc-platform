@@ -44,11 +44,18 @@ return new class extends Migration
     ];
 
     /**
-     * ADR-008 §4.2: the closed branch vocabulary. STUB_IN is the
-     * Pipe-to-Pipe outcome — the branch is contoured and welded straight
-     * into the header, no fitting in between.
+     * ADR-008 §4.2: the closed branch vocabulary. P2P is the Pipe-to-Pipe
+     * outcome (owner terminology, 2026-10-11) — the branch is contoured and
+     * welded onto/into the header with no fitting. Its two kinds (stub-in /
+     * stub-on) live in `p2p_kind`.
      */
-    private const BRANCH_TYPES = ['TEE', 'WELDOLET', 'SOCKOLET', 'STUB_IN'];
+    private const BRANCH_TYPES = ['TEE', 'WELDOLET', 'SOCKOLET', 'P2P'];
+
+    /** @see \App\Support\Piping\P2pKind */
+    private const P2P_KINDS = ['STUB_IN', 'STUB_ON'];
+
+    /** @see \App\Support\Piping\BranchReinforcement */
+    private const REINFORCEMENTS = ['NONE', 'PAD'];
 
     public function up(): void
     {
@@ -124,6 +131,15 @@ return new class extends Migration
             $t->text('header_range');
             $t->text('branch_range');
             $t->string('component_type', 32);
+
+            // Pipe-to-Pipe cells only: stub-in vs stub-on. NULL on fittings.
+            $t->string('p2p_kind', 16)->nullable();
+
+            // Owner rule (2026-10-11): when a reinforcement pad is required,
+            // its thickness is a mandatory datum — enforced by CHECK below.
+            $t->string('reinforcement', 16)->default('NONE');
+            $t->decimal('pad_thickness', 8, 3)->nullable();   // millimetres
+
             $t->jsonb('value')->nullable();
             $t->text('source_ref')->nullable();
             // Explicit tiebreak when two rules are equally narrow (ADR-008 §4.3).
@@ -143,6 +159,8 @@ return new class extends Migration
 
         $kinds = implode(', ', array_map(static fn (string $k) => "'{$k}'", self::RULE_KINDS));
         $branchTypes = implode(', ', array_map(static fn (string $k) => "'{$k}'", self::BRANCH_TYPES));
+        $p2pKinds = implode(', ', array_map(static fn (string $k) => "'{$k}'", self::P2P_KINDS));
+        $reinforcements = implode(', ', array_map(static fn (string $k) => "'{$k}'", self::REINFORCEMENTS));
 
         DB::unprepared(<<<SQL
             ALTER TABLE piping_classes ALTER COLUMN dn_span TYPE int4range
@@ -170,6 +188,25 @@ return new class extends Migration
                 CHECK (NOT isempty(header_range) AND NOT isempty(branch_range));
             ALTER TABLE piping_class_branch_rules ADD CONSTRAINT piping_class_branch_type_valid
                 CHECK (component_type IN ({$branchTypes}));
+            -- A P2P cell must say which kind; a fitting cell must not.
+            -- NULL-explicit on purpose: `NULL IN (...)` is NULL, and a CHECK
+            -- that evaluates to NULL passes — verified live, that let a P2P
+            -- row with no kind through the first draft of this constraint.
+            ALTER TABLE piping_class_branch_rules ADD CONSTRAINT piping_class_branch_p2p_kind_valid
+                CHECK (
+                    (component_type = 'P2P' AND p2p_kind IS NOT NULL AND p2p_kind IN ({$p2pKinds}))
+                    OR (component_type <> 'P2P' AND p2p_kind IS NULL)
+                );
+            ALTER TABLE piping_class_branch_rules ADD CONSTRAINT piping_class_branch_reinforcement_valid
+                CHECK (reinforcement IN ({$reinforcements}));
+            -- Owner rule: a PAD without its thickness is an incomplete datum
+            -- and must be unrepresentable. A thickness without a PAD is a
+            -- contradiction and is refused too.
+            ALTER TABLE piping_class_branch_rules ADD CONSTRAINT piping_class_branch_pad_valid
+                CHECK (
+                    (reinforcement = 'PAD' AND pad_thickness IS NOT NULL AND pad_thickness > 0)
+                    OR (reinforcement <> 'PAD' AND pad_thickness IS NULL)
+                );
 
             -- THE LOAD-BEARING CONSTRAINT (ADR-008 §3): two rules of the same
             -- kind on the same class may not overlap. btree_gist supplies the

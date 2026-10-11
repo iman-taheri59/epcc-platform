@@ -10,8 +10,10 @@ use App\Models\Project;
 use App\Models\User;
 use App\Services\PipingClassService;
 use App\Support\Piping\BranchConnectionType;
+use App\Support\Piping\BranchReinforcement;
 use App\Support\Piping\Exceptions\BranchLargerThanHeaderException;
 use App\Support\Piping\Exceptions\NoRuleForSizeException;
+use App\Support\Piping\P2pKind;
 use App\Support\Piping\PipingClassState;
 use App\Support\Piping\PipingRuleKind;
 use App\Support\TenantContext;
@@ -244,27 +246,77 @@ final class PipingClassTest extends TestCase
             // General case: a fitting tee.
             $this->classes->addBranchRule($this->project(), $this->user(), $class, 15, 600, 15, 600, BranchConnectionType::TEE, 'en');
 
-            // Pipe-to-Pipe exception: small branches off large headers are
-            // contoured straight into the header — no fitting. Reinforcement
-            // requirements ride in the jsonb value.
+            // Pipe-to-Pipe, STUB-IN, with a mandatory reinforcement pad:
+            // the pad thickness travels with the rule.
             $this->classes->addBranchRule(
                 $this->project(), $this->user(), $class, 200, 600, 15, 50,
-                BranchConnectionType::STUB_IN, 'en',
-                value: ['reinforcement' => 'PAD'], sourceRef: 'PMS §6.1'
+                BranchConnectionType::P2P, 'en',
+                p2pKind: P2pKind::STUB_IN,
+                reinforcement: BranchReinforcement::PAD,
+                padThickness: 6.35,
+                sourceRef: 'PMS §6.1'
+            );
+
+            // Pipe-to-Pipe, STUB-ON (saddle), no reinforcement needed.
+            $this->classes->addBranchRule(
+                $this->project(), $this->user(), $class, 15, 50, 15, 50,
+                BranchConnectionType::P2P, 'en',
+                p2pKind: P2pKind::STUB_ON
             );
         });
 
         $this->asPars(function () use ($class): void {
             $p2p = $this->classes->branchFor($class, 300, 25);
-            $this->assertSame(BranchConnectionType::STUB_IN, $p2p->component_type);
-            $this->assertSame('PAD', $p2p->value['reinforcement']);
+            $this->assertSame(BranchConnectionType::P2P, $p2p->component_type);
+            $this->assertSame(P2pKind::STUB_IN, $p2p->p2p_kind);
+            $this->assertSame(BranchReinforcement::PAD, $p2p->reinforcement);
+            $this->assertSame('6.350', $p2p->pad_thickness);
 
-            // Outside the exception band the general rule still resolves.
+            // The stub-on band resolves its own kind.
+            $stubOn = $this->classes->branchFor($class, 25, 25);
+            $this->assertSame(P2pKind::STUB_ON, $stubOn->p2p_kind);
+
+            // Outside both exception bands the general rule still resolves.
             $this->assertSame(BranchConnectionType::TEE, $this->classes->branchFor($class, 300, 150)->component_type);
+        });
+    }
 
-            // A small header stays on the general rule too — the exception
-            // band starts at DN200 headers.
-            $this->assertSame(BranchConnectionType::TEE, $this->classes->branchFor($class, 50, 25)->component_type);
+    public function test_a_reinforcement_pad_without_thickness_is_refused(): void
+    {
+        $class = $this->makeClass('PAD-CLS');
+
+        $this->expectException(ValidationException::class);
+        $this->asPars(fn () => $this->classes->addBranchRule(
+            $this->project(), $this->user(), $class, 200, 600, 15, 50,
+            BranchConnectionType::P2P, 'en',
+            p2pKind: P2pKind::STUB_IN,
+            reinforcement: BranchReinforcement::PAD
+        ));
+    }
+
+    public function test_p2p_kind_is_required_for_p2p_and_forbidden_for_fittings(): void
+    {
+        $class = $this->makeClass('KIND-CLS');
+
+        $this->asPars(function () use ($class): void {
+            // A P2P rule without its kind is refused.
+            try {
+                $this->classes->addBranchRule(
+                    $this->project(), $this->user(), $class, 15, 600, 15, 600,
+                    BranchConnectionType::P2P, 'en'
+                );
+                $this->fail('A P2P rule without its kind must be refused.');
+            } catch (ValidationException $e) {
+                // expected
+            }
+
+            // A fitting rule carrying a P2P kind is refused too.
+            $this->expectException(ValidationException::class);
+            $this->classes->addBranchRule(
+                $this->project(), $this->user(), $class, 15, 600, 15, 600,
+                BranchConnectionType::TEE, 'en',
+                p2pKind: P2pKind::STUB_IN
+            );
         });
     }
 

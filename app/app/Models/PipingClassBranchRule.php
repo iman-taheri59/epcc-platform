@@ -20,13 +20,14 @@ final class PipingClassBranchRule extends Model
 
     protected $fillable = [
         'project_id', 'company_id', 'piping_class_id', 'header_range',
-        'branch_range', 'component_type', 'value', 'source_ref',
-        'priority', 'created_by',
+        'branch_range', 'component_type', 'p2p_kind', 'reinforcement',
+        'pad_thickness', 'value', 'source_ref', 'priority', 'created_by',
     ];
 
     protected $casts = [
         'value' => 'array',
         'priority' => 'integer',
+        'pad_thickness' => 'decimal:3',
     ];
 
     public function pipingClass(): BelongsTo

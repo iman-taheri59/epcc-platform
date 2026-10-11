@@ -334,16 +334,27 @@ P-19 session).
   WELDOLET by narrowness), `branch > header` distinct error, duplicate
   footprint refused, priority tiebreak, and the non-participant RLS mirror.
 
-### 9.1 Addendum — branch vocabulary closed, Pipe-to-Pipe added (2026-10-11)
+### 9.1 Addendum — branch vocabulary closed, P2P with its two kinds and the pad rule (2026-10-11)
 
-Owner requirement: «نیاز است جدول انشعاب، قاعدهٔ Pipe to Pipe هم داشته باشد».
-The branch cell outcome is now a **closed vocabulary**, `BranchConnectionType`:
-`TEE`, `WELDOLET`, `SOCKOLET`, and **`STUB_IN` — the Pipe-to-Pipe outcome**
-(branch contoured and welded straight into the header, no fitting). The type
-is enforced twice: a CHECK constraint added to the same unreleased migration,
-and service-level bilingual validation. STUB_IN is semantically load-bearing
-for build phase 3: a STUB_IN cell means "expect NO component at this
-branch", unlike every other type. Reinforcement requirements (pad, integral…)
-ride in the existing jsonb `value`. Verified live against the sandbox
-PostgreSQL: STUB_IN accepted, an out-of-vocabulary type refused by the
-constraint.
+Owner requirements (same day, two decisions): «جدول انشعاب قاعدهٔ
+Pipe-to-Pipe هم داشته باشد، به نام **P2P**، با دو نوع کلی **stub-in** و
+**stub-on**؛ و در صورت نیاز به پد تقویتی، **ضخامت پد** هم مشخص شود».
+
+- **`BranchConnectionType`** (closed, DB CHECK + bilingual service
+  validation): `TEE`, `WELDOLET`, `SOCKOLET`, and **`P2P`** — the branch is
+  contoured and welded onto/into the header with no fitting. Semantically
+  load-bearing for build phase 3: a P2P cell means "expect NO component at
+  this branch".
+- **`P2pKind`** (required on P2P cells, forbidden on fittings, DB-enforced):
+  `STUB_IN` (seats inside the header bore) and `STUB_ON` (saddle on the
+  header surface).
+- **`BranchReinforcement`**: `NONE` / `PAD`. Owner rule: a PAD requires its
+  thickness — `pad_thickness numeric(8,3)` in **millimetres**, mandatory and
+  > 0 whenever `reinforcement = 'PAD'`; a stray thickness without a pad is
+  refused too. Both invariants are CHECK-backed and service-validated.
+- **Live verification on sandbox PostgreSQL** caught and fixed a NULL trap:
+  a CHECK of the shape `(type='P2P' AND kind IN (...)) OR (...)` PASSES when
+  the first branch evaluates to NULL, so a P2P row without its kind slipped
+  through the first draft; the shipped constraint is NULL-explicit
+  (`p2p_kind IS NOT NULL AND …`). Valid rows (P2P+pad, P2P stub-on bare,
+  fitting) all pass; all four corrupt shapes are refused by the database.

@@ -10,7 +10,9 @@ use App\Models\PipingClassRule;
 use App\Models\Project;
 use App\Models\User;
 use App\Support\Piping\BranchConnectionType;
+use App\Support\Piping\BranchReinforcement;
 use App\Support\Piping\Exceptions\BranchLargerThanHeaderException;
+use App\Support\Piping\P2pKind;
 use App\Support\Piping\Exceptions\NoRuleForSizeException;
 use App\Support\Piping\PipingClassState;
 use App\Support\Piping\PipingRuleKind;
@@ -136,6 +138,7 @@ final class PipingClassService
 
     /**
      * @param  array<string,mixed>|null  $value
+     * @param  float|null  $padThickness  millimetres; MANDATORY when $reinforcement is PAD
      * @throws ValidationException
      */
     public function addBranchRule(
@@ -148,6 +151,9 @@ final class PipingClassService
         int $branchTo,
         string $componentType,
         string $lang = 'fa',
+        ?string $p2pKind = null,
+        string $reinforcement = BranchReinforcement::NONE,
+        ?float $padThickness = null,
         ?array $value = null,
         ?string $sourceRef = null,
         int $priority = 0,
@@ -165,6 +171,46 @@ final class PipingClassService
                 'Invalid branch connection type; allowed: '.implode(', ', BranchConnectionType::ALL));
         }
 
+        // A P2P cell must name its kind; a fitting cell must not carry one.
+        if ($componentType === BranchConnectionType::P2P) {
+            if ($p2pKind === null || ! in_array($p2pKind, P2pKind::ALL, true)) {
+                $this->fail($lang, 'p2p_kind',
+                    'قاعدهٔ لوله به لوله باید نوع خود را مشخص کند: '.implode(' یا ', array_map(
+                        static fn (string $k) => P2pKind::label($k)['fa'],
+                        P2pKind::ALL
+                    )),
+                    'A Pipe-to-Pipe rule must name its kind: '.implode(' or ', array_map(
+                        static fn (string $k) => P2pKind::label($k)['en'],
+                        P2pKind::ALL
+                    )));
+            }
+        } elseif ($p2pKind !== null) {
+            $this->fail($lang, 'p2p_kind',
+                'نوع P2P فقط برای اتصال لوله به لوله معنا دارد.',
+                'A P2P kind only applies to Pipe-to-Pipe connections.');
+        }
+
+        if (! in_array($reinforcement, BranchReinforcement::ALL, true)) {
+            $this->fail($lang, 'reinforcement',
+                'نوع تقویت نامعتبر است؛ مقادیر مجاز: بدون تقویت یا پد تقویتی.',
+                'Invalid reinforcement; allowed: none or pad.');
+        }
+
+        // Owner rule: a reinforcement pad without its thickness is an
+        // incomplete datum. And a stray thickness without a pad contradicts
+        // itself — both refused at the point of entry, backstopped by CHECK.
+        if ($reinforcement === BranchReinforcement::PAD) {
+            if ($padThickness === null || $padThickness <= 0) {
+                $this->fail($lang, 'pad_thickness',
+                    'در صورت نیاز به پد تقویتی، ضخامت پد (میلی‌متر) الزامی است.',
+                    'A reinforcement pad requires its thickness in millimetres.');
+            }
+        } elseif ($padThickness !== null) {
+            $this->fail($lang, 'pad_thickness',
+                'ضخامت پد بدون انتخاب پد تقویتی معنا ندارد.',
+                'A pad thickness without a reinforcement pad is contradictory.');
+        }
+
         $id = (string) Str::uuid();
 
         try {
@@ -176,6 +222,9 @@ final class PipingClassService
                 'header_range' => "[{$headerFrom},{$headerTo})",
                 'branch_range' => "[{$branchFrom},{$branchTo})",
                 'component_type' => $componentType,
+                'p2p_kind' => $p2pKind,
+                'reinforcement' => $reinforcement,
+                'pad_thickness' => $padThickness,
                 'value' => $value === null ? null : json_encode($value, JSON_UNESCAPED_UNICODE),
                 'source_ref' => $sourceRef,
                 'priority' => $priority,
