@@ -137,6 +137,13 @@ first. Original rationale, kept for the record: the gap states are the
 commercial vocabulary of procurement reporting — cheaper to argue about them as
 static HTML than as a shipped service.
 
+**Follow-through (2026-10-11):** Slice 6 was built against this prototype —
+`OrderGapService` + `OrderGapController` + the
+`/projects/{code}/procurement/order-gap` screen implement exactly the states
+validated here (SHORTAGE / COVERED / OVER_PLAN / UNMATCHED, draft exclusion,
+no proration). Status: IMPLEMENTED — awaiting runtime verification on the
+owner's Laragon machine; ADR-015 §9 records the mapping.
+
 ## P-07 — `demo:seed` for air-gap sales demos
 
 Product-planning docs list demo seeding as sales infrastructure, unbuilt.

@@ -15,8 +15,9 @@ final class PurchaseOrderItem extends Model
 
     protected $fillable = [
         'project_id', 'purchase_order_id', 'requisition_item_id',
-        'subsystem_id', 'line_no', 'item_code', 'description_en',
-        'description_fa', 'unit', 'quantity', 'unit_price',
+        'subsystem_id', 'material_item_id', 'line_no', 'item_code',
+        'description_en', 'description_fa', 'unit', 'quantity', 'unit_price',
+        'supersedes_id',
     ];
 
     protected $casts = [
@@ -37,6 +38,28 @@ final class PurchaseOrderItem extends Model
     public function subsystem(): BelongsTo
     {
         return $this->belongsTo(Subsystem::class);
+    }
+
+    public function materialItem(): BelongsTo
+    {
+        return $this->belongsTo(MaterialItem::class);
+    }
+
+    /** The line this one replaces (ADR-015 amendment lineage). */
+    public function supersedes(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'supersedes_id');
+    }
+
+    /** The line that replaces this one, if any. Absent = lineage head. */
+    public function supersededBy(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(self::class, 'supersedes_id');
+    }
+
+    public function allocations(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PoItemAllocation::class, 'purchase_order_item_id');
     }
 
     public function description(string $lang = 'fa'): string

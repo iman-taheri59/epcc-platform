@@ -1,6 +1,6 @@
 # ADR-EPCC-015 — Purchase-order attribution and the order gap (MTO Slice 6)
 
-**Status:** PROPOSED (requirements recorded; nothing here is built yet)
+**Status:** IMPLEMENTED — awaiting runtime verification (code, routes, screen and `OrderGapTest` landed 2026-10-11; `php artisan test` on the owner's Laragon machine is the verification step)
 **Date:** 2026-10-11
 **Depends on:** Slice 4 accepted immutable MTO rows (built), the Material Library (built), ADR-014 (units)
 **Relates to:** ADR-005 (engineering data ingestion — PCF import will later feed the net side), ADR-010 (dia-inch is a progress metric, not a procurement one)
@@ -136,3 +136,11 @@ unallocated remainder, and an unmatched-material bucket), explicit
 draft-exclusion and never-guessed notes, pinned by
 `prototype/test/order-gap-board.test.js` (19 assertions). The service build
 starts against a screen already reviewed with the user.
+
+## 9. Implementation record (2026-10-11)
+
+- **Schema:** migration `2026_10_11_100000_add_po_attribution_and_order_gap` — `purchase_order_items.material_item_id` (FK `material_items`), `purchase_order_items.supersedes_id` (self-FK, unique ⇒ superseded at most once), `po_item_allocations` (`quantity > 0` CHECK, unique `(item, subsystem)`, FORCE RLS with the accepted-MTO participant policy template).
+- **Service:** `app/app/Services/OrderGapService.php` — `attribute` / `amend` / `allocate` / `board`; integer milli-unit arithmetic; bilingual validation failures.
+- **Surface:** `OrderGapController`, routes `procurement.order-gap` (+ `.attribute` / `.amend` / `.allocate`), view `procurement/order-gap.blade.php`, sidebar item `project.ordergap` (module `proc`).
+- **Effective predicate:** `ISSUED` ∨ `PARTIALLY_RECEIVED` — issued and not cancelled (same membership as `ProcurementState::poAcceptsReceipts`); no new state vocabulary was introduced, and `AMENDED` exists only as a lineage relation, not a state.
+- **Tests:** `tests/Feature/OrderGapTest.php` (10 tests) implements §7 in full. Status: written 2026-10-11; runtime verification pending on the owner's Laragon machine.

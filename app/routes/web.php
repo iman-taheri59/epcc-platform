@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\MaterialsController;
+use App\Http\Controllers\OrderGapController;
 use App\Http\Controllers\PipingConfigController;
 use App\Http\Controllers\ComponentController;
 use App\Http\Controllers\PipingLineController;
@@ -118,6 +119,14 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::get('/projects/{projectCode}/procurement', [MaterialsController::class, 'procurement'])->name('procurement');
     Route::post('/projects/{projectCode}/procurement/requisition', [MaterialsController::class, 'advanceRequisition'])->name('procurement.requisition');
     Route::post('/projects/{projectCode}/procurement/forecast', [MaterialsController::class, 'forecast'])->name('procurement.forecast');
+
+    // Order gap board (ADR-015, MTO Slice 6). The gap is computed, never
+    // written onto the accepted rows; the three POST paths are the only
+    // attribution/amendment/allocation entry points.
+    Route::get('/projects/{projectCode}/procurement/order-gap', [OrderGapController::class, 'index'])->name('procurement.order-gap');
+    Route::post('/projects/{projectCode}/procurement/order-gap/attribute', [OrderGapController::class, 'attribute'])->name('procurement.order-gap.attribute');
+    Route::post('/projects/{projectCode}/procurement/order-gap/amend', [OrderGapController::class, 'amend'])->name('procurement.order-gap.amend');
+    Route::post('/projects/{projectCode}/procurement/order-gap/allocate', [OrderGapController::class, 'allocate'])->name('procurement.order-gap.allocate');
 
     Route::get('/projects/{projectCode}/team', [ProjectSetupController::class, 'team'])->name('projects.team');
     Route::post('/projects/{projectCode}/team', [ProjectSetupController::class, 'addMember'])->name('projects.team.add');

@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom; +19 new order-gap-board assertions); Slice 4/5 targeted tests are pending runtime restoration. Slice 6 requirements recorded as **ADR-015 (PROPOSED)** and its screen language validated as `prototype/order-gap-board.html` (P-06 BUILT); sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rules 1–5 standing** (§0); full ~11,600-line documentation review completed with dated drift fixes (P-16) and escalated open items (P-15, P-17, P-18) — see `docs/IMPROVEMENT-PROPOSALS-EN.md`
+Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom; +19 new order-gap-board assertions); Slice 4/5 targeted tests are pending runtime restoration. **Slice 6 (PO attribution + order gap) IMPLEMENTED** — migration, `OrderGapService`, controller/screen, routes, sidebar and `OrderGapTest` written; status **IMPLEMENTED — awaiting runtime verification** on the owner's Laragon machine (`php artisan test`), per the "proceed without waiting for tests" instruction. ADR-015 is the standing requirements record; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rules 1–5 standing** (§0); full ~11,600-line documentation review completed with dated drift fixes (P-16) and escalated open items (P-15, P-17, P-18) — see `docs/IMPROVEMENT-PROPOSALS-EN.md`
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -85,7 +85,11 @@ Added `accepted_mto_batches` and `accepted_mto_rows`, `MtoAcceptanceService`, an
 
 Added `engineering_estimate_rows` and `EngineeringEstimateService`. Estimates preserve source type, revision/evidence and structured provenance, can remain provisional until linked to an `accepted_mto_row_id`, and use exact material/unit identity only. Linked rows report `SHORTAGE` when net exceeds gross, with no tolerance, or `DELTA_ONLY` when gross is equal to or greater than net. No waste, contingency, or cause is inferred.
 
-Next slice: PO attribution and order gap against effective issued/in-force quantities.
+### Slice 6 — PO attribution and the order gap
+
+Added `purchase_order_items.material_item_id` (exact catalogue FK), `purchase_order_items.supersedes_id` (amendment lineage, partial unique — a line is replaced at most once) and `po_item_allocations` (explicit scope allocations, RLS-protected). Added `OrderGapService` (attribution by exact identity with unit-match validation, amend-as-new-row, allocate-with-cap, board) and `OrderGapController` + `procurement/order-gap` screen + four routes + sidebar entry (`project.ordergap`). Domain rules enforced: draft/cancelled POs count nothing (effective = `ISSUED`/`PARTIALLY_RECEIVED`), lineage heads only, zero tolerance, no proration (over-allocation refused), over-ordering is `OVER_PLAN`, unmatched lines stay in their own bucket, quantities computed as integer milli-units. `OrderGapTest` pins all of it including the non-participant RLS mirror and the HTTP screen. Status: IMPLEMENTED — awaiting runtime verification on the owner's Laragon machine (built without test execution per the 2026-10-11 instruction "فعلاً بدون انجام تست ادامه بده"; the Slices 4/5 precedent applies).
+
+Next slice, in order: runtime verification of Slices 4–6 on Laragon, then P-17 (ADR-012 HIGH fix), then piping P1 (ADR-008).
 
 ---
 
@@ -2748,6 +2752,45 @@ export is silently unavailable on Windows; recorded as a proposal, not fixed
 blindly (needs the runtime). HANDOFF §0 rule 4 now names three tiers:
 Docker (`dev-up.sh`), sandbox-degraded (preview + tests + `sandbox-pg.sh`),
 and Laragon.
+
+### 2026-10-11 (seventh) — Slice 6 built: PO attribution, amendment lineage, scope allocation and the order-gap board
+
+Per the standing instruction «فعلاً بدون انجام تست ادامه بده», Slice 6 was
+built without waiting for runtime verification (the owner will run
+`php artisan test` on Laragon). What was added:
+
+- **Migration** `2026_10_11_100000_add_po_attribution_and_order_gap`:
+  `purchase_order_items.material_item_id` FK to the Material Library,
+  `purchase_order_items.supersedes_id` self-FK with a unique index (a line
+  is superseded at most once), and `po_item_allocations` with FORCE RLS and
+  the participant policy copied from the accepted-MTO template, plus a
+  `quantity > 0` CHECK.
+- **`OrderGapService`**: `attribute()` (exact identity; unit must equal the
+  catalogue base unit — mismatch is a validation failure, never a
+  conversion), `amend()` (new row, old row untouched and readable, head
+  locked inside a row lock), `allocate()` (explicit quantities, refuses to
+  exceed the line quantity, no proration, only on attributed in-force
+  lines), and `board()` (per-material SHORTAGE / COVERED / OVER_PLAN plus
+  the UNMATCHED bucket, integer milli-unit arithmetic, lineage heads on
+  issued/in-force orders only).
+- **`OrderGapController` + routes + screen** at
+  `/projects/{code}/procurement/order-gap` (GET board; POST attribute /
+  amend / allocate), bilingual validation messages, inline `$t` view array
+  and the house shell/tabletools contract; sidebar item `project.ordergap`
+  under the `proc` module.
+- **`OrderGapTest`** (10 tests): exact attribution + unit-mismatch refusal,
+  draft-excluded until issued, cancelled-excluded, covered vs over-plan
+  with zero tolerance, amendment replaces (110 counted, not 200; old row
+  readable; double amendment refused), allocation recorded exactly with
+  over-allocation refused and draft/unattributed refused, unmatched bucket
+  never guessed, non-participant RLS mirror returns an empty board, and the
+  HTTP screen renders for a participant.
+
+Effective-state predicate: `ISSUED` or `PARTIALLY_RECEIVED` (issued and not
+cancelled) — reusing `ProcurementState::poAcceptsReceipts` semantics, no new
+state vocabulary. ADR-015 status updated to IMPLEMENTED — awaiting runtime
+verification. The prototype in `prototype/order-gap-board.html` remains the
+validated UX reference (P-06).
 
 ### 2026-10-11 (fifth) — runtime provisioning: the PostgreSQL half is now in-sandbox
 

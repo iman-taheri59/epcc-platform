@@ -116,6 +116,9 @@ final class Navigation
                     $this->item('project.materials', 'proc', "/projects/{$code}/materials", [
                         'fa' => 'انبار و متریال', 'en' => 'Warehouse & materials',
                     ], $plan, $lang, $currentPath),
+                    $this->item('project.ordergap', 'proc', "/projects/{$code}/procurement/order-gap", [
+                        'fa' => 'شکاف سفارش', 'en' => 'Order gap board',
+                    ], $plan, $lang, $currentPath),
 
                     $this->item('project.awp', 'awp', null, [
                         'fa' => 'بسته‌های کاری (AWP)', 'en' => 'Work packages (AWP)',
@@ -212,6 +215,7 @@ final class Navigation
             // A shopping-cart outline for buying, a crate for the warehouse.
             'project.procurement' => '<path d="M3 4h2l2.4 10.4a2 2 0 0 0 2 1.6h7.4a2 2 0 0 0 2-1.55L20.5 8H6"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/>',
             'project.materials' => '<path d="M3 8.5L12 4l9 4.5v7L12 20l-9-4.5z"/><path d="M3 8.5L12 13l9-4.5M12 13v7"/>',
+            'project.ordergap' => '<path d="M3 20h18"/><path d="M5 20V10M10 20V4M15 20v-7M20 20V7"/><path d="M14 3h7v7"/>',
             'project.awp' => '<path d="M12 2.5l8.5 4.8v9.4L12 21.5 3.5 16.7V7.3z"/><path d="M3.5 7.3L12 12l8.5-4.7M12 12v9.5"/>',
             'gate' => '<path d="M4 20V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14"/><path d="M4 20h16M9 20V9h6v11"/>',
         ];
