@@ -35,7 +35,7 @@ Last updated: **2026-10-11** (second pass — full documentation review, ~11,600
 | P-14 | Docs index | README contents table was missing ADR-015 | BUILT |
 | P-15 | Docs drift | Deep SRS alignment pass: release-phase tags per FR, launch pack list, BR tiers (banner landed already) | OPEN |
 | P-16 | Docs drift | Parent-document dated corrections from the 2026-10-11 full review pass (SRS banner, AD-1, ADR-006 tail, ADR-005 dep, ADR-001/002 status, Iran-First §10 item 2) | BUILT |
-| P-17 | Defect / scaling | ADR-012 RLS escape hatch — the only known HIGH-severity defect, still unfixed; needs the full runtime | OPEN |
+| P-17 | Defect / scaling | ADR-012 RLS escape hatch — the HIGH-severity defect; all 33 policies rewritten sargable + indexes + `RlsSargabilityTest` | FIX IMPLEMENTED — awaiting runtime verification |
 | P-18 | Docs drift | `Prototype-Coverage-Map.md` recount after procurement + piping + MTO (audit §3 item 4) | OPEN |
 | P-19 | Runtime | In-sandbox PostgreSQL provisioned (PG tier BUILT); PHP tier network-blocked — Laravel work stays on the Docker/Laragon tier | PARTIAL |
 | P-20 | Code / portability | `PdfRenderer` is POSIX-only (`command -v`) — PDF export silently unavailable on Windows/Laragon | OPEN |
@@ -228,16 +228,22 @@ ADR-001/ADR-002 statuses raised to **Accepted and closed** (HANDOFF §1 and
 TODO §5 already record both decisions as closed — the ADRs now say so too);
 Iran-First §10 "backend stack" item marked CLOSED via Annex A.
 
-## P-17 — ADR-012: the one known HIGH-severity defect is still open
+## P-17 — ADR-012: the one known HIGH-severity defect — **FIX IMPLEMENTED 2026-10-11, awaiting runtime verification**
 
 ADR-012 documents a real performance defect present in production code: the
 RLS escape hatch degrades with the number of *other customers'* projects and
-was measured as an 11× aggregate penalty at scale. Status in both the ADR and
-HANDOFF §5o: **UNFIXED** — deliberately, because the fix is security-sensitive
-and demands the full PostgreSQL runtime with EXPLAIN guards and correctness
-tests. **Proposal:** make it an explicit phase-0 item of the next full-runtime
-session, before Slice 6 or any piping build adds more aggregate-heavy screens.
-Not cheap; not optional forever.
+was measured as an 11× aggregate penalty at scale. **Fixed 2026-10-11** (per
+the "proceed without waiting for tests" instruction): migration
+`2026_10_11_110000_make_rls_project_scope_sargable` replaces the non-sargable
+`(GUC IS NULL OR project_id = GUC)` preamble in all 33 tenant policies with a
+sargable participation semi-join, adds eight `(project_id, …)` indexes, and
+ships `RlsSargabilityTest` (cross-project visibility, binding, isolation,
+write-path pinning, a scale-independent plan-shape guard, and a 60k-row
+volume semantics test). The mechanism was EXPLAIN-verified against sandbox
+PostgreSQL 16.2 (153 ms seq scan → 26 ms on RLS-only-scoped reads; index
+paths confirmed once the query carries the project predicate, as house
+controllers already do). ADR-012 §9 carries the full record. Verification
+step: `php artisan test` on the owner's Laragon machine.
 
 ## P-18 — coverage map recount
 

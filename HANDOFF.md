@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom; +19 new order-gap-board assertions); Slice 4/5 targeted tests are pending runtime restoration. **Slice 6 (PO attribution + order gap) IMPLEMENTED** — migration, `OrderGapService`, controller/screen, routes, sidebar and `OrderGapTest` written; status **IMPLEMENTED — awaiting runtime verification** on the owner's Laragon machine (`php artisan test`), per the "proceed without waiting for tests" instruction. ADR-015 is the standing requirements record; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rules 1–5 standing** (§0); full ~11,600-line documentation review completed with dated drift fixes (P-16) and escalated open items (P-15, P-17, P-18) — see `docs/IMPROVEMENT-PROPOSALS-EN.md`
+Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom; +19 new order-gap-board assertions); Slice 4/5 targeted tests are pending runtime restoration. **Slice 6 (PO attribution + order gap) IMPLEMENTED** and the **ADR-012 HIGH defect (P-17) FIXED** — all 33 RLS tenant policies rewritten sargable (`2026_10_11_110000_make_rls_project_scope_sargable`) with `RlsSargabilityTest`; both status **IMPLEMENTED — awaiting runtime verification** on the owner's Laragon machine (`php artisan test`), per the "proceed without waiting for tests" instruction; mechanism EXPLAIN-verified against sandbox PostgreSQL 16.2. ADR-015 is the standing requirements record; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rules 1–5 standing** (§0); full ~11,600-line documentation review completed with dated drift fixes (P-16) and escalated open items (P-15, P-17, P-18) — see `docs/IMPROVEMENT-PROPOSALS-EN.md`
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -1501,7 +1501,21 @@ Schema-per-project solves it and stays cheap to reach later, because every table
 `project_id`, RLS is already project-aware, and there are **zero** `DB::connection()` call sites.
 
 
-## 5o. The RLS escape hatch is a performance defect (ADR-012) — UNFIXED
+## 5o. The RLS escape hatch is a performance defect (ADR-012) — FIXED 2026-10-11, awaiting runtime verification
+
+> **Update 2026-10-11 (P-17):** the defect below is fixed by migration
+> `2026_10_11_110000_make_rls_project_scope_sargable` — every one of the 33
+> tenant policies now opens with a sargable participation semi-join
+> (`project_id IN (participated/owned projects, narrowed to the bound one)`)
+> instead of the `(GUC IS NULL OR project_id = GUC)` disjunction; membership
+> branches, WITH CHECK text, delegation and deny policies are untouched, and
+> eight `(project_id, …)` indexes were added. Verified in the sandbox against
+> PostgreSQL 16.2 (300 k rows / 200 projects): RLS-only-scoped reads drop
+> from a 153 ms whole-table seq scan to 26 ms, index plans hold once the
+> query carries the project predicate (house controllers always do), and the
+> cross-project / isolation probes all pass. `RlsSargabilityTest` pins the
+> semantics and a scale-independent plan-shape guard. The history below is
+> kept as found. Full record: ADR-012 §9.
 
 **Found 2026-09-15 at 200 projects / 2.64 M rows. Present in production code today, invisible at
 fixture scale, and it couples tenants: one customer's page slows down when an unrelated
@@ -2736,6 +2750,41 @@ of them as compromised and rotate it once the push is confirmed — a PAT with
 repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
+
+### 2026-10-11 (eighth) — P-17: the ADR-012 HIGH defect fixed — all 33 tenant policies made sargable
+
+Continued per «فعلاً بدون انجام تست ادامه بده». The RLS escape hatch
+(`(GUC IS NULL OR project_id = GUC)`, §5o) was removed from **every** tenant
+policy by `2026_10_11_110000_make_rls_project_scope_sargable`:
+
+- The preamble is now one sargable semi-join: `project_id IN
+  (participated ∪ owned projects, narrowed to the bound project when one is
+  bound)`. Membership branches, WITH CHECK clauses, child-delegation
+  policies and archive/deny policies are byte-identical to before; `down()`
+  restores the defective shape from the same spec.
+- Deliberate tightening recorded per ADR-012 §6.1: the preamble admits only
+  participated/owned projects, making standing rule 7 database-enforced for
+  reads; the wider role branches (vendor/recipient/actor) only ever apply to
+  companies already on the project, so no legitimate access changes.
+- Eight `(project_id, …)` indexes added where missing (`punch_items`,
+  `subsystems`, `mc_certificates`, inspections, lots, movements,
+  `mto_staging_rows`, `gate_evaluations`).
+- **Mechanism verified live** against sandbox PostgreSQL 16.2 (300 k rows /
+  200 projects, 1-of-200 selectivity, EXPLAIN ANALYZE as the non-superuser
+  app role): the defective shape forces a 153 ms whole-table seq scan on an
+  RLS-scoped read; the sargable shape runs it in 26 ms, and index plans hold
+  whenever the query carries the project predicate (house controllers always
+  do) — cross-project (99 k rows), foreign-project (0) and foreign-company
+  (0) probes all correct.
+- `tests/Feature/RlsSargabilityTest.php`: cross-project visibility +
+  binding + non-participant isolation, write-path pinning, a
+  scale-independent plan-shape guard (no `IS NULL` disjunction may appear on
+  a fact-table scan filter), and a 60 k-row volume semantics test.
+- Docs: ADR-012 status → FIX IMPLEMENTED + §9 record; P-17 register +
+  detail updated; §5o retitled with a dated update block.
+
+Status: IMPLEMENTED — awaiting runtime verification on the owner's Laragon
+machine. Next in sequence: piping P1 (ADR-008 visual line register).
 
 ### 2026-10-11 (sixth) — the owner develops on Windows + Laragon; documented as a first-class tier
 
