@@ -2,7 +2,7 @@
 
 **Status:** PROPOSED — analysis only, nothing implemented
 **Date:** 2026-09-13
-**Supersedes nothing. Depends on:** ADR-004 (facility/area/subsystem breakdown — still awaiting your decision)
+**Supersedes nothing. Depends on:** ADR-004 (facility/area/subsystem breakdown — **ACCEPTED and built 2026-09-13**; this ADR's phasing is no longer blocked on it)
 **Trigger:** the user wants the system usable **before construction starts and before material arrives on site**, fed by Excel import and by Navisworks 3D exports, carrying PMS/spec, MTO per unit or pipeline, isometrics, line list, support drawings.
 
 ---

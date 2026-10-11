@@ -2,6 +2,16 @@
 ## Industrial EPCC Project Management & Automation Platform
 ### Oil, Gas, Petrochemical, Power & Heavy Industry — All Disciplines
 
+> **Reconciliation banner — 2026-10-11 (DOCUMENTATION-AUDIT-EN §4.1/4.2):** this baseline
+> predates two binding decisions that supersede conflicting statements below:
+> **(1)** `docs/Iran-First-Market-Addendum.md` (MKT-EPCC-001) — Iran-first launch,
+> on-prem/air-gapped deployment, Persian-default, Jalali, IRR; it closes §15 Q1/Q6/Q7.
+> **(2)** `docs/ADR-003-Annex-A-Laravel-Evaluation.md` — Laravel 13 + Filament v4 +
+> PHP 8.4 + PostgreSQL 17, superseding AR-08's indicative stack. Launch standards packs
+> are `ips-iran` (default), `iso`, `awp` — the ISO/AWP/Hybrid/Custom naming below is the
+> long-term model, not the launch list. Full deep-alignment pass (release-phase tags per
+> FR, pack list, BR tiers) remains open: see `docs/IMPROVEMENT-PROPOSALS-EN.md` P-15.
+
 | Field | Value |
 |---|---|
 | Document ID | SRS-EPCC-001 |

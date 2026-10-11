@@ -11,7 +11,7 @@ Statuses: `OPEN` (awaiting decision) · `ACCEPTED` (decided, not yet built) ·
 `BUILT` (done) · `REJECTED` (considered and refused — kept so it is not raised
 again).
 
-Last updated: **2026-10-11** (first pass).
+Last updated: **2026-10-11** (second pass — full documentation review, ~11,600 lines).
 
 ---
 
@@ -33,6 +33,10 @@ Last updated: **2026-10-11** (first pass).
 | P-12 | Tests / tooling | `prototype/test/run-all.sh` was stale — now a wrapper over `scripts/run-tests.sh` | BUILT |
 | P-13 | Docs accuracy | HANDOFF §3 wrongly listed PDF export and PROCUREMENT as absent | BUILT |
 | P-14 | Docs index | README contents table was missing ADR-015 | BUILT |
+| P-15 | Docs drift | Deep SRS alignment pass: release-phase tags per FR, launch pack list, BR tiers (banner landed already) | OPEN |
+| P-16 | Docs drift | Parent-document dated corrections from the 2026-10-11 full review pass (SRS banner, AD-1, ADR-006 tail, ADR-005 dep, ADR-001/002 status, Iran-First §10 item 2) | BUILT |
+| P-17 | Defect / scaling | ADR-012 RLS escape hatch — the only known HIGH-severity defect, still unfixed; needs the full runtime | OPEN |
+| P-18 | Docs drift | `Prototype-Coverage-Map.md` recount after procurement + piping + MTO (audit §3 item 4) | OPEN |
 
 ---
 
@@ -190,6 +194,58 @@ first" only works while reading it is affordable.
 `docs/SESSION-LOG-ARCHIVE-EN.md`, keep the paragraph entries, and leave a
 one-line pointer. Deliberately **not** doing it now — the current size is still
 usable and splits are a navigation cost too.
+
+---
+
+## P-15 — deep SRS alignment (banner landed, body still open)
+
+The 2026-10-11 full review confirmed DOCUMENTATION-AUDIT-EN's finding: the SRS
+still frames SaaS as a peer deployment model, keeps §15 Q1 "launch market"
+open, lists ISO/AWP/Hybrid/Custom as the pack set, carries the pre-Laravel
+indicative stack in AR-08, and marks ~all FRs `M` without release phases.
+A dated reconciliation banner was added at the top of the SRS pointing at the
+two superseding decisions (Iran-First Addendum, ADR-003 Annex A) — that part is
+`BUILT` under P-16.
+
+**Still OPEN here:** the deep pass itself —
+1. tag every FR/NFR/BR with a release target (`P0 Pilot` / `P1 MVP` /
+   `P2 Enterprise` / `P3 International`) per audit §4.5;
+2. rewrite the launch pack list to `ips-iran` / `iso` / `awp`;
+3. fold Iran-First commercial terms into BR-01..BR-12.
+**Cost:** one focused session; zero code risk. **Why it matters:** the audit's
+own conclusion — "the largest current risk is not code; it is parent-document
+drift" — and every future decision made against the stale SRS inherits it.
+
+## P-16 — dated corrections from the full documentation review
+
+Second-pass fixes, all dated in place rather than silently rewritten:
+SRS reconciliation banner; Architecture §12 AD-1 marked historical/superseded
+by ADR-003 Annex A; ADR-006's stale "Nothing is implemented" ending annotated
+as historical; ADR-005's dependency on ADR-004 updated to ACCEPTED-and-built;
+ADR-001/ADR-002 statuses raised to **Accepted and closed** (HANDOFF §1 and
+TODO §5 already record both decisions as closed — the ADRs now say so too);
+Iran-First §10 "backend stack" item marked CLOSED via Annex A.
+
+## P-17 — ADR-012: the one known HIGH-severity defect is still open
+
+ADR-012 documents a real performance defect present in production code: the
+RLS escape hatch degrades with the number of *other customers'* projects and
+was measured as an 11× aggregate penalty at scale. Status in both the ADR and
+HANDOFF §5o: **UNFIXED** — deliberately, because the fix is security-sensitive
+and demands the full PostgreSQL runtime with EXPLAIN guards and correctness
+tests. **Proposal:** make it an explicit phase-0 item of the next full-runtime
+session, before Slice 6 or any piping build adds more aggregate-heavy screens.
+Not cheap; not optional forever.
+
+## P-18 — coverage map recount
+
+`Prototype-Coverage-Map.md` still reads "~15–20% of specified scope" with
+"0 backed by real logic" screens, while HANDOFF now carries ~40–45% with
+procurement, piping phases 1–3, MTO slices 2–5, test packs and the Piping
+Workspace all real. The dated update blocks help, but the module table itself
+needs one recount pass mapped to FR ids — which also produces the trustworthy
+coverage number TODO.md is waiting for. **Cost:** one session; pairs naturally
+with P-15's release-phase tagging.
 
 ---
 

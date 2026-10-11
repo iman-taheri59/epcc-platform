@@ -4,7 +4,7 @@
 |---|---|
 | Document ID | ADR-EPCC-002 |
 | Date | 2026-09-09 |
-| Status | **Proposed** — refines ADR-001, does not contradict it |
+| Status | **Accepted and closed** (2026-10-11 status update — AWP deferral is a binding decision per HANDOFF §1 / TODO §5; this ADR refines ADR-001, does not contradict it) |
 | Context | Iran-first launch. AWP attach rate in Iran expected low near-term. Question raised: drop AWP now, revive it for the international version? |
 | Decision | **Yes — defer the AWP methodology from P3 to the international phase (P5+). Protect two architectural seams so revival costs weeks, not a rewrite.** |
 

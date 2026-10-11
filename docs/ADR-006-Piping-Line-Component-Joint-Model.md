@@ -628,3 +628,7 @@ rather than to the office, and it needs only phases 1–3.
 
 **Nothing is implemented.** The five questions in §11 are narrower than the previous set and
 none of them blocks phase 1 — say the word and I will start there while they are settled.
+
+> **Correction — 2026-10-11:** the sentence above is stale. Phases 0/1/1b/2/3 **are
+> implemented and shipped** (see the status block at the top of this document and HANDOFF
+> §5r/§5s/§5u/§5v). It is kept only as the historical end of the original proposal.

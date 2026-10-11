@@ -229,7 +229,7 @@ Signed offline licence file, bound to a hardware/install fingerprint, carrying: 
 
 **Still open and now more urgent:**
 1. **Pilot clients.** Which NOC or affiliate, and which private EPC? Everything in P0 sharpens once these are named.
-2. **Backend stack** (ARC AD-1) — needs the team hiring plan. .NET and NestJS both package fine for on-prem; pick on available talent in Tehran/Isfahan.
+2. ~~**Backend stack** (ARC AD-1) — needs the team hiring plan. .NET and NestJS both package fine for on-prem; pick on available talent in Tehran/Isfahan.~~ **CLOSED (2026-10-11 note):** decided via ADR-003 Annex A — Laravel 13 + Filament v4 + PHP 8.4 + PostgreSQL 17, already implemented.
 3. **Contract forms beyond شرایط عمومی پیمان** — do target clients use bespoke NOC forms (POGC, PEDEC have their own) that need preloading?
 4. **Which NOC document numbering scheme to build first** — they differ, and the first one built shapes the numbering engine's flexibility.
 5. **GPU budget for self-hosted AI** — determines whether AI ships in P4 or slips.

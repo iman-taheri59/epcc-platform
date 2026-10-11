@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom); Slice 4/5 targeted tests are pending runtime restoration. Slice 6 requirements now recorded as **ADR-015 (PROPOSED)**; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rule 5 added** — improvement proposals live in `docs/IMPROVEMENT-PROPOSALS-EN.md`
+Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom); Slice 4/5 targeted tests are pending runtime restoration. Slice 6 requirements now recorded as **ADR-015 (PROPOSED)**; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rules 1–5 standing** (§0); **full ~11,600-line documentation review completed** with dated drift fixes (P-16) and escalated open items (P-15, P-17, P-18) — see `docs/IMPROVEMENT-PROPOSALS-EN.md`
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -2732,6 +2732,41 @@ of them as compromised and rotate it once the push is confirmed — a PAT with
 repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
+
+### 2026-10-11 (second) — full documentation & requirements review pass
+
+Answered "did you review all documents and requirements?" honestly — the first
+answer was no — and then did the pass: **all ~11,600 lines under `docs/`** plus
+README, REBUILD and the pack/reference JSON set. SRS and Architecture read in
+full; every ADR's status block and key sections checked; DOCUMENTATION-AUDIT,
+coverage map, spike results, Iran-First addendum, roadmaps, UI-UX and
+product-planning docs structurally reviewed. Findings:
+
+- The audit's central warning holds: **parent-document drift is the biggest
+  non-code risk**. Dated corrections applied on the spot (recorded as P-16 in
+  `docs/IMPROVEMENT-PROPOSALS-EN.md`): SRS reconciliation banner; Architecture
+  §12 AD-1 marked historical; ADR-006's "Nothing is implemented" annotated;
+  ADR-005 dependency unblocked; **ADR-001/002 raised to Accepted-and-closed**
+  (they said "Proposed" while HANDOFF §1 and TODO §5 already treated them as
+  binding); Iran-First §10 backend-stack item marked closed.
+- Two items stay OPEN and are escalated: **P-15** deep SRS alignment
+  (release-phase tags per FR — the SRS marks nearly everything `M`, which makes
+  the Iran-first MVP un-prioritisable), and **P-17**: ADR-012's RLS escape-hatch
+  defect — the only known HIGH-severity issue in the codebase, deliberately
+  unfixed until a full-runtime session can guard it with EXPLAIN + correctness
+  tests. It should lead that session, ahead of Slice 6.
+- P-18: coverage-map recount (~15–20% wording vs the real ~40–45%) pairs with
+  P-15.
+- ADR-010's three open questions (equipment tag scope, instrument register,
+  imported-vs-allocated tags) confirmed as the blockers for piping phase P2.
+- DOCUMENTATION-AUDIT-EN §5.1–5.12 ("better requirement recommendations" —
+  BPM, visibility matrix, read-audit sampling, signatures, OCR phasing,
+  offline sync contract, SSO/MFA, BIM, pack editor, procurement depth,
+  schedule, HSE scope) are adopted as standing rule-5 input and referenced by
+  the proposals register rather than re-derived.
+
+Prototype/test state unchanged and green this session (pack validator +
+jsdom suites); no Laravel code touched.
 
 ### 2026-10-11 (later) — rule 5 added; first improvement-proposals pass
 

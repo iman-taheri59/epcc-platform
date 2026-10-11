@@ -4,7 +4,7 @@
 |---|---|
 | Document ID | ADR-EPCC-001 |
 | Date | 2026-09-09 |
-| Status | **Proposed** — supersedes the recommendation in MKT-EPCC-001 §6.2 item 1 |
+| Status | **Accepted and closed** (2026-10-11 status update — HANDOFF §1 and TODO §5 record this decision as closed; see below) |
 | Context | Iran-first launch decision (MKT-EPCC-001). AWP lands in phase P3. |
 | Decision needed by | Price-list publication, not build start. P0 exit at the latest. |
 

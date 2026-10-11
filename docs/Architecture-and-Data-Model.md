@@ -394,7 +394,7 @@ Full reasoning, alternatives considered and reversal conditions: **`ADR-003-Tech
 
 | # | Decision | Options | Recommendation |
 |---|---|---|---|
-| AD-1 | Backend stack | .NET vs NestJS vs Java/Spring | **CLOSED — see ADR-EPCC-003.** TypeScript end-to-end (NestJS + React + PostgreSQL 18). Decided by the shared offline rule-evaluator requirement, free toolchain under sanctions, and single-runtime on-prem packaging. Reversal condition: a .NET-heavy hire. |
+| AD-1 | Backend stack | .NET vs NestJS vs Java/Spring | **Historical — superseded 2026-10.** Was closed as TypeScript/NestJS under ADR-EPCC-003; **ADR-003 Annex A then selected Laravel 13 + Filament v4 + PHP 8.4 + PostgreSQL 17**, which is what the codebase implements. Read this row as the decision trail, not the current stack. |
 | AD-2 | Monolith vs services at launch | Modular monolith vs microservices | **Modular monolith** — on-prem packaging and transactional EPCC workflows both favour it |
 | AD-3 | Kafka mandatory? | Required vs optional | **Optional** — RabbitMQ/DB-outbox mode for air-gapped installs |
 | AD-4 | BIM viewer | Build vs licence (Autodesk APS, Bentley, open IFC.js) | Licence for v1 (IFC.js for open formats), revisit at scale |
