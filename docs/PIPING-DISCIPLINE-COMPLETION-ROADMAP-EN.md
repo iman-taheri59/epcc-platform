@@ -166,6 +166,11 @@ Needs detailed design, but the MVP minimum is:
 - Repair cycle
 - Repair rate KPI
 - Heat/material traceability to weld where feasible
+- **Branch-weld joint types (owner requirement, 2026-10-12, proposal P-21):**
+  stub-in/stub-on P2P connections are welds, not components — the joint
+  register must carry `BRANCH_STUB_IN` / `BRANCH_STUB_ON` as first-class
+  joint types so branch welds are counted and reported separately from butt
+  welds, and pad requirements stay traceable from the ADR-008 class rules.
 
 This phase must align with QA/QC and may deserve its own ADR.
 

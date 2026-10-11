@@ -2751,6 +2751,21 @@ repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
 
+### 2026-10-12 — requirement recorded: branch welds are first-class joint types (P-21)
+
+Owner question: «آیا لوله‌ای که به‌عنوان انشعاب به هدر متصل می‌شود
+کامپوننت به حساب نمی‌آید؟» — answer: no, a P2P connection adds no
+component; the connection is a weld (plus optional pad material), and the
+branch pipe is line run. Follow-up instruction: «به عنوان یک نیازمندی ثبت
+کن». Recorded as **proposal P-21** (register + detail section): by the time
+the welding/joints phase (roadmap P5) is designed, the joint register must
+carry `BRANCH_STUB_IN` / `BRANCH_STUB_ON` as first-class joint types —
+branch welds counted/reported separately from butt welds, dia-inch kept
+clean of them (or deliberately weighted), pad thickness traceable from the
+ADR-008 class rule, and class-contradicting joints surfaced as deviations.
+Cross-linked in ADR-008 §9.2 and roadmap P5. Nothing built — it is queued on
+the P5 design ADR.
+
 ### 2026-10-11 (ninth) — piping P1 built: PMS piping classes, the EXCLUDE constraint and the branch table
 
 Continued per «فعلاً بدون انجام تست ادامه بده». ADR-008 build phases 1–2

@@ -358,3 +358,14 @@ Pipe-to-Pipe هم داشته باشد، به نام **P2P**، با دو نوع �
   through the first draft; the shipped constraint is NULL-explicit
   (`p2p_kind IS NOT NULL AND …`). Valid rows (P2P+pad, P2P stub-on bare,
   fitting) all pass; all four corrupt shapes are refused by the database.
+
+### 9.2 Forward requirement — branch welds are joints, not components (owner, 2026-10-12)
+
+Recorded requirement (proposal P-21, piping roadmap P5): a P2P cell means
+the branch is contoured and welded onto/into the header with NO fitting —
+so at build time the connection is a WELD, and the joint register must carry
+formal branch-weld types (`BRANCH_STUB_IN` / `BRANCH_STUB_ON`). Branch
+welds must be counted and reported separately from butt welds, dia-inch
+metrics must not silently absorb them, the mandatory pad thickness of a PAD
+rule must stay traceable to the weld, and a joint contradicting its class is
+a deviation. This lands with the welding/NDT phase ADR; nothing is built yet.

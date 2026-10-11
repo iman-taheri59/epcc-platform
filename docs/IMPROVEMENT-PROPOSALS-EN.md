@@ -39,6 +39,7 @@ Last updated: **2026-10-11** (second pass — full documentation review, ~11,600
 | P-18 | Docs drift | `Prototype-Coverage-Map.md` recount after procurement + piping + MTO (audit §3 item 4) | OPEN |
 | P-19 | Runtime | In-sandbox PostgreSQL provisioned (PG tier BUILT); PHP tier network-blocked — Laravel work stays on the Docker/Laragon tier | PARTIAL |
 | P-20 | Code / portability | `PdfRenderer` is POSIX-only (`command -v`) — PDF export silently unavailable on Windows/Laragon | OPEN |
+| P-21 | Requirement / piping | Branch welds (stub-in/stub-on P2P) must be first-class joint types before weld counts and dia-inch are built | OPEN — queued for the P5 design ADR |
 
 ---
 
@@ -292,6 +293,36 @@ Files paths, a `where`-based lookup behind a platform check) plus docs for
 Vazirmatn + poppler on Windows. **Cost:** small. **Test gate:** needs the
 Laragon/Docker runtime — queue behind P-17 once the suite runs. Recorded by
 the 2026-10-11 Laragon setup doc (`docs/LARAGON-DEVELOPMENT-ENVIRONMENT.md` §7).
+
+## P-21 — Branch weld joint types: stub-in/stub-on welds must be first-class joint types (recorded requirement)
+
+**Recorded as an owner requirement, 2026-10-12.** A P2P branch connection
+(ADR-008, built) has NO component: the branch pipe is contoured and welded
+straight onto/into the header. The connection therefore lives in the joint
+register as a WELD — but it is not an ordinary butt weld, and welding
+metrics must never treat it as one.
+
+**Requirement.** When the welding/joints phase is designed (piping roadmap
+phase P5), the joint register must carry formal branch-weld joint types —
+at minimum `BRANCH_STUB_IN` and `BRANCH_STUB_ON` — such that:
+
+1. Branch welds are **counted and reported separately** from butt welds in
+   the weld log and weld-count KPIs.
+2. **Dia-inch / progress metrics** (ADR-010) do not silently mix branch
+   welds into the butt-weld population; they are either reported apart or
+   weighted by whatever the prevailing norm (IPS/company practice) dictates
+   — the choice itself must be a recorded decision in the P5 ADR.
+3. **Pad traceability**: when the class rule that governs the connection is
+   `reinforcement = PAD`, the pad (with its mandatory thickness from the
+   ADR-008 branch rule) is traceable to the weld record.
+4. A joint whose actual connection type contradicts its class (e.g. a P2P
+   weld where the class says `TEE`) surfaces as a **deviation** — the same
+   audit the class-validation phase delivers for components.
+
+**Acceptance:** joint-type vocabulary + migration + tests; weld counts by
+type; a weld report showing branch welds separately; pad linkage from the
+class rule. **Depends on:** the P5 design ADR (not written yet) and ADR-010
+§6 open questions. Cross-references: ADR-008 §9.2 (forward link).
 
 ## BUILT this pass (2026-10-11)
 
