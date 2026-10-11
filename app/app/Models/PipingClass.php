@@ -10,39 +10,39 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * A piping class from the project's PMS (ADR-006 §11.5).
- *
- * Per-project, not universal: two projects both "on ISO" will have different
- * class codes, so this is a tenant table rather than a reference pack. ADR-008
- * will hang size bands and branch tables off it; nothing here anticipates that
- * shape, because guessing it now would be a migration to undo later.
+ * A project's PMS piping class register (ADR-008). `dn_span` is an int4range
+ * held as its canonical text form, e.g. "[15,600)"; the publish gate demands
+ * every rule kind cover it contiguously before the class may be used.
  */
 final class PipingClass extends Model
 {
     use HasUuid;
 
-    protected $table = 'piping_classes';
-
     protected $fillable = [
-        'project_id', 'company_id', 'code',
-        'description_en', 'description_fa',
-        'material', 'pressure_rating', 'corrosion_allowance',
+        'project_id', 'company_id', 'code', 'name_en', 'name_fa',
+        'state', 'dn_span', 'published_at', 'published_by',
     ];
 
-    public function project(): BelongsTo
+    protected $casts = [
+        'published_at' => 'datetime',
+    ];
+
+    public function project(): BelongsTo { return $this->belongsTo(Project::class); }
+    public function company(): BelongsTo { return $this->belongsTo(Company::class); }
+    public function publishedBy(): BelongsTo { return $this->belongsTo(User::class, 'published_by'); }
+
+    public function rules(): HasMany
     {
-        return $this->belongsTo(Project::class);
+        return $this->hasMany(PipingClassRule::class);
     }
 
-    public function lines(): HasMany
+    public function branchRules(): HasMany
     {
-        return $this->hasMany(PipingLine::class, 'piping_class_id');
+        return $this->hasMany(PipingClassBranchRule::class);
     }
 
-    public function description(string $lang): string
+    public function isPublished(): bool
     {
-        return (string) ($lang === 'fa'
-            ? ($this->description_fa ?? $this->description_en ?? $this->code)
-            : ($this->description_en ?? $this->description_fa ?? $this->code));
+        return $this->state === \App\Support\Piping\PipingClassState::PUBLISHED;
     }
 }

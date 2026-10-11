@@ -59,7 +59,7 @@ According to `HANDOFF.md` and the current code:
 | Unit preferences | Built |
 | Components / ports | Built |
 | Joints / compatibility / dia-inch | Built |
-| PMS rules | Designed in ADR-008, not built |
+| PMS rules | **Built (ADR-008 phases 1–2, 2026-10-11): classes, rules + EXCLUDE constraint, publish gate, branch table + specificity resolver — awaiting runtime verification** |
 | Equipment / nozzles | Designed in ADR-010, not built |
 | Fit-up | Designed in ADR-006, not built |
 | Supports/spools | Designed, not built |
@@ -102,6 +102,11 @@ Outputs:
 - Snapshot of current state before changes
 
 ### Phase P1 — PMS and branch table
+
+> **Status 2026-10-11: IMPLEMENTED — awaiting runtime verification.** All six
+> outputs below landed in migration `2026_10_11_120000_create_piping_classes_and_rules`,
+> `PipingClassService`, and `PipingClassTest` (ADR-008 §9). Wiring into
+> component attach / joint compatibility is ADR-008 build phase 3, still open.
 
 Based on ADR-008:
 

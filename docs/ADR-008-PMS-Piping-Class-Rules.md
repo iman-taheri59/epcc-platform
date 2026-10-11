@@ -3,7 +3,7 @@
 > **Status — 2026-10-05:** Proposed and now promoted to the next Piping completion phase after a full PHP/PostgreSQL test environment is available. Do not implement this against SQLite or without PostgreSQL migration/RLS tests.
 
 
-**Status:** PROPOSED — analysis only, nothing implemented
+**Status:** BUILD PHASES 1–2 IMPLEMENTED 2026-10-11 — awaiting runtime verification (schema + service + resolvers + publish gate + `PipingClassTest`; see §9). Phases 3–5 (ADR-006 wiring, deviation audit, class revisions) remain unbuilt.
 **Date:** 2026-09-14
 **Depends on:** ADR-007 (reference data: NPS/DN/OD, schedules) — PROPOSED
 **Consumed by:** ADR-006 (piping lines, components, ports, joints) — PROPOSED
@@ -298,3 +298,38 @@ against the user.
 
 **Nothing is implemented.** Phase 1 is small and self-contained; the spikes in §3 and §4.1 were
 throwaway tables and have been dropped.
+
+---
+
+## 9. Implementation record — build phases 1 & 2 (2026-10-11)
+
+**Status of this record: IMPLEMENTED — awaiting runtime verification** (the
+owner's Laragon `php artisan test` is the verification step; the EXCLUDE
+constraint itself was already proven live against sandbox PostgreSQL in the
+P-19 session).
+
+- **Schema** — migration `2026_10_11_120000_create_piping_classes_and_rules`:
+  `piping_classes` (code unique per project, `dn_span` int4range,
+  DRAFT/PUBLISHED), `piping_class_rules` (rule_kind CHECK from
+  `PipingRuleKind::ALL`, `dn_range` int4range, jsonb `value`, and the
+  load-bearing `EXCLUDE USING gist (piping_class_id WITH =, rule_kind WITH =,
+  dn_range WITH &&)`), and `piping_class_branch_rules` (two int4ranges,
+  `UNIQUE` on the exact footprint, `priority` tiebreak). All three tables
+  carry FORCE RLS with the sargable participation preamble shipped the same
+  day (migration 110000, ADR-012 fix). The migration asserts `btree_gist`
+  exists and fails with an actionable message — the extension is a DBA step
+  (sandbox script / Laragon doc / CI), never an app-role CREATE EXTENSION.
+- **Service** — `PipingClassService`: create/addRule/addBranchRule translate
+  exclusion/unique violations into bilingual validation errors; `publish`
+  runs the §3.1 gate with `(span − range_agg(dn_range))` per rule kind and
+  refuses holes; `ruleFor` and `branchFor` are `@>` lookups that THROW
+  (`NoRuleForSizeException`, `BranchLargerThanHeaderException`) — never null.
+  Published classes are read-only (revision mechanics are build phase 5).
+- **Resolution** — specificity-wins is `(header span + branch span) ASC,
+  priority DESC, created_at ASC`, exactly §4.3.
+- **Tests** — `tests/Feature/PipingClassTest.php` pins the ADR fixtures:
+  adjacent bands accepted / overlap refused, DN100→SCH40 / DN80→SCH80 /
+  uncovered size throws, gapped publish refused then accepted once filled,
+  published class read-only, the three-rule branch table (TEE / SOCKOLET /
+  WELDOLET by narrowness), `branch > header` distinct error, duplicate
+  footprint refused, priority tiebreak, and the non-participant RLS mirror.

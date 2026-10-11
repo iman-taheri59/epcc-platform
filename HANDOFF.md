@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom; +19 new order-gap-board assertions); Slice 4/5 targeted tests are pending runtime restoration. **Slice 6 (PO attribution + order gap) IMPLEMENTED** and the **ADR-012 HIGH defect (P-17) FIXED** — all 33 RLS tenant policies rewritten sargable (`2026_10_11_110000_make_rls_project_scope_sargable`) with `RlsSargabilityTest`; both status **IMPLEMENTED — awaiting runtime verification** on the owner's Laragon machine (`php artisan test`), per the "proceed without waiting for tests" instruction; mechanism EXPLAIN-verified against sandbox PostgreSQL 16.2. ADR-015 is the standing requirements record; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rules 1–5 standing** (§0); full ~11,600-line documentation review completed with dated drift fixes (P-16) and escalated open items (P-15, P-17, P-18) — see `docs/IMPROVEMENT-PROPOSALS-EN.md`
+Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom; +19 new order-gap-board assertions); Slice 4/5 targeted tests are pending runtime restoration. **Slice 6 (PO attribution + order gap) IMPLEMENTED**, the **ADR-012 HIGH defect (P-17) FIXED** (all 33 RLS tenant policies sargable + `RlsSargabilityTest`), and **piping phase P1 (ADR-008 PMS + branch table) IMPLEMENTED** — classes/rules/EXCLUDE constraint/publish gate/specificity resolver + `PipingClassTest`; all three status **IMPLEMENTED — awaiting runtime verification** on the owner's Laragon machine (`php artisan test`), per the "proceed without waiting for tests" instruction; RLS-fix mechanism EXPLAIN-verified against sandbox PostgreSQL 16.2. ADR-015 is the standing requirements record; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rules 1–5 standing** (§0); full ~11,600-line documentation review completed with dated drift fixes (P-16) and escalated open items (P-15, P-17, P-18) — see `docs/IMPROVEMENT-PROPOSALS-EN.md`
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -89,7 +89,7 @@ Added `engineering_estimate_rows` and `EngineeringEstimateService`. Estimates pr
 
 Added `purchase_order_items.material_item_id` (exact catalogue FK), `purchase_order_items.supersedes_id` (amendment lineage, partial unique — a line is replaced at most once) and `po_item_allocations` (explicit scope allocations, RLS-protected). Added `OrderGapService` (attribution by exact identity with unit-match validation, amend-as-new-row, allocate-with-cap, board) and `OrderGapController` + `procurement/order-gap` screen + four routes + sidebar entry (`project.ordergap`). Domain rules enforced: draft/cancelled POs count nothing (effective = `ISSUED`/`PARTIALLY_RECEIVED`), lineage heads only, zero tolerance, no proration (over-allocation refused), over-ordering is `OVER_PLAN`, unmatched lines stay in their own bucket, quantities computed as integer milli-units. `OrderGapTest` pins all of it including the non-participant RLS mirror and the HTTP screen. Status: IMPLEMENTED — awaiting runtime verification on the owner's Laragon machine (built without test execution per the 2026-10-11 instruction "فعلاً بدون انجام تست ادامه بده"; the Slices 4/5 precedent applies).
 
-Next slice, in order: runtime verification of Slices 4–6 on Laragon, then P-17 (ADR-012 HIGH fix), then piping P1 (ADR-008).
+Next, in order: runtime verification on Laragon (`php artisan migrate:fresh --seed` + `php artisan test`) covering Slice 6, the P-17 RLS fix and piping P1; then ADR-008 build phase 3 (wire the PMS into component attach / joint compatibility) or piping P2 (equipment/nozzles) once the three ADR-010 questions are answered.
 
 ---
 
@@ -2750,6 +2750,40 @@ of them as compromised and rotate it once the push is confirmed — a PAT with
 repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
+
+### 2026-10-11 (ninth) — piping P1 built: PMS piping classes, the EXCLUDE constraint and the branch table
+
+Continued per «فعلاً بدون انجام تست ادامه بده». ADR-008 build phases 1–2
+landed as piping phase P1:
+
+- **Migration** `2026_10_11_120000_create_piping_classes_and_rules`:
+  `piping_classes` (per-project code, `dn_span` int4range, DRAFT/PUBLISHED),
+  `piping_class_rules` with the load-bearing
+  `EXCLUDE USING gist (piping_class_id WITH =, rule_kind WITH =, dn_range WITH &&)`
+  over half-open DN bands, and `piping_class_branch_rules` where overlap is
+  legal (general + narrower exceptions) and `UNIQUE` catches only the exact
+  duplicate footprint. All three tables get FORCE RLS with the sargable
+  participation preamble from the P-17 fix. The migration asserts btree_gist
+  and fails with an actionable DBA message.
+- **Service** `PipingClassService`: create/addRule/addBranchRule translating
+  exclusion/unique violations into bilingual validation errors; `publish`
+  refuses any hole via `(span − range_agg(dn_range))` per rule kind;
+  `ruleFor`/`branchFor` are `@>` lookups that THROW — `NoRuleForSizeException`
+  and `BranchLargerThanHeaderException`, never null; published classes are
+  read-only.
+- **Support** `PipingRuleKind` (seven kinds, one table), `PipingClassState`.
+- **Tests** `PipingClassTest` (9 tests) pin the ADR's own fixtures: DN100→SCH40
+  / DN80→SCH80 / uncovered throws, overlap refused, gapped publish refused
+  then accepted, published read-only, TEE/SOCKOLET/WELDOLET specificity,
+  branch-larger-than-header distinct, duplicate footprint refused, priority
+  tiebreak, non-participant RLS mirror.
+- Docs: ADR-008 status → phases 1–2 implemented + §9 record; piping roadmap
+  §3 row and P1 phase marked; statuses await `php artisan test` on Laragon.
+
+Next in sequence: runtime verification on Laragon when the owner runs the
+suite; after that ADR-008 phase 3 (wire the PMS into component attach /
+joint compatibility) or piping P2 (equipment/nozzles) once the three
+ADR-010 questions are answered.
 
 ### 2026-10-11 (eighth) — P-17: the ADR-012 HIGH defect fixed — all 33 tenant policies made sargable
 
