@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom); Slice 4/5 targeted tests are pending runtime restoration. Slice 6 requirements now recorded as **ADR-015 (PROPOSED)**; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`)
+Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom); Slice 4/5 targeted tests are pending runtime restoration. Slice 6 requirements now recorded as **ADR-015 (PROPOSED)**; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rule 5 added** — improvement proposals live in `docs/IMPROVEMENT-PROPOSALS-EN.md`
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -21,6 +21,7 @@ violating any of them is a process defect, not a style choice.
 | 2 | **All documentation files are written in English and kept continuously updated.** | New/updated docs land in English. The bilingual FA/EN pairing rule still holds where an FA counterpart already exists (e.g. `MTO-REQUIREMENTS-FA/EN`), but the FA copy is never the sole record, and docs that drift from the code are fixed in the same change that moves the code. |
 | 3 | **Requirements are produced and continuously updated as English ADR files.** | Every new requirement set gets an `ADR-EPCC-NNN` record (house style: status / date / depends-on / requirements / options / open questions / falsifiers), even while still PROPOSED — see ADR-015 for the Slice 6 requirements carried out of `MTO-REQUIREMENTS` §A5. When a requirement changes, amend its ADR in the same session; do not let requirements live only in chat or in prose docs. |
 | 4 | **Maintain a development environment with a real display server and test execution.** | Two tiers: **(a)** the full stack — `scripts/dev-up.sh` (Docker: PHP 8.4, PostgreSQL 17, Chromium, Vazirmatn) on any Docker-equipped host, tests via `scripts/dev-test.sh`; **(b)** the degraded-sandbox tier — `npm install` + `bash scripts/run-tests.sh` (runs every suite the machine can run and says loudly what it skipped) + `node scripts/preview-server.mjs` (zero-dependency live preview of the air-gap-safe prototype on port 8080, `/healthz` probe). Rule 5 of §4 still stands: the Laravel suite never runs on SQLite; in a PHP-less sandbox the runnable suites are the pack validator and the jsdom harnesses, and that is stated, not hidden. |
+| 5 | **If a better alternative exists for any requirement, code or capability, say so — never stay silent.** | Every session reviews what it touched (and the adjacent code) for better options. Proposals are recorded with a status (`OPEN` / `ACCEPTED` / `REJECTED` / `BUILT`) in `docs/IMPROVEMENT-PROPOSALS-EN.md`. Cheap, safe fixes are implemented on the spot and marked `BUILT`; anything touching scope, schema or commercial terms waits for the user's decision. Silence is itself a defect: if a session genuinely finds nothing to improve, the session log says so explicitly. |
 
 ---
 
@@ -174,8 +175,11 @@ transmit → acknowledge — **including PDF output**, which was the last gap.
 raise → assign → fix → verify → close → certificate, with the A-item gate
 refusing issue and the owner's recorded exception the only way past it.
 
-Deliberately absent: full-text/OCR search, offline sync, PDF export,
-integrations, installer, and the PROCUREMENT / HSE / SCHEDULE modules.
+Deliberately absent: full-text/OCR search, offline sync, integrations, and the
+installer. PDF export **is built** (§5f) — this list used to claim otherwise and
+was corrected 2026-10-11 (rule 2). PROCUREMENT exists as a base chain only
+(requisition → PO → inspection → warehouse → site); HSE and SCHEDULE remain
+zero-page.
 
 ---
 
@@ -2728,6 +2732,25 @@ of them as compromised and rotate it once the push is confirmed — a PAT with
 repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
+
+### 2026-10-11 (later) — rule 5 added; first improvement-proposals pass
+
+The user added a fifth standing rule: whenever a better alternative exists for a
+requirement, a piece of code or a capability, it must be voiced. It is recorded in
+§0 and operationalised through `docs/IMPROVEMENT-PROPOSALS-EN.md` (status-tracked).
+First pass found and **fixed on the spot**: the stale §3 line claiming PDF export
+and PROCUREMENT are absent (both exist); `test:prototype` omitting `render.test.js`
+(324-combination suite); `prototype/test/run-all.sh` missing two of the four jsdom
+suites (now a thin wrapper over `scripts/run-tests.sh`); README missing the ADR-015
+row. Verified, not just read: `PunchCategory::blocksReadyForStartUp()` is defined
+but called nowhere — the RFSU gate exists as dead code (proposal P-01). Recorded,
+not yet built: replacing the stock Laravel `app/README.md` and the Laravel-Boost
+`app/AGENTS.md` boilerplate with project-specific entry points (P-02/P-03), an
+English `TODO-EN.md` (P-04), recommended answers for the four ADR-015 open
+questions (P-05), a static Order-Gap-Board prototype screen before building
+Slice 6 (P-06), a demo-seed command for air-gap sales demos (P-07), a sandbox-tier
+CI job (P-09), and archiving the session-log table out of this file once it grows
+again (P-10). All ten proposals with rationale and status are in the proposals doc.
 
 ### 2026-10-11 — standing operating rules, Slice 6 requirements ADR, sandbox dev-environment slice
 
