@@ -43,6 +43,13 @@ return new class extends Migration
         'GASKET_TYPE', 'BOLT_SPEC', 'CORROSION_ALLOWANCE',
     ];
 
+    /**
+     * ADR-008 §4.2: the closed branch vocabulary. STUB_IN is the
+     * Pipe-to-Pipe outcome — the branch is contoured and welded straight
+     * into the header, no fitting in between.
+     */
+    private const BRANCH_TYPES = ['TEE', 'WELDOLET', 'SOCKOLET', 'STUB_IN'];
+
     public function up(): void
     {
         $ext = DB::selectOne("SELECT 1 AS ok FROM pg_extension WHERE extname = 'btree_gist'");
@@ -135,6 +142,7 @@ return new class extends Migration
         // ---- ranges, checks, the exclusion constraint, uniqueness -----------
 
         $kinds = implode(', ', array_map(static fn (string $k) => "'{$k}'", self::RULE_KINDS));
+        $branchTypes = implode(', ', array_map(static fn (string $k) => "'{$k}'", self::BRANCH_TYPES));
 
         DB::unprepared(<<<SQL
             ALTER TABLE piping_classes ALTER COLUMN dn_span TYPE int4range
@@ -160,6 +168,8 @@ return new class extends Migration
 
             ALTER TABLE piping_class_branch_rules ADD CONSTRAINT piping_class_branch_ranges_not_empty
                 CHECK (NOT isempty(header_range) AND NOT isempty(branch_range));
+            ALTER TABLE piping_class_branch_rules ADD CONSTRAINT piping_class_branch_type_valid
+                CHECK (component_type IN ({$branchTypes}));
 
             -- THE LOAD-BEARING CONSTRAINT (ADR-008 §3): two rules of the same
             -- kind on the same class may not overlap. btree_gist supplies the

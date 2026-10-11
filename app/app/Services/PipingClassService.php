@@ -9,6 +9,7 @@ use App\Models\PipingClassBranchRule;
 use App\Models\PipingClassRule;
 use App\Models\Project;
 use App\Models\User;
+use App\Support\Piping\BranchConnectionType;
 use App\Support\Piping\Exceptions\BranchLargerThanHeaderException;
 use App\Support\Piping\Exceptions\NoRuleForSizeException;
 use App\Support\Piping\PipingClassState;
@@ -155,10 +156,13 @@ final class PipingClassService
         $this->assertBand($headerFrom, $headerTo, $lang, 'header_range');
         $this->assertBand($branchFrom, $branchTo, $lang, 'branch_range');
 
-        if (trim($componentType) === '') {
+        if (! in_array($componentType, BranchConnectionType::ALL, true)) {
             $this->fail($lang, 'component_type',
-                'نوع اتصال انشعاب الزامی است.',
-                'A branch connection type is required.');
+                'نوع اتصال انشعاب نامعتبر است؛ انواع مجاز: '.implode('، ', array_map(
+                    static fn (string $t) => BranchConnectionType::label($t)['fa'],
+                    BranchConnectionType::ALL
+                )),
+                'Invalid branch connection type; allowed: '.implode(', ', BranchConnectionType::ALL));
         }
 
         $id = (string) Str::uuid();

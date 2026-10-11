@@ -333,3 +333,17 @@ P-19 session).
   published class read-only, the three-rule branch table (TEE / SOCKOLET /
   WELDOLET by narrowness), `branch > header` distinct error, duplicate
   footprint refused, priority tiebreak, and the non-participant RLS mirror.
+
+### 9.1 Addendum — branch vocabulary closed, Pipe-to-Pipe added (2026-10-11)
+
+Owner requirement: «نیاز است جدول انشعاب، قاعدهٔ Pipe to Pipe هم داشته باشد».
+The branch cell outcome is now a **closed vocabulary**, `BranchConnectionType`:
+`TEE`, `WELDOLET`, `SOCKOLET`, and **`STUB_IN` — the Pipe-to-Pipe outcome**
+(branch contoured and welded straight into the header, no fitting). The type
+is enforced twice: a CHECK constraint added to the same unreleased migration,
+and service-level bilingual validation. STUB_IN is semantically load-bearing
+for build phase 3: a STUB_IN cell means "expect NO component at this
+branch", unlike every other type. Reinforcement requirements (pad, integral…)
+ride in the existing jsonb `value`. Verified live against the sandbox
+PostgreSQL: STUB_IN accepted, an out-of-vocabulary type refused by the
+constraint.

@@ -9,6 +9,7 @@ use App\Models\PipingClass;
 use App\Models\Project;
 use App\Models\User;
 use App\Services\PipingClassService;
+use App\Support\Piping\BranchConnectionType;
 use App\Support\Piping\Exceptions\BranchLargerThanHeaderException;
 use App\Support\Piping\Exceptions\NoRuleForSizeException;
 use App\Support\Piping\PipingClassState;
@@ -233,6 +234,48 @@ final class PipingClassTest extends TestCase
             // DN40 branch: WELDOLET is the narrowest of the two matches.
             $this->assertSame('WELDOLET', $this->classes->branchFor($class, 200, 40)->component_type);
         });
+    }
+
+    public function test_pipe_to_pipe_is_a_first_class_branch_outcome(): void
+    {
+        $class = $this->makeClass('P2P-CLS');
+
+        $this->asPars(function () use ($class): void {
+            // General case: a fitting tee.
+            $this->classes->addBranchRule($this->project(), $this->user(), $class, 15, 600, 15, 600, BranchConnectionType::TEE, 'en');
+
+            // Pipe-to-Pipe exception: small branches off large headers are
+            // contoured straight into the header — no fitting. Reinforcement
+            // requirements ride in the jsonb value.
+            $this->classes->addBranchRule(
+                $this->project(), $this->user(), $class, 200, 600, 15, 50,
+                BranchConnectionType::STUB_IN, 'en',
+                value: ['reinforcement' => 'PAD'], sourceRef: 'PMS §6.1'
+            );
+        });
+
+        $this->asPars(function () use ($class): void {
+            $p2p = $this->classes->branchFor($class, 300, 25);
+            $this->assertSame(BranchConnectionType::STUB_IN, $p2p->component_type);
+            $this->assertSame('PAD', $p2p->value['reinforcement']);
+
+            // Outside the exception band the general rule still resolves.
+            $this->assertSame(BranchConnectionType::TEE, $this->classes->branchFor($class, 300, 150)->component_type);
+
+            // A small header stays on the general rule too — the exception
+            // band starts at DN200 headers.
+            $this->assertSame(BranchConnectionType::TEE, $this->classes->branchFor($class, 50, 25)->component_type);
+        });
+    }
+
+    public function test_a_branch_type_outside_the_vocabulary_is_refused(): void
+    {
+        $class = $this->makeClass('VOC-CLS');
+
+        $this->expectException(ValidationException::class);
+        $this->asPars(fn () => $this->classes->addBranchRule(
+            $this->project(), $this->user(), $class, 15, 600, 15, 600, 'CROSS', 'en'
+        ));
     }
 
     public function test_branch_larger_than_header_is_a_distinct_error(): void

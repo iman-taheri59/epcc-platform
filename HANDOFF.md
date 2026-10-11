@@ -2779,6 +2779,11 @@ landed as piping phase P1:
   tiebreak, non-participant RLS mirror.
 - Docs: ADR-008 status → phases 1–2 implemented + §9 record; piping roadmap
   §3 row and P1 phase marked; statuses await `php artisan test` on Laragon.
+- **Addendum (owner request):** the branch outcome is now a closed
+  vocabulary — `BranchConnectionType` — including **Pipe-to-Pipe (`STUB_IN`)**:
+  CHECK constraint in the same migration, bilingual service validation, two
+  new tests (P2P specificity + out-of-vocabulary refusal), constraint
+  verified live against the sandbox PostgreSQL. ADR-008 §9.1 records it.
 
 Next in sequence: runtime verification on Laragon when the owner runs the
 suite; after that ADR-008 phase 3 (wire the PMS into component attach /
