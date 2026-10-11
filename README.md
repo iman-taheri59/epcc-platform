@@ -53,6 +53,7 @@ Open `prototype/index.html`. It boots **Persian-first with the IPS / Iran pack a
 
 Key screens for a demo:
 - **Piping Workspace preview** — open `prototype/piping-workspace.html` directly, or use the Piping Workspace link in the prototype sidebar. Shows the new task-first UX with synthetic PH-14 data.
+- **Order Gap Board preview** — `prototype/order-gap-board.html` (or the sidebar link). The Slice 6 screen language validated before build: accepted gross vs effective ordered per material, shortage / covered / over-plan / unmatched states, draft-PO exclusion, no proration — bilingual FA/EN, 19 jsdom assertions.
 - **Laravel Piping Workspace** — after `./restore.sh` and login, open `/projects/PH-14/piping/workspace?lang=en` (or `lang=fa`). It is the first task-first workspace in the real app, derived from project line/evidence/joint/test-pack data; hydrotest packs can now be created and lines assigned there.
 - **صورت‌وضعیت / Payment Certificate** — the Iranian payment build-up with تعدیل, حسن انجام کار and advance recovery, plus an authority-limit escalation. IPS pack only.
 - **IWP Release Gate** — AWP constraint hard-block in action. AWP pack only.

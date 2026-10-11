@@ -24,7 +24,7 @@ Last updated: **2026-10-11** (second pass — full documentation review, ~11,600
 | P-03 | Docs / entry points | Replace Laravel-Boost boilerplate in `app/AGENTS.md` / `app/CLAUDE.md` with repo conventions | OPEN |
 | P-04 | Docs / language | Create `docs/TODO-EN.md` — the status register is Persian-only, rule 2 needs an English record | OPEN |
 | P-05 | Requirements / ADR-015 | Recommended answers for the four Slice 6 open questions | OPEN |
-| P-06 | Prototype / UX | Build a static Order-Gap-Board prototype screen **before** coding Slice 6 | OPEN |
+| P-06 | Prototype / UX | Order-Gap-Board prototype screen built and jsdom-pinned **before** coding Slice 6 | BUILT |
 | P-07 | Commercial | `demo:seed` artisan command for air-gap sales demos | OPEN |
 | P-08 | Performance | Order-gap values must be snapshot-computed, never live-aggregated (RLS scan penalty) | OPEN |
 | P-09 | CI | Add a Docker-less "sandbox tier" CI job running `scripts/run-tests.sh` | OPEN |
@@ -125,22 +125,18 @@ one):
    readable), consistent with "archive rather than overwrite" used by document
    revisions and accepted MTO rows.
 
-## P-06 — prototype the Order-Gap board before building it
+## P-06 — prototype the Order-Gap board before building it — **BUILT 2026-10-11**
 
-Slice 6's board is a **new screen language** (shortage / covered / over-plan /
-unmatched / unallocated buckets) the customer has never seen. The established
-project pattern is to validate screen language in the static prototype first
-(`piping-workspace.html`, MTO acceptance preview) — both were jsdom-pinned and
-both caught localisation and layout defects before any Laravel code existed.
-
-**Proposal:** one bilingual, air-gap-safe static screen with synthetic PH-14
-data (shortage, covered, over-plan and an unmatched-material row), FA-first,
-linked from `prototype/index.html`, plus a jsdom suite. Then build the real
-service against a screen already approved.
-
-**Cost:** one session. **Why it matters:** the gap states are the commercial
-vocabulary of procurement reporting — cheaper to argue about them as static
-HTML than as a shipped service.
+**Delivered as `prototype/order-gap-board.html`** + `prototype/test/order-gap-board.test.js`
+(19 jsdom assertions: RTL boot, all five gap states, draft-exclusion note,
+never-guessed unmatched bucket, filter isolation both directions, EN/LTR switch,
+air-gap safety), linked from `prototype/index.html` and wired into both test
+runners. All states render from the domain rules already accepted in
+MTO-REQUIREMENTS §3.2 / ADR-015 §2 — no new decisions were smuggled in. The
+Slice 6 service now builds against a screen that can be reviewed with the user
+first. Original rationale, kept for the record: the gap states are the
+commercial vocabulary of procurement reporting — cheaper to argue about them as
+static HTML than as a shipped service.
 
 ## P-07 — `demo:seed` for air-gap sales demos
 

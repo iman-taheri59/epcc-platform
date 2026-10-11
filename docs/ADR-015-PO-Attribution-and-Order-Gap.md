@@ -98,7 +98,6 @@ This design is wrong if:
 - the effective quantity in a client's commercial practice includes **committed-but-unissued** orders — then the gap definition itself (§2.2) must be reopened with the user, not quietly widened here.
 
 ## 7. Test plan (what green means)
-
 - attribution: exact-identity resolution; alias rejected; unknown code lands in unmatched;
 - states: DRAFT and CANCELLED excluded from effective quantity; ISSUED included;
 - amendment: replaced quantity counted once; superseded rows auditable;
@@ -106,3 +105,15 @@ This design is wrong if:
 - gap states: SHORTAGE / COVERED / OVER_PLAN each asserted with fixtures, including an ordered-without-MTO row;
 - RLS: participant sees the board; non-participant sees nothing (mirror pair);
 - immutability: accepting a gap computation cannot mutate `accepted_mto_rows`.
+
+## 8. UX validation — done before build (2026-10-11)
+
+The screen language was validated as a static, air-gap-safe prototype before
+any Laravel work, following the pattern that caught localisation and layout
+defects in the Piping Workspace and MTO acceptance previews:
+`prototype/order-gap-board.html` — bilingual FA/EN, RTL/LTR, five synthetic
+PH-14 rows covering every gap state (two shortages, covered, over-plan with an
+unallocated remainder, and an unmatched-material bucket), explicit
+draft-exclusion and never-guessed notes, pinned by
+`prototype/test/order-gap-board.test.js` (19 assertions). The service build
+starts against a screen already reviewed with the user.

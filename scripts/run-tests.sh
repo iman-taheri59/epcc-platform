@@ -50,7 +50,7 @@ fi
 
 # 4. HTML prototype suites (jsdom).
 if command -v node >/dev/null 2>&1 && [ -d node_modules/jsdom ]; then
-  for t in render sidebar piping-workspace mto-acceptance-preview; do
+  for t in render sidebar piping-workspace mto-acceptance-preview order-gap-board; do
     hdr "HTML prototype — ${t} (jsdom)"
     node "prototype/test/${t}.test.js" || fail=1
   done

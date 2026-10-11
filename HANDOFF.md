@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom); Slice 4/5 targeted tests are pending runtime restoration. Slice 6 requirements now recorded as **ADR-015 (PROPOSED)**; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rules 1–5 standing** (§0); **full ~11,600-line documentation review completed** with dated drift fixes (P-16) and escalated open items (P-15, P-17, P-18) — see `docs/IMPROVEMENT-PROPOSALS-EN.md`
+Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom; +19 new order-gap-board assertions); Slice 4/5 targeted tests are pending runtime restoration. Slice 6 requirements recorded as **ADR-015 (PROPOSED)** and its screen language validated as `prototype/order-gap-board.html` (P-06 BUILT); sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rules 1–5 standing** (§0); full ~11,600-line documentation review completed with dated drift fixes (P-16) and escalated open items (P-15, P-17, P-18) — see `docs/IMPROVEMENT-PROPOSALS-EN.md`
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -2732,6 +2732,25 @@ of them as compromised and rotate it once the push is confirmed — a PAT with
 repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
+
+### 2026-10-11 (third) — Slice 6 screen language validated as a prototype (P-06 BUILT)
+
+Piping confirmed as the priority discipline (closed 2026-10-05 decision, not
+relitigated). Step-by-step sequence agreed with the user; this step: the
+**Order Gap Board prototype** — Slice 6's screen language built before any
+service code, per the pattern that twice caught localisation/layout defects
+early. `prototype/order-gap-board.html`: FA-first/RTL, five synthetic PH-14
+rows exercising every accepted gap state — two shortages (one with an issued
+gap and one with no PO yet), covered, over-plan with a visible unallocated
+remainder, and the unmatched-material bucket — plus the two rules people get
+wrong: the draft PO is explicitly *not* counted (issued/in-force only), and the
+unmatched row is *kept*, never guessed. Linked from the prototype sidebar
+(`nav.gap`), pinned by `prototype/test/order-gap-board.test.js` (19 assertions),
+wired into `npm run test:prototype` and `scripts/run-tests.sh`; ADR-015 gained
+§8 recording the UX validation. Full runnable suite green: pack validator +
+five jsdom harnesses. The four ADR-015 open questions go to the user next; no
+schema work starts in this sandbox (no PHP/PostgreSQL — the no-untested-RLS
+rule from ROADMAP §3.1 holds).
 
 ### 2026-10-11 (second) — full documentation & requirements review pass
 
