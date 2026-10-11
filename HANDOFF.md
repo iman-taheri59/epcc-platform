@@ -20,7 +20,7 @@ violating any of them is a process defect, not a style choice.
 | 1 | **Keep a handoff file and update it continuously.** | This file. Every session ends by updating the header line and appending a `## 10` session-log entry. Never let a session's findings exist only in chat. |
 | 2 | **All documentation files are written in English and kept continuously updated.** | New/updated docs land in English. The bilingual FA/EN pairing rule still holds where an FA counterpart already exists (e.g. `MTO-REQUIREMENTS-FA/EN`), but the FA copy is never the sole record, and docs that drift from the code are fixed in the same change that moves the code. |
 | 3 | **Requirements are produced and continuously updated as English ADR files.** | Every new requirement set gets an `ADR-EPCC-NNN` record (house style: status / date / depends-on / requirements / options / open questions / falsifiers), even while still PROPOSED — see ADR-015 for the Slice 6 requirements carried out of `MTO-REQUIREMENTS` §A5. When a requirement changes, amend its ADR in the same session; do not let requirements live only in chat or in prose docs. |
-| 4 | **Maintain a development environment with a real display server and test execution.** | Two tiers: **(a)** the full stack — `scripts/dev-up.sh` (Docker: PHP 8.4, PostgreSQL 17, Chromium, Vazirmatn) on any Docker-equipped host, tests via `scripts/dev-test.sh`; **(b)** the degraded-sandbox tier — `npm install` + `bash scripts/run-tests.sh` (runs every suite the machine can run and says loudly what it skipped) + `node scripts/preview-server.mjs` (zero-dependency live preview of the air-gap-safe prototype on port 8080, `/healthz` probe). Rule 5 of §4 still stands: the Laravel suite never runs on SQLite; in a PHP-less sandbox the runnable suites are the pack validator and the jsdom harnesses, and that is stated, not hidden. |
+| 4 | **Maintain a development environment with a real display server and test execution.** | Two tiers: **(a)** the full stack — `scripts/dev-up.sh` (Docker: PHP 8.4, PostgreSQL 17, Chromium, Vazirmatn) on any Docker-equipped host, tests via `scripts/dev-test.sh`; **(b)** the degraded-sandbox tier — `npm install` + `bash scripts/run-tests.sh` (runs every suite the machine can run and says loudly what it skipped) + `node scripts/preview-server.mjs` (zero-dependency live preview of the air-gap-safe prototype on port 8080, `/healthz` probe) + **`bash scripts/sandbox-pg.sh start`** — a real PostgreSQL 16.2 inside the sandbox (binaries from the `pgserver` PyPI wheel, `btree_gist` compiled from the official source; `epcc` role is non-superuser/non-bypass per the CI rule; databases `epcc` + `epcc_test`). The PHP tier cannot enter these sandboxes — every acquisition route is network-blocked (php.net, packagist, getcomposer, apt mirrors, release-assets CDN) — so Laravel work still requires the Docker tier; that is stated, not hidden. Rule 5 of §4 stands: the Laravel suite never runs on SQLite. |
 | 5 | **If a better alternative exists for any requirement, code or capability, say so — never stay silent.** | Every session reviews what it touched (and the adjacent code) for better options. Proposals are recorded with a status (`OPEN` / `ACCEPTED` / `REJECTED` / `BUILT`) in `docs/IMPROVEMENT-PROPOSALS-EN.md`. Cheap, safe fixes are implemented on the spot and marked `BUILT`; anything touching scope, schema or commercial terms waits for the user's decision. Silence is itself a defect: if a session genuinely finds nothing to improve, the session log says so explicitly. |
 
 ---
@@ -2732,6 +2732,33 @@ of them as compromised and rotate it once the push is confirmed — a PAT with
 repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
+
+### 2026-10-11 (fifth) — runtime provisioning: the PostgreSQL half is now in-sandbox
+
+The user chose runtime provisioning over parallel doc work. Probed every
+acquisition route empirically: **apt** (mirrors unreachable), **GitHub release
+assets** (redirect to `release-assets.githubusercontent.com` — blocked),
+**getcomposer/packagist/php.net/deb.debian.org** — all blocked; only the five
+allowlisted hosts answer. Consequence: PHP 8.4 cannot enter this sandbox
+(`php-wasm` also fails the requirement: no PHP-8.4-plus-pdo_pgsql build for
+Laravel exists there), and the Laravel tier remains Docker-only
+(`scripts/dev-up.sh`). The database half, however, is now real **here**:
+
+- `scripts/sandbox-pg.sh` provisions PostgreSQL **16.2** on 127.0.0.1:5432 from
+  the binaries bundled in the `pgserver` PyPI wheel; data in `.cache/pgdata`.
+- The wheel ships no contrib, so the script compiles **btree_gist** from the
+  official `REL_16_2` source via codeload (PGXS build, ~5 s) and creates it in
+  both databases.
+- CI discipline enforced by the script itself: role `epcc` asserted
+  `superuser=false bypassrls=false`; databases `epcc` and `epcc_test` owned by
+  it; connection over TCP verified.
+- Feature proof run **as the app role**: FORCE RLS enable + the ADR-008 shape
+  `EXCLUDE USING gist (cls WITH =, kind WITH =, dn_range WITH &&)` rejects an
+  overlapping DN band with `exclusion_violation` — the exact constraint the PMS
+  phase needs.
+- **Recorded gap:** the sandbox PG is 16.2 while compose/CI target 17. No
+  17-only feature is used by any current migration, but a new migration must
+  not adopt one silently; the Docker tier stays the reference.
 
 ### 2026-10-11 (fourth) — ADR-015 open questions closed by the user
 

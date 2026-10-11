@@ -37,6 +37,7 @@ Last updated: **2026-10-11** (second pass — full documentation review, ~11,600
 | P-16 | Docs drift | Parent-document dated corrections from the 2026-10-11 full review pass (SRS banner, AD-1, ADR-006 tail, ADR-005 dep, ADR-001/002 status, Iran-First §10 item 2) | BUILT |
 | P-17 | Defect / scaling | ADR-012 RLS escape hatch — the only known HIGH-severity defect, still unfixed; needs the full runtime | OPEN |
 | P-18 | Docs drift | `Prototype-Coverage-Map.md` recount after procurement + piping + MTO (audit §3 item 4) | OPEN |
+| P-19 | Runtime | In-sandbox PostgreSQL provisioned (PG tier BUILT); PHP tier network-blocked — Laravel work stays on the Docker tier | PARTIAL |
 
 ---
 
@@ -165,7 +166,7 @@ builds.
 ## P-09 — a Docker-less CI job ("sandbox tier")
 
 CI's four jobs all assume Docker. The degraded tier now exists
-(`scripts/run-tests.sh`: pack validator + four jsdom suites, node+python only)
+(`scripts/run-tests.sh`: pack validator + five jsdom suites, node+python only)
 and could run as a fifth fast job on plain ubuntu runners — catching
 pack-validator and prototype regressions before the heavy image job even
 starts.
@@ -241,6 +242,27 @@ coverage number TODO.md is waiting for. **Cost:** one session; pairs naturally
 with P-15's release-phase tagging.
 
 ---
+
+## P-19 — runtime provisioning: database half built, PHP half blocked
+
+Attempted 2026-10-11 at the user's direction. **Built:**
+`scripts/sandbox-pg.sh` — real PostgreSQL 16.2 inside the sandbox (binaries
+from the `pgserver` PyPI wheel; `btree_gist` compiled from official source via
+codeload because the wheel ships no contrib), `epcc`/`epcc_test` databases,
+non-superuser app role asserted by the script, FORCE-RLS and the ADR-008 gist
+exclusion constraint both proven live as the app role.
+
+**Blocked, with evidence:** PHP 8.4 cannot be installed here — apt mirrors,
+php.net, packagist, getcomposer and the GitHub release-asset CDN are all
+outside the sandbox's network allowlist (only github.com/api.github.com/
+codeload, registry.npmjs.org, pypi.org answer). `php-wasm` does not satisfy
+PHP-8.4 + pdo_pgsql + Laravel's extension set. **Consequence:** migrations,
+RLS policies, services and the PHPUnit suite still run only on the Docker tier
+(`scripts/dev-up.sh` on a Docker-equipped host) — which is now the single
+unblocking step for Slice 6, ADR-012 (P-17) and piping phase P1.
+
+**Recorded caveat:** sandbox PG is 16.2 vs the reference 17 — current
+migrations use nothing 17-only, and new ones must not, silently.
 
 ## BUILT this pass (2026-10-11)
 
