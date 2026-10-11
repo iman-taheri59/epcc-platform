@@ -82,12 +82,31 @@ Rows without an accepted MTO counterpart (ordered but never in the MTO) are over
 
 **Option C — reuse `material_requisition_items` as the bridge** (PO → requisition item → MTO). Rejected: late additions are ordered without a requisition by design (the existing nullable `requisition_item_id` is deliberate), and the requisition quantity is itself a planning artefact, not an accepted gross. The gap must stand on the accepted MTO directly.
 
-## 5. Open questions (close before building, one at a time)
+## 5. Open questions — ALL CLOSED by the user 2026-10-11
 
-1. Scope granularity of allocations: **line level, subsystem level, or both**? (Leaning: subsystem now — line attribution needs the piping line register per project and the two are not yet joined in procurement.)
-2. Effective-state vocabulary: is `IN_FORCE` a distinct state or a flag on `ISSUED`? Decides the shape of `PurchaseOrderState`.
-3. Who may record allocations — procurement only, or engineering too? (Permissions were deferred for MTO acceptance in Slice 4; the same deferral applies here until the access design lands.)
-4. Does an amendment create a **new item row** (lineage by FK) or update in place with an audit row? Leaning: new row + `supersedes_id`, consistent with "revision archives rather than overwrites" elsewhere in the system.
+1. **Scope granularity of allocations — CLOSED: subsystem level.** Allocations
+   target subsystems; line-level attribution arrives later as data (nullable
+   `piping_line_id`), not as schema surgery in this slice. `subsystem_id`
+   already exists on `purchase_order_items` and matches how material is issued
+   to site.
+2. **Effective-state vocabulary — CLOSED: `DRAFT / ISSUED / AMENDED / CANCELLED`,
+   with "in-force" a predicate, not a state.** Effective = *issued and not
+   cancelled*. No explicit IN_FORCE transition exists on site, so none is
+   invented here. Tests must pin DRAFT-excluded, CANCELLED-excluded,
+   ISSUED-included.
+3. **Who may record allocations — CLOSED: deferred, same policy as MTO
+   acceptance authority.** The EPC procurement role records; no new permission
+   model is built before the access design lands. The deferral is recorded
+   here so it stays visible, not implicit.
+4. **Amendment shape — CLOSED: new row + `supersedes_id`.** Superseded rows
+   stay readable for audit; the gap computation reads only lineage heads.
+   Consistent with "archive rather than overwrite" used by document revisions
+   and accepted MTO rows.
+
+With all four closed, Slice 6 has a complete requirements record. Building it
+still requires the full PHP 8.4 + PostgreSQL runtime (migrations, RLS policies,
+`EXCLUDE`-free but transaction-heavy services); the ROADMAP §3.1 rule stands —
+no tenant-scoped feature merges without the real test environment.
 
 ## 6. Falsifiers
 

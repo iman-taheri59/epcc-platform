@@ -2733,6 +2733,17 @@ repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
 
+### 2026-10-11 (fourth) — ADR-015 open questions closed by the user
+
+All four Slice 6 decisions confirmed via structured questions and recorded as
+binding in ADR-015 §5: allocations at **subsystem level**; states
+**DRAFT/ISSUED/AMENDED/CANCELLED** with in-force as a predicate; allocation
+authority **deferred** with the MTO-acceptance policy (recorded, not implicit);
+amendments as **new row + `supersedes_id`**. P-05 closed in the proposals
+register. Slice 6 now has a complete requirements record and a validated
+screen; what remains is the build, which needs the full PHP/PostgreSQL runtime
+— the next step is restoring that environment (Docker tier).
+
 ### 2026-10-11 (third) — Slice 6 screen language validated as a prototype (P-06 BUILT)
 
 Piping confirmed as the priority discipline (closed 2026-10-05 decision, not

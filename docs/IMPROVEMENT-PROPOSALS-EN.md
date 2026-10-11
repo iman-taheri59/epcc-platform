@@ -23,7 +23,7 @@ Last updated: **2026-10-11** (second pass — full documentation review, ~11,600
 | P-02 | Docs / entry points | Replace the stock Laravel `app/README.md` with a project-specific one | OPEN |
 | P-03 | Docs / entry points | Replace Laravel-Boost boilerplate in `app/AGENTS.md` / `app/CLAUDE.md` with repo conventions | OPEN |
 | P-04 | Docs / language | Create `docs/TODO-EN.md` — the status register is Persian-only, rule 2 needs an English record | OPEN |
-| P-05 | Requirements / ADR-015 | Recommended answers for the four Slice 6 open questions | OPEN |
+| P-05 | Requirements / ADR-015 | The four Slice 6 open questions — all answered by the user and recorded in the ADR | BUILT |
 | P-06 | Prototype / UX | Order-Gap-Board prototype screen built and jsdom-pinned **before** coding Slice 6 | BUILT |
 | P-07 | Commercial | `demo:seed` artisan command for air-gap sales demos | OPEN |
 | P-08 | Performance | Order-gap values must be snapshot-computed, never live-aggregated (RLS scan penalty) | OPEN |
@@ -104,26 +104,23 @@ it would break existing links and the FA register is genuinely useful locally.
 **Cost:** one careful translation pass. **Priority:** medium — this is the file
 a new contributor reads to answer "where are we?".
 
-## P-05 — recommended answers for ADR-015's four open questions
+## P-05 — the four ADR-015 open questions — **ALL CLOSED 2026-10-11**
 
-Closing these unblocks Slice 6. Recommended defaults (user to confirm, one by
-one):
+The user confirmed each recommendation; the answers are recorded in ADR-015
+§5 as binding requirements:
 
-1. **Allocation granularity:** subsystem level first. Line-level allocation
-   needs the piping register joined into procurement; subsystem already exists
-   on `purchase_order_items` and matches how material is actually issued.
-   Line attribution arrives as data later (`piping_line_id` nullable), not as
-   schema surgery.
-2. **Effective states:** `DRAFT`, `ISSUED`, `AMENDED`, `CANCELLED` — with
-   "in-force" meaning *issued and not cancelled*, a **predicate, not a state**.
-   A separate IN_FORCE state would need an explicit transition nobody performs
-   on site.
-3. **Who allocates:** same deferral as MTO acceptance authority — procurement
-   role of the EPC records; no new permission model yet. Record the deferral in
-   the ADR so it is visible, not implicit.
-4. **Amendment shape:** new row + `supersedes_id` FK (superseded rows stay
-   readable), consistent with "archive rather than overwrite" used by document
-   revisions and accepted MTO rows.
+1. **Allocation granularity: subsystem level** — line attribution later as data.
+2. **Effective states: `DRAFT/ISSUED/AMENDED/CANCELLED`** — "in-force" is a
+   predicate (issued and not cancelled), not a state.
+3. **Allocation authority: deferred** with the MTO-acceptance policy — EPC
+   procurement records; no new permission model yet; the deferral stays visible
+   in the ADR.
+4. **Amendments: new row + `supersedes_id`** — archive, never overwrite; the
+   gap reads lineage heads only.
+
+Slice 6 now has a complete requirements record; the build itself waits for the
+full runtime (ROADMAP §3.1: no tenant-scoped feature without the real
+PostgreSQL test environment).
 
 ## P-06 — prototype the Order-Gap board before building it — **BUILT 2026-10-11**
 
