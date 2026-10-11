@@ -1,12 +1,26 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-07** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom); Slice 4/5 targeted tests are pending runtime restoration
+Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom); Slice 4/5 targeted tests are pending runtime restoration. Slice 6 requirements now recorded as **ADR-015 (PROPOSED)**; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`)
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
 do next. Everything else is detail hanging off `README.md`.
 
+
+---
+
+## 0. Standing operating rules (user-mandated, 2026-10-11)
+
+Four rules the user set on 2026-10-11. They bind every session from here on;
+violating any of them is a process defect, not a style choice.
+
+| # | Rule | How it is enforced here |
+|---|---|---|
+| 1 | **Keep a handoff file and update it continuously.** | This file. Every session ends by updating the header line and appending a `## 10` session-log entry. Never let a session's findings exist only in chat. |
+| 2 | **All documentation files are written in English and kept continuously updated.** | New/updated docs land in English. The bilingual FA/EN pairing rule still holds where an FA counterpart already exists (e.g. `MTO-REQUIREMENTS-FA/EN`), but the FA copy is never the sole record, and docs that drift from the code are fixed in the same change that moves the code. |
+| 3 | **Requirements are produced and continuously updated as English ADR files.** | Every new requirement set gets an `ADR-EPCC-NNN` record (house style: status / date / depends-on / requirements / options / open questions / falsifiers), even while still PROPOSED — see ADR-015 for the Slice 6 requirements carried out of `MTO-REQUIREMENTS` §A5. When a requirement changes, amend its ADR in the same session; do not let requirements live only in chat or in prose docs. |
+| 4 | **Maintain a development environment with a real display server and test execution.** | Two tiers: **(a)** the full stack — `scripts/dev-up.sh` (Docker: PHP 8.4, PostgreSQL 17, Chromium, Vazirmatn) on any Docker-equipped host, tests via `scripts/dev-test.sh`; **(b)** the degraded-sandbox tier — `npm install` + `bash scripts/run-tests.sh` (runs every suite the machine can run and says loudly what it skipped) + `node scripts/preview-server.mjs` (zero-dependency live preview of the air-gap-safe prototype on port 8080, `/healthz` probe). Rule 5 of §4 still stands: the Laravel suite never runs on SQLite; in a PHP-less sandbox the runnable suites are the pack validator and the jsdom harnesses, and that is stated, not hidden. |
 
 ---
 
@@ -2714,6 +2728,29 @@ of them as compromised and rotate it once the push is confirmed — a PAT with
 repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
+
+### 2026-10-11 — standing operating rules, Slice 6 requirements ADR, sandbox dev-environment slice
+
+The user set four standing operating rules (handoff kept current; documentation in
+English and continuously updated; requirements recorded continuously as English ADRs;
+a development environment with a real display server and test execution). They are
+now permanent as **§0** above.
+
+Concretely: traced the Slice 6 requirement provenance (it lives in
+`docs/MTO-REQUIREMENTS-FA.md` / `-EN.md` §A5 and §3.2, referenced from here, README
+and TODO) and promoted it to a first-class requirements record — **ADR-015
+(PROPOSED)** — grounded in the real schema findings: `purchase_order_items` has no
+`material_item_id` FK, no amendment lineage, and no effective-state vocabulary
+(`PurchaseOrderState` exists only as a migration comment). Built the degraded-tier
+development environment this sandbox allows (no PHP/Composer/PostgreSQL/Docker):
+`scripts/run-tests.sh` runs every suite the machine can run — pack validator (venv
+under `.cache/`, PEP-668-safe), all four jsdom harnesses — and says loudly what it
+skips; `scripts/preview-server.mjs` is a zero-dependency live preview of the
+air-gap-safe prototype (0.0.0.0:8080, path-traversal blocked, `/healthz` probe).
+Verified here: all 3 standards packs + 5 reference packs valid; 324-combination
+render suite plus sidebar/piping-workspace/MTO-acceptance jsdom suites green;
+preview serving `index.html` and `piping-workspace.html`. The full Laravel/RLS
+suite remains Docker-tier (`scripts/dev-up.sh`) and was not run here.
 
 ### 2026-10-05 — external repo handoff, backlog reconciliation and MVP roadmap
 

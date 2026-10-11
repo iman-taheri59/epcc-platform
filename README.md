@@ -13,6 +13,8 @@ Bilingual (EN/FA) modular platform for large industrial EPCC projects — oil, g
 | `docs/Architecture-and-Data-Model.md` | Architecture (ARC-EPCC-001) — module manifest contract, standards engine resolution, 6-gate authorization pipeline, canonical data model, offline sync, RTL architecture, event catalogue, tech selection |
 | `app/` | **The Laravel 13 application** — real code. **Authentication + ARC §5 six-gate authorization**, **project setup** (create a project, choose its standards pack, invite companies, staff people), **multi-project** portfolio + per-project workspaces, tenant isolation enforced by PostgreSQL RLS, bilingual FA/EN, real Jalali dates. `php artisan serve` |
 | `compose.yaml` + `scripts/dev-*.sh` | **One-command development environment** — PostgreSQL 17 and PHP 8.4 with Composer, Node 22, headless Chromium, poppler and Vazirmatn, all in containers. `scripts/dev-up.sh`, then sign in at <http://localhost:8000>. No PHP, Composer, Node or PostgreSQL needed on the host |
+| `scripts/run-tests.sh` | **Degraded-environment test runner** — for sandboxes without Docker/PHP: runs the standards-pack validator (auto-venv) and all four jsdom prototype suites, and reports loudly what it skipped and why. `bash scripts/run-tests.sh` |
+| `scripts/preview-server.mjs` | **Zero-dependency live preview server** for the air-gap-safe prototype (no CDN, no build step). `node scripts/preview-server.mjs` → <http://localhost:8080> (`/` main prototype, `/piping-workspace.html`, `/healthz`) |
 | `docs/DEVELOPMENT-ENVIRONMENT.md` | **How to run everything locally** — the container stack, what the first boot does, the four `scripts/dev-*.sh` commands, CI, troubleshooting, and the two traps that break the suite silently: exporting a Laravel variable into the container, and letting the application role be a PostgreSQL superuser |
 | `packages/standards-engine/` | **Framework-free PHP rule engine** (`epcc/standards-engine`). Zero Laravel dependency by design — ADR-003 Annex A §6. Evaluates pack release gates |
 | `packages/standards-engine/conformance/` | **Language-neutral conformance corpus** (25 cases, v1.2.0) + runner + mutation-testing record. The contract that lets the PHP server and the future TS offline app provably agree |
@@ -61,7 +63,9 @@ Tested: 324 render combinations (3 packs × 2 languages × 6 company roles × 9 
 
 ```bash
 npm install
-npm run test:prototype
+npm run test:prototype      # jsdom prototype suites
+bash scripts/run-tests.sh   # every suite this machine can run (+ loud skip report)
+npm run preview             # live preview of the prototype on :8080
 ```
 
 ## Validating the packs

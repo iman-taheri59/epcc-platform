@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "test:prototype": "node prototype/test/sidebar.test.js && node prototype/test/piping-workspace.test.js && node prototype/test/mto-acceptance-preview.test.js"
+    "test": "bash scripts/run-tests.sh",
+    "test:prototype": "node prototype/test/sidebar.test.js && node prototype/test/piping-workspace.test.js && node prototype/test/mto-acceptance-preview.test.js",
+    "preview": "node scripts/preview-server.mjs"
   },
   "dependencies": {
     "jsdom": "^29.1.1"
