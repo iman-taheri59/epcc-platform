@@ -37,7 +37,8 @@ Last updated: **2026-10-11** (second pass — full documentation review, ~11,600
 | P-16 | Docs drift | Parent-document dated corrections from the 2026-10-11 full review pass (SRS banner, AD-1, ADR-006 tail, ADR-005 dep, ADR-001/002 status, Iran-First §10 item 2) | BUILT |
 | P-17 | Defect / scaling | ADR-012 RLS escape hatch — the only known HIGH-severity defect, still unfixed; needs the full runtime | OPEN |
 | P-18 | Docs drift | `Prototype-Coverage-Map.md` recount after procurement + piping + MTO (audit §3 item 4) | OPEN |
-| P-19 | Runtime | In-sandbox PostgreSQL provisioned (PG tier BUILT); PHP tier network-blocked — Laravel work stays on the Docker tier | PARTIAL |
+| P-19 | Runtime | In-sandbox PostgreSQL provisioned (PG tier BUILT); PHP tier network-blocked — Laravel work stays on the Docker/Laragon tier | PARTIAL |
+| P-20 | Code / portability | `PdfRenderer` is POSIX-only (`command -v`) — PDF export silently unavailable on Windows/Laragon | OPEN |
 
 ---
 
@@ -257,12 +258,27 @@ php.net, packagist, getcomposer and the GitHub release-asset CDN are all
 outside the sandbox's network allowlist (only github.com/api.github.com/
 codeload, registry.npmjs.org, pypi.org answer). `php-wasm` does not satisfy
 PHP-8.4 + pdo_pgsql + Laravel's extension set. **Consequence:** migrations,
-RLS policies, services and the PHPUnit suite still run only on the Docker tier
-(`scripts/dev-up.sh` on a Docker-equipped host) — which is now the single
-unblocking step for Slice 6, ADR-012 (P-17) and piping phase P1.
+RLS policies, services and the PHPUnit suite still run only where PHP exists —
+either the Docker tier (`scripts/dev-up.sh`) or the owner's Windows/Laragon
+machine (`docs/LARAGON-DEVELOPMENT-ENVIRONMENT.md`) — which are now the two
+unblocking steps for Slice 6, ADR-012 (P-17) and piping phase P1.
 
 **Recorded caveat:** sandbox PG is 16.2 vs the reference 17 — current
 migrations use nothing 17-only, and new ones must not, silently.
+
+## P-20 — PDF export does not work on Windows (Laragon found it)
+
+The owner develops on Windows + Laragon. `App\Services\PdfRenderer::binary()`
+locates the browser via the POSIX `command -v`, so on Windows the candidates
+(`chromium`, `google-chrome`, …) are never found, `isAvailable()` is false,
+and every PDF action degrades silently. Same family as every other
+air-gap/typography trap: nothing errors, the capability is just gone.
+
+**Proposal:** add Windows candidates (`chrome.exe` under the usual Program
+Files paths, a `where`-based lookup behind a platform check) plus docs for
+Vazirmatn + poppler on Windows. **Cost:** small. **Test gate:** needs the
+Laragon/Docker runtime — queue behind P-17 once the suite runs. Recorded by
+the 2026-10-11 Laragon setup doc (`docs/LARAGON-DEVELOPMENT-ENVIRONMENT.md` §7).
 
 ## BUILT this pass (2026-10-11)
 
