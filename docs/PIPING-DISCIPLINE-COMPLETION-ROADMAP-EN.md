@@ -116,6 +116,11 @@ Based on ADR-008:
 - Gap detection in the publish gate
 - Branch table with specificity-wins resolution
 - Integration with component attach and joint compatibility
+- **Addendum (owner 2026-10-11, ADR-008 §9.1):** the branch outcome
+  vocabulary is closed — `TEE / WELDOLET / SOCKOLET / P2P`; `P2P`
+  (pipe-to-pipe) is a first-class outcome meaning *no component*, with
+  kinds **stub-in / stub-on** and a reinforcement pad whose thickness (mm)
+  is mandatory when the pad is required.
 
 Value: stops incorrect data before it reaches the field.
 

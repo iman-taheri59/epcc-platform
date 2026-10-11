@@ -157,6 +157,12 @@ broken design. A PMS branch table is a matrix:
 
 So a rule is `(header_range × branch_range) → component_type`.
 
+> **2026-10-12 requirements-review note (R-1):** the outcome vocabulary was
+> closed and extended by §9.1 — the outcome is a fitting type **or** `P2P`
+> (no component, with a mandatory stub-in/stub-on kind and, for
+> `reinforcement = PAD`, a mandatory pad thickness in mm). Read this
+> section's examples together with §9.1.
+
 ### 4.1 The spike that changed the design
 
 My first instinct was to reuse the exclusion constraint in two dimensions:

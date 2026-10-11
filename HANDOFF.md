@@ -2766,6 +2766,38 @@ ADR-008 class rule, and class-contradicting joints surfaced as deviations.
 Cross-linked in ADR-008 §9.2 and roadmap P5. Nothing built — it is queued on
 the P5 design ADR.
 
+### 2026-10-12 (cont.) — standing duty established: systematic requirements review; first piping pass
+
+Owner critique: requirements were only extended reactively — the P2P gap
+(standard PMS vocabulary, absent from every requirement doc until supplied
+by the owner) is the proof. Directive recorded: **before each build phase,
+the requirement set of the target domain is audited for gaps, contradictions
+and staleness; cheap hygiene fixed on the spot, decisions become numbered
+proposals.** First pass delivered in `docs/REQUIREMENTS-REVIEW-PIPING-EN.md`
+(findings R-1…R-8):
+
+- **R-1 FIXED** — ADR-008 §4 stale `→ component_type` definition: pointer
+  to §9.1 added.
+- **R-2 FIXED+P-22** — ADR-006 joints: no branch-weld types, and the
+  two-port model cannot express a weld on the header wall. Vocabulary
+  pointer added; §13 forward requirement written; wall-attach modelling
+  registered as decision P-22 (leaning: synthesised wall port, PCF
+  `TEE-SET-ON` style).
+- **R-3 FIXED** — ADR-009 deviation matrix gained the two P2P rows (fitting
+  present where class says P2P, and mirror); attach geometry waits on P-22.
+- **R-4 FIXED** — ADR-010 §6 gained open question 4: branch-weld dia-inch
+  (leaning: branch nominal, reported separately per P-21).
+- **R-5 P-23** — MTO requirements have zero branch-connection coverage:
+  reinforcement pads (plate) and coped stub ends. Scope decision, waits.
+- **R-6 FIXED** — FA roadmap synced (P1 status + P2P/stub/pad addendum, P5
+  branch-weld bullet).
+- **R-7/R-8 OK** — ADR-010 §4 row 008 and ADR-006 §11.2 re-checked against
+  the P2P decision; no conflict.
+
+Protocol registered in `IMPROVEMENT-PROPOSALS-EN.md` ("Standing process —
+requirements review"). Next passes: one discipline per session, oldest ADR
+first; P2 (equipment/nozzles) still blocked on ADR-010's questions.
+
 ### 2026-10-11 (ninth) — piping P1 built: PMS piping classes, the EXCLUDE constraint and the branch table
 
 Continued per «فعلاً بدون انجام تست ادامه بده». ADR-008 build phases 1–2

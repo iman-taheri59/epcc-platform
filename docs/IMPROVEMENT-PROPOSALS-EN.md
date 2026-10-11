@@ -40,6 +40,8 @@ Last updated: **2026-10-11** (second pass — full documentation review, ~11,600
 | P-19 | Runtime | In-sandbox PostgreSQL provisioned (PG tier BUILT); PHP tier network-blocked — Laravel work stays on the Docker/Laragon tier | PARTIAL |
 | P-20 | Code / portability | `PdfRenderer` is POSIX-only (`command -v`) — PDF export silently unavailable on Windows/Laragon | OPEN |
 | P-21 | Requirement / piping | Branch welds (stub-in/stub-on P2P) must be first-class joint types before weld counts and dia-inch are built | OPEN — queued for the P5 design ADR |
+| P-22 | Requirement / piping | P2P branch welds land on the header *wall*, but the joint model only connects two ports — wall-attach representation must be decided | OPEN — decision needed |
+| P-23 | Requirement / MTO | MTO has no coverage of branch-connection material: reinforcement pads (plate) and coped stub ends | OPEN — scope decision |
 
 ---
 
@@ -323,6 +325,54 @@ at minimum `BRANCH_STUB_IN` and `BRANCH_STUB_ON` — such that:
 type; a weld report showing branch welds separately; pad linkage from the
 class rule. **Depends on:** the P5 design ADR (not written yet) and ADR-010
 §6 open questions. Cross-references: ADR-008 §9.2 (forward link).
+
+## Standing process — requirements review (owner directive, 2026-10-12)
+
+The owner's 2026-10-12 instruction makes requirement review a **standing
+duty**, not a by-product of building: before each build phase, the
+requirement set of the target domain is audited for gaps, contradictions
+and staleness; cheap hygiene is fixed on the spot, decisions become
+numbered proposals. The first pass (piping) lives in
+`docs/REQUIREMENTS-REVIEW-PIPING-EN.md` and produced findings R-1…R-8,
+including proposals P-22 and P-23.
+
+## P-22 — P2P branch welds connect to the header wall, not a port (decision needed)
+
+Found in the 2026-10-12 requirements review (finding R-2). ADR-006 §5.3
+models a joint as `port_a_id < port_b_id` — two component ports. A
+stub-in/stub-on branch weld has only **one** port (the branch pipe's end);
+the other side is a point on the header pipe's wall, which has no port. So
+the built joint schema cannot yet represent the very connection the class
+table now defines.
+
+**Decision options** (recorded, not chosen):
+
+- **(a) Synthesised wall port** — create a virtual port on the header at
+  the branch point, mirroring how Plant 3D models `TEE-SET-ON` with a
+  `BRANCH1-POINT`. Keeps the port-pair invariant; adds port provenance
+  (real vs derived) to the vocabulary.
+- **(b) Wall-point joint** — let a joint reference `(line, station)` on the
+  header instead of a second port. Smaller concept, but the `port_a_id <
+  port_b_id` invariant and every port-based query need a nullable second
+  side — the COALESCE-smell ADR-010 §3.2 rejected elsewhere.
+
+**Recommendation:** (a), consistent with PCF/Plant 3D reality. **Decides:**
+ADR-006 follow-up, ADR-008 build phase 3 wiring, and the P5 joint design.
+Cross-references: ADR-006 §13, ADR-009 P2P addendum, proposal P-21.
+
+## P-23 — MTO has no coverage of branch-connection material
+
+Found in the 2026-10-12 requirements review (finding R-5). `MTO-REQUIREMENTS-EN`
+says nothing about branch connections. Two material realities exist at a P2P
+node (and at weldolet/sockolet cells): a **reinforcement pad** is a plate
+item — diameter and thickness, and since ADR-008 §9.1 the thickness is
+mandatory — and a stub-in **stub end** is pipe that gets coped/notched,
+which affects cut length and offcut. Neither is on any MTO list today.
+
+**Proposal:** when the MTO↔piping integration phase is designed, add (1)
+reinforcement pads as plate material rows sourced from the class rule, and
+(2) stub/cop allowance in branch-pipe length calculation. **Status:** OPEN —
+scope/commercial decision, waits for the owner per rule 5.
 
 ## BUILT this pass (2026-10-11)
 
