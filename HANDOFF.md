@@ -3434,6 +3434,24 @@ test URLs match the added route paths.
 **Verification gate (owner's Laragon):**
 `php artisan migrate:fresh --force && php artisan db:seed --class=AuthSeeder && php artisan db:seed --class=EpccDemoSeeder && php artisan test --filter=MaterialRequisition`
 
+### 2026-10-12 (cont.) — P-25 step 5 assessed; standards-library port stopped at design gate
+
+Owner approved the next step («بله»). Reconciled the parallel export's
+`Standard`, `ProjectStandard`, `StandardCitation`, `StandardsLibrary`,
+`2026_09_20_100000_create_standards_library` and later document-reference
+freeze migration against this branch's `StandardsPackRepository`. Recorded
+findings and proposed choices in `docs/ADR-019-Standards-Library-Reconciliation-EN.md`.
+The file-backed numerical packs and the metadata catalogue serve different
+purposes and can coexist. However the exported migration comments on missing
+`itp_stages.reference`; citations only support `ITP_STAGE` and `printed()`
+uses absent ITP snapshot APIs; the later `source_edition` migration needs ITP
+triggers; the exported tests seed ITP. Therefore no code/migration/test was
+copied: the one-step rule requires stopping on this dependency conflict.
+Recommended owner choice: port catalogue + project adoption as an explicitly
+adapted future step, leave citation/ITP deferred; alternative: defer all.
+Publication must pin edition and snapshot. No tests executed here per owner.
+Earlier steps 2+3 and 4 still await Laragon verification.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,
