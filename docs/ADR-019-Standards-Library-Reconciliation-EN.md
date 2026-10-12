@@ -1,6 +1,6 @@
 # ADR-019 — Reconcile the parallel standards library before porting
 
-Status: PROPOSED — owner decision required; no schema or application code ported
+Status: ACCEPTED IN PART — owner selected option A (catalogue + project adoption only); citation/ITP deferred
 Date: 2026-10-12
 Related: ADR-007 (file-based reference packs), parallel-session ADR-016 (not copied because ADR numbering collides), P-25 step 5
 
@@ -23,3 +23,7 @@ But the exported module is **not independently portable**:
 Alternative: defer the entire library until a citation host is approved. This avoids an unused metadata table but postpones consistent per-project code naming. **Do not** copy the exported migration/model wholesale or import ITP as an incidental dependency of step 5.
 
 Owner choices: (A) catalogue + project adoption now, citations later (recommended), or (B) defer all of step 5. Until chosen, P-25 step 5 is blocked at the reconciliation gate. No tests were executed here per owner's instruction; Laragon remains the runtime verification tier for earlier ported steps.
+
+## Implementation after owner selection (2026-10-12)
+
+Owner chose option A. `2026_10_12_130000_create_standards_catalogue.php` creates only `standards` and RLS-protected `project_standards`. `Standard`, `ProjectStandard`, and the catalogue/adoption methods of `StandardsLibrary` are based on the parallel export; citation model/methods/table, ITP-specific migration statements, ITP tests, routes and UI are excluded. New `StandardsCatalogueTest` replaces the ITP-dependent exported suite and exercises normalization, edition pinning, withdrawal and RLS isolation. `StandardsPackRepository` and its consumers are unchanged. Catalogue writes are service-level only: do not expose `define()`/`withdraw()` to tenant routes; platform-admin authorization must precede any future endpoint. Null project edition is a draft preview only: any future release workflow must explicitly pin its effective edition and immutable source snapshot. Tests intentionally not executed in this environment per owner; Laragon gate pending.

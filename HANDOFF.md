@@ -3452,6 +3452,19 @@ adapted future step, leave citation/ITP deferred; alternative: defer all.
 Publication must pin edition and snapshot. No tests executed here per owner.
 Earlier steps 2+3 and 4 still await Laragon verification.
 
+### 2026-10-12 (cont.) — P-25 step 5 option A: catalogue and project adoption
+
+Owner selected option A («گزینه اول»). Implemented the adapted standards
+catalogue (`Standard`, `ProjectStandard`, `StandardsLibrary`) with a new
+`2026_10_12_130000` migration: global identity catalogue + project-specific
+RLS applicability and edition pinning. Removed all ITP/citation dependencies
+from the parallel code and migration; no `standard_citations` or ITP host.
+Added `StandardsCatalogueTest` for identity, editions, withdrawal and RLS.
+Original parallel tests depend on ITP and cannot be ported verbatim.
+ADR-019 updated with decision and scope. `StandardsPackRepository` untouched.
+No tests run here per owner's instruction. Laragon gate:
+`php artisan migrate:fresh --force && php artisan db:seed --class=EpccDemoSeeder && php artisan db:seed --class=AuthSeeder && php artisan test --filter=StandardsCatalogueTest`.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,
