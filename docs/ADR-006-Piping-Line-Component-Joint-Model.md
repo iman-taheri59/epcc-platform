@@ -641,6 +641,10 @@ stub-in/stub-on weld joins the branch pipe's end-port to a point on the
 header pipe's **wall**, which has no port. Requirements recorded, design
 decision open (proposal P-22): the joint model must gain first-class
 branch-weld types (`BRANCH_STUB_IN` / `BRANCH_STUB_ON`, proposal P-21) AND
-a way to reference a wall connection — the leaning is a synthesised wall
-port, mirroring PCF `TEE-SET-ON`. Decides together with ADR-008 build
-phase 3 wiring and the welding-phase (roadmap P5) design.
+a way to reference a wall connection — research (2026-10-12,
+`docs/RESEARCH-PLANT3D-PCF-P2P-BRANCHES-EN.md`) shows the PCF-native idiom
+is the **tap connection** (branch end-point on the header wall, resolved by
+projection; Plant 3D calls the weld a "tap weld"), so the leaning is now a
+frozen header reference on the joint rather than a synthesised wall port
+(proposal P-22). Decides together with ADR-008 build phase 3 wiring and the
+welding-phase (roadmap P5) design.

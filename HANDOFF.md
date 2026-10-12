@@ -2798,6 +2798,32 @@ Protocol registered in `IMPROVEMENT-PROPOSALS-EN.md` ("Standing process —
 requirements review"). Next passes: one discipline per session, oldest ADR
 first; P2 (equipment/nozzles) still blocked on ADR-010's questions.
 
+### 2026-10-12 (cont.) — research: how Plant 3D and PCF handle P2P branches
+
+Owner asked how Plant 3D / the PCF format treat a pipe-to-pipe branch.
+Researched against Autodesk support/KB/forum sources, the PCF Reference
+Guide v13, Hexagon CADWorx/ISOGEN docs, and Bentley AutoPIPE threads;
+recorded in `docs/RESEARCH-PLANT3D-PCF-P2P-BRANCHES-EN.md`. Findings:
+
+- Plant 3D: **Stub-in** is a first-class routing option (pipe-to-pipe, no
+  tee, weld directly on the line); the weld is internally a **"tap weld"**
+  with an ordinary butt-weld SKEY (WW/WS) and a **TAP** end code on the
+  branch pipe (end-type PL, cut like BW). No automatic reinforcement pad.
+- PCF: no stub-in entity exists — the idiom is the **tap connection**: the
+  branch pipe's END-POINT starts at a point on the header wall and ISOGEN
+  resolves it by projection onto the header centreline within the header's
+  end points. Set-on fittings are `TEE-SET-ON`; set-on P2P without a
+  fitting is CADWorx `OTAP` (SKEYs TTSO/TSSO) — still tap semantics. Cut
+  length is decided at iso time (ISOGEN Option Switch 2).
+- Interoperability: wall connections are the fragile part of PCF — olets
+  get mapped to welded tees by consumers, and Plant 3D stub-ins are a known
+  import failure in AutoPIPE. Importer (roadmap P7) must resolve taps by
+  projection and never require a header-side port.
+- **P-22 recommendation updated:** tap semantics — the joint carries the
+  branch-side port plus a frozen reference to the header component and the
+  connection point; not a synthesised wall port. Reinforces P-23 (pads
+  exist only in our class rules, invisible to Plant 3D/PCF).
+
 ### 2026-10-11 (ninth) — piping P1 built: PMS piping classes, the EXCLUDE constraint and the branch table
 
 Continued per «فعلاً بدون انجام تست ادامه بده». ADR-008 build phases 1–2

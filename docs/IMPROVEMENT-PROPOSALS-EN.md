@@ -356,9 +356,18 @@ table now defines.
   port_b_id` invariant and every port-based query need a nullable second
   side — the COALESCE-smell ADR-010 §3.2 rejected elsewhere.
 
-**Recommendation:** (a), consistent with PCF/Plant 3D reality. **Decides:**
-ADR-006 follow-up, ADR-008 build phase 3 wiring, and the P5 joint design.
-Cross-references: ADR-006 §13, ADR-009 P2P addendum, proposal P-21.
+**Recommendation (updated 2026-10-12 by research):** **(c) tap semantics** —
+the joint carries the branch-side port plus a *frozen* reference to the
+header component and the connection point (ADR-006 §5.3 "derived
+attributes are frozen"). This is the PCF-native idiom: ISOGEN resolves a tap
+connection by projecting the branch end-point onto the header centreline,
+and the header has no port (see `docs/RESEARCH-PLANT3D-PCF-P2P-BRANCHES-EN.md`;
+Plant 3D calls the result a "tap weld"). Rejected: (a) synthesised wall
+port — nothing in the exchange formats requires it, and it would invent a
+state no importer/exporter carries; (b) raw line+station — weaker than a
+frozen component reference. **Decides:** ADR-006 follow-up, ADR-008 build
+phase 3 wiring, and the P5 joint design. Cross-references: ADR-006 §13,
+ADR-009 P2P addendum, proposal P-21.
 
 ## P-23 — MTO has no coverage of branch-connection material
 
