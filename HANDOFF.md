@@ -2824,6 +2824,34 @@ recorded in `docs/RESEARCH-PLANT3D-PCF-P2P-BRANCHES-EN.md`. Findings:
   connection point; not a synthesised wall port. Reinforces P-23 (pads
   exist only in our class rules, invisible to Plant 3D/PCF).
 
+### 2026-10-12 (cont.) — P-24 Step B COMPLETE: design basis, material rule, publish-gate pad validation
+
+Step B finished in three commits on top of the materials pack (`55272b2`):
+
+- `551b160` — migration `2026_10_12_120000`: `piping_classes` gains
+  `design_pressure_mpa` / `design_temperature_c` (owner decision: class
+  attributes); rule-kind CHECK extended with `PIPE_MATERIAL`. The service
+  gained `setDesignBasis()` and validates PIPE_MATERIAL values against the
+  pack — spec+grade must resolve (`A106 B`, `API5L X42 PSL2` via the ISO
+  alias table) unless `s_mpa_override` is given; PSL ambiguity refused.
+- `ae5351c` — `App\Services\BranchConnectionPadGate`: the publish gate
+  walks EVERY pack DN pair inside each branch rule's footprint, sizes each
+  pipe with its band's schedule/material/corrosion rules (effective wall
+  0.875×nominal, S(T)/E/W/Y from the B31.3-2024 pack, conservative
+  lowest-Ej default), and runs the §304.3.3 calculator: PAD cells must
+  pass with the recorded thickness (else the message quotes the required
+  minimum), NONE cells must pass bare, and uncheckable cells (para
+  304.3.1(b) limits, missing rules, out-of-table temperatures) refuse the
+  publish. Bilingual report lists each failing cell.
+- `tests/Feature/PipingPadGateTest` — 5 tests on matrices computed from
+  the packs (worst margins +17.4 / +761.9 adequate; −94.3 / −62.7
+  refused), plus missing-CA refusal and the manual-override path.
+
+Owner verification on Laragon is the remaining step for the whole P-24
+chain (Step A calculator → pack → gate). Housekeeping still open: strip
+the 12 MB PDF from the `b31.3-upload` branch (history rewrite, needs
+sign-off).
+
 ### 2026-10-12 (cont.) — P-24 Step B: ASME B31.3-2024 materials reference pack built (commit `55272b2`)
 
 The owner-uploaded ASME B31.3-2024 PDF (594 pp, on the `b31.3-upload`

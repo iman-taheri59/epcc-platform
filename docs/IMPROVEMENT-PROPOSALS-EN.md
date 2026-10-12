@@ -42,7 +42,7 @@ Last updated: **2026-10-11** (second pass — full documentation review, ~11,600
 | P-21 | Requirement / piping | Branch welds (stub-in/stub-on P2P) must be first-class joint types before weld counts and dia-inch are built | OPEN — queued for the P5 design ADR |
 | P-22 | Requirement / piping | P2P branch welds land on the header *wall*, but the joint model only connects two ports — wall-attach representation must be decided | OPEN — decision needed |
 | P-23 | Requirement / MTO | MTO has no coverage of branch-connection material: reinforcement pads (plate) and coped stub ends | OPEN — scope decision |
-| P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator built; B31.3-2024 materials pack + accessor built; class design-basis migration next | PARTIAL — Step B item 1 built |
+| P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator + B31.3-2024 materials pack + class design basis + publish-gate validation built; runtime verification on owner's Laragon pending | PARTIAL — Step B built |
 
 ---
 
@@ -461,10 +461,28 @@ PMS استفاده شود»*. The requirement text and the formulas live in ADR-
     Ej by spec+type or description fragment; Y/W with below-range rules.
   - `tests/Unit/MaterialReferenceTest` — 17 tests anchored on Appendix H
     (H301: API 5L Gr A S = 110 MPa @ 200 °C) and raw table rows.
-  Extraction validated row-by-row against the PDF text stream. Remaining
-  Step B build: (2) class design-basis columns + pipe-material-grade rule
-  kind (migration), then (3) publish-gate PAD validation with bilingual
-  refusals. PHP suite runs on the owner's Laragon tier (no PHP in sandbox).
+  Extraction validated row-by-row against the PDF text stream.
+- **Step B complete (2026-10-12, commits `551b160` + `ae5351c`):**
+  - Migration `2026_10_12_120000`: `piping_classes` gains
+    `design_pressure_mpa` / `design_temperature_c` (class attributes per
+    decision (a)); the rule-kind CHECK re-stated with `PIPE_MATERIAL`.
+  - `PipingClassService::setDesignBasis()`; `addRule()` validates
+    PIPE_MATERIAL values against the pack (spec+grade must resolve unless
+    an `s_mpa_override` is given — manual entry stays an override; PSL
+    ambiguity refused; optional `pipe_type` / `ej_override`).
+  - `App\Services\BranchConnectionPadGate`: the publish gate walks the
+    worst case of every branch cell — all pack DN pairs in the footprint,
+    each pipe sized by its band's schedule/material/CA rules, effective
+    wall 0.875×nominal, S(T)/E/W/Y from the pack — and runs the Step A
+    calculator. PAD cells must pass with the recorded thickness; NONE
+    cells must pass bare; anything uncheckable (§304.3.1(b) limits,
+    missing rules, out-of-table temperatures) is REFUSED, never skipped.
+    E defaults to the lowest published Ej of the spec (conservative).
+  - `tests/Feature/PipingPadGateTest` (5 tests) on pack-computed matrices:
+    worst margins +17.4 / +761.9 (adequate), −94.3 / −62.7 (refused).
+  Awaiting runtime verification on the owner's Laragon tier (no PHP in
+  sandbox). Remaining housekeeping: remove the 12 MB PDF from the
+  `b31.3-upload` branch (needs owner sign-off for the history rewrite).
 
 ## BUILT this pass (2026-10-11)
 
