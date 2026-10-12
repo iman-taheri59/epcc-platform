@@ -43,6 +43,7 @@ Last updated: **2026-10-11** (second pass — full documentation review, ~11,600
 | P-22 | Requirement / piping | P2P branch welds land on the header *wall*, but the joint model only connects two ports — wall-attach representation must be decided | OPEN — decision needed |
 | P-23 | Requirement / MTO | MTO has no coverage of branch-connection material: reinforcement pads (plate) and coped stub ends | OPEN — scope decision |
 | P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator + B31.3-2024 materials pack + class design basis + publish-gate validation built; **flange step built 2026-10-12**: ASME B16.5-2025 P-T ratings pack (45 SI tables, cross-checked against the Customary twin) + `FlangeRatingReference` + publish gate rating every FLANGE_TYPE cell against the class design basis; B16.47 large-diameter + Section II Part D extensions remain follow-ups; runtime verification on owner's Laragon pending | PARTIAL — Step B + flange gate built |
+| P-25 | Standards / data | Parallel-session engineering reference library discovered on the owner-published `workspace` branch and ported (commit `bf15816`): full B31.3-2024 Table A-1 stresses (798 rows/138 specs), materials library v1.8, B16.5+B16.47 flange P-T curves, bolting, B16.9 fitting dimensions, valve packs, per-pack schemas and the 2,835-line validator; both flange provenances cross-checked cell-by-cell (4,725/4,725 exact). The session's APP-level work (PMS entry, MR entry, NDT, screening) remains archived in the export pending an integration decision | BUILT (data port) — app-code decision OPEN |
 
 ---
 
@@ -531,6 +532,56 @@ PMS استفاده شود»*. The requirement text and the formulas live in ADR-
 - **P-14:** README contents table now lists ADR-015 and this register.
 
 ---
+
+## P-25 — parallel-session reference library: audit, port, and open integration decision
+
+Recorded 2026-10-12. The owner published a `workspace` branch carrying a
+full export of a parallel Arena session (snapshot dated 2026-10-06): a repo
+tree based on the same `48b1e5d` root as this branch, plus four zips of
+evidence (regression logs, B16 source-review files, engineering-screening
+screenshots fa/en, and an ASME B16.9-2018 PDF upload). Nothing from that
+session ever merged into `main`; the export is its only surviving record.
+
+**What was ported (commit `bf15816`, verbatim):**
+- `allowable-stress` v1.0.0 — the FULL B31.3-2024 Table A-1 (SI): 798
+  rows / 138 specs including duplex A790/A789, EFW A671/A672 and nickel
+  alloys, each row carrying its own verification fields
+  (`verified` / `basisCheck` / `heldNotCitableBecause`). This closes the
+  coverage gaps named in the 2026-10-12 materials-library audit.
+- `materials` v1.8.0 (A-1 groupings + Chapter VII non-metallics),
+  `flange-pt-ratings` v2.0.0 (45 B16.5-2025 groups + 27 B16.47 curves,
+  kPa, derived Class 800 per API 602, declared B16.5-vs-B16.47
+  discrepancies: 11 cells of 2,100), `flange-bolting` v2.1.0 (B16.5-2025
+  drilling templates), `fitting-dimensions` v1.2.0 (ASME B16.9-2018),
+  valve-construction/pt-ratings/face-to-face/testing, fluid-service,
+  actuators; `component-templates` upgraded to its strict superset
+  (+BOLT/+NUT, existing 20 templates unchanged).
+- 16 per-pack JSON schemas and the session's validator (superset of the
+  previous one). All checks pass this session: 3 standards packs + 16
+  reference packs valid; 22/22 standards tests green.
+
+**Cross-validation performed:** the branch's own PDF-extracted
+`flange-ratings` pack (positional extraction, SI<->Customary audited) vs
+the ported transcribed `flange-pt-ratings`: 4,725 shared B16.5 cells,
+4,725 exact matches, zero mismatches. Pinned permanently by
+`standards-packs/tests/test_flange_ratings_cross_check.py`. The two packs
+stay complementary: the extracted one carries 228 extended high-temperature
+rows (550-649 deg C) the transcribed 16-row ladders lack; the transcribed
+one carries the B16.47 curves and Class 800 derivation.
+
+**OPEN decisions / follow-ups (need the owner):**
+1. The session's APP-level work (different PMS architecture: entry/bulk/
+   valve/measurement services; MR entry; NDT requirements; engineering
+   screening; fitting review) stays archived in the `workspace` export for
+   now. Options: selective porting of features, full reconciliation plan,
+   or keep as reference. This is a scope decision.
+2. If the B16.47 curves enter service, the owner's copy is the 2020
+   edition while the transcription is from 2025 — request B16.47-2025.
+3. `b313-materials` and `flange-ratings` (this branch's packs) do not yet
+   conform to the ported `standards-pack.schema.json` convention
+   (refId/version/units shape) and are not registered in the validator's
+   REF_PACKS; they remain guarded by their builder scripts and PHP tests.
+
 
 ## How to use this file
 

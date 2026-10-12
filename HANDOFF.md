@@ -3314,6 +3314,36 @@ Part D data (Tcr/yield/density), JSON schema + CI validation for the two
 new packs, and the materials-library coverage review (owner-requested).
 Runtime verification pending on the owner's Laragon tier.
 
+### 2026-10-12 (cont.) — `workspace` branch audited: parallel session's reference library ported (commit `bf15816`)
+
+The owner published a `workspace` branch: a full export of a parallel Arena
+session (repo snapshot dated 2026-10-06, based on the same `48b1e5d` root)
+plus evidence zips and an ASME B16.9-2018 PDF. That session had built a
+mature reference library and an evolved app layer, but NOTHING of it ever
+merged to main — the export was its only surviving record.
+
+Ported verbatim into this branch (commit `bf15816`):
+- 11 reference packs — highlight: `allowable-stress` = FULL B31.3-2024
+  Table A-1 SI (798 rows / 138 specs, duplex A790/A789, EFW A671/A672,
+  nickel alloys) closing the gaps named in the materials-library audit;
+  `flange-pt-ratings` v2.0.0 (45 B16.5-2025 groups + 27 B16.47 curves,
+  derived Class 800); `flange-bolting`, `fitting-dimensions` (B16.9-2018),
+  valve packs, fluid-service, actuators, `materials` v1.8; plus
+  `component-templates` upgraded to its strict superset (+BOLT/+NUT).
+- 16 per-pack schemas and the session's 2,835-line validator (superset of
+  ours). Green this session: 3 standards packs + 16 reference packs valid.
+- Tests: the session's 21 fitting-dimensions regression probes, plus a new
+  `test_flange_ratings_cross_check.py` pinning the cross-provenance audit:
+  this branch's PDF-extracted flange pack vs the ported transcribed one =
+  4,725 shared B16.5 cells, 4,725 exact matches, zero mismatches. 22/22
+  standards tests pass.
+
+NOT ported (open, owner decision — P-25): the session's app-level work
+(different PMS architecture, MR entry, NDT requirements, engineering
+screening, fitting review) stays archived in the export. Follow-ups also
+recorded: B16.47-2025 request if its curves enter service; conform this
+branch's own packs to the ported schema convention later.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,
