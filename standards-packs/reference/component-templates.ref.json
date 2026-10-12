@@ -4,13 +4,34 @@
   "source": "ADR-009 section 2 (port counts come from templates, the Plant 3D catalog-template pattern); ADR-010 section 2 (two-tier: universal read-only, project-defined additive)",
   "note": "This is the UNIVERSAL tier and it is read-only. A tee has three ports on every project in the world, so that fact ships with the release and cannot be redefined by a project. Projects may add their own templates but may NOT shadow a code used here - the same closed-vocabulary / configurable-subset split as FacilityKind::all() versus selectable() in ADR-004.",
   "portRoles": {
-    "RUN": {"en": "Run", "fa": "مسیر اصلی"},
-    "BRANCH": {"en": "Branch", "fa": "انشعاب"},
-    "INLET": {"en": "Inlet", "fa": "ورودی"},
-    "OUTLET": {"en": "Outlet", "fa": "خروجی"},
-    "LARGE": {"en": "Large end", "fa": "سر بزرگ"},
-    "SMALL": {"en": "Small end", "fa": "سر کوچک"},
-    "NOZZLE": {"en": "Nozzle", "fa": "نازل"}
+    "RUN": {
+      "en": "Run",
+      "fa": "مسیر اصلی"
+    },
+    "BRANCH": {
+      "en": "Branch",
+      "fa": "انشعاب"
+    },
+    "INLET": {
+      "en": "Inlet",
+      "fa": "ورودی"
+    },
+    "OUTLET": {
+      "en": "Outlet",
+      "fa": "خروجی"
+    },
+    "LARGE": {
+      "en": "Large end",
+      "fa": "سر بزرگ"
+    },
+    "SMALL": {
+      "en": "Small end",
+      "fa": "سر کوچک"
+    },
+    "NOZZLE": {
+      "en": "Nozzle",
+      "fa": "نازل"
+    }
   },
   "sizeRules": {
     "SAME_AS_FIRST": "Every port takes the size of the first port. The component is a single-size item.",
@@ -21,107 +42,235 @@
   "templates": [
     {
       "code": "PIPE",
-      "name": {"en": "Pipe", "fa": "لوله"},
+      "name": {
+        "en": "Pipe",
+        "fa": "لوله"
+      },
       "category": "PIPE",
       "sizeRule": "SAME_AS_FIRST",
       "hasLength": true,
       "ports": [
-        {"seq": 1, "role": "RUN", "defaultEnd": "BW"},
-        {"seq": 2, "role": "RUN", "defaultEnd": "BW"}
+        {
+          "seq": 1,
+          "role": "RUN",
+          "defaultEnd": "BW"
+        },
+        {
+          "seq": 2,
+          "role": "RUN",
+          "defaultEnd": "BW"
+        }
       ]
     },
     {
       "code": "ELBOW",
-      "name": {"en": "Elbow", "fa": "زانویی"},
+      "name": {
+        "en": "Elbow",
+        "fa": "زانویی"
+      },
       "category": "FITTING",
       "sizeRule": "SAME_AS_FIRST",
-      "qualifiers": ["90LR", "90SR", "45", "180LR"],
+      "qualifiers": [
+        "90LR",
+        "90SR",
+        "45",
+        "180LR"
+      ],
       "ports": [
-        {"seq": 1, "role": "RUN", "defaultEnd": "BW"},
-        {"seq": 2, "role": "RUN", "defaultEnd": "BW"}
+        {
+          "seq": 1,
+          "role": "RUN",
+          "defaultEnd": "BW"
+        },
+        {
+          "seq": 2,
+          "role": "RUN",
+          "defaultEnd": "BW"
+        }
       ]
     },
     {
       "code": "TEE",
-      "name": {"en": "Tee", "fa": "سه‌راهی"},
+      "name": {
+        "en": "Tee",
+        "fa": "سه‌راهی"
+      },
       "category": "FITTING",
       "sizeRule": "BRANCH_LE_RUN",
       "qualifierDerived": true,
-      "qualifiers": ["EQUAL", "REDUCING"],
+      "qualifiers": [
+        "EQUAL",
+        "REDUCING"
+      ],
       "note": {
         "en": "ONE component type, not two. Equal versus reducing is DERIVED from the port sizes at save time, never chosen by the user - user decision recorded in ADR-009 section 6.",
         "fa": "یک نوع کامپوننت است نه دو تا. مساوی یا تبدیلی بودن از روی سایز پورت‌ها استنتاج می‌شود، نه انتخاب کاربر."
       },
       "ports": [
-        {"seq": 1, "role": "RUN", "defaultEnd": "BW"},
-        {"seq": 2, "role": "RUN", "defaultEnd": "BW"},
-        {"seq": 3, "role": "BRANCH", "defaultEnd": "BW"}
+        {
+          "seq": 1,
+          "role": "RUN",
+          "defaultEnd": "BW"
+        },
+        {
+          "seq": 2,
+          "role": "RUN",
+          "defaultEnd": "BW"
+        },
+        {
+          "seq": 3,
+          "role": "BRANCH",
+          "defaultEnd": "BW"
+        }
       ]
     },
     {
       "code": "CROSS",
-      "name": {"en": "Cross", "fa": "چهارراهی"},
+      "name": {
+        "en": "Cross",
+        "fa": "چهارراهی"
+      },
       "category": "FITTING",
       "sizeRule": "BRANCH_LE_RUN",
       "ports": [
-        {"seq": 1, "role": "RUN", "defaultEnd": "BW"},
-        {"seq": 2, "role": "RUN", "defaultEnd": "BW"},
-        {"seq": 3, "role": "BRANCH", "defaultEnd": "BW"},
-        {"seq": 4, "role": "BRANCH", "defaultEnd": "BW"}
+        {
+          "seq": 1,
+          "role": "RUN",
+          "defaultEnd": "BW"
+        },
+        {
+          "seq": 2,
+          "role": "RUN",
+          "defaultEnd": "BW"
+        },
+        {
+          "seq": 3,
+          "role": "BRANCH",
+          "defaultEnd": "BW"
+        },
+        {
+          "seq": 4,
+          "role": "BRANCH",
+          "defaultEnd": "BW"
+        }
       ]
     },
     {
       "code": "REDUCER",
-      "name": {"en": "Reducer", "fa": "تبدیل"},
+      "name": {
+        "en": "Reducer",
+        "fa": "تبدیل"
+      },
       "category": "FITTING",
       "sizeRule": "LARGE_GT_SMALL",
-      "qualifiers": ["CONCENTRIC", "ECCENTRIC"],
+      "qualifiers": [
+        "CONCENTRIC",
+        "ECCENTRIC"
+      ],
       "note": {
         "en": "The only two-port component whose ports differ in size. A reducing weld is where the smaller-diameter dia-inch convention actually bites (ADR-010 section 1) - the test fixture must contain one.",
         "fa": "تنها کامپوننت دوپورته که دو سرش هم‌اندازه نیست. قرارداد «قطر کوچکتر» در دیا اینچ دقیقاً اینجا اثر می‌گذارد."
       },
       "ports": [
-        {"seq": 1, "role": "LARGE", "defaultEnd": "BW"},
-        {"seq": 2, "role": "SMALL", "defaultEnd": "BW"}
+        {
+          "seq": 1,
+          "role": "LARGE",
+          "defaultEnd": "BW"
+        },
+        {
+          "seq": 2,
+          "role": "SMALL",
+          "defaultEnd": "BW"
+        }
       ]
     },
     {
       "code": "SWAGE",
-      "name": {"en": "Swage", "fa": "سوئیج"},
+      "name": {
+        "en": "Swage",
+        "fa": "سوئیج"
+      },
       "category": "FITTING",
       "sizeRule": "LARGE_GT_SMALL",
-      "qualifiers": ["CONCENTRIC", "ECCENTRIC"],
+      "qualifiers": [
+        "CONCENTRIC",
+        "ECCENTRIC"
+      ],
       "ports": [
-        {"seq": 1, "role": "LARGE", "defaultEnd": "PL"},
-        {"seq": 2, "role": "SMALL", "defaultEnd": "PL"}
+        {
+          "seq": 1,
+          "role": "LARGE",
+          "defaultEnd": "PL"
+        },
+        {
+          "seq": 2,
+          "role": "SMALL",
+          "defaultEnd": "PL"
+        }
       ]
     },
     {
       "code": "OLET",
-      "name": {"en": "Branch fitting (olet)", "fa": "اولت"},
+      "name": {
+        "en": "Branch fitting (olet)",
+        "fa": "اولت"
+      },
       "category": "FITTING",
       "sizeRule": "BRANCH_LE_RUN",
-      "qualifiers": ["WELDOLET", "SOCKOLET", "THREDOLET", "ELBOLET", "NIPOLET"],
+      "qualifiers": [
+        "WELDOLET",
+        "SOCKOLET",
+        "THREDOLET",
+        "ELBOLET",
+        "NIPOLET"
+      ],
       "note": {
         "en": "Two ports: the run port attaches to the header pipe wall rather than to a pipe end, so it is consumed by the header component, not by a free pipe end.",
         "fa": "دو پورت دارد؛ پورت ران به بدنه لوله اصلی می‌چسبد نه به سر لوله."
       },
       "ports": [
-        {"seq": 1, "role": "RUN", "defaultEnd": "FA", "attachesToBody": true},
-        {"seq": 2, "role": "BRANCH", "defaultEnd": "BW"}
+        {
+          "seq": 1,
+          "role": "RUN",
+          "defaultEnd": "FA",
+          "attachesToBody": true
+        },
+        {
+          "seq": 2,
+          "role": "BRANCH",
+          "defaultEnd": "BW"
+        }
       ]
     },
     {
       "code": "FLANGE",
-      "name": {"en": "Flange", "fa": "فلنج"},
+      "name": {
+        "en": "Flange",
+        "fa": "فلنج"
+      },
       "category": "FLANGE",
       "sizeRule": "SAME_AS_FIRST",
-      "qualifiers": ["WN", "SO", "BL", "SW", "THD", "LJ"],
+      "qualifiers": [
+        "WN",
+        "SO",
+        "BL",
+        "SW",
+        "THD",
+        "LJ"
+      ],
       "requiresRating": true,
       "requiresFacing": true,
       "ports": [
-        {"seq": 1, "role": "RUN", "defaultEnd": "BW"},
-        {"seq": 2, "role": "RUN", "defaultEnd": "FL"}
+        {
+          "seq": 1,
+          "role": "RUN",
+          "defaultEnd": "BW"
+        },
+        {
+          "seq": 2,
+          "role": "RUN",
+          "defaultEnd": "FL"
+        }
       ],
       "note": {
         "en": "Asymmetric by nature: one end welds to the pipe, the other bolts. A blind flange (BL) has only the FL port - handled by the qualifier, not by a separate template.",
@@ -130,27 +279,58 @@
     },
     {
       "code": "GASKET",
-      "name": {"en": "Gasket", "fa": "واشر"},
+      "name": {
+        "en": "Gasket",
+        "fa": "واشر"
+      },
       "category": "FLANGE",
       "sizeRule": "SAME_AS_FIRST",
       "requiresRating": true,
       "ports": [
-        {"seq": 1, "role": "RUN", "defaultEnd": "FL"},
-        {"seq": 2, "role": "RUN", "defaultEnd": "FL"}
+        {
+          "seq": 1,
+          "role": "RUN",
+          "defaultEnd": "FL"
+        },
+        {
+          "seq": 2,
+          "role": "RUN",
+          "defaultEnd": "FL"
+        }
       ]
     },
     {
       "code": "VALVE",
-      "name": {"en": "Valve", "fa": "شیر"},
+      "name": {
+        "en": "Valve",
+        "fa": "شیر"
+      },
       "category": "VALVE",
       "sizeRule": "SAME_AS_FIRST",
-      "qualifiers": ["GATE", "GLOBE", "BALL", "CHECK", "BUTTERFLY", "PLUG", "NEEDLE", "DIAPHRAGM"],
+      "qualifiers": [
+        "GATE",
+        "GLOBE",
+        "BALL",
+        "CHECK",
+        "BUTTERFLY",
+        "PLUG",
+        "NEEDLE",
+        "DIAPHRAGM"
+      ],
       "requiresRating": true,
       "isTagged": true,
       "directional": true,
       "ports": [
-        {"seq": 1, "role": "INLET", "defaultEnd": "FL"},
-        {"seq": 2, "role": "OUTLET", "defaultEnd": "FL"}
+        {
+          "seq": 1,
+          "role": "INLET",
+          "defaultEnd": "FL"
+        },
+        {
+          "seq": 2,
+          "role": "OUTLET",
+          "defaultEnd": "FL"
+        }
       ],
       "note": {
         "en": "Directional: a check valve installed backwards is a real defect, so inlet and outlet are distinct roles even though they are the same size.",
@@ -159,7 +339,10 @@
     },
     {
       "code": "CONTROL_VALVE",
-      "name": {"en": "Control valve", "fa": "شیر کنترل"},
+      "name": {
+        "en": "Control valve",
+        "fa": "شیر کنترل"
+      },
       "category": "VALVE",
       "sizeRule": "SAME_AS_FIRST",
       "requiresRating": true,
@@ -167,45 +350,91 @@
       "directional": true,
       "instrument": true,
       "ports": [
-        {"seq": 1, "role": "INLET", "defaultEnd": "FL"},
-        {"seq": 2, "role": "OUTLET", "defaultEnd": "FL"}
+        {
+          "seq": 1,
+          "role": "INLET",
+          "defaultEnd": "FL"
+        },
+        {
+          "seq": 2,
+          "role": "OUTLET",
+          "defaultEnd": "FL"
+        }
       ]
     },
     {
       "code": "THREE_WAY_VALVE",
-      "name": {"en": "Three-way valve", "fa": "شیر سه‌راهه"},
+      "name": {
+        "en": "Three-way valve",
+        "fa": "شیر سه‌راهه"
+      },
       "category": "VALVE",
       "sizeRule": "SAME_AS_FIRST",
       "requiresRating": true,
       "isTagged": true,
       "ports": [
-        {"seq": 1, "role": "INLET", "defaultEnd": "FL"},
-        {"seq": 2, "role": "OUTLET", "defaultEnd": "FL"},
-        {"seq": 3, "role": "OUTLET", "defaultEnd": "FL"}
+        {
+          "seq": 1,
+          "role": "INLET",
+          "defaultEnd": "FL"
+        },
+        {
+          "seq": 2,
+          "role": "OUTLET",
+          "defaultEnd": "FL"
+        },
+        {
+          "seq": 3,
+          "role": "OUTLET",
+          "defaultEnd": "FL"
+        }
       ]
     },
     {
       "code": "INSTRUMENT",
-      "name": {"en": "In-line instrument", "fa": "ابزار دقیق درون‌خطی"},
+      "name": {
+        "en": "In-line instrument",
+        "fa": "ابزار دقیق درون‌خطی"
+      },
       "category": "INSTRUMENT",
       "sizeRule": "SAME_AS_FIRST",
-      "qualifiers": ["ORIFICE", "FLOW_METER", "SIGHT_GLASS", "STRAINER"],
+      "qualifiers": [
+        "ORIFICE",
+        "FLOW_METER",
+        "SIGHT_GLASS",
+        "STRAINER"
+      ],
       "isTagged": true,
       "directional": true,
       "instrument": true,
       "ports": [
-        {"seq": 1, "role": "INLET", "defaultEnd": "FL"},
-        {"seq": 2, "role": "OUTLET", "defaultEnd": "FL"}
+        {
+          "seq": 1,
+          "role": "INLET",
+          "defaultEnd": "FL"
+        },
+        {
+          "seq": 2,
+          "role": "OUTLET",
+          "defaultEnd": "FL"
+        }
       ]
     },
     {
       "code": "CAP",
-      "name": {"en": "Cap", "fa": "کپ"},
+      "name": {
+        "en": "Cap",
+        "fa": "کپ"
+      },
       "category": "FITTING",
       "sizeRule": "SAME_AS_FIRST",
       "terminates": true,
       "ports": [
-        {"seq": 1, "role": "RUN", "defaultEnd": "BW"}
+        {
+          "seq": 1,
+          "role": "RUN",
+          "defaultEnd": "BW"
+        }
       ],
       "note": {
         "en": "A one-port component. Placing it CLOSES an open end - which is how a line stops being reported as incomplete without anyone editing a status field.",
@@ -214,62 +443,120 @@
     },
     {
       "code": "BLIND",
-      "name": {"en": "Blind / spade", "fa": "بلایند یا اسپید"},
+      "name": {
+        "en": "Blind / spade",
+        "fa": "بلایند یا اسپید"
+      },
       "category": "FLANGE",
       "sizeRule": "SAME_AS_FIRST",
       "requiresRating": true,
       "terminates": true,
       "ports": [
-        {"seq": 1, "role": "RUN", "defaultEnd": "FL"}
+        {
+          "seq": 1,
+          "role": "RUN",
+          "defaultEnd": "FL"
+        }
       ]
     },
     {
       "code": "UNION",
-      "name": {"en": "Union", "fa": "یونیون"},
+      "name": {
+        "en": "Union",
+        "fa": "یونیون"
+      },
       "category": "FITTING",
       "sizeRule": "SAME_AS_FIRST",
       "ports": [
-        {"seq": 1, "role": "RUN", "defaultEnd": "SC"},
-        {"seq": 2, "role": "RUN", "defaultEnd": "SC"}
+        {
+          "seq": 1,
+          "role": "RUN",
+          "defaultEnd": "SC"
+        },
+        {
+          "seq": 2,
+          "role": "RUN",
+          "defaultEnd": "SC"
+        }
       ]
     },
     {
       "code": "COUPLING",
-      "name": {"en": "Coupling", "fa": "کوپلینگ"},
+      "name": {
+        "en": "Coupling",
+        "fa": "کوپلینگ"
+      },
       "category": "FITTING",
       "sizeRule": "SAME_AS_FIRST",
-      "qualifiers": ["FULL", "HALF", "REDUCING"],
+      "qualifiers": [
+        "FULL",
+        "HALF",
+        "REDUCING"
+      ],
       "ports": [
-        {"seq": 1, "role": "RUN", "defaultEnd": "SW"},
-        {"seq": 2, "role": "RUN", "defaultEnd": "SW"}
+        {
+          "seq": 1,
+          "role": "RUN",
+          "defaultEnd": "SW"
+        },
+        {
+          "seq": 2,
+          "role": "RUN",
+          "defaultEnd": "SW"
+        }
       ]
     },
     {
       "code": "NIPPLE",
-      "name": {"en": "Nipple", "fa": "نیپل"},
+      "name": {
+        "en": "Nipple",
+        "fa": "نیپل"
+      },
       "category": "PIPE",
       "sizeRule": "SAME_AS_FIRST",
       "hasLength": true,
       "ports": [
-        {"seq": 1, "role": "RUN", "defaultEnd": "SC"},
-        {"seq": 2, "role": "RUN", "defaultEnd": "SC"}
+        {
+          "seq": 1,
+          "role": "RUN",
+          "defaultEnd": "SC"
+        },
+        {
+          "seq": 2,
+          "role": "RUN",
+          "defaultEnd": "SC"
+        }
       ]
     },
     {
       "code": "SPECTACLE_BLIND",
-      "name": {"en": "Spectacle blind", "fa": "عینکی"},
+      "name": {
+        "en": "Spectacle blind",
+        "fa": "عینکی"
+      },
       "category": "FLANGE",
       "sizeRule": "SAME_AS_FIRST",
       "requiresRating": true,
       "isTagged": true,
       "ports": [
-        {"seq": 1, "role": "RUN", "defaultEnd": "FL"},
-        {"seq": 2, "role": "RUN", "defaultEnd": "FL"}
+        {
+          "seq": 1,
+          "role": "RUN",
+          "defaultEnd": "FL"
+        },
+        {
+          "seq": 2,
+          "role": "RUN",
+          "defaultEnd": "FL"
+        }
       ]
     },
     {
       "code": "NOZZLE",
-      "name": {"en": "Equipment nozzle", "fa": "نازل تجهیز"},
+      "name": {
+        "en": "Equipment nozzle",
+        "fa": "نازل تجهیز"
+      },
       "category": "EQUIPMENT",
       "sizeRule": "SAME_AS_FIRST",
       "ownerKind": "NOZZLE",
@@ -277,11 +564,47 @@
       "requiresRating": true,
       "requiresFacing": true,
       "ports": [
-        {"seq": 1, "role": "NOZZLE", "defaultEnd": "FL"}
+        {
+          "seq": 1,
+          "role": "NOZZLE",
+          "defaultEnd": "FL"
+        }
       ],
       "note": {
         "en": "A nozzle is a PORT OWNER, not a line component (ADR-010 section 3). It appears in this pack because the port-creation machinery is identical - one template, one port - but its owner_kind is NOZZLE, so it belongs to a piece of equipment rather than to a piping line. This is what lets a pipe-to-nozzle joint use the joints table unchanged.",
         "fa": "نازل مالک پورت است نه کامپوننت خط. در همین بسته می‌آید چون ساز و کار ساخت پورت یکسان است، اما owner_kind آن NOZZLE است و به تجهیز تعلق دارد نه به خط لوله."
+      }
+    },
+    {
+      "code": "BOLT",
+      "name": {
+        "en": "Bolt",
+        "fa": "پیچ"
+      },
+      "category": "FLANGE",
+      "sizeRule": "SAME_AS_FIRST",
+      "qualifiers": [
+        "STUD",
+        "MACHINE"
+      ],
+      "ports": [],
+      "note": {
+        "en": "Deliberately portless. A bolt does not connect two runs of pipe - it closes a flanged joint. PCF says the same thing: BOLT carries CO-ORDS but no END-POINT, and the format gives it its own UNITS-BOLT-DIA and UNITS-BOLT-LENGTH headers. It is ordered in its own right, with an allowance over the calculated need, so it is a take-off line rather than something derived from the flanges. The qualifier is the fastener style and it is load bearing: a STUD is a headless rod with a nut at each end, measured thread to thread; a MACHINE bolt has an integral head, takes one nut, is measured from under the head, and is permitted by B16.5 only at Class 150 and 300. FlangeBolting reads the style, never a bare nut ratio.",
+        "fa": "عمداً بدون پورت. پیچ دو سر لوله را به هم وصل نمی‌کند بلکه یک اتصال فلنجی را می‌بندد. در PCF هم همین است: رکورد BOLT مختصات دارد ولی END-POINT ندارد. کوالیفایر همان سبک بست است: استاد بولت سر ندارد و دو مهره می‌خورد، پیچ ماشینی سر دارد و یک مهره، و B16.5 آن را فقط در کلاس ۱۵۰ و ۳۰۰ مجاز می‌داند."
+      }
+    },
+    {
+      "code": "NUT",
+      "name": {
+        "en": "Nut",
+        "fa": "مهره"
+      },
+      "category": "FLANGE",
+      "sizeRule": "SAME_AS_FIRST",
+      "ports": [],
+      "note": {
+        "en": "Portless for the same reason as BOLT. Counted and ordered separately because projects buy nuts and bolts with an allowance, not one nut per bolt hole.",
+        "fa": "به همان دلیل پیچ بدون پورت است. جداگانه شمرده و سفارش می‌شود چون پروژه‌ها با احتیاط خرید می‌کنند."
       }
     }
   ]
