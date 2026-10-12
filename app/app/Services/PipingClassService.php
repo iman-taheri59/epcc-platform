@@ -16,6 +16,8 @@ use App\Support\Piping\P2pKind;
 use App\Support\Piping\Exceptions\NoRuleForSizeException;
 use App\Support\Piping\PipingClassState;
 use App\Support\Piping\PipingRuleKind;
+use App\Support\Reference\Exceptions\UnknownMaterialException;
+use App\Support\Reference\MaterialReference;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -34,6 +36,10 @@ use Illuminate\Validation\ValidationException;
  */
 final class PipingClassService
 {
+    public function __construct(private readonly MaterialReference $materials)
+    {
+    }
+
     // ------------------------------------------------------------------
     // Drafting
     // ------------------------------------------------------------------
@@ -73,6 +79,44 @@ final class PipingClassService
     }
 
     /**
+     * ADR-008 Step B (owner decision 2026-10-12): the design basis is a
+     * CLASS attribute — pressure in MPa, temperature in deg C. Per-line
+     * design columns remain for line-level checks; this pair drives the
+     * pad-validation math of para 304.3.3.
+     *
+     * @throws ValidationException
+     */
+    public function setDesignBasis(
+        Project $project,
+        User $user,
+        PipingClass $class,
+        float $pressureMpa,
+        float $temperatureC,
+        string $lang = 'fa',
+    ): PipingClass {
+        $this->assertDraft($class, $lang);
+
+        if ($pressureMpa <= 0) {
+            $this->fail($lang, 'design_pressure_mpa',
+                'فشار طراحی باید بزرگ‌تر از صفر باشد (مگا‌پاسکال).',
+                'Design pressure must be greater than zero (MPa).');
+        }
+
+        if ($temperatureC < -273.15 || $temperatureC > 1100) {
+            $this->fail($lang, 'design_temperature_c',
+                'دمای طراحی خارج از محدودهٔ فیزیکی مجاز است.',
+                'Design temperature is outside the physically valid range.');
+        }
+
+        $class->update([
+            'design_pressure_mpa' => $pressureMpa,
+            'design_temperature_c' => $temperatureC,
+        ]);
+
+        return $class->refresh();
+    }
+
+    /**
      * @param  array<string,mixed>  $value
      * @throws ValidationException
      */
@@ -103,6 +147,10 @@ final class PipingClassService
             $this->fail($lang, 'value',
                 'قاعده باید مقدار داشته باشد.',
                 'A rule must carry a value.');
+        }
+
+        if ($kind === PipingRuleKind::PIPE_MATERIAL) {
+            $this->assertPipeMaterialValue($value, $lang);
         }
 
         $id = (string) Str::uuid();
@@ -298,6 +346,23 @@ final class PipingClassService
                     'The declared span is not fully covered: '.implode('; ', $gaps));
             }
 
+            // ADR-008 Step B: the design basis feeds the para 304.3.3 pad
+            // check — a class without it cannot be published.
+            if ($locked->design_pressure_mpa === null || $locked->design_temperature_c === null) {
+                $this->fail($lang, 'design_basis',
+                    'مبانی طراحی کلاس (فشار و دمای طراحی) باید پیش از انتشار ثبت شود.',
+                    'The class design basis (design pressure and temperature) must be recorded before publishing.');
+            }
+
+            // A class that branches must say what the pipe is made of: every
+            // PAD verdict depends on S(T) of the pipe material.
+            $hasBranchRules = PipingClassBranchRule::where('piping_class_id', $locked->id)->exists();
+            if ($hasBranchRules && ! $kinds->contains(PipingRuleKind::PIPE_MATERIAL)) {
+                $this->fail($lang, 'rules',
+                    'کلاسی که جدول انشعاب دارد باید قاعدهٔ جنس لوله (برای هر بازهٔ اندازه) داشته باشد.',
+                    'A class with branch rules must carry a PIPE_MATERIAL rule covering its span.');
+            }
+
             $locked->update([
                 'state' => PipingClassState::PUBLISHED,
                 'published_at' => now(),
@@ -351,6 +416,54 @@ final class PipingClassService
     }
 
     // ------------------------------------------------------------------
+
+    /**
+     * PIPE_MATERIAL value shape: {"spec": "A106", "grade": "B", "psl": null}
+     * resolving against the B31.3-2024 reference pack, with optional manual
+     * overrides (owner decision 2026-10-12): "s_mpa_override", "ej_override".
+     *
+     * @param  array<string,mixed>  $value
+     * @throws ValidationException
+     */
+    private function assertPipeMaterialValue(array $value, string $lang): void
+    {
+        $spec = $value['spec'] ?? null;
+        $grade = $value['grade'] ?? null;
+
+        if (! is_string($spec) || $spec === '' || ! is_string($grade) || $grade === '') {
+            $this->fail($lang, 'value',
+                'قاعدهٔ جنس لوله باید مشخصهٔ استاندارد (مثلاً A106) و گرید (مثلاً B) را داشته باشد.',
+                'A PIPE_MATERIAL rule needs a spec (e.g. A106) and a grade (e.g. B).');
+        }
+
+        $psl = $value['psl'] ?? null;
+        if ($psl !== null && (! is_string($psl) || $psl === '')) {
+            $this->fail($lang, 'value',
+                'سطح PSL باید رشته‌ای مانند PSL1 یا PSL2 باشد.',
+                'The PSL level must be a string such as PSL1 or PSL2.');
+        }
+
+        foreach (['s_mpa_override', 'ej_override'] as $key) {
+            $override = $value[$key] ?? null;
+            if ($override !== null && (! is_numeric($override) || (float) $override <= 0)) {
+                $this->fail($lang, $key,
+                    'مقدار دستی واردشده باید عددی بزرگ‌تر از صفر باشد.',
+                    "The {$key} must be a number greater than zero.");
+            }
+        }
+
+        // Without an S override the grade must exist in the reference pack —
+        // a typo'd grade would otherwise surface only at publish time.
+        if (($value['s_mpa_override'] ?? null) === null) {
+            try {
+                $this->materials->find($spec, $grade, $psl);
+            } catch (UnknownMaterialException $e) {
+                $this->fail($lang, 'value',
+                    'جنس لوله در جدول A-1 استاندارد B31.3-2024 یافت نشد: '.$e->getMessage(),
+                    'Pipe material not found in the B31.3-2024 Table A-1 pack: '.$e->getMessage());
+            }
+        }
+    }
 
     /** @throws ValidationException */
     private function assertDraft(PipingClass $class, string $lang): void

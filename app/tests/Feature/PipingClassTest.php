@@ -179,10 +179,14 @@ final class PipingClassTest extends TestCase
             $this->assertStringContainsString('PIPE_SCHEDULE', implode(' ', $e->errors()['rules'] ?? ['']));
         }
 
-        // Fill the hole: the same class now publishes.
+        // Fill the hole: the same class now publishes — once its design
+        // basis (Step B) is recorded too.
         $this->asPars(fn () => $this->classes->addRule(
             $this->project(), $this->user(), $gapped, PipingRuleKind::PIPE_SCHEDULE,
             100, 150, ['schedule' => '60'], 'en'
+        ));
+        $this->asPars(fn () => $this->classes->setDesignBasis(
+            $this->project(), $this->user(), $gapped, 3.0, 200.0, 'en'
         ));
 
         $published = $this->asPars(fn () => $this->classes->publish($this->project(), $this->user(), $gapped, 'en'));
@@ -198,6 +202,7 @@ final class PipingClassTest extends TestCase
 
         $this->asPars(function () use ($class): void {
             $this->classes->addRule($this->project(), $this->user(), $class, PipingRuleKind::PIPE_SCHEDULE, 15, 600, ['schedule' => '40'], 'en');
+            $this->classes->setDesignBasis($this->project(), $this->user(), $class, 3.0, 200.0, 'en');
             $this->classes->publish($this->project(), $this->user(), $class, 'en');
         });
 
@@ -382,5 +387,128 @@ final class PipingClassTest extends TestCase
             $this->assertSame(0, PipingClass::count());
             $this->assertSame(0, DB::table('piping_class_rules')->count());
         }, $kish->id);
+    }
+
+    // ------------------------------------------------------------------
+    // Step B (P-24): design basis and the pipe material rule
+    // ------------------------------------------------------------------
+
+    public function test_design_basis_is_recorded_and_refuses_nonsense_values(): void
+    {
+        $class = $this->makeClass('BASIS-CLS');
+
+        $updated = $this->asPars(fn () => $this->classes->setDesignBasis(
+            $this->project(), $this->user(), $class, 3.0, 200.0, 'en'
+        ));
+
+        $this->assertEqualsWithDelta(3.0, (float) $updated->design_pressure_mpa, 1e-9);
+        $this->assertEqualsWithDelta(200.0, (float) $updated->design_temperature_c, 1e-9);
+
+        try {
+            $this->asPars(fn () => $this->classes->setDesignBasis(
+                $this->project(), $this->user(), $class, 0.0, 200.0, 'en'
+            ));
+            $this->fail('Zero design pressure must be refused.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('design_pressure_mpa', $e->errors());
+        }
+
+        try {
+            $this->asPars(fn () => $this->classes->setDesignBasis(
+                $this->project(), $this->user(), $class, 3.0, 2000.0, 'en'
+            ));
+            $this->fail('An out-of-range design temperature must be refused.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('design_temperature_c', $e->errors());
+        }
+    }
+
+    public function test_publish_refuses_a_class_without_design_basis(): void
+    {
+        $class = $this->makeClass('NOBASIS-CLS');
+
+        $this->asPars(fn () => $this->classes->addRule(
+            $this->project(), $this->user(), $class, PipingRuleKind::PIPE_SCHEDULE,
+            15, 600, ['schedule' => '40'], 'en'
+        ));
+
+        try {
+            $this->asPars(fn () => $this->classes->publish($this->project(), $this->user(), $class, 'en'));
+            $this->fail('A class without its design basis must not publish.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('design_basis', $e->errors());
+        }
+    }
+
+    public function test_pipe_material_rule_resolves_against_the_b313_pack(): void
+    {
+        $class = $this->makeClass('MAT-CLS');
+
+        // A pack grade is accepted and stored as given.
+        $rule = $this->asPars(fn () => $this->classes->addRule(
+            $this->project(), $this->user(), $class, PipingRuleKind::PIPE_MATERIAL,
+            15, 200, ['spec' => 'A106', 'grade' => 'B'], 'en'
+        ));
+        $this->assertSame('A106', $rule->value['spec']);
+
+        // The X-grade alias resolves too (API 5L publishes ISO L names).
+        $this->asPars(fn () => $this->classes->addRule(
+            $this->project(), $this->user(), $class, PipingRuleKind::PIPE_MATERIAL,
+            200, 400, ['spec' => 'API5L', 'grade' => 'X42', 'psl' => 'PSL2'], 'en'
+        ));
+
+        // A grade the pack does not know is refused at entry time.
+        try {
+            $this->asPars(fn () => $this->classes->addRule(
+                $this->project(), $this->user(), $class, PipingRuleKind::PIPE_MATERIAL,
+                15, 600, ['spec' => 'A106', 'grade' => 'Z'], 'en'
+            ));
+            $this->fail('An unknown grade must be refused.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('value', $e->errors());
+        }
+
+        // L290 exists twice (PSL1/PSL2) - the level must be chosen.
+        try {
+            $this->asPars(fn () => $this->classes->addRule(
+                $this->project(), $this->user(), $class, PipingRuleKind::PIPE_MATERIAL,
+                15, 600, ['spec' => 'API5L', 'grade' => 'L290'], 'en'
+            ));
+            $this->fail('An ambiguous PSL grade must be refused.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('value', $e->errors());
+        }
+
+        // Manual entry stays available as an override (owner decision).
+        $this->asPars(fn () => $this->classes->addRule(
+            $this->project(), $this->user(), $class, PipingRuleKind::PIPE_MATERIAL,
+            400, 600, ['spec' => 'A333', 'grade' => '99', 's_mpa_override' => 118.0], 'en'
+        ));
+    }
+
+    public function test_publish_requires_a_material_rule_when_branch_rules_exist(): void
+    {
+        $class = $this->makeClass('MATGATE-CLS');
+
+        $this->asPars(function () use ($class): void {
+            $this->classes->addRule($this->project(), $this->user(), $class, PipingRuleKind::PIPE_SCHEDULE, 15, 600, ['schedule' => '40'], 'en');
+            $this->classes->setDesignBasis($this->project(), $this->user(), $class, 3.0, 200.0, 'en');
+            $this->classes->addBranchRule($this->project(), $this->user(), $class, 15, 600, 15, 600, 'TEE', 'en');
+        });
+
+        try {
+            $this->asPars(fn () => $this->classes->publish($this->project(), $this->user(), $class, 'en'));
+            $this->fail('A branching class without a material rule must not publish.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('rules', $e->errors());
+        }
+
+        $this->asPars(fn () => $this->classes->addRule(
+            $this->project(), $this->user(), $class, PipingRuleKind::PIPE_MATERIAL,
+            15, 600, ['spec' => 'A106', 'grade' => 'B'], 'en'
+        ));
+
+        $published = $this->asPars(fn () => $this->classes->publish($this->project(), $this->user(), $class, 'en'));
+        $this->assertSame(PipingClassState::PUBLISHED, $published->state);
     }
 }

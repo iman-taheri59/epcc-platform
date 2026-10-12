@@ -20,11 +20,15 @@ final class PipingClass extends Model
 
     protected $fillable = [
         'project_id', 'company_id', 'code', 'name_en', 'name_fa',
-        'state', 'dn_span', 'published_at', 'published_by',
+        'state', 'dn_span', 'design_pressure_mpa', 'design_temperature_c',
+        'published_at', 'published_by',
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
+        // Design basis (ADR-008 Step B): pressure MPa, temperature deg C.
+        'design_pressure_mpa' => 'decimal:4',
+        'design_temperature_c' => 'decimal:2',
     ];
 
     public function project(): BelongsTo { return $this->belongsTo(Project::class); }

@@ -19,6 +19,15 @@ final class PipingRuleKind
     public const BOLT_SPEC = 'BOLT_SPEC';
     public const CORROSION_ALLOWANCE = 'CORROSION_ALLOWANCE';
 
+    /**
+     * ADR-008 Step B (P-24): pipe material grade per DN band. The value is
+     * `{"spec": ..., "grade": ..., "psl": ...}` resolving against the
+     * ASME B31.3-2024 materials reference pack, with optional manual
+     * overrides (`s_mpa_override`, `ej_override`) per the owner decision
+     * 2026-10-12 that manual entry stays available.
+     */
+    public const PIPE_MATERIAL = 'PIPE_MATERIAL';
+
     /** @var list<string> */
     public const ALL = [
         self::PIPE_SCHEDULE,
@@ -28,6 +37,7 @@ final class PipingRuleKind
         self::GASKET_TYPE,
         self::BOLT_SPEC,
         self::CORROSION_ALLOWANCE,
+        self::PIPE_MATERIAL,
     ];
 
     /** @return array{fa:string,en:string} */
@@ -41,6 +51,7 @@ final class PipingRuleKind
             self::GASKET_TYPE => ['fa' => 'نوع گسکت', 'en' => 'Gasket type'],
             self::BOLT_SPEC => ['fa' => 'مشخصهٔ پیچ و مهره', 'en' => 'Bolt specification'],
             self::CORROSION_ALLOWANCE => ['fa' => 'اضافه‌ضخامت خوردگی', 'en' => 'Corrosion allowance'],
+            self::PIPE_MATERIAL => ['fa' => 'جنس/گرید لوله', 'en' => 'Pipe material grade'],
             default => ['fa' => $kind, 'en' => $kind],
         };
     }

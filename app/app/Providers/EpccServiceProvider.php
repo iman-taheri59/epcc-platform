@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Services\StandardsPackRepository;
+use App\Support\Reference\MaterialReference;
 use App\Support\Reference\PipeReference;
 use App\Support\Units\UnitRegistry;
 use App\Support\TenantContext;
@@ -28,6 +29,16 @@ final class EpccServiceProvider extends ServiceProvider
         $this->app->singleton(
             PipeReference::class,
             fn (): PipeReference => new PipeReference(
+                (string) config('epcc.reference_dir', base_path('../standards-packs/reference')),
+            ),
+        );
+
+        // ASME B31.3-2024 materials (ADR-008 Step B, requirement P-24):
+        // Table A-1 stresses, Y, W, Ej. Same reasoning as PipeReference —
+        // code-edition facts on disk, decoded once per process.
+        $this->app->singleton(
+            MaterialReference::class,
+            fn (): MaterialReference => new MaterialReference(
                 (string) config('epcc.reference_dir', base_path('../standards-packs/reference')),
             ),
         );
