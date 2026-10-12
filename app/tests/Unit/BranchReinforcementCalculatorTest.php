@@ -173,4 +173,60 @@ class BranchReinforcementCalculatorTest extends TestCase
             c: 0.0, padThickness: 0.25, padOd: 4.0,
         );
     }
+
+    /** Eq (3a): pressure-design thickness of a straight pipe, SI fixture. */
+    public function test_pressure_design_thickness_eq_3a(): void
+    {
+        // P=3 MPa, D=168.3 mm (DN150), S=118 MPa, E=W=1, Y=0.4
+        $this->assertEqualsWithDelta(
+            504.9 / 238.4,
+            Calc::pressureDesignThickness(P: 3.0, D: 168.3, S: 118.0),
+            1e-9,
+        );
+
+        // Same conditions on the DN50 branch.
+        $this->assertEqualsWithDelta(
+            0.758809,
+            Calc::pressureDesignThickness(P: 3.0, D: 60.3, S: 118.0),
+            1e-6,
+        );
+
+        // Reduced joint/strength factors and a hotter-service Y.
+        $this->assertEqualsWithDelta(
+            3.211832,
+            Calc::pressureDesignThickness(P: 3.0, D: 168.3, S: 100.0, E: 0.85, W: 0.9, Y: 0.7),
+            1e-6,
+        );
+    }
+
+    /** Eq (3a) only holds while t < D/6; beyond it the code changes regime. */
+    public function test_eq_3a_refuses_the_thick_wall_regime(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        Calc::pressureDesignThickness(P: 100.0, D: 100.0, S: 100.0); // t = 35.7 > D/6
+    }
+
+    /** End-to-end: eq (3a) feeds the reinforcement check, all in mm. */
+    public function test_eq_3a_feeds_the_reinforcement_check(): void
+    {
+        // DN150 SCH40 header (wall 7.11), DN50 SCH40 branch (3.91),
+        // 3 MPa, S=118 MPa, c=1.5 mm, perpendicular, minimum welds.
+        $th = Calc::pressureDesignThickness(P: 3.0, D: 168.3, S: 118.0);
+        $tb = Calc::pressureDesignThickness(P: 3.0, D: 60.3, S: 118.0);
+
+        $r = Calc::evaluate(
+            Dh: 168.3, Th: 7.11, th: $th,
+            Db: 60.3, Tb: 3.91, tb: $tb,
+            c: 1.5,
+        );
+
+        $this->assertEqualsWithDelta(55.48, $r['d1'], 1e-6);
+        $this->assertEqualsWithDelta(6.025, $r['L4'], 1e-6);
+        $this->assertEqualsWithDelta(117.499379, $r['A1'], 1e-6);
+        $this->assertEqualsWithDelta(193.743421, $r['A2'], 1e-6);
+        $this->assertEqualsWithDelta(19.896855, $r['A3'], 1e-6);
+        $this->assertEqualsWithDelta(14.982338, $r['A4_welds'], 1e-6);
+        $this->assertEqualsWithDelta(111.123234, $r['margin'], 1e-6);
+        $this->assertTrue($r['pass']);
+    }
 }

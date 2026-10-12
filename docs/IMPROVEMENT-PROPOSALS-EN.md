@@ -396,7 +396,9 @@ PMS استفاده شود»*. The requirement text and the formulas live in ADR-
   para 304.3.3 area-replacement method: zone limits `d1/d2/L4`, areas
   `A1..A4` (pad capped by the zone, weld credit per para 328.5.4,
   allowable-stress ratio reductions per §f(3)), PASS/FAIL verdict, margin,
-  and `requiredPadThickness()` (bisection — no closed form, Tr feeds L4).
+  `requiredPadThickness()` (bisection — no closed form, Tr feeds L4), and
+  `pressureDesignThickness()` — B31.3 eq (3a) `t = PD/(2(SEW + PY))`,
+  refusing the t ≥ D/6 thick-wall regime.
   Covered by `Tests\Unit\BranchReinforcementCalculatorTest`: published
   worked example in both run-wall variants, pad recovery, zone capping,
   stress-ratio reduction, 45° lateral, and corrupt-input refusals. Unit

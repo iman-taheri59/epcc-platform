@@ -2837,7 +2837,10 @@ Built now: `App\Services\BranchReinforcementCalculator` (pure service,
 worked example (pass/fail run-wall variants, pad recovery) plus
 hand-verified cases (zone capping, narrow pad, stress ratio, 45° lateral,
 refusals). Formulas independently re-verified with a Python mirror. Step B
-(PMS wiring) queued on P-24 after runtime verification.
+(PMS wiring) queued on P-24 after runtime verification. Follow-up 2026-10-12:
+`pressureDesignThickness()` added — B31.3 eq (3a) with the t ≥ D/6 refusal,
+covered by three new tests including an end-to-end mm fixture (eq 3a →
+reinforcement check). Owner offered to upload the standard if needed.
 
 ### 2026-10-12 (cont.) — Step B parameter inventory: what exists, what is missing
 

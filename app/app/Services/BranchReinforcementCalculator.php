@@ -176,6 +176,48 @@ final class BranchReinforcementCalculator
     }
 
     /**
+     * ASME B31.3 para 304.1.2(a) eq (3a): the pressure-design thickness of
+     * a straight pipe under internal pressure.
+     *
+     *   t = P · D / (2 · (S·E·W + P·Y))
+     *
+     * P design pressure, D outside diameter, S allowable stress at design
+     * temperature (Table A-1), E longitudinal joint factor, W weld-joint
+     * strength reduction factor, Y coefficient from Table 304.1.2.
+     * Caller-consistent units; the result feeds `evaluate()` as $th/$tb.
+     * Corrosion/mechanical allowances $c are NOT included here — they are
+     * carried separately in the reinforcement equations, per the code.
+     *
+     * Eq (3a) is valid while t < D/6; beyond that the code demands the
+     * thick-wall treatment of para 304.1.2(b), so the method refuses it
+     * rather than silently extrapolate.
+     */
+    public static function pressureDesignThickness(
+        float $P,
+        float $D,
+        float $S,
+        float $E = 1.0,
+        float $W = 1.0,
+        float $Y = 0.4,
+    ): float {
+        foreach (compact('P', 'D', 'S', 'E', 'W') as $name => $value) {
+            if ($value <= 0.0) {
+                throw new InvalidArgumentException("$name must be positive.");
+            }
+        }
+
+        $t = ($P * $D) / (2.0 * ($S * $E * $W + $P * $Y));
+
+        if ($t >= $D / 6.0) {
+            throw new InvalidArgumentException(
+                't >= D/6: outside the range of eq (3a); B31.3 para 304.1.2(b) applies.'
+            );
+        }
+
+        return $t;
+    }
+
+    /**
      * Smallest pad thickness that makes the connection PASS, 0.0 when the
      * bare connection already passes. Solves by bisection — pad thickness
      * also grows L4, so no closed form exists. $padOd=null means a
