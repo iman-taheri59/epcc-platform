@@ -1,7 +1,7 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-11** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom; +19 new order-gap-board assertions); Slice 4/5 targeted tests are pending runtime restoration. **Slice 6 (PO attribution + order gap) IMPLEMENTED**, the **ADR-012 HIGH defect (P-17) FIXED** (all 33 RLS tenant policies sargable + `RlsSargabilityTest`), and **piping phase P1 (ADR-008 PMS + branch table) IMPLEMENTED** — classes/rules/EXCLUDE constraint/publish gate/specificity resolver + `PipingClassTest`; all three status **IMPLEMENTED — awaiting runtime verification** on the owner's Laragon machine (`php artisan test`), per the "proceed without waiting for tests" instruction; RLS-fix mechanism EXPLAIN-verified against sandbox PostgreSQL 16.2. ADR-015 is the standing requirements record; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rules 1–5 standing** (§0); full ~11,600-line documentation review completed with dated drift fixes (P-16) and escalated open items (P-15, P-17, P-18) — see `docs/IMPROVEMENT-PROPOSALS-EN.md`
+Last updated: **2026-10-12** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom; +19 new order-gap-board assertions); Slice 4/5 targeted tests are pending runtime restoration. **Slice 6 (PO attribution + order gap) IMPLEMENTED**, the **ADR-012 HIGH defect (P-17) FIXED** (all 33 RLS tenant policies sargable + `RlsSargabilityTest`), and **piping phase P1 (ADR-008 PMS + branch table) IMPLEMENTED** — classes/rules/EXCLUDE constraint/publish gate/specificity resolver + `PipingClassTest`; all three status **IMPLEMENTED — awaiting runtime verification** on the owner's Laragon machine (`php artisan test`), per the "proceed without waiting for tests" instruction; RLS-fix mechanism EXPLAIN-verified against sandbox PostgreSQL 16.2. ADR-015 is the standing requirements record; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rules 1–5 standing** (§0); full ~11,600-line documentation review completed with dated drift fixes (P-16) and escalated open items (P-15, P-17, P-18) — see `docs/IMPROVEMENT-PROPOSALS-EN.md`
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
@@ -3271,6 +3271,48 @@ Runtime restoration is now fixed and repeatable in this sandbox. `restore.sh` no
 
 
 Next main slice: turned test-pack readiness from a derived placeholder into a real Laravel object. Added `piping_test_packs` with RLS/archive-freeze policies, `piping_lines.test_pack_id`, `PipingTestPack` and `PipingTestPackService`. The workspace can now create hydrotest/test packs, assign/unassign lines, show unassigned-line counts, and move packs through `DRAFT → READY → TESTED → ACCEPTED`; `READY` is blocked until the pack has at least one line and all assigned lines are released. Added HTTP coverage for pack creation, assignment, and refusing readiness while a line is not released. Full suite after this slice: **858 passed / 3166 assertions**. Note: Laravel DB tests must not be run in parallel against the same `epcc_test` database; doing so produced expected migration/drop-schema races, then sequential reruns were green.
+
+### 2026-10-12 (cont.) — P-24 flange step: ASME B16.5-2025 pressure-temperature ratings gate
+
+Owner uploads (branches `b16.5-upload`, `b16.47-upload`, `sec.II-part2`):
+ASME B16.5-2025 (274 pp), B16.47-2020 (large-diameter flanges) and Section
+II Part D 2025 Customary (1533 pp). Built and committed from B16.5:
+
+- `scripts/build_flange_ratings_pack.py` — extracts all 45 SI rating tables
+  (Tables 2-1.1 .. 2-3.19, 903 rows) with each table's material block
+  (forgings/castings/plates -> group). Build-time invariants: strictly
+  rising temperature ladders, non-increasing pressure per class (0.1-bar
+  print-rounding tolerance), contiguous class dropout, printed anchors —
+  and a cell-by-cell audit of the Group 1.1 SI table against its U.S.
+  Customary twin (every converted value must land inside the SI step
+  bracket; the dual-unit tables round independently, so equality is not
+  the standard's own semantics).
+- `standards-packs/reference/flange-ratings.ref.json` — ratings in bar /
+  deg C, classes 150..2500, material index for 35 ASTM specs
+  (A105, A350 LF2, A182 F304/F316/F11/F22/F91/F92, A216/A217/A351/A352,
+  B462 N08020, ...).
+- `App\Support\Reference\FlangeRatingReference` (ADR-007 pattern):
+  material -> group resolution and step-rating lookup; every lookup throws
+  above a ladder top or where the table retires a class (ellipsis).
+- PMS wiring: FLANGE_TYPE values are
+  `{"rating_class": 300, "spec": "A105", "grade": "F316"|null}` —
+  validated at entry (class on the B16.5 ladder, material resolvable);
+  the publish gate rates every FLANGE_TYPE cell against the class design
+  basis (`validateFlangeRatings`): design pressure (MPa -> bar) must not
+  exceed the group's rating at the design temperature. Bilingual refusals.
+- Tests: `Tests\Unit\FlangeRatingReferenceTest` (anchors incl. A105
+  Cl 150 = 19.6 bar at <=38 deg C — the 285 psig classic — and a whole-pack
+  monotonicity re-check) and `Tests\Feature\PipingFlangeRatingGateTest`
+  (under-rated refused, adequate published, unknown spec/class refused at
+  entry, above-ladder and retired-class refused at publish).
+
+Also this session: verified merge #6 (roadmap reconciliation) brought no
+content change to main (tree identical to our branch base), and restored
+the fork-only `CHAT-TRANSFER-HANDOFF-EN/FA.md` dropped by that merge
+(commit `0b1a830`). Follow-ups: B16.47 large-diameter ratings, Section II
+Part D data (Tcr/yield/density), JSON schema + CI validation for the two
+new packs, and the materials-library coverage review (owner-requested).
+Runtime verification pending on the owner's Laragon tier.
 
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 

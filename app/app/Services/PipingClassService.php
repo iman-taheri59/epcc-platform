@@ -17,7 +17,10 @@ use App\Support\Piping\Exceptions\NoRuleForSizeException;
 use App\Support\Piping\Exceptions\PadGateRefusal;
 use App\Support\Piping\PipingClassState;
 use App\Support\Piping\PipingRuleKind;
+use App\Support\Reference\Exceptions\FlangeRatingOutOfRangeException;
+use App\Support\Reference\Exceptions\UnknownFlangeMaterialException;
 use App\Support\Reference\Exceptions\UnknownMaterialException;
+use App\Support\Reference\FlangeRatingReference;
 use App\Support\Reference\MaterialReference;
 use App\Support\Reference\PipeReference;
 use Illuminate\Database\QueryException;
@@ -40,6 +43,7 @@ final class PipingClassService
 {
     public function __construct(
         private readonly MaterialReference $materials,
+        private readonly FlangeRatingReference $flangeRatings,
         private readonly PipeReference $sizes,
         private readonly BranchConnectionPadGate $padGate,
     ) {
@@ -156,6 +160,10 @@ final class PipingClassService
 
         if ($kind === PipingRuleKind::PIPE_MATERIAL) {
             $this->assertPipeMaterialValue($value, $lang);
+        }
+
+        if ($kind === PipingRuleKind::FLANGE_TYPE) {
+            $this->assertFlangeTypeValue($value, $lang);
         }
 
         $id = (string) Str::uuid();
@@ -357,6 +365,16 @@ final class PipingClassService
                 $this->fail($lang, 'design_basis',
                     'مبانی طراحی کلاس (فشار و دمای طراحی) باید پیش از انتشار ثبت شود.',
                     'The class design basis (design pressure and temperature) must be recorded before publishing.');
+            }
+
+            // ADR-008 P-24 (flange step): every FLANGE_TYPE cell must survive
+            // the class's own design conditions per the ASME B16.5-2025 P-T
+            // rating tables - an under-rated flange class is a publish stopper.
+            $flangeViolations = $this->validateFlangeRatings($locked);
+            if ($flangeViolations !== []) {
+                $this->fail($lang, 'flange_rules',
+                    'درجه‌بندی فشار-دمای فلنج‌ها طبق جدول‌های استاندارد ASME B16.5-2025 مردود است: '.implode('؛ ', $flangeViolations),
+                    'The flange pressure-temperature ratings fail ASME B16.5-2025: '.implode('; ', $flangeViolations));
             }
 
             // A class that branches must say what the pipe is made of: every
@@ -617,6 +635,111 @@ final class PipingClassService
                 'جنس خارج از کتابخانهٔ متریال باید شمارهٔ P و شمارهٔ گروه (طبق بخش IX) همراه داشته باشد.',
                 'A material outside the library must carry its Section IX P-No and Group No.');
         }
+    }
+
+    /**
+     * FLANGE_TYPE value shape: {"rating_class": 300, "spec": "A105",
+     * "grade": "F316"|null} - the rating class must sit on B16.5's ladder
+     * (150..2500) and the material must resolve to a material group in the
+     * flange-ratings reference pack: no group, no rating table, no rule.
+     *
+     * @param  array<string,mixed>  $value
+     * @throws ValidationException
+     */
+    private function assertFlangeTypeValue(array $value, string $lang): void
+    {
+        $ladder = $this->flangeRatings->classes();
+        $ladderText = implode('/', array_map(strval(...), $ladder));
+
+        $ratingClass = $value['rating_class'] ?? null;
+        if (! is_numeric($ratingClass) || ! in_array((int) $ratingClass, $ladder, true)) {
+            $this->fail($lang, 'rating_class',
+                'کلاس فشار فلنج باید یکی از کلاس‌های استاندارد B16.5 باشد: '.$ladderText.'.',
+                'The flange rating class must be one of the B16.5 classes: '.$ladderText.'.');
+        }
+
+        $spec = $value['spec'] ?? null;
+        if (! is_string($spec) || trim($spec) === '') {
+            $this->fail($lang, 'spec',
+                'قاعدهٔ فلنج باید مشخصهٔ مادهٔ فلنج (مثلاً A105 یا A182) را داشته باشد.',
+                'A FLANGE_TYPE rule needs the flange material spec (e.g. A105 or A182).');
+        }
+
+        $grade = $value['grade'] ?? null;
+        if ($grade !== null && (! is_string($grade) || trim($grade) === '')) {
+            $this->fail($lang, 'grade',
+                'گرید مادهٔ فلنج در صورت درج باید رشته‌ای غیرخالی باشد.',
+                'The flange material grade, when present, must be a non-empty string.');
+        }
+
+        try {
+            $this->flangeRatings->groupFor($spec, $grade);
+        } catch (UnknownFlangeMaterialException $e) {
+            $this->fail($lang, 'spec',
+                'مادهٔ فلنج در فهرست گروه‌های مواد استاندارد B16.5-2025 یافت نشد: '.$e->getMessage(),
+                'Flange material not found in the B16.5-2025 material-group index: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * ADR-008 P-24 (flange step): every FLANGE_TYPE cell must carry the
+     * class's design pressure at the class's design temperature per its
+     * B16.5 material-group rating table. Mirrors validateBranchPads -
+     * anything uncheckable refuses; silence is never a pass.
+     *
+     * @return list<string>
+     */
+    private function validateFlangeRatings(PipingClass $class): array
+    {
+        $rules = PipingClassRule::where('piping_class_id', $class->id)
+            ->where('rule_kind', PipingRuleKind::FLANGE_TYPE)
+            ->orderByRaw('lower(dn_range) ASC')
+            ->get();
+
+        if ($rules->isEmpty()) {
+            return [];
+        }
+
+        $requiredBar = ((float) $class->design_pressure_mpa) * 10.0;
+        $temperatureC = (float) $class->design_temperature_c;
+        $violations = [];
+
+        foreach ($rules as $rule) {
+            $label = (string) $rule->dn_range;
+            $value = is_array($rule->value) ? $rule->value : [];
+
+            $ratingClass = $value['rating_class'] ?? null;
+            $spec = $value['spec'] ?? null;
+            $grade = $value['grade'] ?? null;
+
+            if (! is_numeric($ratingClass) || ! is_string($spec) || trim($spec) === '') {
+                $violations[] = "[{$label}] the FLANGE_TYPE rule needs a rating_class and a material spec";
+                continue;
+            }
+
+            try {
+                $group = $this->flangeRatings->groupFor($spec, is_string($grade) ? $grade : null);
+                $ratedBar = $this->flangeRatings->maxPressureBar($group, (int) $ratingClass, $temperatureC);
+            } catch (UnknownFlangeMaterialException|FlangeRatingOutOfRangeException $e) {
+                $violations[] = "[{$label}] {$e->getMessage()}";
+                continue;
+            }
+
+            if ($ratedBar + 1e-9 < $requiredBar) {
+                $violations[] = sprintf(
+                    '[%s] Class %s %s is rated %.1f bar at %.0f deg C; the design needs %.1f bar (%.2f MPa)',
+                    $label,
+                    (int) $ratingClass,
+                    trim($spec.' '.(is_string($grade) ? $grade : '')),
+                    $ratedBar,
+                    $temperatureC,
+                    $requiredBar,
+                    (float) $class->design_pressure_mpa
+                );
+            }
+        }
+
+        return $violations;
     }
 
     /** @throws ValidationException */

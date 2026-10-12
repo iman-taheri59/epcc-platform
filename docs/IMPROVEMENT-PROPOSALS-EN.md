@@ -42,7 +42,7 @@ Last updated: **2026-10-11** (second pass — full documentation review, ~11,600
 | P-21 | Requirement / piping | Branch welds (stub-in/stub-on P2P) must be first-class joint types before weld counts and dia-inch are built | OPEN — queued for the P5 design ADR |
 | P-22 | Requirement / piping | P2P branch welds land on the header *wall*, but the joint model only connects two ports — wall-attach representation must be decided | OPEN — decision needed |
 | P-23 | Requirement / MTO | MTO has no coverage of branch-connection material: reinforcement pads (plate) and coped stub ends | OPEN — scope decision |
-| P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator + B31.3-2024 materials pack + class design basis + publish-gate validation built; runtime verification on owner's Laragon pending | PARTIAL — Step B built |
+| P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator + B31.3-2024 materials pack + class design basis + publish-gate validation built; **flange step built 2026-10-12**: ASME B16.5-2025 P-T ratings pack (45 SI tables, cross-checked against the Customary twin) + `FlangeRatingReference` + publish gate rating every FLANGE_TYPE cell against the class design basis; B16.47 large-diameter + Section II Part D extensions remain follow-ups; runtime verification on owner's Laragon pending | PARTIAL — Step B + flange gate built |
 
 ---
 
@@ -496,6 +496,26 @@ PMS استفاده شود»*. The requirement text and the formulas live in ADR-
   against Section IX's on every build. Library materials therefore carry
   complete identity; only out-of-library materials need manual entry
   (commit `4b3bd0d`).
+- **Flange step (2026-10-12, commits `e2b3753` + this commit).** The owner
+  then uploaded ASME B16.5-2025 (branch `b16.5-upload`), B16.47-2020 and
+  Section II Part D (2025 Customary). From B16.5: all 45 SI P-T tables
+  (2-1.1 .. 2-3.19, 903 rows) extracted into
+  `standards-packs/reference/flange-ratings.ref.json` by
+  `scripts/build_flange_ratings_pack.py` — the builder cross-checks the
+  Group 1.1 SI table against its U.S. Customary twin cell-by-cell and
+  enforces ladder/monotonicity invariants. `FlangeRatingReference`
+  (ADR-007 pattern) resolves a flange material (spec+grade) to its B16.5
+  material group and returns the step rating at any temperature; every
+  lookup throws above the ladder top or where the table retires a class.
+  FLANGE_TYPE rules now carry
+  `{"rating_class": 300, "spec": "A105", "grade": ...}` — validated at
+  entry — and the publish gate rates every FLANGE_TYPE cell against the
+  class design basis (`validateFlangeRatings`). Tests:
+  `FlangeRatingReferenceTest` (anchors incl. A105 Cl 150 = 19.6 bar at
+  ≤38 °C, the 285 psig classic) and `PipingFlangeRatingGateTest`.
+  Follow-ups: B16.47 large-diameter ratings and Section II Part D data
+  (Tcr/yield/density; duplex+nickel grade coverage stays sourced from
+  Table A-1 itself).
 
 ## BUILT this pass (2026-10-11)
 
