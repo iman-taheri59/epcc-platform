@@ -184,10 +184,13 @@ final class PipingPadGateTest extends TestCase
     public function test_manual_s_override_drives_the_check(): void
     {
         // Owner decision 2026-10-12: manual entry remains an override. A pack
-        // row does not exist for "A333 grade 99", yet the override gives the
-        // gate the same 138 MPa the A106 B fixture uses, so the same cells
-        // pass.
-        $class = $this->readyClass('OVERRIDE-CLS', ['spec' => 'A333', 'grade' => '99', 's_mpa_override' => 138.0]);
+        // row does not exist for "A333 grade 99" — so its Section IX P-No and
+        // Group No must be entered with it — yet the override gives the gate
+        // the same 138 MPa the A106 B fixture uses, so the same cells pass.
+        $class = $this->readyClass('OVERRIDE-CLS', [
+            'spec' => 'A333', 'grade' => '99', 's_mpa_override' => 138.0,
+            'p_no' => '11', 'group_no' => 1,
+        ]);
 
         $this->asPars(fn () => $this->classes->addBranchRule(
             $this->project(), $this->user(), $class, 15, 250, 15, 250, 'TEE', 'en'

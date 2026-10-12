@@ -108,6 +108,21 @@ class MaterialReferenceTest extends TestCase
         $this->ref()->find('A999', 'X');
     }
 
+    public function test_p_no_is_carried_as_printed_by_table_a1(): void
+    {
+        $ref = $this->ref();
+
+        // Table A-1 publishes the Section IX P-Number as a column; letters
+        // included exactly as printed (raw rows pp.208-220).
+        $this->assertSame('1', $ref->find('A106', 'B')->pNo);
+        $this->assertSame('1', $ref->find('API5L', 'X42', 'PSL2')->pNo);
+        $this->assertSame('8', $ref->find('A312', 'TP304')->pNo);
+        $this->assertSame('4', $ref->find('A335', 'P11')->pNo);
+        $this->assertSame('5A', $ref->find('A335', 'P22')->pNo);
+        $this->assertSame('5B', $ref->find('A335', 'P5')->pNo);
+        $this->assertSame('15E', $ref->find('A335', 'P91')->pNo);
+    }
+
     // ------------------------------------------------------------ Ej -------
 
     public function test_quality_factors_by_type(): void

@@ -54,7 +54,7 @@ final class BranchConnectionPadGate
      * @param  list<int>             $branchDns    DNs of the pack inside branch_range
      * @param  callable(int):string  $scheduleFor  DN -> schedule label of that band
      * @param  callable(int):float   $caFor        DN -> corrosion allowance, mm
-     * @param  callable(int):array{spec:string,grade:string,psl:?string,pipe_type:?string,s_mpa_override:?float,ej_override:?float} $materialFor
+     * @param  callable(int):array{spec:string,grade:string,psl:?string,pipe_type:?string,s_mpa_override:?float,ej_override:?float,p_no:?string,group_no:?string} $materialFor
      * @return array{pass:bool, violations:list<string>, worst:?array<string,mixed>}
      */
     public function checkCell(

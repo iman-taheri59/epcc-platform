@@ -382,6 +382,7 @@ final class MaterialReference
                 psl: isset($row['psl']) && $row['psl'] !== null ? (string) $row['psl'] : null,
                 descriptor: (string) ($row['descriptor'] ?? ''),
                 uns: isset($row['uns']) && $row['uns'] !== null ? (string) $row['uns'] : null,
+                pNo: isset($row['p_no']) && $row['p_no'] !== null ? (string) $row['p_no'] : null,
                 minTempC: (string) ($row['min_temp_c'] ?? ''),
                 tensileMpa: (int) $row['tensile_mpa'],
                 yieldMpa: (int) $row['yield_mpa'],

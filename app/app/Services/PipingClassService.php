@@ -489,6 +489,8 @@ final class PipingClassService
                 'pipe_type' => isset($value['pipe_type']) && is_string($value['pipe_type']) ? $value['pipe_type'] : null,
                 's_mpa_override' => isset($value['s_mpa_override']) && is_numeric($value['s_mpa_override']) ? (float) $value['s_mpa_override'] : null,
                 'ej_override' => isset($value['ej_override']) && is_numeric($value['ej_override']) ? (float) $value['ej_override'] : null,
+                'p_no' => isset($value['p_no']) && is_string($value['p_no']) ? $value['p_no'] : null,
+                'group_no' => isset($value['group_no']) && is_numeric($value['group_no']) ? (string) $value['group_no'] : null,
             ];
         };
 
@@ -547,6 +549,9 @@ final class PipingClassService
      * PIPE_MATERIAL value shape: {"spec": "A106", "grade": "B", "psl": null}
      * resolving against the B31.3-2024 reference pack, with optional manual
      * overrides (owner decision 2026-10-12): "s_mpa_override", "ej_override".
+     * Section IX identity: "p_no" ("1", "5A", "15E"...) and "group_no" are
+     * optional for library materials (the pack carries the P-No) and
+     * MANDATORY for materials outside the library (owner 2026-10-12).
      *
      * @param  array<string,mixed>  $value
      * @throws ValidationException
@@ -578,6 +583,24 @@ final class PipingClassService
             }
         }
 
+        // Welding-identity data (owner requirement 2026-10-12): the Section
+        // IX P-Number and Group number. Table A-1 publishes the P-No, so a
+        // library material gets it from the pack; for a material OUTSIDE the
+        // pack (manual S override) BOTH must be entered.
+        $pNo = $value['p_no'] ?? null;
+        if ($pNo !== null && (! is_string($pNo) || preg_match('/^[1-9]\d*(?:[A-Z]{1,2})?$/', $pNo) !== 1)) {
+            $this->fail($lang, 'p_no',
+                'شمارهٔ P باید به شکل چاپی استاندارد باشد؛ مانند 1 یا 5A یا 15E.',
+                'The P-No must look like the printed Section IX value, e.g. 1, 5A or 15E.');
+        }
+
+        $groupNo = $value['group_no'] ?? null;
+        if ($groupNo !== null && (! is_numeric($groupNo) || (int) $groupNo <= 0)) {
+            $this->fail($lang, 'group_no',
+                'شمارهٔ گروه (Group No) باید عددی صحیح و بزرگ‌تر از صفر باشد.',
+                'The Group No must be a positive integer.');
+        }
+
         // Without an S override the grade must exist in the reference pack —
         // a typo'd grade would otherwise surface only at publish time.
         if (($value['s_mpa_override'] ?? null) === null) {
@@ -588,6 +611,10 @@ final class PipingClassService
                     'جنس لوله در جدول A-1 استاندارد B31.3-2024 یافت نشد: '.$e->getMessage(),
                     'Pipe material not found in the B31.3-2024 Table A-1 pack: '.$e->getMessage());
             }
+        } elseif ($pNo === null || $groupNo === null) {
+            $this->fail($lang, 'value',
+                'جنس خارج از کتابخانهٔ متریال باید شمارهٔ P و شمارهٔ گروه (طبق بخش IX) همراه داشته باشد.',
+                'A material outside the library must carry its Section IX P-No and Group No.');
         }
     }
 

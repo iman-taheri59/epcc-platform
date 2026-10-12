@@ -115,6 +115,8 @@ TABLE_A3_EJ = {
 
 SPEC_RE = re.compile(r"^(A\d{2,3}|API5L|B\d{3})$")
 UNS_RE = re.compile(r"^[KSNEPJ]\d{5}$")
+# P-No as printed by Table A-1 (Section IX numbers: "1", "4", "5A", "15E"...).
+P_NO_RE = re.compile(r"^[1-9]\d*(?:[A-Z]{1,2})?$")
 
 
 def page_lines(pg):
@@ -191,6 +193,18 @@ def parse_row(ws, line_no, labels):
     psl = next((t for t in meta[spec_i + 2:spec_i + 4]
                 if t.upper().startswith("PSL")), None)
 
+    # P-No: first P_NO token after the UNS (or after grade when the row has
+    # no UNS), stopping at the notes column ("(nn)" tokens).
+    uns_i = next((i for i, t in enumerate(meta) if UNS_RE.match(t)), None)
+    start = (uns_i + 1) if uns_i is not None else (spec_i + 2)
+    p_no = None
+    for t in meta[start:]:
+        if t.startswith("("):
+            break
+        if P_NO_RE.match(t):
+            p_no = t
+            break
+
     nums = [t for t in meta if NUM.match(t.replace("\u2212", "-"))]
     if len(nums) < 3:
         return None
@@ -212,7 +226,8 @@ def parse_row(ws, line_no, labels):
         "type_grade": grade,
         "psl": psl,
         "descriptor": " ".join(meta[:spec_i]),
-        "uns": next((t for t in meta if UNS_RE.match(t)), None),
+        "uns": meta[uns_i] if uns_i is not None else None,
+        "p_no": p_no,
         "min_temp_c": min_temp,
         "tensile_mpa": tensile,
         "yield_mpa": yield_,

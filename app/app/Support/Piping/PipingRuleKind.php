@@ -24,7 +24,10 @@ final class PipingRuleKind
      * `{"spec": ..., "grade": ..., "psl": ...}` resolving against the
      * ASME B31.3-2024 materials reference pack, with optional manual
      * overrides (`s_mpa_override`, `ej_override`) per the owner decision
-     * 2026-10-12 that manual entry stays available.
+     * 2026-10-12 that manual entry stays available. Welding identity
+     * (`p_no`, `group_no`, Section IX): the P-No comes from the pack for
+     * library materials; for materials OUTSIDE the library both are
+     * MANDATORY (owner requirement 2026-10-12).
      */
     public const PIPE_MATERIAL = 'PIPE_MATERIAL';
 

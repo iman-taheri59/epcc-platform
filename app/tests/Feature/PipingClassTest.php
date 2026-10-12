@@ -479,11 +479,51 @@ final class PipingClassTest extends TestCase
             $this->assertArrayHasKey('value', $e->errors());
         }
 
-        // Manual entry stays available as an override (owner decision).
+        // Manual entry stays available as an override (owner decision) — but
+        // a material outside the library must carry its Section IX P-No AND
+        // Group number (owner requirement 2026-10-12).
         $this->asPars(fn () => $this->classes->addRule(
             $this->project(), $this->user(), $class, PipingRuleKind::PIPE_MATERIAL,
-            400, 600, ['spec' => 'A333', 'grade' => '99', 's_mpa_override' => 118.0], 'en'
+            400, 600,
+            ['spec' => 'A333', 'grade' => '99', 's_mpa_override' => 118.0, 'p_no' => '11', 'group_no' => 1],
+            'en'
         ));
+
+        // The override without its welding identity is refused.
+        try {
+            $this->asPars(fn () => $this->classes->addRule(
+                $this->project(), $this->user(), $class, PipingRuleKind::PIPE_MATERIAL,
+                400, 600, ['spec' => 'A333', 'grade' => '98', 's_mpa_override' => 118.0], 'en'
+            ));
+            $this->fail('An out-of-library material without P-No/Group No must be refused.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('value', $e->errors());
+        }
+
+        // And the identity fields are shape-checked.
+        try {
+            $this->asPars(fn () => $this->classes->addRule(
+                $this->project(), $this->user(), $class, PipingRuleKind::PIPE_MATERIAL,
+                400, 600,
+                ['spec' => 'A333', 'grade' => '97', 's_mpa_override' => 118.0, 'p_no' => 'XY', 'group_no' => 1],
+                'en'
+            ));
+            $this->fail('A malformed P-No must be refused.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('p_no', $e->errors());
+        }
+
+        try {
+            $this->asPars(fn () => $this->classes->addRule(
+                $this->project(), $this->user(), $class, PipingRuleKind::PIPE_MATERIAL,
+                400, 600,
+                ['spec' => 'A333', 'grade' => '96', 's_mpa_override' => 118.0, 'p_no' => '11', 'group_no' => -2],
+                'en'
+            ));
+            $this->fail('A non-positive Group No must be refused.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('group_no', $e->errors());
+        }
     }
 
     public function test_publish_requires_a_material_rule_when_branch_rules_exist(): void
