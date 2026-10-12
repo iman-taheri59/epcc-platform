@@ -572,9 +572,11 @@ one carries the B16.47 curves and Class 800 derivation.
 **OPEN decisions / follow-ups (need the owner):**
 1. The session's APP-level work (different PMS architecture: entry/bulk/
    valve/measurement services; MR entry; NDT requirements; engineering
-   screening; fitting review) stays archived in the `workspace` export for
-   now. Options: selective porting of features, full reconciliation plan,
-   or keep as reference. This is a scope decision.
+   screening; fitting review) — assessed step-by-step in
+   `docs/PARALLEL-SESSION-INTEGRATION-ASSESSMENT-EN.md` (2026-10-12):
+   additive modules ranked for stepwise porting (screening -> fitting
+   review -> MR entry -> standards library), PMS core stays a design
+   decision, ITP stays deferred. Owner approval of the sequence pending.
 2. If the B16.47 curves enter service, the owner's copy is the 2020
    edition while the transcription is from 2025 — request B16.47-2025.
 3. `b313-materials` and `flange-ratings` (this branch's packs) do not yet
