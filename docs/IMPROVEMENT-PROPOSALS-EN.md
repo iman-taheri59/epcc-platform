@@ -401,13 +401,37 @@ PMS استفاده شود»*. The requirement text and the formulas live in ADR-
   worked example in both run-wall variants, pad recovery, zone capping,
   stress-ratio reduction, 45° lateral, and corrupt-input refusals. Unit
   system is caller-consistent (platform standard mm).
-- **Step B — QUEUED.** Wiring into the PMS: design conditions
-  (pressure/temperature), corrosion allowance, material design stress and
-  joint factors on `piping_classes`, plus a pipe-dimension reference
-  (B36.10 OD per DN, wall per schedule); then the publish gate validates
-  every PAD rule against the worst case of its footprint and refuses
-  `NONE` where reinforcement is required. Needs a migration + service
-  change; lands after Step A's runtime verification.
+- **Step B — QUEUED.** Wiring into the PMS. Parameter inventory (audited
+  against the live code 2026-10-12 — the branch table belongs to each
+  piping class, so every input below is per class):
+
+  | B31.3 input | Status | Where |
+  |---|---|---|
+  | OD per DN (`Dh`/`Db`) | **EXISTS** | ADR-007 pack `pipe-sizes.ref.json`, `PipeReference::byDn()` |
+  | Wall per DN×schedule (`Th`/`Tb`, mm) | **EXISTS** | ADR-007 pack `pipe-schedules.ref.json`, `PipeReference::wall()` |
+  | Schedule per DN band | **EXISTS** | class rule kind `PIPE_SCHEDULE` (value shape not yet validated against the pack) |
+  | Corrosion allowance `c` per DN band | **EXISTS** | class rule kind `CORROSION_ALLOWANCE` |
+  | Design pressure / temperature | **MISSING on the class** — exists only per line (`piping_lines.design_pressure/temperature`) | decision needed |
+  | Pipe material grade per class | **MISSING** — no material rule kind; `MaterialItem.grade` is MTO-only | decision needed |
+  | Allowable stress `S(T)` (B31.3 Table A-1) | **MISSING** — no material master, no stress reference pack | decision needed |
+  | Joint factor `E`, weld reduction `W`, coefficient `Y` | **MISSING** | decision needed |
+  | Mill-tolerance deduction convention (`T` = nominal minus tolerance) | **MISSING** — convention to record | decision needed |
+  | Pad material stress ratio | **MISSING** — pad spec not captured; calculator defaults to 1.0 | deferred |
+  | Branch angle β | convention 90° (laterals not modelled in PMS tables) | OK |
+  | The calculation itself | **BUILT** (Step A) | `BranchReinforcementCalculator` |
+
+  Step B therefore needs: (1) a `t = PD/(2(SEW + PY))` wrapper computing
+  `th`/`tb` (B31.3 eq 3a), (2) the missing class-level inputs above,
+  (3) publish-gate validation of every PAD rule against the worst case of
+  its footprint and refusal of `NONE` where reinforcement is required.
+
+  **Open decisions (owner):** (a) design conditions as **class attributes**
+  (recommended — every PMS class has a pressure/temperature basis; the
+  per-line columns stay for line-level checks) vs derived from the worst
+  line using the class; (b) material data as **direct class inputs S/E/W/Y**
+  (recommended — the PMS document itself lists these numbers, and it avoids
+  republishing the ASME-proprietary Table A-1) vs a bundled Table A-1
+  reference pack. Lands after Step A's runtime verification.
 
 ## BUILT this pass (2026-10-11)
 

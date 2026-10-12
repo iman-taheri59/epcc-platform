@@ -2837,8 +2837,19 @@ Built now: `App\Services\BranchReinforcementCalculator` (pure service,
 worked example (pass/fail run-wall variants, pad recovery) plus
 hand-verified cases (zone capping, narrow pad, stress ratio, 45° lateral,
 refusals). Formulas independently re-verified with a Python mirror. Step B
-(PMS wiring: design conditions + B36.10 dimension reference on the class,
-publish-gate validation) queued on P-24 after runtime verification.
+(PMS wiring) queued on P-24 after runtime verification.
+
+### 2026-10-12 (cont.) — Step B parameter inventory: what exists, what is missing
+
+Owner asked for the parameter audit because the branch table is per piping
+class. Audited against live code (not memory): EXISTS — OD per DN and wall
+per DN×schedule in the ADR-007 reference packs; `PIPE_SCHEDULE` and
+`CORROSION_ALLOWANCE` class rule kinds. MISSING on the class — design
+pressure/temperature (only per-line today), pipe material grade, allowable
+stress S(T), E, W, Y (B31.3 eq 3a inputs), mill-tolerance convention.
+Table + two gating owner decisions recorded in the P-24 entry and ADR-008
+§9.3: (a) class-level design conditions vs worst-line; (b) direct S/E/W/Y
+class inputs (recommended) vs a bundled ASME Table A-1 pack.
 
 ### 2026-10-11 (ninth) — piping P1 built: PMS piping classes, the EXCLUDE constraint and the branch table
 
