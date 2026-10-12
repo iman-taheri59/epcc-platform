@@ -2854,6 +2854,19 @@ Table + two gating owner decisions recorded in the P-24 entry and ADR-008
 §9.3: (a) class-level design conditions vs worst-line; (b) direct S/E/W/Y
 class inputs (recommended) vs a bundled ASME Table A-1 pack.
 
+### 2026-10-12 (cont.) — Step B decisions settled by the owner
+
+(a) Design pressure/temperature = **class attributes** (per-line columns
+stay for line checks). (b) Material data = **Table A-1 reference pack**
+built from the ASME B31.3 standard, which the owner will upload; manual
+entry remains as override. (c) Mill tolerance = **12.5%** (T = 0.875 ×
+nominal). Recorded in P-24 and ADR-008 §9.3. Next build steps once the
+standard arrives: extract Table A-1 for common grades, Y and W tables,
+Appendix H fixtures; then class design-basis columns + grade rule +
+publish-gate validation. Also landed before the decisions: eq (3a)
+`pressureDesignThickness()` in the calculator with three new tests
+(commit c9fbd88).
+
 ### 2026-10-11 (ninth) — piping P1 built: PMS piping classes, the EXCLUDE constraint and the branch table
 
 Continued per «فعلاً بدون انجام تست ادامه بده». ADR-008 build phases 1–2

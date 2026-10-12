@@ -427,13 +427,20 @@ PMS استفاده شود»*. The requirement text and the formulas live in ADR-
   (3) publish-gate validation of every PAD rule against the worst case of
   its footprint and refusal of `NONE` where reinforcement is required.
 
-  **Open decisions (owner):** (a) design conditions as **class attributes**
-  (recommended — every PMS class has a pressure/temperature basis; the
-  per-line columns stay for line-level checks) vs derived from the worst
-  line using the class; (b) material data as **direct class inputs S/E/W/Y**
-  (recommended — the PMS document itself lists these numbers, and it avoids
-  republishing the ASME-proprietary Table A-1) vs a bundled Table A-1
-  reference pack. Lands after Step A's runtime verification.
+  **Decisions (owner, 2026-10-12):**
+  (a) design pressure/temperature are **class attributes** — every class
+  carries its own design basis; the per-line columns remain for line-level
+  checks;
+  (b) material data comes from a **Table A-1 reference pack** built from
+  the ASME B31.3 standard (owner will upload it), with manual entry
+  remaining available as an override;
+  (c) **mill tolerance 12.5%** — effective wall `T = 0.875 × nominal`
+  everywhere `Th`/`Tb` appear;
+  (d) the standard itself: ASME B31.3, current edition.
+  From it we extract: Table A-1 allowable stresses for the common grades
+  (A53B/A106B/API 5L, A312 TP304/316, A333 LTCS), Table 304.1.2 `Y`,
+  §302.3.5 `W`, and Appendix H worked examples as calculator fixtures.
+  Lands after Step A's runtime verification.
 
 ## BUILT this pass (2026-10-11)
 

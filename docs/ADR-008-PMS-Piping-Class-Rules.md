@@ -418,14 +418,13 @@ itself — `App\Services\BranchReinforcementCalculator` with
 examples plus hand-verified fixtures (zone capping, stress-ratio
 reduction, 45° laterals, corrupt-input refusals).
 
-Step B (queued on P-24, parameter inventory audited 2026-10-12): wiring
-into the PMS. **Already in the system:** OD per DN and wall per
-DN×schedule (ADR-007 reference packs), schedule per band (`PIPE_SCHEDULE`)
-and corrosion allowance per band (`CORROSION_ALLOWANCE` rule kinds).
-**Missing on the class:** design pressure/temperature (they exist only per
-line today), pipe material grade, allowable stress `S(T)`, joint factor
-`E`, weld reduction `W`, coefficient `Y` (B31.3 eq 3a inputs), and the
-mill-tolerance convention. Two owner decisions gate Step B — class-level
-design conditions vs worst-line, and direct S/E/W/Y inputs (recommended)
-vs a bundled Table A-1 pack; the full table lives in the P-24 entry of the
-improvement-proposals register.
+All Step B decisions settled by the owner 2026-10-12 — recorded in the
+P-24 entry: design pressure/temperature are **class attributes**; material
+data from a **Table A-1 reference pack** built from the standard the owner
+uploads (manual entry stays as override); **mill tolerance 12.5%**
+(`T = 0.875 × nominal`). Step B therefore adds: class design-basis
+columns, the material reference pack + grade rule, the eq (3a) wrapper
+(already built — `pressureDesignThickness()`), and publish-gate validation
+of every PAD rule against the worst case of its footprint, refusing `NONE`
+where reinforcement is required. Bilingual validation messages, same
+pattern as the rest of this service.
