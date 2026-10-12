@@ -54,6 +54,10 @@ final class ProcurementService
     // -----------------------------------------------------------------------
 
     /**
+     * Trusted persistence primitive. Human entry/import/API callers must use
+     * MaterialRequisitionEntryService for ADR-018 nomination and bounded validation.
+     * Legacy synthetic fixtures are not human authorization endpoints.
+     *
      * @param  list<array{item_code:string,description_en:string,description_fa:string,unit:string,quantity:float|string,specification?:string|null,subsystem_id?:string|null}>  $lines
      *
      * @throws ValidationException
@@ -111,9 +115,13 @@ final class ProcurementService
         return DB::transaction(function () use ($project, $user, $titleEn, $titleFa, $discipline, $lines): MaterialRequisition {
             // Lock the parent project row to allocate the sequence: two buyers
             // raising at the same second is normal on a live project.
-            Project::whereKey($project->id)->lockForUpdate()->first();
+            $lockedProject = Project::whereKey($project->id)->lockForUpdate()->firstOrFail();
 
-            $seq = 1 + (int) MaterialRequisition::where('project_id', $project->id)->max('sequence');
+            // ADR-018: a company-scoped MAX cannot allocate project-wide numbers.
+            $seq = 1 + max((int) $lockedProject->material_requisition_sequence,
+                (int) MaterialRequisition::where('project_id', $project->id)->max('sequence'));
+            $lockedProject->material_requisition_sequence = $seq;
+            $lockedProject->save();
 
             $mr = MaterialRequisition::create([
                 'project_id' => $project->id,

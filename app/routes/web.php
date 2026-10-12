@@ -117,6 +117,8 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::post('/projects/{projectCode}/materials/reverse', [MaterialsController::class, 'reverse'])->name('materials.reverse');
 
     Route::get('/projects/{projectCode}/procurement', [MaterialsController::class, 'procurement'])->name('procurement');
+    Route::post('/projects/{projectCode}/procurement/requisitions', [MaterialsController::class, 'createRequisition'])->name('procurement.requisitions.create');
+    Route::post('/projects/{projectCode}/procurement/author-access', [MaterialsController::class, 'configureRequisitionAuthors'])->name('procurement.author-access');
     Route::post('/projects/{projectCode}/procurement/requisition', [MaterialsController::class, 'advanceRequisition'])->name('procurement.requisition');
     Route::post('/projects/{projectCode}/procurement/forecast', [MaterialsController::class, 'forecast'])->name('procurement.forecast');
 

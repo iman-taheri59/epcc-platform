@@ -112,6 +112,8 @@
     <div class="err"><ul>@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
   @endif
 
+  @include('materials.mr-entry')
+
   <div class="docstats">
     <div class="dstat"><div class="k">{{ $L('mrs') }}</div><div class="v">{{ $num($requisitions->count()) }}</div></div>
     <div class="dstat"><div class="k">{{ $L('pos') }}</div><div class="v">{{ $num($orders->count()) }}</div></div>
@@ -144,7 +146,15 @@
           @endif
         </td>
         <td class="mono">{{ $mr->discipline }}</td>
-        <td class="num">{{ $num($mr->items->count()) }}</td>
+        <td><details><summary>{{ $num($mr->items->count()) }} · {{ __('mr.details') }}</summary>
+          @foreach($mr->items->sortBy('line_no') as $line)
+            <p><span class="mono">{{ $line->item_code }}</span> · {{ $line->description($lang) }}<br>
+            <span dir="ltr">{{ $line->source_quantity ?? $line->quantity }} {{ $line->unit }}</span>
+            @if($line->specification)<br>{{ $line->specification }}@endif
+            @if($line->subsystem)<br>{{ $line->subsystem->code }}@endif</p>
+          @endforeach
+          @if($mr->author_policy_id)<p class="muted">{{ __('mr.policy_basis') }}: <span class="mono">{{ $mr->author_policy_id }}</span></p>@endif
+        </details></td>
         <td><span class="st {{ $mr->state }}">{{ \App\Support\ProcurementState::mrLabel($mr->state)[$lang] }}</span></td>
         <td class="acts">
           @php $act = ['DRAFT'=>'submit','SUBMITTED'=>'technical','TECHNICAL_APPROVED'=>'commercial'][$mr->state] ?? null; @endphp

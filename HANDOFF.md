@@ -3379,6 +3379,61 @@ NOT ported in this step (deliberately): the controller/routes/views UI
 and everything in the assessment's conflict zone / deferred zones.
 Verification gate: `php artisan test` on the owner's Laragon tier.
 
+### 2026-10-12 (cont.) — P-25 step 4: material-requisition (MR) entry ported from the parallel session
+
+Owner: «بررسی کن که گام بعدی رو کامل کن». Step 4 of
+`docs/PARALLEL-SESSION-INTEGRATION-ASSESSMENT-EN.md` — the MR entry
+module — ported under the one-verifiable-step rule.
+
+**Ported (verbatim, their tree at `.cache/ws/x_ws/epcc-platform`):**
+- Services: `MaterialRequisitionEntryService`,
+  `MaterialRequisitionAccessService`, `PmsAccessService`. The PMS
+  access service is portable because their tree keeps its policy table
+  in a standalone migration (`2026_09_29_235700_create_pms_author_policies`),
+  independent of the conflicting PMS schema.
+- `ProcurementService` replaced with their strict superset (17-line
+  diff): MR docblock + a numbering bug-fix — requisition numbers now
+  come from the `projects.material_requisition_sequence` counter with
+  `firstOrFail` instead of max-of-max (concurrent-safe, no gaps reused).
+- Migrations: `2026_09_29_235700` (PMS author policies) and
+  `2026_09_30_042713_add_material_requisition_authoring` (sequence
+  column + `mr_author_policies`), both with house-style RLS
+  (append-only policy rows, per-company author policy tables).
+- `MaterialsController` replaced wholesale — the diff is additions
+  only: 3 constructor injections (incl. the already-ported
+  `ProjectFittingDefinitionService::assertAccess`), procurement screen
+  plan gate (`hasModule('proc') && allowsPack`), MR raise + author-access
+  endpoints, and a JalaliDate refactor replacing Morilog.
+- Routes: 2 POSTs (`/projects/{projectCode}/procurement/requisitions`,
+  `/projects/{projectCode}/procurement/author-access`).
+- Views: new `materials/mr-entry.blade.php`; two additive merges into
+  `materials/procurement.blade.php` (mr-entry include + item details
+  expand cell using `mr.details` / `mr.policy_basis`).
+- Lang: `mr`, `fitting_review`, `project_fittings`, `material_screening`,
+  `project_materials` (en + fa) — the last four also complete the
+  step-2+3 port whose services reference these keys; `epcc.php` taken
+  from theirs (pure superset).
+- Tests verbatim: `MaterialRequisitionEntryTest` (HTTP-level, hits
+  `/projects/PH-14/procurement/...`) + `MaterialRequisitionMigrationTest`.
+- Docs: `MATERIAL-REQUISITION-ENTRY-2026-09-30.md` + their
+  `ADR-018-Material-Management-Operational-Completion.md`. **ADR
+  numbering divergence recorded:** our tree runs ADR-001…015 (015 = PO
+  Attribution); their tree used 015–018 for different topics. Their
+  ADR-018 kept under their number because ported code cites "ADR-018"
+  and there is no filename clash; their ADR-015/016/017 docs are NOT
+  ported (filename clash with our 015) — a doc-consolidation note is
+  queued.
+
+**Verified before port:** `MaterialRequisition` / `MaterialRequisitionItem`
+models byte-identical across sessions (untouched); our `AuthSeeder`
+already seeds the plans blocks their plan gate needs (EPC-PARS = full
+plan with `proc` module); all `use App\…` imports of the copied services
+resolve in our tree; brace/paren balance clean on every copied file;
+test URLs match the added route paths.
+
+**Verification gate (owner's Laragon):**
+`php artisan migrate:fresh --force && php artisan db:seed --class=AuthSeeder && php artisan db:seed --class=EpccDemoSeeder && php artisan test --filter=MaterialRequisition`
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,
