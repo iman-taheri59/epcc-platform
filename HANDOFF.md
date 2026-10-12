@@ -2824,6 +2824,21 @@ recorded in `docs/RESEARCH-PLANT3D-PCF-P2P-BRANCHES-EN.md`. Findings:
   connection point; not a synthesised wall port. Reinforces P-23 (pads
   exist only in our class rules, invisible to Plant 3D/PCF).
 
+### 2026-10-12 (cont.) — owner requirement: P-No و Group No برای متریال خارج از کتابخانه (commit `05737c7`)
+
+Owner: «P no. و group no. متریال هم در صورتی که در کتابخانه متریال سیستم
+وجود ندارد، باید وارد بشه». Implemented as: the Section IX P-Number is
+READ FROM THE STANDARD ITSELF — Table A-1 of B31.3-2024 prints a P-No
+column (extracted position-based like the rest of the table; values as
+printed: carbon steels "1", A335 P11 "4", P22 "5A", P5/P9 "5B", P91
+"15E", austenitics "8"), so library materials carry it automatically.
+The table publishes NO Group number, so Group No remains rule-level data.
+PIPE_MATERIAL rules now accept `p_no` (printed form, e.g. "5A") and
+`group_no` (positive integer); when a material is OUTSIDE the library
+(`s_mpa_override`), BOTH are mandatory — bilingual refusal otherwise.
+Unit tests pin the P-No anchors from the raw table rows; feature tests
+cover the mandatory rule and format refusals.
+
 ### 2026-10-12 (cont.) — P-24 Step B COMPLETE: design basis, material rule, publish-gate pad validation
 
 Step B finished in three commits on top of the materials pack (`55272b2`):

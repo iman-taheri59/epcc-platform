@@ -429,7 +429,12 @@ of every PAD rule against the worst case of its footprint, refusing `NONE`
 where reinforcement is required. Bilingual validation messages, same
 pattern as the rest of this service.
 
-**Step B status (2026-10-12, BUILT).** The owner-uploaded ASME B31.3-2024
+**Step B status (2026-10-12, BUILT).** Section IX identity (owner
+requirement 2026-10-12): PIPE_MATERIAL values carry `p_no` and
+`group_no`; both are mandatory for materials outside the materials
+library, while library materials take the P-No from the Table A-1 column
+the 2024 edition prints (Group No is not published by the table). The
+owner-uploaded ASME B31.3-2024
 is extracted: `standards-packs/reference/b313-materials.ref.json` holds 57
 Table A-1 (SI) rows for the common grades — API 5L X-grades are published
 under ISO names (L290 = X42 … L485 = X70), PSL1/PSL2 kept as distinct rows

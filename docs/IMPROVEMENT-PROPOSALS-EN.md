@@ -483,6 +483,13 @@ PMS استفاده شود»*. The requirement text and the formulas live in ADR-
   Awaiting runtime verification on the owner's Laragon tier (no PHP in
   sandbox). Remaining housekeeping: remove the 12 MB PDF from the
   `b31.3-upload` branch (needs owner sign-off for the history rewrite).
+- **P-No / Group No (owner requirement 2026-10-12, commit `05737c7`).**
+  «P no. و group no. متریال هم در صورتی که در کتابخانه متریال سیستم وجود
+  ندارد، باید وارد بشه» — a material outside the library must carry its
+  Section IX P-No AND Group No on the PIPE_MATERIAL rule. Library
+  materials get the P-No from the standard itself: Table A-1 prints a
+  P-No column, now extracted ("1", "4", "5A", "5B", "8", "15E"...); the
+  table publishes no Group number, so Group No stays rule-level data.
 
 ## BUILT this pass (2026-10-11)
 
