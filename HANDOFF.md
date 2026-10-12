@@ -7,6 +7,12 @@ This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
 do next. Everything else is detail hanging off `README.md`.
 
+**Companion record:** `CHAT-TRANSFER-HANDOFF-EN.md` / `CHAT-TRANSFER-HANDOFF-FA.md`
+(repo root) carry the 2026-10-06 session-transfer handoff of the predecessor
+`arena/roadmap-reconciliation` work (MTO staging + material-catalogue lineage).
+They were fork-only files dropped by the PR #5/#6 history reconciliation and
+restored from commit `a869114` on 2026-10-12 so that record is never lost again.
+
 
 ---
 
