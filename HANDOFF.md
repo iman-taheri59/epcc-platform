@@ -3344,6 +3344,41 @@ screening, fitting review) stays archived in the export. Follow-ups also
 recorded: B16.47-2025 request if its curves enter service; conform this
 branch's own packs to the ported schema convention later.
 
+### 2026-10-12 (cont.) — P-25 steps 2+3: engineering screening + fitting review ported from the parallel session
+
+Owner instruction: evaluate the parallel session's code step by step and
+reuse what matches this session's logic. Step 1 (compatibility
+assessment) landed as `docs/PARALLEL-SESSION-INTEGRATION-ASSESSMENT-EN.md`
+(commit `3bdff9b`). Steps 2 and 3 were MERGED because the screening
+evidence layer is keyed to fitting-definition rows — one functional unit.
+
+Ported verbatim (module files, 3 migrations with house-style RLS, 4 test
+files = 32 tests, 7 design documents):
+- `App\Support\Reference\FittingDimensions` — the PHP accessor over the
+  ported `fitting-dimensions` pack (ASME B16.9-2018).
+- `ProjectFittingDefinition` model + `ProjectFittingDefinitionService`
+  (append-only definitions with supersedure: revises/root/correction
+  reason, unique source index).
+- `FittingReviewService` — review policies (1-5 steps), runs, decisions,
+  built on the shared `AuthorizationPipeline` (byte-identical in both
+  sessions) and `AuthorizationDenial`.
+- `App\Services\Engineering\MaterialScreening` — read-only, versioned,
+  bilingual declaration screener for PIPE/FLANGE/VALVE/GASKET/BOLTING
+  against the ported packs ("never certifies, never edits, never
+  approves") + `MaterialScreeningEvidence` capturing sha256-fingerprinted
+  snapshots per review run.
+- Migrations `2026_09_28_140000` / `2026_09_29_090000` /
+  `2026_09_29_180000` (definitions; policies/runs/decisions; screening
+  snapshots). No collision with this branch's migrations; every imported
+  class verified present here before copying.
+- Docs: B16-9 source review/reader/size-scope/cap applicability,
+  fitting-review workflow, material screening + integration notes.
+
+NOT ported in this step (deliberately): the controller/routes/views UI
+(its own later step), finding dispositions/responses (next candidate),
+and everything in the assessment's conflict zone / deferred zones.
+Verification gate: `php artisan test` on the owner's Laragon tier.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,

@@ -85,11 +85,10 @@ Ported in `bf15816` (11 packs, 16 schemas, validator, tests).
 
 ## 4. Stepwise plan (one verifiable step at a time)
 
-| Step | Content | Exit criterion |
-|---|---|---|
-| 1 (this document) | Inventory + compatibility assessment | owner approval of the sequence |
-| 2 | Port **engineering screening**: service + evidence table migration + tests (UI later, as its own step) | their screening tests pass on our tree; no schema collision with our migrations |
-| 3 | Port **fitting definitions + review** (2 migrations, service, controller, tests) | FittingReviewTest-equivalent green on our tree |
+| Step | Content | Exit criterion | Status |
+|---|---|---|---|
+| 1 (this document) | Inventory + compatibility assessment | owner approval of the sequence | DONE 2026-10-12 (`3bdff9b`) |
+| 2+3 (merged) | Port **engineering screening + fitting definitions/review** together — the screening-evidence layer is keyed to fitting-definition rows (`MaterialScreeningEvidence::capture`), so they are one functional unit. Ported: `FittingDimensions` accessor, `ProjectFittingDefinition` model, `ProjectFittingDefinitionService`, `FittingReviewService`, `MaterialScreening` + `MaterialScreeningEvidence`, 3 migrations (definitions / review policy-runs-decisions / screening snapshots, all with house-style RLS), the 4 test files (32 tests), 7 design docs. UI (controller/routes/views) deferred to its own step | their tests green on owner's Laragon (`php artisan test`) | PORTED 2026-10-12 — awaiting Laragon verification |
 | 4 | Port **MR entry** (service + policy + tests) | 25 dedicated tests green on our tree |
 | 5 | **Standards library** reconciliation note, then port | our `StandardsPackRepository` consumers unaffected |
 | 6 | PMS field-group design notes (fluid service, severe cyclic, material keys, NDT) → owner picks the first one to re-express on our schema | each accepted note becomes its own later step |
