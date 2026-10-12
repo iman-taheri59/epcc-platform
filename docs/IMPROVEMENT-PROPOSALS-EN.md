@@ -42,7 +42,7 @@ Last updated: **2026-10-11** (second pass — full documentation review, ~11,600
 | P-21 | Requirement / piping | Branch welds (stub-in/stub-on P2P) must be first-class joint types before weld counts and dia-inch are built | OPEN — queued for the P5 design ADR |
 | P-22 | Requirement / piping | P2P branch welds land on the header *wall*, but the joint model only connects two ports — wall-attach representation must be decided | OPEN — decision needed |
 | P-23 | Requirement / MTO | MTO has no coverage of branch-connection material: reinforcement pads (plate) and coped stub ends | OPEN — scope decision |
-| P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator built, PMS wiring queued | PARTIAL — Step A built |
+| P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator built; B31.3-2024 materials pack + accessor built; class design-basis migration next | PARTIAL — Step B item 1 built |
 
 ---
 
@@ -438,9 +438,33 @@ PMS استفاده شود»*. The requirement text and the formulas live in ADR-
   everywhere `Th`/`Tb` appear;
   (d) the standard itself: ASME B31.3, current edition.
   From it we extract: Table A-1 allowable stresses for the common grades
-  (A53B/A106B/API 5L, A312 TP304/316, A333 LTCS), Table 304.1.2 `Y`,
+  (A53B/A106B/API 5L, A312 TP304/316, A333 LTCS), Table 304.1.1-1 `Y`,
   §302.3.5 `W`, and Appendix H worked examples as calculator fixtures.
-  Lands after Step A's runtime verification.
+
+- **Step B progress (2026-10-12, commit `55272b2`):** build item (1) — the
+  eq (3a) wrapper `pressureDesignThickness()` — landed earlier (`c9fbd88`).
+  Now the **materials reference pack** is built from the owner-uploaded
+  ASME B31.3-2024 PDF:
+  - `scripts/build_b313_materials_pack.py` — position-based Table A-1 (SI,
+    pp.206–315) extractor: per-page temperature ladders (13/19/32-column
+    sections), merged stacked-segment headers, structural metadata parsing.
+    Regenerable whenever a newer code edition is uploaded.
+  - `standards-packs/reference/b313-materials.ref.json` — 57 rows: A53 A/B
+    (S/E/F), A106 A/B/C, API 5L A/B + X42…X70 (published under ISO names
+    L290…L485, PSL1/PSL2), A333 1/6, A335 P5/P9/P11/P22/P91, A312
+    TP304/304H/304L/316/316H/316L/321/321H/347/347H, A516 55–70, A285 A/B/C;
+    plus Table 304.1.1-1 (Y), Table 302.3.5-1 (W) and the Table A-3 (Ej)
+    subset; mill-tolerance factor 0.875 per decision (c).
+  - `App\Support\Reference\MaterialReference` (ADR-007 pattern: file, not
+    table; memoised; every lookup throws): S(T) with linear interpolation
+    and hard refusals above the last column / above max use temperature;
+    Ej by spec+type or description fragment; Y/W with below-range rules.
+  - `tests/Unit/MaterialReferenceTest` — 17 tests anchored on Appendix H
+    (H301: API 5L Gr A S = 110 MPa @ 200 °C) and raw table rows.
+  Extraction validated row-by-row against the PDF text stream. Remaining
+  Step B build: (2) class design-basis columns + pipe-material-grade rule
+  kind (migration), then (3) publish-gate PAD validation with bilingual
+  refusals. PHP suite runs on the owner's Laragon tier (no PHP in sandbox).
 
 ## BUILT this pass (2026-10-11)
 

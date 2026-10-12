@@ -2824,6 +2824,40 @@ recorded in `docs/RESEARCH-PLANT3D-PCF-P2P-BRANCHES-EN.md`. Findings:
   connection point; not a synthesised wall port. Reinforces P-23 (pads
   exist only in our class rules, invisible to Plant 3D/PCF).
 
+### 2026-10-12 (cont.) — P-24 Step B: ASME B31.3-2024 materials reference pack built (commit `55272b2`)
+
+The owner-uploaded ASME B31.3-2024 PDF (594 pp, on the `b31.3-upload`
+branch, fetched into `.cache/`) is now the source of the platform's
+material facts for pad validation. Built and committed:
+
+- `scripts/build_b313_materials_pack.py` — position-based Table A-1 (SI,
+  pp.206–315) extractor. Bench-verified traps solved during the build:
+  the table has per-page temperature ladders (13/19/32-column sections),
+  stacked segments sharing one column grid (merged per page), line-number
+  columns repeated inside the stress block, and API 5L X-grades published
+  under ISO names (L290 = X42 … L485 = X70). Regenerable whenever a newer
+  edition is uploaded.
+- `standards-packs/reference/b313-materials.ref.json` — 57 Table A-1 rows
+  (A53 A/B, A106 A/B/C, API 5L A/B + L245…L485 PSL1/PSL2, A333 1/6, A335
+  P5/P9/P11/P22/P91, A312 TP304…TP347H, A516 55–70, A285 A/B/C) plus
+  Table 304.1.1-1 (Y), Table 302.3.5-1 (W) and the Table A-3 (Ej) subset,
+  and the 0.875 mill-tolerance factor (owner decision 2026-10-12).
+- `App\Support\Reference\MaterialReference` + `B313Material` +
+  `UnknownMaterialException` — ADR-007 file-not-table pattern: memoised,
+  every lookup throws; S(T) interpolated between columns with hard
+  refusals above the last column / above max use temperature; Ej by
+  spec+type or description fragment; Y/W with below-range semantics.
+- `tests/Unit/MaterialReferenceTest` — 17 tests anchored on Appendix H
+  (H301: API 5L Gr A S = 110 MPa @ 200 °C) and raw table rows.
+
+Every extracted value was checked row-by-row against the PDF text stream
+(some values in older editions differ — e.g. A285 C is 98.3 MPa @ 375 °C
+in the 2024 edition, A312 TP304 is 129 MPa @ 200 °C). No PHP runtime in
+the sandbox; the suite runs on the owner's Laragon tier. Next: class
+design-basis columns + pipe-material-grade rule kind (migration), then the
+publish-gate PAD validation. Still pending on GitHub: remove the 12 MB PDF
+from the `b31.3-upload` branch (history rewrite needs owner sign-off).
+
 ### 2026-10-12 (cont.) — ASME B31.3 §304.3.3 pad-thickness validation (requirement P-24, Step A built)
 
 Owner requirement: pad thickness recorded in the PMS branch table must be
