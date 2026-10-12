@@ -113,6 +113,59 @@ TABLE_A3_EJ = {
     ],
 }
 
+
+# ASME BPVC Section IX (2021) Table QW/QB-422 — Group No assignments for the
+# target grades (owner-uploaded copy). Keys: (spec, grade) using the ISO
+# L-names as Table A-1 prints them; API 5L X-grade -> L-grade per the pack's
+# alias table. The build ASSERTS that each row's Table A-1 P-No equals the
+# Section IX P-No recorded here, so a drift between the two books fails the
+# build instead of shipping wrong welding identity.
+SECTION9_QW422 = {
+    #                 spec      grade     p_no  group_no
+    ("A53", "F/A"):               ("1", "1"),
+    ("A53", "E/A"):               ("1", "1"),
+    ("A53", "S/A"):               ("1", "1"),
+    ("A53", "E/B"):               ("1", "1"),
+    ("A53", "S/B"):               ("1", "1"),
+    ("A106", "A"):                ("1", "1"),
+    ("A106", "B"):                ("1", "1"),
+    ("A106", "C"):                ("1", "2"),
+    ("API5L", "A"):               ("1", "1"),
+    ("API5L", "B"):               ("1", "1"),
+    ("API5L", "L245"):            ("1", "1"),
+    ("API5L", "L290"):            ("1", "1"),
+    ("API5L", "L320"):            ("1", "1"),
+    ("API5L", "L360"):            ("1", "1"),
+    ("API5L", "L390"):            ("1", "2"),
+    ("API5L", "L415"):            ("1", "2"),
+    ("API5L", "L450"):            ("1", "2"),
+    ("API5L", "L485"):            ("1", "3"),
+    ("A333", "1"):                ("1", "1"),
+    ("A333", "6"):                ("1", "1"),
+    ("A335", "P11"):              ("4", "1"),
+    ("A335", "P22"):              ("5A", "1"),
+    ("A335", "P5"):               ("5B", "1"),
+    ("A335", "P9"):               ("5B", "1"),
+    ("A335", "P91"):              ("15E", "1"),
+    ("A312", "TP304"):            ("8", "1"),
+    ("A312", "TP304H"):           ("8", "1"),
+    ("A312", "TP304L"):           ("8", "1"),
+    ("A312", "TP316"):            ("8", "1"),
+    ("A312", "TP316H"):           ("8", "1"),
+    ("A312", "TP316L"):           ("8", "1"),
+    ("A312", "TP321"):            ("8", "1"),
+    ("A312", "TP321H"):           ("8", "1"),
+    ("A312", "TP347"):            ("8", "1"),
+    ("A312", "TP347H"):           ("8", "1"),
+    ("A516", "55"):               ("1", "1"),
+    ("A516", "60"):               ("1", "1"),
+    ("A516", "65"):               ("1", "1"),
+    ("A516", "70"):               ("1", "2"),
+    ("A285", "A"):                ("1", "1"),
+    ("A285", "B"):                ("1", "1"),
+    ("A285", "C"):                ("1", "1"),
+}
+
 SPEC_RE = re.compile(r"^(A\d{2,3}|API5L|B\d{3})$")
 UNS_RE = re.compile(r"^[KSNEPJ]\d{5}$")
 # P-No as printed by Table A-1 (Section IX numbers: "1", "4", "5A", "15E"...).
@@ -282,6 +335,19 @@ def main():
                 rows.append(rec)
 
     rows.sort(key=lambda r: (r["spec"], r["grade"], r["line"]))
+
+    for r in rows:
+        key = (r["spec"], r["type_grade"])
+        identity = SECTION9_QW422.get(key)
+        if identity is None:
+            raise SystemExit(f"SECTION9_QW422 has no entry for {key} — extend the map")
+        p_no, group_no = identity
+        if r.get("p_no") != p_no:
+            raise SystemExit(
+                f"P-No drift for {key}: Table A-1 prints {r.get('p_no')!r}, "
+                f"Section IX QW/QB-422 says {p_no!r}"
+            )
+        r["group_no"] = group_no
     print(f"kept {len(rows)} rows, dropped {drops} thin rows")
     seen = {}
     for r in rows:
@@ -294,11 +360,12 @@ def main():
     pack = {
         "code": "ASME B31.3-2024",
         "provenance": (
-            "Owner-uploaded licensed copy of ASME B31.3-2024; numeric "
-            "values only, extracted under review 2026-10-12. Table A-1 (SI) "
+            "Owner-uploaded licensed copies: ASME B31.3-2024 (Table A-1 SI "
             "pp.206-315 position-parsed; Table A-3 pp.398-401; Tables "
-            "304.1.1-1 and 302.3.5-1 transcribed visually. Anchors: "
-            "Appendix H examples H301/H303/H311."
+            "304.1.1-1 and 302.3.5-1 transcribed visually; Appendix H "
+            "examples H301/H303/H311 as anchors) and ASME BPVC Section IX "
+            "2021 (Table QW/QB-422 pp.147-191, Group No assignments; the "
+            "build cross-checks its P-No column against Table A-1's)."
         ),
         "mill_tolerance_default": 0.875,
         "mill_tolerance_note": (

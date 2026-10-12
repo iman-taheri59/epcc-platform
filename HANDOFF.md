@@ -2824,6 +2824,20 @@ recorded in `docs/RESEARCH-PLANT3D-PCF-P2P-BRANCHES-EN.md`. Findings:
   connection point; not a synthesised wall port. Reinforces P-23 (pads
   exist only in our class rules, invisible to Plant 3D/PCF).
 
+### 2026-10-12 (cont.) — ASME Section IX آپلود شد؛ شمارهٔ گروه هم از استاندارد گرفته شد (کامیت‌های `05737c7`, `4b3bd0d`)
+
+Owner uploaded ASME BPVC Section IX 2021 (branch `sec.ix-upload`,
+`ASmE SEC IX 2021.txt`). Its Table QW/QB-422 publishes BOTH the P-No and
+the Group number, so the pack now carries complete welding identity for
+every library material — the earlier note that "Group No stays
+rule-level" is superseded. Transcribed rows (pp.147–191, API 5L block
+pp.189–191) live in `SECTION9_QW422` inside the pack builder, which
+annotates every row with `group_no` and ASSERTS the extracted Table A-1
+P-No equals Section IX's (drift fails the build; verified equal on all
+57 rows). Group numbers of note: A106 C = 2, A516 70 = 2, API 5L
+X56/X60/X65 = 2, X70 = 3; the rest of the target set = 1. Rule remains:
+materials OUTSIDE the library must carry `p_no` AND `group_no` manually.
+
 ### 2026-10-12 (cont.) — owner requirement: P-No و Group No برای متریال خارج از کتابخانه (commit `05737c7`)
 
 Owner: «P no. و group no. متریال هم در صورتی که در کتابخانه متریال سیستم

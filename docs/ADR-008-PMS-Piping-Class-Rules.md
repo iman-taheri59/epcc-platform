@@ -433,7 +433,9 @@ pattern as the rest of this service.
 requirement 2026-10-12): PIPE_MATERIAL values carry `p_no` and
 `group_no`; both are mandatory for materials outside the materials
 library, while library materials take the P-No from the Table A-1 column
-the 2024 edition prints (Group No is not published by the table). The
+the 2024 edition prints and the Group No from Section IX Table QW/QB-422
+(2021 edition, owner-uploaded); the pack build cross-checks the two
+books' P-No columns and fails on drift. The
 owner-uploaded ASME B31.3-2024
 is extracted: `standards-packs/reference/b313-materials.ref.json` holds 57
 Table A-1 (SI) rows for the common grades — API 5L X-grades are published

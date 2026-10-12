@@ -6,8 +6,9 @@ namespace App\Support\Reference;
 
 /**
  * One Table A-1 (SI) row from ASME B31.3-2024. `pNo` is the ASME Section IX
- * P-Number exactly as the table prints it ("1", "5A", "15E"...); the table
- * publishes no Group number, so that remains a rule-level datum.
+ * P-Number exactly as Table A-1 prints it ("1", "5A", "15E"...); `groupNo`
+ * comes from Section IX Table QW/QB-422 (2021 edition) — the pack build
+ * cross-checks the two books' P-No columns and fails on any drift.
  *
  * Immutable value object; the table itself lives in the reference pack JSON.
  * `sMpa` is aligned with `temps` entry by entry and may contain nulls where
@@ -26,6 +27,7 @@ final class B313Material
         public readonly string $descriptor,
         public readonly ?string $uns,
         public readonly ?string $pNo,
+        public readonly ?string $groupNo,
         public readonly string $minTempC,
         public readonly int $tensileMpa,
         public readonly int $yieldMpa,

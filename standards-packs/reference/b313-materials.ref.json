@@ -1,6 +1,6 @@
 {
  "code": "ASME B31.3-2024",
- "provenance": "Owner-uploaded licensed copy of ASME B31.3-2024; numeric values only, extracted under review 2026-10-12. Table A-1 (SI) pp.206-315 position-parsed; Table A-3 pp.398-401; Tables 304.1.1-1 and 302.3.5-1 transcribed visually. Anchors: Appendix H examples H301/H303/H311.",
+ "provenance": "Owner-uploaded licensed copies: ASME B31.3-2024 (Table A-1 SI pp.206-315 position-parsed; Table A-3 pp.398-401; Tables 304.1.1-1 and 302.3.5-1 transcribed visually; Appendix H examples H301/H303/H311 as anchors) and ASME BPVC Section IX 2021 (Table QW/QB-422 pp.147-191, Group No assignments; the build cross-checks its P-No column against Table A-1's).",
  "mill_tolerance_default": 0.875,
  "mill_tolerance_note": "Owner decision 2026-10-12: effective wall = 0.875 x nominal (12.5% mill tolerance), the convention of Appendix H.",
  "s_column_semantics": "Basic allowable stress S in MPa at metal temperature up to and including the column value; interpolate linearly between columns; the last listed column applies to its own temperature only (higher temperatures need the time-dependent rules).",
@@ -409,7 +409,8 @@
     9.4,
     6.89
    ],
-   "grade": "A"
+   "grade": "A",
+   "group_no": "1"
   },
   {
    "line": 33,
@@ -465,7 +466,8 @@
     9.4,
     6.89
    ],
-   "grade": "B"
+   "grade": "B",
+   "group_no": "1"
   },
   {
    "line": 65,
@@ -521,7 +523,8 @@
     null,
     null
    ],
-   "grade": "C"
+   "grade": "C",
+   "group_no": "2"
   },
   {
    "line": 100,
@@ -577,7 +580,8 @@
     9.4,
     6.89
    ],
-   "grade": "A"
+   "grade": "A",
+   "group_no": "1"
   },
   {
    "line": 101,
@@ -633,7 +637,8 @@
     9.4,
     6.89
    ],
-   "grade": "B"
+   "grade": "B",
+   "group_no": "1"
   },
   {
    "line": 103,
@@ -689,7 +694,8 @@
     9.4,
     6.89
    ],
-   "grade": "C"
+   "grade": "C",
+   "group_no": "1"
   },
   {
    "line": 86,
@@ -771,7 +777,8 @@
     11.2,
     9.65
    ],
-   "grade": "TP304"
+   "grade": "TP304",
+   "group_no": "1"
   },
   {
    "line": 91,
@@ -853,7 +860,8 @@
     11.2,
     9.65
    ],
-   "grade": "TP304H"
+   "grade": "TP304H",
+   "group_no": "1"
   },
   {
    "line": 6,
@@ -935,7 +943,8 @@
     6.58,
     6.21
    ],
-   "grade": "TP304L"
+   "grade": "TP304L",
+   "group_no": "1"
   },
   {
    "line": 63,
@@ -1017,7 +1026,8 @@
     10.4,
     8.96
    ],
-   "grade": "TP316"
+   "grade": "TP316",
+   "group_no": "1"
   },
   {
    "line": 71,
@@ -1099,7 +1109,8 @@
     10.4,
     8.96
    ],
-   "grade": "TP316H"
+   "grade": "TP316H",
+   "group_no": "1"
   },
   {
    "line": 11,
@@ -1181,7 +1192,8 @@
     7.99,
     6.89
    ],
-   "grade": "TP316L"
+   "grade": "TP316L",
+   "group_no": "1"
   },
   {
    "line": 1,
@@ -1263,7 +1275,8 @@
     2.75,
     1.74
    ],
-   "grade": "TP321"
+   "grade": "TP321",
+   "group_no": "1"
   },
   {
    "line": 14,
@@ -1345,7 +1358,8 @@
     9.02,
     6.83
    ],
-   "grade": "TP321"
+   "grade": "TP321",
+   "group_no": "1"
   },
   {
    "line": 31,
@@ -1427,7 +1441,8 @@
     2.75,
     1.74
    ],
-   "grade": "TP321"
+   "grade": "TP321",
+   "group_no": "1"
   },
   {
    "line": 32,
@@ -1509,7 +1524,8 @@
     2.75,
     1.74
    ],
-   "grade": "TP321"
+   "grade": "TP321",
+   "group_no": "1"
   },
   {
    "line": 51,
@@ -1591,7 +1607,8 @@
     9.02,
     6.83
    ],
-   "grade": "TP321"
+   "grade": "TP321",
+   "group_no": "1"
   },
   {
    "line": 52,
@@ -1673,7 +1690,8 @@
     9.02,
     6.83
    ],
-   "grade": "TP321"
+   "grade": "TP321",
+   "group_no": "1"
   },
   {
    "line": 16,
@@ -1755,7 +1773,8 @@
     9.02,
     6.83
    ],
-   "grade": "TP321H"
+   "grade": "TP321H",
+   "group_no": "1"
   },
   {
    "line": 56,
@@ -1837,7 +1856,8 @@
     9.02,
     6.83
    ],
-   "grade": "TP321H"
+   "grade": "TP321H",
+   "group_no": "1"
   },
   {
    "line": 57,
@@ -1919,7 +1939,8 @@
     9.02,
     6.83
    ],
-   "grade": "TP321H"
+   "grade": "TP321H",
+   "group_no": "1"
   },
   {
    "line": 39,
@@ -2001,7 +2022,8 @@
     5.89,
     5.52
    ],
-   "grade": "TP347"
+   "grade": "TP347",
+   "group_no": "1"
   },
   {
    "line": 73,
@@ -2083,7 +2105,8 @@
     10.9,
     8.96
    ],
-   "grade": "TP347"
+   "grade": "TP347",
+   "group_no": "1"
   },
   {
    "line": 81,
@@ -2165,7 +2188,8 @@
     10.9,
     8.96
    ],
-   "grade": "TP347H"
+   "grade": "TP347H",
+   "group_no": "1"
   },
   {
    "line": 19,
@@ -2221,7 +2245,8 @@
     9.4,
     6.89
    ],
-   "grade": "1"
+   "grade": "1",
+   "group_no": "1"
   },
   {
    "line": 34,
@@ -2277,7 +2302,8 @@
     9.4,
     6.89
    ],
-   "grade": "6"
+   "grade": "6",
+   "group_no": "1"
   },
   {
    "line": 17,
@@ -2345,7 +2371,8 @@
     12.3,
     8.27
    ],
-   "grade": "P11"
+   "grade": "P11",
+   "group_no": "1"
   },
   {
    "line": 33,
@@ -2413,7 +2440,8 @@
     15.3,
     9.65
    ],
-   "grade": "P22"
+   "grade": "P22",
+   "group_no": "1"
   },
   {
    "line": 21,
@@ -2481,7 +2509,8 @@
     11.4,
     6.89
    ],
-   "grade": "P5"
+   "grade": "P5",
+   "group_no": "1"
   },
   {
    "line": 25,
@@ -2549,7 +2578,8 @@
     14.4,
     10.3
    ],
-   "grade": "P9"
+   "grade": "P9",
+   "group_no": "1"
   },
   {
    "line": 52,
@@ -2617,7 +2647,8 @@
     45.1,
     29.6
    ],
-   "grade": "P91"
+   "grade": "P91",
+   "group_no": "1"
   },
   {
    "line": 102,
@@ -2673,7 +2704,8 @@
     null,
     null
    ],
-   "grade": "55"
+   "grade": "55",
+   "group_no": "1"
   },
   {
    "line": 104,
@@ -2729,7 +2761,8 @@
     null,
     null
    ],
-   "grade": "60"
+   "grade": "60",
+   "group_no": "1"
   },
   {
    "line": 107,
@@ -2785,7 +2818,8 @@
     null,
     null
    ],
-   "grade": "65"
+   "grade": "65",
+   "group_no": "1"
   },
   {
    "line": 109,
@@ -2841,7 +2875,8 @@
     null,
     null
    ],
-   "grade": "70"
+   "grade": "70",
+   "group_no": "2"
   },
   {
    "line": 6,
@@ -2897,7 +2932,8 @@
     null,
     null
    ],
-   "grade": "A"
+   "grade": "A",
+   "group_no": "1"
   },
   {
    "line": 9,
@@ -2953,7 +2989,8 @@
     9.4,
     6.89
    ],
-   "grade": "A"
+   "grade": "A",
+   "group_no": "1"
   },
   {
    "line": 10,
@@ -3009,7 +3046,8 @@
     9.4,
     6.89
    ],
-   "grade": "A"
+   "grade": "A",
+   "group_no": "1"
   },
   {
    "line": 31,
@@ -3065,7 +3103,8 @@
     9.4,
     6.89
    ],
-   "grade": "B"
+   "grade": "B",
+   "group_no": "1"
   },
   {
    "line": 32,
@@ -3121,7 +3160,8 @@
     9.4,
     6.89
    ],
-   "grade": "B"
+   "grade": "B",
+   "group_no": "1"
   },
   {
    "line": 14,
@@ -3177,7 +3217,8 @@
     9.4,
     6.89
    ],
-   "grade": "A"
+   "grade": "A",
+   "group_no": "1"
   },
   {
    "line": 39,
@@ -3233,7 +3274,8 @@
     9.4,
     6.89
    ],
-   "grade": "B"
+   "grade": "B",
+   "group_no": "1"
   },
   {
    "line": 40,
@@ -3289,7 +3331,8 @@
     9.4,
     6.89
    ],
-   "grade": "L245"
+   "grade": "L245",
+   "group_no": "1"
   },
   {
    "line": 45,
@@ -3345,7 +3388,8 @@
     null,
     null
    ],
-   "grade": "L290"
+   "grade": "L290",
+   "group_no": "1"
   },
   {
    "line": 46,
@@ -3401,7 +3445,8 @@
     null,
     null
    ],
-   "grade": "L290"
+   "grade": "L290",
+   "group_no": "1"
   },
   {
    "line": 49,
@@ -3457,7 +3502,8 @@
     null,
     null
    ],
-   "grade": "L320"
+   "grade": "L320",
+   "group_no": "1"
   },
   {
    "line": 50,
@@ -3513,7 +3559,8 @@
     null,
     null
    ],
-   "grade": "L320"
+   "grade": "L320",
+   "group_no": "1"
   },
   {
    "line": 59,
@@ -3569,7 +3616,8 @@
     null,
     null
    ],
-   "grade": "L360"
+   "grade": "L360",
+   "group_no": "1"
   },
   {
    "line": 60,
@@ -3625,7 +3673,8 @@
     null,
     null
    ],
-   "grade": "L360"
+   "grade": "L360",
+   "group_no": "1"
   },
   {
    "line": 71,
@@ -3681,7 +3730,8 @@
     null,
     null
    ],
-   "grade": "L390"
+   "grade": "L390",
+   "group_no": "2"
   },
   {
    "line": 72,
@@ -3737,7 +3787,8 @@
     null,
     null
    ],
-   "grade": "L390"
+   "grade": "L390",
+   "group_no": "2"
   },
   {
    "line": 81,
@@ -3793,7 +3844,8 @@
     null,
     null
    ],
-   "grade": "L415"
+   "grade": "L415",
+   "group_no": "2"
   },
   {
    "line": 82,
@@ -3849,7 +3901,8 @@
     null,
     null
    ],
-   "grade": "L415"
+   "grade": "L415",
+   "group_no": "2"
   },
   {
    "line": 84,
@@ -3905,7 +3958,8 @@
     null,
     null
    ],
-   "grade": "L450"
+   "grade": "L450",
+   "group_no": "2"
   },
   {
    "line": 85,
@@ -3961,7 +4015,8 @@
     null,
     null
    ],
-   "grade": "L450"
+   "grade": "L450",
+   "group_no": "2"
   },
   {
    "line": 87,
@@ -4017,7 +4072,8 @@
     null,
     null
    ],
-   "grade": "L485"
+   "grade": "L485",
+   "group_no": "3"
   },
   {
    "line": 88,
@@ -4073,7 +4129,8 @@
     null,
     null
    ],
-   "grade": "L485"
+   "grade": "L485",
+   "group_no": "3"
   }
  ]
 }

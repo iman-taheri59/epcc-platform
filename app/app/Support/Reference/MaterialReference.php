@@ -383,6 +383,7 @@ final class MaterialReference
                 descriptor: (string) ($row['descriptor'] ?? ''),
                 uns: isset($row['uns']) && $row['uns'] !== null ? (string) $row['uns'] : null,
                 pNo: isset($row['p_no']) && $row['p_no'] !== null ? (string) $row['p_no'] : null,
+                groupNo: isset($row['group_no']) && $row['group_no'] !== null ? (string) $row['group_no'] : null,
                 minTempC: (string) ($row['min_temp_c'] ?? ''),
                 tensileMpa: (int) $row['tensile_mpa'],
                 yieldMpa: (int) $row['yield_mpa'],

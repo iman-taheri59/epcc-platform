@@ -108,12 +108,11 @@ class MaterialReferenceTest extends TestCase
         $this->ref()->find('A999', 'X');
     }
 
-    public function test_p_no_is_carried_as_printed_by_table_a1(): void
+    public function test_section_nine_identity_p_no_and_group_no(): void
     {
         $ref = $this->ref();
 
-        // Table A-1 publishes the Section IX P-Number as a column; letters
-        // included exactly as printed (raw rows pp.208-220).
+        // P-No: the column Table A-1 itself prints (raw rows pp.208-220).
         $this->assertSame('1', $ref->find('A106', 'B')->pNo);
         $this->assertSame('1', $ref->find('API5L', 'X42', 'PSL2')->pNo);
         $this->assertSame('8', $ref->find('A312', 'TP304')->pNo);
@@ -121,6 +120,16 @@ class MaterialReferenceTest extends TestCase
         $this->assertSame('5A', $ref->find('A335', 'P22')->pNo);
         $this->assertSame('5B', $ref->find('A335', 'P5')->pNo);
         $this->assertSame('15E', $ref->find('A335', 'P91')->pNo);
+
+        // Group No: Section IX Table QW/QB-422 (2021, owner-uploaded).
+        $this->assertSame('1', $ref->find('A106', 'B')->groupNo);
+        $this->assertSame('2', $ref->find('A106', 'C')->groupNo);
+        $this->assertSame('2', $ref->find('A516', '70')->groupNo);
+        $this->assertSame('1', $ref->find('A516', '65')->groupNo);
+        $this->assertSame('2', $ref->find('API5L', 'X60', 'PSL2')->groupNo); // L415
+        $this->assertSame('3', $ref->find('API5L', 'X70', 'PSL1')->groupNo); // L485
+        $this->assertSame('1', $ref->find('A312', 'TP304')->groupNo);
+        $this->assertSame('1', $ref->find('A335', 'P91')->groupNo);
     }
 
     // ------------------------------------------------------------ Ej -------

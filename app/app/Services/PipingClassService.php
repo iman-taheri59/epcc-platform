@@ -550,8 +550,9 @@ final class PipingClassService
      * resolving against the B31.3-2024 reference pack, with optional manual
      * overrides (owner decision 2026-10-12): "s_mpa_override", "ej_override".
      * Section IX identity: "p_no" ("1", "5A", "15E"...) and "group_no" are
-     * optional for library materials (the pack carries the P-No) and
-     * MANDATORY for materials outside the library (owner 2026-10-12).
+     * optional for library materials (the pack carries both — P-No from
+     * Table A-1, Group No from Section IX QW/QB-422) and MANDATORY for
+     * materials outside the library (owner 2026-10-12).
      *
      * @param  array<string,mixed>  $value
      * @throws ValidationException

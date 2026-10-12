@@ -489,7 +489,13 @@ PMS استفاده شود»*. The requirement text and the formulas live in ADR-
   Section IX P-No AND Group No on the PIPE_MATERIAL rule. Library
   materials get the P-No from the standard itself: Table A-1 prints a
   P-No column, now extracted ("1", "4", "5A", "5B", "8", "15E"...); the
-  table publishes no Group number, so Group No stays rule-level data.
+  table publishes no Group number — which is why the owner then uploaded
+  ASME BPVC Section IX 2021 (branch `sec.ix-upload`). Its Table QW/QB-422
+  publishes BOTH numbers; the pack builder now transcribes the Group
+  assignments (`SECTION9_QW422`) and ASSERTS Table A-1's P-No column
+  against Section IX's on every build. Library materials therefore carry
+  complete identity; only out-of-library materials need manual entry
+  (commit `4b3bd0d`).
 
 ## BUILT this pass (2026-10-11)
 
