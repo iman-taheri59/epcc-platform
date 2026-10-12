@@ -375,3 +375,53 @@ welds must be counted and reported separately from butt welds, dia-inch
 metrics must not silently absorb them, the mandatory pad thickness of a PAD
 rule must stay traceable to the weld, and a joint contradicting its class is
 a deviation. This lands with the welding/NDT phase ADR; nothing is built yet.
+
+### 9.3 Pad thickness must be validated per ASME B31.3 §304.3.3 (owner requirement, 2026-10-12)
+
+The `pad_thickness` recorded on a P2P branch rule is a structural number
+today; the owner requires it to be **engineering-validated** with the
+ASME B31.3 para 304.3.3 area-replacement method for fabricated welded
+branch connections (internal pressure):
+
+```
+d1 = [Db − 2(Tb − c)] / sin β                    (effective opening)
+d2 = greater of d1 or (Tb − c) + (Th − c) + d1/2, capped at Dh
+L4 = lesser of 2.5(Th − c) or 2.5(Tb − c) + Tr
+A1 = th · d1 · (2 − sin β)                       required area  (eq 6)
+A2 = (2·d2 − d1) · (Th − th − c)                 excess run wall (eq 7)
+A3 = 2·L4 · (Tb − tb − c) / sin β                excess branch wall (eq 8)
+A4 = pad area + weld-metal area inside the zone
+PASS when A2 + A3 + A4 ≥ A1                      (eq 6a)
+```
+
+Nomenclature: `h`=run/header, `b`=branch; `D`=OD, `T`=nominal wall (mill
+tolerance deducted), `t`=pressure-design thickness per B31.3 para 304.1.2,
+`c`=corrosion + mechanical allowances, `β`=branch angle (45°–90°),
+`Tr`=pad thickness. Weld credit follows para 328.5.4 minimum dimensions
+(throat = lesser of 0.7·Tb and 6 mm; Appendix-H convention 2·tc²). When
+branch or pad material allows less stress than the run, its area scales
+down in the same ratio (para 304.3.3(f)(3)).
+
+**Validation semantics.** A recorded `pad_thickness` is valid when the
+check passes for the **worst case** inside the rule's header×branch
+footprint — every (DN_header, DN_branch) pair sized with the schedules its
+own class rules assign and the class's design conditions. Where no pad is
+recorded (`reinforcement = NONE`), the same check must show the bare
+connection already passes, or the rule must say `PAD`. The platform must
+also be able to **compute the minimum required pad thickness** (there is no
+closed form — Tr also feeds L4 — so the implementation bisects).
+
+**Status.** Step A (done 2026-10-12, proposal P-24): the pure calculation
+itself — `App\Services\BranchReinforcementCalculator` with
+`evaluate()` and `requiredPadThickness()`, covered by
+`Tests\Unit\BranchReinforcementCalculatorTest` against published worked
+examples plus hand-verified fixtures (zone capping, stress-ratio
+reduction, 45° laterals, corrupt-input refusals).
+
+Step B (queued on P-24): the PMS wiring — `piping_classes` gains design
+conditions (pressure, temperature, corrosion allowance, material/design
+stress, joint factors) and a pipe-dimension reference (OD per DN, wall per
+schedule, per B36.10) becomes reachable, then the publish gate validates
+every PAD rule's recorded thickness against the calculated minimum and
+refuses `NONE` where reinforcement is actually required. Bilingual
+validation messages, same pattern as the rest of this service.

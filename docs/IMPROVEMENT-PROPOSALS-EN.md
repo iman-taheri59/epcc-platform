@@ -42,6 +42,7 @@ Last updated: **2026-10-11** (second pass — full documentation review, ~11,600
 | P-21 | Requirement / piping | Branch welds (stub-in/stub-on P2P) must be first-class joint types before weld counts and dia-inch are built | OPEN — queued for the P5 design ADR |
 | P-22 | Requirement / piping | P2P branch welds land on the header *wall*, but the joint model only connects two ports — wall-attach representation must be decided | OPEN — decision needed |
 | P-23 | Requirement / MTO | MTO has no coverage of branch-connection material: reinforcement pads (plate) and coped stub ends | OPEN — scope decision |
+| P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator built, PMS wiring queued | PARTIAL — Step A built |
 
 ---
 
@@ -382,6 +383,31 @@ which affects cut length and offcut. Neither is on any MTO list today.
 reinforcement pads as plate material rows sourced from the class rule, and
 (2) stub/cop allowance in branch-pipe length calculation. **Status:** OPEN —
 scope/commercial decision, waits for the owner per rule 5.
+
+## P-24 — ASME B31.3 §304.3.3 validation of pad thickness in the PMS (owner requirement)
+
+Recorded 2026-10-12: *«استاندارد ASME B31.3 برای محاسبه ضخامت پد فرمول و
+محاسبات را ارائه کرده؛ نیاز است از این محاسبات برای اعتبارسنجی ضخامت پد در
+PMS استفاده شود»*. The requirement text and the formulas live in ADR-008
+§9.3. Two steps:
+
+- **Step A — BUILT (2026-10-12).** `App\Services\BranchReinforcementCalculator`,
+  a pure stateless service (ADR-006 §5.4 pattern) implementing the
+  para 304.3.3 area-replacement method: zone limits `d1/d2/L4`, areas
+  `A1..A4` (pad capped by the zone, weld credit per para 328.5.4,
+  allowable-stress ratio reductions per §f(3)), PASS/FAIL verdict, margin,
+  and `requiredPadThickness()` (bisection — no closed form, Tr feeds L4).
+  Covered by `Tests\Unit\BranchReinforcementCalculatorTest`: published
+  worked example in both run-wall variants, pad recovery, zone capping,
+  stress-ratio reduction, 45° lateral, and corrupt-input refusals. Unit
+  system is caller-consistent (platform standard mm).
+- **Step B — QUEUED.** Wiring into the PMS: design conditions
+  (pressure/temperature), corrosion allowance, material design stress and
+  joint factors on `piping_classes`, plus a pipe-dimension reference
+  (B36.10 OD per DN, wall per schedule); then the publish gate validates
+  every PAD rule against the worst case of its footprint and refuses
+  `NONE` where reinforcement is required. Needs a migration + service
+  change; lands after Step A's runtime verification.
 
 ## BUILT this pass (2026-10-11)
 

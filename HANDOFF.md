@@ -2824,6 +2824,22 @@ recorded in `docs/RESEARCH-PLANT3D-PCF-P2P-BRANCHES-EN.md`. Findings:
   connection point; not a synthesised wall port. Reinforces P-23 (pads
   exist only in our class rules, invisible to Plant 3D/PCF).
 
+### 2026-10-12 (cont.) — ASME B31.3 §304.3.3 pad-thickness validation (requirement P-24, Step A built)
+
+Owner requirement: pad thickness recorded in the PMS branch table must be
+validated with the ASME B31.3 para 304.3.3 area-replacement calculation
+(A1 vs A2+A3+A4, zone limits d1/d2/L4, weld credit per 328.5.4, stress
+ratio reductions). Formulas researched against the 2004 code text and
+multiple published calculators; requirement recorded in ADR-008 §9.3.
+Built now: `App\Services\BranchReinforcementCalculator` (pure service,
+`evaluate()` + `requiredPadThickness()` bisection) with
+`Tests\Unit/BranchReinforcementCalculatorTest` — fixtures from a published
+worked example (pass/fail run-wall variants, pad recovery) plus
+hand-verified cases (zone capping, narrow pad, stress ratio, 45° lateral,
+refusals). Formulas independently re-verified with a Python mirror. Step B
+(PMS wiring: design conditions + B36.10 dimension reference on the class,
+publish-gate validation) queued on P-24 after runtime verification.
+
 ### 2026-10-11 (ninth) — piping P1 built: PMS piping classes, the EXCLUDE constraint and the branch table
 
 Continued per «فعلاً بدون انجام تست ادامه بده». ADR-008 build phases 1–2
