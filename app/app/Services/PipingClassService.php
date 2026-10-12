@@ -14,10 +14,12 @@ use App\Support\Piping\BranchReinforcement;
 use App\Support\Piping\Exceptions\BranchLargerThanHeaderException;
 use App\Support\Piping\P2pKind;
 use App\Support\Piping\Exceptions\NoRuleForSizeException;
+use App\Support\Piping\Exceptions\PadGateRefusal;
 use App\Support\Piping\PipingClassState;
 use App\Support\Piping\PipingRuleKind;
 use App\Support\Reference\Exceptions\UnknownMaterialException;
 use App\Support\Reference\MaterialReference;
+use App\Support\Reference\PipeReference;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -36,8 +38,11 @@ use Illuminate\Validation\ValidationException;
  */
 final class PipingClassService
 {
-    public function __construct(private readonly MaterialReference $materials)
-    {
+    public function __construct(
+        private readonly MaterialReference $materials,
+        private readonly PipeReference $sizes,
+        private readonly BranchConnectionPadGate $padGate,
+    ) {
     }
 
     // ------------------------------------------------------------------
@@ -363,6 +368,19 @@ final class PipingClassService
                     'A class with branch rules must carry a PIPE_MATERIAL rule covering its span.');
             }
 
+            // THE P-24 GATE: every branch-table cell is checked against the
+            // worst case of its footprint per ASME B31.3 para 304.3.3 —
+            // recorded pads must be sufficient, NONE must be genuinely
+            // adequate, and anything uncheckable is refused.
+            if ($hasBranchRules) {
+                $padViolations = $this->validateBranchPads($locked);
+                if ($padViolations !== []) {
+                    $this->fail($lang, 'branch_rules',
+                        'جدول انشعاب طبق بند 304.3.3 استاندارد ASME B31.3 مردود است: '.implode('؛ ', $padViolations),
+                        'The branch table fails ASME B31.3 para 304.3.3: '.implode('; ', $padViolations));
+                }
+            }
+
             $locked->update([
                 'state' => PipingClassState::PUBLISHED,
                 'published_at' => now(),
@@ -416,6 +434,114 @@ final class PipingClassService
     }
 
     // ------------------------------------------------------------------
+
+    /**
+     * Runs the para 304.3.3 gate over every branch rule of the class and
+     * returns human-readable violations (empty = the table is sound).
+     *
+     * @return list<string>
+     */
+    private function validateBranchPads(PipingClass $class): array
+    {
+        $violations = [];
+
+        $scheduleFor = function (int $dn) use ($class): string {
+            try {
+                $value = $this->ruleFor($class, PipingRuleKind::PIPE_SCHEDULE, $dn)->value;
+            } catch (NoRuleForSizeException) {
+                throw new PadGateRefusal("no PIPE_SCHEDULE rule covers DN{$dn}");
+            }
+
+            $schedule = $value['schedule'] ?? null;
+            if (! is_string($schedule) && ! is_int($schedule)) {
+                throw new PadGateRefusal("the PIPE_SCHEDULE rule at DN{$dn} lacks a 'schedule' value");
+            }
+
+            return (string) $schedule;
+        };
+
+        $caFor = function (int $dn) use ($class): float {
+            try {
+                $value = $this->ruleFor($class, PipingRuleKind::CORROSION_ALLOWANCE, $dn)->value;
+            } catch (NoRuleForSizeException) {
+                throw new PadGateRefusal("no CORROSION_ALLOWANCE rule covers DN{$dn}");
+            }
+
+            $ca = $value['ca_mm'] ?? null;
+            if (! is_numeric($ca) || (float) $ca < 0) {
+                throw new PadGateRefusal("the CORROSION_ALLOWANCE rule at DN{$dn} lacks a non-negative 'ca_mm' value");
+            }
+
+            return (float) $ca;
+        };
+
+        $materialFor = function (int $dn) use ($class): array {
+            try {
+                $value = $this->ruleFor($class, PipingRuleKind::PIPE_MATERIAL, $dn)->value;
+            } catch (NoRuleForSizeException) {
+                throw new PadGateRefusal("no PIPE_MATERIAL rule covers DN{$dn}");
+            }
+
+            return [
+                'spec' => (string) ($value['spec'] ?? ''),
+                'grade' => (string) ($value['grade'] ?? ''),
+                'psl' => isset($value['psl']) && is_string($value['psl']) ? $value['psl'] : null,
+                'pipe_type' => isset($value['pipe_type']) && is_string($value['pipe_type']) ? $value['pipe_type'] : null,
+                's_mpa_override' => isset($value['s_mpa_override']) && is_numeric($value['s_mpa_override']) ? (float) $value['s_mpa_override'] : null,
+                'ej_override' => isset($value['ej_override']) && is_numeric($value['ej_override']) ? (float) $value['ej_override'] : null,
+            ];
+        };
+
+        $rules = PipingClassBranchRule::where('piping_class_id', $class->id)
+            ->orderByRaw('lower(header_range) ASC, lower(branch_range) ASC')
+            ->get();
+
+        foreach ($rules as $rule) {
+            $result = $this->padGate->checkCell(
+                pressureMpa: (float) $class->design_pressure_mpa,
+                temperatureC: (float) $class->design_temperature_c,
+                headerDns: $this->dnsIn((string) $rule->header_range),
+                branchDns: $this->dnsIn((string) $rule->branch_range),
+                scheduleFor: $scheduleFor,
+                caFor: $caFor,
+                materialFor: $materialFor,
+                reinforcement: $rule->reinforcement,
+                padThickness: $rule->pad_thickness === null ? null : (float) $rule->pad_thickness,
+            );
+
+            foreach ($result['violations'] as $violation) {
+                $violations[] = sprintf(
+                    '[%s x %s %s] %s',
+                    (string) $rule->header_range, (string) $rule->branch_range,
+                    $rule->reinforcement === 'PAD' ? 'PAD '.number_format((float) $rule->pad_thickness, 3).' mm' : 'NONE',
+                    $violation
+                );
+            }
+        }
+
+        return $violations;
+    }
+
+    /**
+     * The platform's DN vocabulary (the sizes pack) intersected with a
+     * half-open range written in its canonical "[lo,hi)" text form.
+     *
+     * @return list<int>
+     */
+    private function dnsIn(string $range): array
+    {
+        if (preg_match('/^\\[(\\d+),(\\d+)\\)$/', trim($range), $m) !== 1) {
+            return [];
+        }
+
+        $lo = (int) $m[1];
+        $hi = (int) $m[2];
+
+        return array_values(array_filter(
+            array_map(static fn ($size) => $size->dn, $this->sizes->sizes()),
+            static fn (int $dn): bool => $dn >= $lo && $dn < $hi
+        ));
+    }
 
     /**
      * PIPE_MATERIAL value shape: {"spec": "A106", "grade": "B", "psl": null}
