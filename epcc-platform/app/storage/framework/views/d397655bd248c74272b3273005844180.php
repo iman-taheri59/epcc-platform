@@ -1,0 +1,20 @@
+<div class="pms-wide"><h3><?php echo e($t('units_title')); ?></h3><p class="pms-help"><?php echo e($t('units_input_help')); ?></p></div>
+<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $measurements; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $field=>$measurement): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+<fieldset class="pms-wide" style="border:1px solid var(--line);border-radius:8px;padding:14px" data-measurement-input="<?php echo e($field); ?>">
+<legend><?php echo e($t($field)); ?></legend>
+<div class="pms-grid">
+<label><?php echo e($t('units_action')); ?><select name="header[<?php echo e($field); ?>_mode]">
+<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = ['keep','set','clear']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $mode): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><option value="<?php echo e($mode); ?>" <?php if($h($field.'_mode',$measurement['mode'])===$mode): echo 'selected'; endif; ?>><?php echo e($t('units_'.$mode)); ?></option><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+</select></label>
+<label><?php echo e($t('units_entered_value')); ?><input type="text" inputmode="decimal" dir="ltr" maxlength="32" name="header[<?php echo e($field); ?>_value]" value="<?php echo e($h($field.'_value',$measurement['input_value'])); ?>" aria-describedby="<?php echo e($field); ?>-unit-help"></label>
+<label><?php echo e($t('units_entered_unit')); ?><select name="header[<?php echo e($field); ?>_unit]">
+<?php ($selectedUnit=$h($field.'_unit',$measurement['input_unit'])); ?>
+<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!in_array($selectedUnit,array_column($measurement['options'],'code'),true)): ?><option value="<?php echo e($selectedUnit); ?>" selected><?php echo e($selectedUnit); ?> · <?php echo e($t('units_stored_only')); ?></option><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $measurement['options']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $option): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><option value="<?php echo e($option['code']); ?>" <?php if($selectedUnit===$option['code']): echo 'selected'; endif; ?>><?php echo e($option['label']); ?></option><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+</select></label>
+<p class="pms-help" id="<?php echo e($field); ?>-unit-help"><?php echo e($t('units_decimal_help')); ?></p>
+<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($measurement['legacy']): ?><p class="pms-warning pms-wide"><?php echo e($t('units_legacy')); ?></p><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+</div>
+</fieldset>
+<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+<?php /**PATH /home/user/epcc-platform/app/resources/views/piping/pms-measurement-inputs.blade.php ENDPATH**/ ?>

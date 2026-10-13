@@ -1,0 +1,7 @@
+<section data-valve-summary><h4><?php echo e($t('valve_title')); ?></h4>
+<p class="pms-help"><?php echo e($t('valve_scope')); ?></p>
+<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($valveData): ?>
+<dl class="pms-pairs"><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = \App\Services\PmsValveEntryService::TEXT; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $field=>$max): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><dt><?php echo e($t('valve_'.$field)); ?></dt><dd class="pms-source" dir="auto"><?php echo e($valveData[$field]??'—'); ?></dd><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?></dl>
+<?php else: ?><p><?php echo e($t('valve_empty')); ?></p><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+</section>
+<?php /**PATH /home/user/epcc-platform/app/resources/views/piping/pms-valve-summary.blade.php ENDPATH**/ ?>

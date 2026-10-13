@@ -1,0 +1,10 @@
+<fieldset id="pms-special-editor" class="pms-wide" style="border:1px solid var(--line);border-radius:8px;padding:14px"><legend><?php echo e($t('special_title')); ?></legend>
+<label><?php echo e($t('special_mode')); ?><select name="header[special_requirements_mode]">
+<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = ['keep','replace','clear']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $mode): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><option value="<?php echo e($mode); ?>" <?php if($h('special_requirements_mode','keep')===$mode): echo 'selected'; endif; ?>><?php echo e($t('special_'.$mode)); ?></option><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+</select></label>
+<label><?php echo e($t('special_text')); ?><textarea name="header[special_requirements_text]" rows="5" maxlength="50100"><?php echo e($h('special_requirements_text',implode("\n",$specialEntries))); ?></textarea></label>
+<p class="pms-help"><?php echo e($t('special_help')); ?></p>
+<p class="pms-help"><?php echo e($t('special_scope')); ?></p>
+<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$specialValid): ?><p class="pms-warning"><?php echo e($t('special_legacy')); ?></p><?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+</fieldset>
+<?php /**PATH /home/user/epcc-platform/app/resources/views/piping/pms-special-input.blade.php ENDPATH**/ ?>
