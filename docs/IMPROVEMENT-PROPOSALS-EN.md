@@ -678,3 +678,11 @@ issued-against class revision. The better design uses an immutable class/PMS
 document revision link and an explicit deviation review instead of looking up
 `documents.current_revision_id` for old lines. ADR-028 corrected; no runtime
 revisioning is claimed.
+
+### 2026-10-13: reuse CDE for PMS document identity (BUILT, first slice)
+
+Better than a parallel `pms_documents` register: use the existing numbered,
+revisioned CDE document with a distinct PMS type, preserving its audit and
+approval state machine. The service rejects a non-PIPING PMS regardless of
+HTTP validation. This does not replace the needed class-to-revision mapping
+or authorize any line; see ADR-028.

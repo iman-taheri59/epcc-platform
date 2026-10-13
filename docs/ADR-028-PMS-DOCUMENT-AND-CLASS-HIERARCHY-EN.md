@@ -39,3 +39,14 @@ Choose a concrete class-specification revision key/link to `document_revisions` 
 ## Falsifiers / acceptance evidence
 
 Demonstrate two distinct classes under one PMS revision, a class under a second revision with changed schedule without changing an old line's resolved result, and a new line refused for (a) class without PMS link, (b) wrong project, (c) draft class, and (d) unapproved PMS revision. Verify cross-tenant denial and that a document with one valid class cannot accidentally authorize another class absent from that revision. No skips in PostgreSQL CI.
+
+## First implementation slice (2026-10-13)
+
+The existing CDE register now offers a distinct `PMS` document type for the
+`PIPING` discipline. Registration creates a numbered document and WIP revision
+through the existing CDE state machine; a PMS in another discipline is refused
+by the service, including non-HTTP callers. The first revision is NOT
+approved, cannot authorize a line and contains **no class membership yet**.
+A focused PostgreSQL feature test covers numbering, WIP/non-approval and
+wrong-discipline refusal. No class link, snapshot, line selection gate or PMS
+authoring policy enforcement is claimed by this slice. CI verification pending.

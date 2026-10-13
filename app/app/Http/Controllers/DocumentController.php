@@ -41,7 +41,7 @@ final class DocumentController extends Controller
     ];
 
     /** Deliverable types (FR-ENG-01). */
-    private const DOC_TYPES = ['DWG', 'SPEC', 'DS', 'CALC', 'MTO', 'RPT', 'PID', 'ITP'];
+    private const DOC_TYPES = ['DWG', 'SPEC', 'DS', 'CALC', 'MTO', 'RPT', 'PID', 'ITP', 'PMS'];
 
     public function __construct(
         private readonly TenantContext $tenant,

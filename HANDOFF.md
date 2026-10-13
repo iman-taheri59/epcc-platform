@@ -4016,3 +4016,12 @@ revisions are immutable and impact/deviation reporting exposes old lines.
 ADR-028 corrected to remove the duplicate question and explicitly tie the
 pinned class revision to its immutable PMS document revision. Current code
 still lacks document-to-class/version links and gate; no claim of enforcement.
+
+## 2026-10-13 PMS CDE registration slice
+
+Added `PMS` to the existing CDE document-type picklist and service-validated
+PIPING discipline. A new PMS starts WIP/unapproved like every other CDE
+revision; no class is auto-created, attached or approved. Focused
+DocumentRegisterTest covers number, state and wrong discipline. ADR-028
+updated. This is a real document identity but NOT the class-membership,
+version-pinning or line admissibility gate; CI pending.

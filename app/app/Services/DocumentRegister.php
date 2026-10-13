@@ -69,6 +69,14 @@ final class DocumentRegister
         return DB::transaction(function () use ($project, $user, $data): Document {
             $discipline = strtoupper($data['discipline']);
             $docType = strtoupper($data['doc_type']);
+            // PMS is a piping engineering document, not a class row or a
+            // generic specification with an inferred discipline.
+            if ($docType === 'PMS' && $discipline !== 'PIPING') {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'discipline' => 'A PMS document belongs to the PIPING discipline.',
+                ]);
+            }
+
 
             $document = Document::create([
                 'project_id' => $project->id,
