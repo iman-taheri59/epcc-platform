@@ -53,3 +53,13 @@ The prior diagnosis that the parallel session lacked a compatible schema was **i
 The recovered migration **passes** on PostgreSQL, as does the screening snapshot migration. The next migration, `2026_09_29_235700_create_pms_author_policies.php`, now fails SQLSTATE 42P01: `pms_entry_events` does not exist. The archived predecessor `2026_09_29_235000_add_pms_entry_provenance.php` belongs to the parallel PMS schema, which conflicts with this branch's independent ADR-008 classes/rules (both chains create `piping_class_rules`). The ported 235700 migration additionally alters `piping_class_notes` policies and installs an event trigger on `pms_entry_events`, neither of which is present on our PMS. **Do not import the parallel PMS chain or silently drop authorization triggers.** Extracting only the standalone `pms_author_policies` table/lookup for MR requires a new, explicit PMS-authoring boundary and tests, or defer this policy feature. The missing 150000 recovery was valid, but cannot by itself make the *whole* integration green.
 
 **Resolution of the next migration blocker:** ADR-026 adapts 235700 as a standalone nomination policy on this branch. This is *not* the parallel event-authoring gate, which remains unimplemented on our PMS write paths. CI verification remains pending.
+
+### 2026-10-13 CI follow-up
+
+Run 38372294654 identified two `FittingDimensionsTest` methods that still
+instantiate `PipingClassItem` and `PipingClassBody` from the absent parallel
+PMS schema. Those two tests are removed from the current reader suite; the
+read-only pack tests and `FittingReviewTest` workflow coverage remain. The
+reader itself is now wired to the existing Laravel reference directory and
+shared pipe-size resolver. Recreating the absent PMS models just to satisfy
+the tests would mask the schema boundary described in this ADR.

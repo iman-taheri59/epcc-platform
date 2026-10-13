@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Models\PipingClassItem;
-use App\Services\PipingClassBody;
 use App\Support\Reference\FittingDimensions;
 use App\Support\Reference\PipeReference;
 use RuntimeException;
@@ -75,52 +73,9 @@ final class FittingDimensionsTest extends TestCase
         }
     }
 
-    private function item(array $overrides = []): PipingClassItem
-    {
-        return new PipingClassItem(array_replace([
-            'component_type' => 'ELBOW', 'qualifier' => '90LR', 'nps' => '6', 'dn' => 150,
-            'dimensional_standard' => 'ASME B16.9-2018', 'end_type' => 'BW',
-            'description_as_written' => 'Original PMS row, do not rewrite.',
-            'source_ref' => 'Demo sheet 2, row 7',
-        ], $overrides));
-    }
-
-    public function test_pms_consumer_preserves_source_and_returns_provenance_not_cut_length(): void
-    {
-        $item = $this->item();
-        $before = $item->getAttributes();
-        $result = app(PipingClassBody::class)->fittingDimensionForItem($item);
-        self::assertSame('AVAILABLE', $result['status']);
-        self::assertSame('CENTRE_TO_END', $result['row']['dimension']);
-        self::assertSame('Table 6.1-1', $result['row']['sourceTable']);
-        self::assertSame($before, $item->getAttributes());
-        self::assertFalse($item->exists);
-    }
-
-    public function test_pms_consumer_requires_compatible_standard_end_size_and_explicit_radius(): void
-    {
-        $cases = [
-            [['dimensional_standard' => null], 'STANDARD_UNSPECIFIED'],
-            [['dimensional_standard' => 'B16.11'], 'STANDARD_NOT_COVERED'],
-            [['dimensional_standard' => 'B16.9-2024'], 'EDITION_NOT_COVERED'],
-            [['end_type' => 'SW'], 'END_TYPE_NOT_COVERED'],
-            [['end_type' => null], 'END_TYPE_UNSPECIFIED'],
-            [['dn' => 100], 'SIZE_CONFLICT'],
-            [['nps' => 'n/a'], 'SIZE_INVALID'],
-            [['qualifier' => '45'], 'RADIUS_UNSPECIFIED'],
-        ];
-        foreach ($cases as [$attrs, $reason]) {
-            $item = $this->item($attrs);
-            $before = $item->getAttributes();
-            $result = app(PipingClassBody::class)->fittingDimensionForItem($item);
-            self::assertSame($reason, $result['reason']);
-            self::assertNull($result['row']);
-            self::assertSame($before, $item->getAttributes());
-        }
-        self::assertSame('AVAILABLE', app(PipingClassBody::class)->fittingDimensionForItem(
-            $this->item(['component_type' => 'CAP', 'qualifier' => null, 'dimensional_standard' => 'B16.9']), 10.92, 'Demo approved thickness specification',
-        )['status']);
-    }
+    // The former PipingClassItem/PipingClassBody consumer tests belonged to
+    // the parallel PMS schema, which is not part of this branch. Reader and
+    // current project-fitting workflow tests remain active separately.
 
     public function test_corrupted_packs_fail_loudly_and_do_not_cache_partial_rows(): void
     {

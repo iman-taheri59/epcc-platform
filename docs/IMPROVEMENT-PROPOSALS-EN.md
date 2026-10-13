@@ -613,3 +613,11 @@ to retain the runtime guards and exercise the published table only within its
 applicable range; tests now specify PSL and use <=816 C for TP304. W examples
 were corrected to the committed 302.3.5 pack row rather than changing pack
 values to satisfy stale literals. CI revalidation is pending.
+
+### 2026-10-13: exact tabulated factors beside dashed columns (BUILT)
+
+Interpolation must refuse a dashed interval, but an exact published endpoint
+must not be refused merely because the preceding entry is a dash. The factor
+reader now checks exact temperature columns first, then interpolates only
+between two non-dash entries. This preserves the safety guard while making
+CSEF W at 510 C readable. CI verification pending.

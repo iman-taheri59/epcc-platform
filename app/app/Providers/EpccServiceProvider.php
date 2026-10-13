@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Services\StandardsPackRepository;
+use App\Support\Reference\FittingDimensions;
 use App\Support\Reference\FlangeRatingReference;
 use App\Support\Reference\MaterialReference;
 use App\Support\Reference\PipeReference;
@@ -41,6 +42,15 @@ final class EpccServiceProvider extends ServiceProvider
             MaterialReference::class,
             fn (): MaterialReference => new MaterialReference(
                 (string) config('epcc.reference_dir', base_path('../standards-packs/reference')),
+            ),
+        );
+
+        // B16.9 dimensions: one read-only pack and the shared NPS resolver.
+        $this->app->singleton(
+            FittingDimensions::class,
+            fn (): FittingDimensions => new FittingDimensions(
+                (string) config('epcc.reference_dir', base_path('../standards-packs/reference')),
+                $this->app->make(PipeReference::class),
             ),
         );
 

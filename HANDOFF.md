@@ -3846,3 +3846,15 @@ See `docs/PRE-WORK-BRANCH-INTEGRATION-REVIEW-EN.md` for boundaries.
   Corrected only the test cases to exercise valid temperatures and explicit
   PSL selection; CI verification pending. Never infer approval from an
   out-of-range column or silently select a PSL.
+
+- CI run 38372294654 completed: five non-Laravel jobs green; Laravel red.
+  The repeated-migration trigger error is gone. Remaining annotations: missing
+  DI binding for FittingDimensions; two tests calling absent parallel-PMS
+  `PipingClassItem` / `PipingClassBody`; and an exact CSEF W=1.0 column at
+  510 C rejected because the interpolation routine examined its preceding
+  dashed column first. Bound the reader using the same reference directory
+  and PipeReference as other readers; fixed exact-column lookup before
+  interpolation; removed **only** the two impossible parallel-consumer tests
+  from the reader test while retaining pack and current fitting-review tests.
+  CI verification of this set pending. No missing parallel PMS table/model was
+  fabricated and no engineering applicability guard was relaxed.
