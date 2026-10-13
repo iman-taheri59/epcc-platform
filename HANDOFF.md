@@ -3639,6 +3639,19 @@ byte-for-byte; no ad-hoc columns or RLS weakening. ADR-025 corrected;
 full CI rerun required, and presentation/model-import work remains out of
 scope.
 
+### 2026-10-12 (cont.) — Missing predecessor recovered; next PMS schema conflict exposed
+
+PR #7 CI run 38347536130 confirmed `2026_09_29_150000` and the
+screening snapshot migration now migrate successfully. Next failure is
+`2026_09_29_235700_create_pms_author_policies`: absent
+`pms_entry_events` (SQLSTATE 42P01). The archived 235000 predecessor
+belongs to parallel PMS schema and cannot be copied over our independent
+ADR-008 PMS; 235700 also alters absent `piping_class_notes` and installs
+an author event guard. Do not weaken authorization by simply skipping
+those guards. ADR-025 records need for a separated policy design or
+deferral. Other CI jobs (standards, prototype, pure PCF, image) pass;
+Laravel suite still has not started.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,
