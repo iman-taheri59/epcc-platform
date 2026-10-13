@@ -3625,6 +3625,20 @@ real integration defect, not a test-green state. PR #7 stays open and
 unmerged pending an owner decision on general material screening vs the
 existing CAP/ELBOW fitting table.
 
+### 2026-10-12 (cont.) — Parallel branch supplied the missing screening predecessor
+
+Owner asked to inspect previous-session branch. In the `workspace` ZIP,
+found `2026_09_29_150000_extend_project_material_declarations.php` and
+`ProjectMaterialSchema.php`, both omitted by the earlier selective port.
+They supply exactly the `material_family`/`size_designation`/properties
+columns and family-aware review policy expected by migration 180000 and
+ported services. Previous ADR-025 diagnosis of an *inherent* incompatible
+schema was too strong: the immediate CI failure was an incomplete dependency
+chain. Copied those files and the original populated migration test
+byte-for-byte; no ad-hoc columns or RLS weakening. ADR-025 corrected;
+full CI rerun required, and presentation/model-import work remains out of
+scope.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,

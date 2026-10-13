@@ -1,6 +1,6 @@
 # ADR-025 — Ported fitting/screening schema conflict exposed by GitHub CI
 
-Status: BLOCKED — owner design decision required; no unsafe migration rewrite
+Status: ROOT CAUSE FOUND — omitted parallel predecessor migration and schema service; ported, CI verification pending
 Date: 2026-10-12
 Related: P-25 steps 2+3, ADR-021
 
@@ -43,3 +43,7 @@ without masking the defect. A new independent CI job runs the three pure PCF
 test classes without migrating, allowing verification of the read-only parser
 while full Laravel integration is blocked. No production-safe assertion about
 ported screening or fitting review can be made until migrations and tests pass.
+
+## Follow-up discovery after inspecting the actual workspace archive
+
+The prior diagnosis that the parallel session lacked a compatible schema was **incorrect**. The archive contains exactly the omitted predecessor `2026_09_29_150000_extend_project_material_declarations.php` (chronologically between the review and snapshot migrations) and `ProjectMaterialSchema.php`. It expands the dimensional `project_fitting_definitions` table into a discriminated FITTING/PIPE/FLANGE/VALVE/GASKET/BOLTING declaration with family-aware checks and review policies, preserving existing fitting rows. The port had copied migration 090000 and 180000 but skipped 150000; its services already call `ProjectMaterialSchema` although that class was missing. Copied the missing migration, service and original populated-upgrade `MaterialMigrationTest` verbatim. This restores the *original* parallel migration order rather than inventing nullable columns or weakening RLS. The earlier recommendation for a separate material table is an architectural alternative, **not** a prerequisite already approved by the owner. CI must now verify this recovery; until then the full workflow remains unverified, including absent HTTP presentation and other parallel modules.

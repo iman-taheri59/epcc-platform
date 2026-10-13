@@ -114,3 +114,5 @@ instead of a forced merge.
   record for anything not yet ported.
 
 **CI correction (PR #7):** step 2+3 is NOT verified as portable: ADR-025 documents the general-material vs dimensional-fitting schema collision in screening evidence migration. Full Laravel migration and compose bootstrap are blocked; no false green claim.
+
+**Recovery correction:** the `2026_09_29_150000` predecessor migration and `ProjectMaterialSchema` existed in the parallel archive but were omitted in our step-2+3 port. Restored verbatim with original `MaterialMigrationTest`; ADR-025 records corrected diagnosis and CI gate.
