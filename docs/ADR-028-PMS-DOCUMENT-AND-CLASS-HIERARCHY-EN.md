@@ -50,3 +50,7 @@ approved, cannot authorize a line and contains **no class membership yet**.
 A focused PostgreSQL feature test covers numbering, WIP/non-approval and
 wrong-discipline refusal. No class link, snapshot, line selection gate or PMS
 authoring policy enforcement is claimed by this slice. CI verification pending.
+
+CI verification: run 38443239928 for `186707a` passed all six jobs, including
+the PostgreSQL DocumentRegisterTest. This confirms the document registration
+slice only, not the class/revision mapping or line/adoption gates.

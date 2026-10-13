@@ -4025,3 +4025,9 @@ revision; no class is auto-created, attached or approved. Focused
 DocumentRegisterTest covers number, state and wrong discipline. ADR-028
 updated. This is a real document identity but NOT the class-membership,
 version-pinning or line admissibility gate; CI pending.
+
+- **CI run 38443239928 for commit `186707a`: all six jobs green**, including
+  Laravel/PostgreSQL/RLS and the new PMS CDE registration test. This verifies
+  only typed PMS document registration/WIP state. No classes are yet linked to
+  PMS revisions, no line eligibility based on document approval is enforced,
+  and PMS author nomination still does not protect write paths.
