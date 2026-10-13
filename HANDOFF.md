@@ -4044,3 +4044,10 @@ suspension, direct reparenting and non-PMS refusal. This is intentionally
 **not** a class-to-issued-revision snapshot or a full direct-SQL author gate;
 prior classes remain unbound. Do not enforce the line prerequisite on this
 identity alone. CI pending.
+
+- CI run 38448258557 for `0740657`: **all six jobs passed**, including the
+  PostgreSQL/RLS Laravel suite and new PmsClassDocumentTest. Verified scope is
+  WIP PMS document identity binding, not immutable class-specification
+  revisions or approved-document line admission. Direct SQL attaching an
+  otherwise valid unassigned class still bypasses the service's nomination
+  check; full authoring protection remains explicitly unbuilt.

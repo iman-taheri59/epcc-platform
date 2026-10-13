@@ -73,3 +73,9 @@ The class rule set is still not snapshotted into `document_revisions`, approved
 PMS revisions still do not authorize line registration and direct SQL can
 still attach a *valid* unassigned class without the nomination service. Do
 not call this a complete PMS authoring gate; CI verification pending.
+
+CI run 38448258557 for `0740657` passed all six jobs, including the new
+PostgreSQL/RLS binding tests. The next slice must attach an immutable class
+rules snapshot to a specific PMS `document_revision_id`, then pin admitted
+lines to that approved class snapshot. Do not use `pms_document_id` alone as
+revision evidence.
