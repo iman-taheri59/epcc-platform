@@ -218,6 +218,10 @@ jobs:
           CREATE ROLE epcc LOGIN PASSWORD 'epcc_dev';
           CREATE DATABASE epcc OWNER epcc;
           CREATE DATABASE epcc_test OWNER epcc;
+          \connect epcc
+          CREATE EXTENSION IF NOT EXISTS btree_gist;
+          \connect epcc_test
+          CREATE EXTENSION IF NOT EXISTS btree_gist;
           SQL
           # Prove the posture the whole tenancy model depends on: a superuser
           # would bypass RLS and the fail-closed assertions would go red.

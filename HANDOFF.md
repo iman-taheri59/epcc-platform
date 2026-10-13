@@ -3673,6 +3673,16 @@ matching original delegation; no table or tenant column fabricated.
 Other jobs remain green. Next GitHub CI run determines whether full PHPUnit
 can finally start; no success claim until then.
 
+### 2026-10-12 (cont.) — CI database prerequisite provisioned
+
+PR #7 run 38361586890 migrated through the RLS fix and reached PMS P1,
+which correctly refused to proceed without `btree_gist`. Updated GitHub
+CI database bootstrap and Docker Compose PostgreSQL init to install the
+extension as `postgres` administrator in both epcc and epcc_test; app
+role remains non-superuser and migrations do not CREATE EXTENSION.
+Existing Docker volumes need a one-time DBA extension install (init runs
+only for fresh volumes). Full PHPUnit remains pending next run.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,

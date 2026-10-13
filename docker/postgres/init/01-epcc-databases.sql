@@ -42,7 +42,10 @@ CREATE DATABASE epcc_test OWNER epcc;
 -- second role (a read-only reporter, a migration user) must not inherit
 -- write access by accident.
 \connect epcc
+-- Installed by the bootstrap superuser, never by the RLS-bound app role.
+CREATE EXTENSION IF NOT EXISTS btree_gist;
 GRANT ALL ON SCHEMA public TO epcc;
 
 \connect epcc_test
+CREATE EXTENSION IF NOT EXISTS btree_gist;
 GRANT ALL ON SCHEMA public TO epcc;
