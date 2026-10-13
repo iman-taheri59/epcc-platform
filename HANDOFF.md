@@ -3810,3 +3810,11 @@ fixture and its standalone assertions from nested `pre-work` tip `878d34f`.
 Wired it into CI's PHP standards job and the local degraded runner; no Laravel
 schema/service was replaced. Local PHP unavailable; CI verification pending.
 See `docs/PRE-WORK-BRANCH-INTEGRATION-REVIEW-EN.md` for boundaries.
+
+- CI run 38368929870 (commit `4083be8`): the independent standards job,
+  including the recovered screening regression and JSON/HTML CLI smoke, is
+  green; prototype, pure PCF, development image and compose are also green.
+  Laravel job was still running at the last check. Prior run 38362372660 had
+  reached PHPUnit but failed on legacy `piping_classes.name_en` inserts and
+  unrelated material-reference expectation errors; do not claim the whole
+  suite is green. See GitHub Actions for the final run result.

@@ -34,3 +34,7 @@ migrations; the degraded sandbox test runner includes the standalone test when
 PHP is available. JSON syntax and `git diff --check` pass locally; PHP is not
 installed in this sandbox, so CI is the first executable confirmation. This
 addition does not expose a web route, approve a material or grant PMS access.
+
+CI run 38368929870 reached a successful **standards** job (including the
+recovered standalone test and CLI JSON/HTML smoke). The full Laravel job was
+still in progress when checked; this does not establish full-suite success.
