@@ -482,3 +482,13 @@ temperature. Covered by `Tests\Unit\FlangeRatingReferenceTest` (pack
 anchors: A105 Class 150 = 19.6 bar at <=38 deg C, the classic 285 psig)
 and `Tests\Feature\PipingFlangeRatingGateTest`. B16.47 large-diameter
 tables and Section II Part D extensions remain follow-ups.
+
+### 2026-10-13 domain correction (ADR-028)
+
+PMS is an **engineering specification document that includes one or more
+piping classes**. The class/rule tables implemented here model its technical
+content only; they do not model the PMS document, its issued revisions, or the
+membership of each class specification in a revision. `PUBLISHED` on a class
+is a technical gate, not evidence of CDE document approval. Do not describe
+this implementation as a complete PMS document or use class publication alone
+to infer a governing document revision for line registration. See ADR-028.

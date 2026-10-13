@@ -3990,3 +3990,16 @@ PipingLineHttpTest; flipping the runtime guard alone would leave CI red. Next
 implementation slice: migration preflight/backstop + service/HTTP validation
 and published-class fixtures, with PostgreSQL positive/negative tests. No
 runtime change was made in this decision-recording step.
+
+## 2026-10-13 correction: PMS is a document, not one class
+
+Owner explicitly clarified PMS is an engineering specification document
+containing one or more piping classes. ADR-028 records the hierarchy and the
+missing document/revision links. Current P1 class/rule publication does not
+prove a governing PMS document revision was issued/approved; previous
+class-before-line decision remains, but document-state threshold and revision
+pinning need confirmation. No schema or gate was invented in response. Audit
+CDE documents/revisions before implementing the line prerequisite or authoring
+policy. Recommendation: reuse CDE for document identity, pin class rule
+snapshots to issued revisions and lines to the selected revision; never mutate
+prior issue evidence. This is PROPOSED, not shipped.

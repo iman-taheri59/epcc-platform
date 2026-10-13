@@ -85,3 +85,15 @@ existing null-class rows: the project currently has no important production
 data, but the migration must fail loudly rather than silently deleting or
 fabricating mappings. Update old tests that constructed DRAFT classes solely
 as fixture shortcuts. Preserve the AFC evidence gate and import-tag fidelity.
+
+## Superseding domain correction (ADR-028, 2026-10-13)
+
+The owner clarified that PMS is **one engineering specification document with
+one or more piping classes**. The earlier shorthand treating the PMS class
+register itself as the entire PMS is incomplete. Do not implement an
+activation event as if it replaced document/revision membership. ADR-028 adds
+required document-to-class-revision traceability, CDE lifecycle questions and
+line revision pinning. Option C's shared class identity may still be useful,
+but class publication alone is insufficient evidence that its governing PMS
+revision is approved. The strict class-before-line decisions remain accepted;
+the document approval threshold is awaiting the owner's decision.
