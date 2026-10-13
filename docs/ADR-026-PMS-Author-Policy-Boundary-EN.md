@@ -17,3 +17,7 @@ Adapt 235700 to keep only `pms_author_policies`, its owner/participant RLS, appe
 ## Verification
 
 Migration and `PmsAuthorPolicyTest` require the GitHub Actions PostgreSQL/RLS job. The earlier CI blocker should be removed; further integration failures may become visible and must be fixed independently. The policy does not depend on or substitute for MR-specific `mr_author_policies` — those remain separate. No production migration rollbacks are promised for append-only policy history.
+
+## First CI result after adaptation (run 38361131058)
+
+Migration 235700 now passes. The next unrelated blocker is `2026_10_11_110000_make_rls_project_scope_sargable.php`: its generic `STANDARD_CHECK` assumes `mto_staging_rows.company_id`, but that child table has no such column. Its original RLS delegated through `mto_revisions`. Fixed the sargability migration with an explicit staging policy preserving parent revision and project/participant checks (no fabricated column). This is an adjacent CI-discovered schema defect, not a reason to weaken PMS policy isolation. Full PHPUnit still awaits a clean migration.

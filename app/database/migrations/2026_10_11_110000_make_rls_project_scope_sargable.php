@@ -75,7 +75,6 @@ return new class extends Migration
         'piping_test_packs',
         'mto_documents',
         'mto_revisions',
-        'mto_staging_rows',
         'accepted_mto_batches',
         'accepted_mto_rows',
         'engineering_estimate_rows',
@@ -162,6 +161,23 @@ return new class extends Migration
         foreach (self::STANDARD_TABLES as $table) {
             $policies[$table] = ['using' => $participation, 'check' => self::STANDARD_CHECK];
         }
+
+        // Staging rows have no company_id: their original policy delegated
+        // tenant access to the parent mto_revisions row. Preserve that shape
+        // with an explicit matching project and participant check, rather than
+        // applying STANDARD_CHECK to a column this child table does not have.
+        $policies['mto_staging_rows'] = [
+            'using' => <<<SQL
+                {$participation}
+                AND EXISTS (SELECT 1 FROM mto_revisions r
+                    WHERE r.id = {T}.mto_revision_id AND r.project_id = {T}.project_id)
+            SQL,
+            'check' => <<<SQL
+                {$participation}
+                AND EXISTS (SELECT 1 FROM mto_revisions r
+                    WHERE r.id = {T}.mto_revision_id AND r.project_id = {T}.project_id)
+            SQL,
+        ];
 
         // work_packages / payment_certificates (migration 2026_09_09_110000).
         foreach (['work_packages', 'payment_certificates'] as $table) {

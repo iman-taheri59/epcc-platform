@@ -3663,6 +3663,16 @@ nomination, suspension, immutable history). ADR-026 explicitly notes that
 fully enforced PMS authoring permission. Next GitHub CI must migrate/test;
 subsequent write-path integration is a separate step.
 
+### 2026-10-12 (cont.) — PMS policy migration green, next RLS defect fixed
+
+PR #7 run 38361131058 confirmed adapted 235700 migrates. Laravel stopped
+later at ADR-012 sargable RLS migration: generic STANDARD_CHECK referenced
+nonexistent `mto_staging_rows.company_id` (SQLSTATE 42703). Corrected the
+child policy to use parent `mto_revisions` and project/participant check,
+matching original delegation; no table or tenant column fabricated.
+Other jobs remain green. Next GitHub CI run determines whether full PHPUnit
+can finally start; no success claim until then.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,
