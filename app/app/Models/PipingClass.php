@@ -20,7 +20,7 @@ final class PipingClass extends Model
 
     protected $fillable = [
         'project_id', 'company_id', 'code', 'name_en', 'name_fa',
-        'state', 'dn_span', 'design_pressure_mpa', 'design_temperature_c',
+        'state', 'dn_span', 'fluid_service_category', 'design_pressure_mpa', 'design_temperature_c',
         'published_at', 'published_by',
     ];
 

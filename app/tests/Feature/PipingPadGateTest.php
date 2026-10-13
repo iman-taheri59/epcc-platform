@@ -94,6 +94,7 @@ final class PipingPadGateTest extends TestCase
             $this->classes->addRule($this->project(), $this->user(), $class, PipingRuleKind::CORROSION_ALLOWANCE, 15, 250, ['ca_mm' => 1.5], 'en');
             $this->classes->addRule($this->project(), $this->user(), $class, PipingRuleKind::CORROSION_ALLOWANCE, 250, 600, ['ca_mm' => 3.0], 'en');
             $this->classes->addRule($this->project(), $this->user(), $class, PipingRuleKind::PIPE_MATERIAL, 15, 600, $material, 'en');
+            $this->classes->setFluidServiceCategory($this->project(), $this->user(), $class, 'NORMAL', 'en');
             $this->classes->setDesignBasis($this->project(), $this->user(), $class, 3.0, 200.0, 'en');
 
             return $class;

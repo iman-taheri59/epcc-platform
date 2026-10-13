@@ -10,6 +10,7 @@ use App\Models\PipingClassRule;
 use App\Models\Project;
 use App\Models\User;
 use App\Support\Piping\BranchConnectionType;
+use App\Support\Piping\FluidServiceCategory;
 use App\Support\Piping\BranchReinforcement;
 use App\Support\Piping\Exceptions\BranchLargerThanHeaderException;
 use App\Support\Piping\P2pKind;
@@ -85,6 +86,26 @@ final class PipingClassService
 
             throw $e;
         }
+    }
+
+    /** Set the single B31.3 §300.2 fluid-service classification of a draft. */
+    public function setFluidServiceCategory(
+        Project $project,
+        User $user,
+        PipingClass $class,
+        string $category,
+        string $lang = 'fa',
+    ): PipingClass {
+        $this->assertDraft($class, $lang);
+        if (! in_array($category, FluidServiceCategory::ALL, true)) {
+            $this->fail($lang, 'fluid_service_category',
+                'دسته سرویس سیال نامعتبر است.',
+                'Unknown fluid-service category.');
+        }
+
+        $class->update(['fluid_service_category' => $category]);
+
+        return $class->refresh();
     }
 
     /**
@@ -397,6 +418,12 @@ final class PipingClassService
                         'جدول انشعاب طبق بند 304.3.3 استاندارد ASME B31.3 مردود است: '.implode('؛ ', $padViolations),
                         'The branch table fails ASME B31.3 para 304.3.3: '.implode('; ', $padViolations));
                 }
+            }
+
+            if ($locked->fluid_service_category === null) {
+                $this->fail($lang, 'fluid_service_category',
+                    'دسته سرویس سیال باید پیش از انتشار کلاس مشخص شود.',
+                    'Fluid-service category must be selected before publishing.');
             }
 
             $locked->update([

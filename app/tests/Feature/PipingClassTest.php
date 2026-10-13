@@ -75,10 +75,15 @@ final class PipingClassTest extends TestCase
     /** Create a draft class spanning [15,600). */
     private function makeClass(string $code = 'ASME-B16.1'): PipingClass
     {
-        return $this->asPars(fn () => $this->classes->create(
-            $this->project(), $this->user(), $code, 'Class '.$code, 'کلاس '.$code,
-            15, 600, 'en'
-        ));
+        return $this->asPars(function () use ($code): PipingClass {
+            $class = $this->classes->create(
+                $this->project(), $this->user(), $code, 'Class '.$code, 'کلاس '.$code,
+                15, 600, 'en'
+            );
+            $this->classes->setFluidServiceCategory($this->project(), $this->user(), $class, 'NORMAL', 'en');
+
+            return $class;
+        });
     }
 
     // ------------------------------------------------------------------
@@ -158,6 +163,31 @@ final class PipingClassTest extends TestCase
     // The publish gate
     // ------------------------------------------------------------------
 
+    public function test_publish_requires_one_valid_fluid_service(): void
+    {
+        $class = $this->asPars(fn () => $this->classes->create(
+            $this->project(), $this->user(), 'FLUID-CLS', 'Fluid', 'سیال', 15, 600, 'en'
+        ));
+        $this->asPars(function () use ($class): void {
+            $this->classes->addRule($this->project(), $this->user(), $class, PipingRuleKind::PIPE_SCHEDULE, 15, 600, ['schedule' => '40'], 'en');
+            $this->classes->setDesignBasis($this->project(), $this->user(), $class, 3.0, 200.0, 'en');
+        });
+        try {
+            $this->asPars(fn () => $this->classes->publish($this->project(), $this->user(), $class, 'en'));
+            $this->fail('Missing classification must not publish.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('fluid_service_category', $e->errors());
+        }
+        try {
+            $this->asPars(fn () => $this->classes->setFluidServiceCategory($this->project(), $this->user(), $class, 'SEVERE_CYCLIC', 'en'));
+            $this->fail('A condition is not a fluid service.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('fluid_service_category', $e->errors());
+        }
+        $this->asPars(fn () => $this->classes->setFluidServiceCategory($this->project(), $this->user(), $class, 'CATEGORY_D', 'en'));
+        $this->assertSame('CATEGORY_D', $this->asPars(fn () => $class->fresh()->fluid_service_category));
+    }
+
     public function test_publish_refuses_a_gapped_class_and_accepts_a_complete_one(): void
     {
         // Span [15,250) with a hole at DN100..DN150.
@@ -189,6 +219,7 @@ final class PipingClassTest extends TestCase
             $this->project(), $this->user(), $gapped, 3.0, 200.0, 'en'
         ));
 
+        $this->asPars(fn () => $this->classes->setFluidServiceCategory($this->project(), $this->user(), $gapped, 'NORMAL', 'en'));
         $published = $this->asPars(fn () => $this->classes->publish($this->project(), $this->user(), $gapped, 'en'));
 
         $this->assertSame(PipingClassState::PUBLISHED, $published->state);

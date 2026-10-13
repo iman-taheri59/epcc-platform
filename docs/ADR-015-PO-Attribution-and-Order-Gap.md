@@ -144,3 +144,16 @@ starts against a screen already reviewed with the user.
 - **Surface:** `OrderGapController`, routes `procurement.order-gap` (+ `.attribute` / `.amend` / `.allocate`), view `procurement/order-gap.blade.php`, sidebar item `project.ordergap` (module `proc`).
 - **Effective predicate:** `ISSUED` ∨ `PARTIALLY_RECEIVED` — issued and not cancelled (same membership as `ProcurementState::poAcceptsReceipts`); no new state vocabulary was introduced, and `AMENDED` exists only as a lineage relation, not a state.
 - **Tests:** `tests/Feature/OrderGapTest.php` (10 tests) implements §7 in full. Status: written 2026-10-11; runtime verification pending on the owner's Laragon machine.
+
+## 10. Current limitation discovered in the 2026-10-12 documentation audit
+
+The service's `board()` currently aggregates **all** accepted MTO rows for the
+project; it does not select the effective accepted revision of each document or
+block summation of overlapping physical scopes. With multiple accepted
+revisions/sub-MTOs its gross side can double-count demand. The single-revision
+tests written in §9 do not verify the accepted cross-document rules in
+`docs/MTO-REQUIREMENTS-EN.md` §3.5–3.6. Treat the board as a limited first
+slice, **not** a completed implementation of the full order-gap definition for
+multiple revisions/scopes. ADR-024 records the already-approved effective
+revision, scope-overlap and additivity rules and the pending implementation.
+No runtime re-verification has been performed here.

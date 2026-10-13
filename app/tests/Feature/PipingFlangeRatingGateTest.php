@@ -86,6 +86,7 @@ final class PipingFlangeRatingGateTest extends TestCase
             $this->classes->addRule($this->project(), $this->user(), $class, PipingRuleKind::PIPE_SCHEDULE, 15, 600, ['schedule' => '40'], 'en');
             $this->classes->addRule($this->project(), $this->user(), $class, PipingRuleKind::CORROSION_ALLOWANCE, 15, 600, ['ca_mm' => 1.5], 'en');
             $this->classes->addRule($this->project(), $this->user(), $class, PipingRuleKind::PIPE_MATERIAL, 15, 600, ['spec' => 'A106', 'grade' => 'B'], 'en');
+            $this->classes->setFluidServiceCategory($this->project(), $this->user(), $class, 'NORMAL', 'en');
             $this->classes->setDesignBasis($this->project(), $this->user(), $class, $designMpa, $designTempC, 'en');
 
             return $class;

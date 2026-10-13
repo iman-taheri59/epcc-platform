@@ -3465,6 +3465,123 @@ ADR-019 updated with decision and scope. `StandardsPackRepository` untouched.
 No tests run here per owner's instruction. Laragon gate:
 `php artisan migrate:fresh --force && php artisan db:seed --class=EpccDemoSeeder && php artisan db:seed --class=AuthSeeder && php artisan test --filter=StandardsCatalogueTest`.
 
+### 2026-10-12 (cont.) — P-25 step 6: PMS field-group design checkpoint
+
+Owner asked to continue while runtime tests remain pending. Wrote
+`docs/ADR-020-PMS-Field-Groups-Reconciliation-EN.md`, a proposed
+four-group reconciliation for fluid-service classification, severe-cyclic
+condition, material identity keys and NDT requirements on OUR PMS schema.
+Recommended first group: fluid service (A), subject to the owner deciding
+single vs multiple categories per class. The existing per-DN PIPE_MATERIAL
+rule should not be duplicated on the header. No migration or app logic
+changed in this step; no tests executed. Next owner decision: first group
+and its cardinality; step 7 baseline/model-import evaluation remains pending.
+
+### 2026-10-12 (cont.) — PMS fluid-service cardinality decided
+
+Owner confirmed: each piping class may refer to one fluid-service category.
+ADR-020 updated: one class-level field, not a multi-category link; severe
+cyclic stays a separate condition. Corrected the fluid-service reference
+pack prose from "SEVEN" to "SIX" to match its six enumerated codes; no
+classification records were fabricated. Before implementing the gate, decide
+how existing published classes lacking a category are handled. No PHP
+runtime tests were possible in this environment.
+
+### 2026-10-12 (cont.) — PMS fluid-service group A implemented
+
+Owner clarified that the project is in development and no important DB data
+needs migration. Added nullable class-level fluid-service category with DB
+CHECK for the six reference-pack codes, draft-only bilingual setter, and
+mandatory publish gate; existing rows not backfilled. Existing PMS fixtures
+now explicitly choose NORMAL, and a new test refuses missing classification
+and the SEVERE_CYCLIC condition as a category. ADR-020 records limitations:
+no automatic Category D eligibility or line-level consistency check claimed.
+PHP files parsed and reference JSON parsed; runtime Laravel tests require
+PHP/Laragon.
+
+### 2026-10-12 (cont.) — P-25 step 7: baseline / model import assessed
+
+After the owner confirmed that the development database contains no important
+data and asked to continue, inspected the actual archived parallel source
+from the `workspace` zip. `docs/ADR-021-Baseline-Model-Import-Reconciliation-EN.md`
+records the result: **no-go on wholesale port**. The exported baseline's
+`baseline_batches`/`engineering_items` duplicate the authority of this
+branch's immutable `accepted_mto_batches/rows`; the model importer adds
+missing PCF parsing and touches protected component/joint state. Recommended
+next isolated step is parser-only, or owner can defer step 7. No app code
+copied and no PHP tests run. Earlier Laragon gates remain open.
+
+### 2026-10-12 (cont.) — P-25 step 7 follow-up: pure PCF reader only
+
+Owner approved parser-only («پیشنهاد خودت عالیه»). Copied five pure PCF
+classes + source fixture from the archived workspace. Retained the 13
+parser tests verbatim; excluded the six vocabulary tests because this
+session's P2P stub-on/stub-in semantics conflict with the parallel
+`TEE-SET-ON` → `OLET` mapping. Did NOT port vocabulary, baseline schema,
+model-import application logic, controller or routes. ADR-021 records this
+gate and future upload bounds/unit checks. All six PHP files parsed; no
+PHP runtime available here. Laragon: `php artisan test --filter=PcfParserTest`.
+
+### 2026-10-12 (cont.) — PCF branch classification, no model writes
+
+Continued after parser-only step. ADR-022 records why parallel
+`TEE-SET-ON`/`TEE-SET-IN` → `OLET` is incompatible with the owner's P2P
+semantics. Added read-only `PcfBranchClassification` with explicit P2P
+STUB_ON/STUB_IN, TEE, WELDOLET, SOCKOLET mappings; ambiguous OLET and
+unknown tokens stay unresolved. Added pure PHPUnit test; neither the model
+importer nor the parallel vocabulary was ported. PHP tests still pending
+on Laragon.
+
+### 2026-10-12 (cont.) — PCF read-only admission boundary
+
+Added `PcfAdmission` wrapper around the verbatim PCF parser: 5 MB / 100k
+line / 20k component limits, explicit supported bore and coordinate units,
+unique unit declarations, line reference, finite coordinates and positive
+bores. Added pure PHPUnit cases for accepted and rejected inputs; ADR-023
+records the contract. No upload API or DB/model writes. PHP syntax parsed;
+Laravel tests pending on Laragon (`php artisan test --filter=PcfAdmissionTest`).
+
+### 2026-10-12 (cont.) — Cross-source baseline design checkpoint
+
+Owner requested continuation. ADR-024 reconciles the parallel immutable
+model/MTO claims with this branch's accepted MTO snapshots, without a new
+schema or duplicate authority. Found that `OrderGapService::board()` sums
+all accepted revisions for a project; successive accepted revisions of a
+scoped document can double-count gross demand. Proposed append-only
+effective-revision selection (accepted rows cannot be updated/deleted),
+explicit material identity and unit/scope mapping, and human resolution
+without automatic source precedence. Owner must choose scope/supersession
+semantics before a code change. No PHP tests run here.
+
+### 2026-10-12 (cont.) — Recovered previous MTO revision/scope decisions
+
+Owner asked whether earlier sessions had already decided the effective MTO
+revision and scope overlap. Yes: archived parallel ADR-005 §2.2 and the
+2026-10-05/06 accepted decisions, reconciled in this branch's
+`docs/MTO-REQUIREMENTS-EN.md` §§3.3–3.6, say latest accepted revision
+per document/scope for current baseline; historical immutable rows are
+not added; siblings require disjoint scope or exact-revision additive
+evidence; parent/child scopes overlap; scope/hierarchy revisions pinned.
+Gross approved MTO and net model stay separate, with no percentage
+tolerance hiding a positive shortage. Updated ADR-024 to distinguish
+these existing owner decisions from implementation details still open.
+The parallel `BaselineService` mutates SUPERSEDED and suppresses small
+disagreements; its behavior cannot simply be copied into this branch.
+No code or runtime tests in this research step.
+
+### 2026-10-12 (cont.) — Targeted documentation drift review
+
+Owner requested review of documentation against current capabilities. Audited
+MTO-REQUIREMENTS EN/FA, ADR-005, ADR-015 and ADR-024 against app source.
+Corrected historical branch/test-count wording, stale claims that PCF parser,
+PMS access and MR sequence were absent, and Slice 6's obsolete todo status.
+Explicitly flagged the current OrderGapService's all-revisions/all-scopes
+summation defect instead of claiming full multi-revision correctness;
+clarified read-only PCF is not model import. English docs updated and the
+existing FA counterpart kept in sync. No app code or runtime tests in this
+documentation step. Historical HANDOFF entries remain evidence of their
+original dates, not current feature status.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,

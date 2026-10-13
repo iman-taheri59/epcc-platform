@@ -2,7 +2,7 @@
  "refId": "fluid-service",
  "version": "1.1.0",
  "source": "ASME B31.3-2024, Process Piping. SLICE 1: clause 300.2 fluid services and 341.4 examination extent. SLICE 2: clause 304.1.2 the internal pressure design thickness equation, Table 304.1.1-1 coefficient Y, and Table A-1 product form vocabulary. Table A-1 ALLOWABLE STRESSES are slice 3 and are NOT here.",
- "note": "The piping class header has carried a fluid_service_category since step 4, with five values taken from industry habit and never checked. B31.3-2024 defines SEVEN fluid services and \"severe cyclic conditions\" is NOT one of them - it is a CONDITION the owner or designer designates, on any fluid service. The platform was conflating an axis with a value.",
+ "note": "The piping class header has carried a fluid_service_category since step 4, with five values taken from industry habit and never checked. B31.3-2024 defines SIX fluid services and \"severe cyclic conditions\" is NOT one of them - it is a CONDITION the owner or designer designates, on any fluid service. The platform was conflating an axis with a value.",
  "units": {
   "pressure": "kPa",
   "temperature": "C"
