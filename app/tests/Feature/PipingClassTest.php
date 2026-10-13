@@ -222,7 +222,7 @@ final class PipingClassTest extends TestCase
             $this->asPars(fn () => $this->classes->publish($this->project(), $this->user(), $gapped, 'en'));
             $this->fail('A gapped class must not publish.');
         } catch (ValidationException $e) {
-            $this->assertStringContainsString('PIPE_SCHEDULE', implode(' ', $e->errors()['rules'] ?? ['']));
+            $this->assertStringContainsString('[100,150)', implode(' ', $e->errors()['rules'] ?? ['']));
         }
 
         // Fill the hole: the same class now publishes — once its design

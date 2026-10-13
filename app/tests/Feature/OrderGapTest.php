@@ -399,7 +399,8 @@ final class OrderGapTest extends TestCase
             return PurchaseOrderItem::with('supersededBy')->whereKey($old->id)->firstOrFail();
         }, $project->id);
         $this->assertSame('90.000', $freshOld->quantity);
-        $this->assertTrue($freshOld->supersededBy()->exists());
+        $this->assertTrue($this->tenant->runAs($pars->id,
+            fn () => $freshOld->supersededBy()->exists(), $project->id));
 
         $this->expectException(ValidationException::class);
         $this->tenant->runAs($pars->id, function () use ($old) {

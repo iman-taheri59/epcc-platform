@@ -10,7 +10,6 @@ use App\Models\MaterialRequisitionItem;
 use App\Models\Project;
 use App\Models\ProjectMembership;
 use App\Models\Subsystem;
-use App\Models\System;
 use App\Models\User;
 use App\Services\MaterialRequisitionAccessService;
 use App\Services\MaterialRequisitionEntryService;
@@ -237,9 +236,7 @@ final class MaterialRequisitionEntryTest extends TestCase
             $base = ['project_id' => $foreignProject->id, 'company_id' => $this->writer->company_id,
                 'code' => 'FOREIGN-MR', 'name_en' => 'Synthetic foreign breakdown', 'name_fa' => 'آزمون پروژه دیگر'];
             $facility = Facility::create($base + ['kind' => 'PLANT']);
-            $system = System::create($base + ['facility_id' => $facility->id]);
-
-            return Subsystem::create($base + ['facility_id' => $facility->id, 'system_id' => $system->id, 'discipline' => 'PIPING'])->id;
+            return Subsystem::create($base + ['facility_id' => $facility->id, 'discipline' => 'PIPING'])->id;
         }, $foreignProject->id);
         $this->assertNotNull($foreignSubsystem);
         $data = $this->payload();

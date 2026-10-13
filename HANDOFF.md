@@ -3858,3 +3858,22 @@ See `docs/PRE-WORK-BRANCH-INTEGRATION-REVIEW-EN.md` for boundaries.
   from the reader test while retaining pack and current fitting-review tests.
   CI verification of this set pending. No missing parallel PMS table/model was
   fabricated and no engineering applicability guard was relaxed.
+
+## 2026-10-13 CI run 38375775331
+
+Five non-Laravel jobs passed. Laravel completed with 10 annotated failures/errors:
+PipingClass publish/read-only stale object and localized gap assertion; an
+OrderGap lineage assertion outside RLS tenant scope; three HTTP screening
+snapshot requests and one fitting-review HTTP request to the absent
+`project-fittings` route; a material requisition test creating absent parallel
+`System`; a quantity-boundary response mismatch (302 vs 422); and an exact
+CSEF W temperature still rejected. The earlier exact-factor patch was
+mistakenly placed in `stressOf()` (and referenced undefined variables); moved
+it to the factor interpolator, preserving `stressOf()` checks. PMS draft
+checks now refresh state under tenant RLS instead of trusting a stale object;
+the gap test checks the actual missing interval rather than a translated kind.
+The OrderGap relation assertion now runs in tenant scope; the MR fixture uses
+the current facility-to-subsystem schema without fabricating System. These
+changes still need CI validation. The four absent-route assertions and the
+quantity response mismatch remain open. Do not weaken RLS or add phantom
+schema to satisfy them. PMS write-path policy is still not enforced.

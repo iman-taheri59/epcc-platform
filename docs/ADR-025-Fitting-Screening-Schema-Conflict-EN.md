@@ -63,3 +63,10 @@ read-only pack tests and `FittingReviewTest` workflow coverage remain. The
 reader itself is now wired to the existing Laravel reference directory and
 shared pipe-size resolver. Recreating the absent PMS models just to satisfy
 the tests would mask the schema boundary described in this ADR.
+
+Run 38375775331 exposes another boundary: three snapshot HTTP tests and a
+fitting-review HTTP test target `/projects/{code}/piping/project-fittings`,
+which has no route/controller on this branch. The services and DB tests are
+not a replacement for HTTP coverage. Reconcile a real controller, view and
+authorization/tenant contract as a separate integration step; do not rewrite
+the tests to expect 404 or add a dummy route for CI.

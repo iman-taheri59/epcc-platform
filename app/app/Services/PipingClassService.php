@@ -778,7 +778,10 @@ final class PipingClassService
     /** @throws ValidationException */
     private function assertDraft(PipingClass $class, string $lang): void
     {
-        if ($class->isPublished()) {
+        // Callers may hold a stale draft instance after publication. Re-read
+        // under tenant RLS; a stale object must never reopen write access.
+        $current = PipingClass::whereKey($class->id)->firstOrFail();
+        if ($current->isPublished()) {
             $this->fail($lang, 'state',
                 'کلاس منتشرشده فقط‌خواندنی است؛ اصلاحات باید در بازنگری جدید ثبت شود.',
                 'A published class is read-only; corrections belong to a new revision.');

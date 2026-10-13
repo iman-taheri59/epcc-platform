@@ -142,14 +142,6 @@ final class MaterialReference
             return $this->demand($material, $values[0], $tempC);
         }
 
-        // A published value at an exact column is valid even when the
-        // preceding column is a dash; interpolation across the dash is not.
-        foreach ($temps as $i => $columnTemp) {
-            if ($tempC === $columnTemp) {
-                return $values[$i] ?? throw UnknownMaterialException::factorNotApplicable($table, $key, $tempC);
-            }
-        }
-
         for ($i = 0; $i < $last; $i++) {
             if ($tempC >= $temps[$i] && $tempC <= $temps[$i + 1]) {
                 if ($tempC === (float) $temps[$i]) {
@@ -328,6 +320,14 @@ final class MaterialReference
             }
 
             throw UnknownMaterialException::factorNotApplicable($table, $key, $tempC);
+        }
+
+        // A published value at an exact column is valid even when the
+        // preceding column is a dash; interpolation across the dash is not.
+        foreach ($temps as $i => $columnTemp) {
+            if ($tempC === $columnTemp) {
+                return $values[$i] ?? throw UnknownMaterialException::factorNotApplicable($table, $key, $tempC);
+            }
         }
 
         for ($i = 0; $i < $last; $i++) {

@@ -621,3 +621,14 @@ must not be refused merely because the preceding entry is a dash. The factor
 reader now checks exact temperature columns first, then interpolates only
 between two non-dash entries. This preserves the safety guard while making
 CSEF W at 510 C readable. CI verification pending.
+
+### 2026-10-13: enforce PMS publication against stale instances (PARTIAL)
+
+The service had trusted the caller's `PipingClass` instance to decide if a
+class was published; a previously loaded draft could add rules after another
+call published it. Re-reading state under RLS closes that stale-object bypass
+in sequential calls. **Better full alternative:** serialize all class mutation
+and publish operations on one class row inside a transaction, and backstop
+published-state immutability at the database boundary where direct inserts
+must also be considered. That concurrency/schema change requires a dedicated
+ADR and positive/negative tests; this patch is not the full author-policy gate.
