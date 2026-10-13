@@ -3614,6 +3614,17 @@ legacy `@dataProvider` docblock. Changed to `#[DataProvider('invalidFiles')]`
 so the 11 unsafe-input cases actually execute. Full Laravel remains blocked
 by the unrelated step-2+3 migration collision (ADR-025).
 
+### 2026-10-12 (cont.) — GitHub CI verification checkpoint
+
+PR #7 run 38344270861 after the PHPUnit 12 provider fix: standards packs
++ conformance, HTML prototype, pure PCF PHPUnit, and development image
+all PASSED. The Laravel/PostgreSQL suite and compose boot FAILED at
+`2026_09_29_180000_capture_material_screening_snapshots.php` before
+PHPUnit could start; schema collision documented in ADR-025. This is a
+real integration defect, not a test-green state. PR #7 stays open and
+unmerged pending an owner decision on general material screening vs the
+existing CAP/ELBOW fitting table.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,
