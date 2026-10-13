@@ -190,7 +190,7 @@ final class PipingClassService
         $id = (string) Str::uuid();
 
         try {
-            DB::table('piping_class_rules')->insert([
+            DB::transaction(fn () => DB::table('piping_class_rules')->insert([
                 'id' => $id,
                 'project_id' => $project->id,
                 'company_id' => $user->company_id,
@@ -204,7 +204,7 @@ final class PipingClassService
                 'created_by' => $user->id,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ]));
         } catch (QueryException $e) {
             if ($this->isExclusionViolation($e)) {
                 $this->fail($lang, 'dn_range',
@@ -296,7 +296,7 @@ final class PipingClassService
         $id = (string) Str::uuid();
 
         try {
-            DB::table('piping_class_branch_rules')->insert([
+            DB::transaction(fn () => DB::table('piping_class_branch_rules')->insert([
                 'id' => $id,
                 'project_id' => $project->id,
                 'company_id' => $user->company_id,
@@ -313,7 +313,7 @@ final class PipingClassService
                 'created_by' => $user->id,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
+            ]));
         } catch (QueryException $e) {
             if ($this->isUniqueViolation($e)) {
                 $this->fail($lang, 'branch_rule',

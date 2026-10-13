@@ -573,7 +573,7 @@ final class PipingClassTest extends TestCase
         }
     }
 
-    public function test_publish_requires_a_material_rule_when_branch_rules_exist(): void
+    public function test_publish_requires_material_and_complete_branch_calculation_inputs(): void
     {
         $class = $this->makeClass('MATGATE-CLS');
 
@@ -595,7 +595,13 @@ final class PipingClassTest extends TestCase
             15, 600, ['spec' => 'A106', 'grade' => 'B'], 'en'
         ));
 
-        $published = $this->asPars(fn () => $this->classes->publish($this->project(), $this->user(), $class, 'en'));
-        $this->assertSame(PipingClassState::PUBLISHED, $published->state);
+        // Material alone is insufficient: the 304.3.3 check also needs a
+        // declared corrosion allowance for every DN pair. Do not invent it.
+        try {
+            $this->asPars(fn () => $this->classes->publish($this->project(), $this->user(), $class, 'en'));
+            $this->fail('A branching class without corrosion allowance must not publish.');
+        } catch (ValidationException $e) {
+            $this->assertStringContainsString('CORROSION_ALLOWANCE', implode(' ', $e->errors()['branch_rules'] ?? []));
+        }
     }
 }

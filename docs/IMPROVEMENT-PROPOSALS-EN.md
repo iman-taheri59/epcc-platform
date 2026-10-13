@@ -632,3 +632,12 @@ and publish operations on one class row inside a transaction, and backstop
 published-state immutability at the database boundary where direct inserts
 must also be considered. That concurrency/schema change requires a dedicated
 ADR and positive/negative tests; this patch is not the full author-policy gate.
+
+### 2026-10-13: preserve tenant transactions on rule-constraint failures (BUILT)
+
+A duplicate branch footprint raised a PostgreSQL unique violation inside
+`TenantContext::runAs`; catching it without first rolling back a savepoint
+left the outer transaction aborted, obscuring the intended validation error.
+Rule inserts now use nested database transactions (savepoints) around the
+constraint-bearing insert, with error translation after rollback. The UNIQUE
+and GiST exclusion guards remain intact. CI verification pending.

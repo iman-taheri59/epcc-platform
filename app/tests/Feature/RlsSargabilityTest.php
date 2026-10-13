@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Company;
+use App\Models\Facility;
 use App\Models\Project;
 use App\Models\Subsystem;
 use App\Support\TenantContext;
@@ -68,6 +69,7 @@ final class RlsSargabilityTest extends TestCase
             return $existing ?? Subsystem::create([
                 'project_id' => $project->id,
                 'company_id' => $company->id,
+                'facility_id' => Facility::where('project_id', $project->id)->firstOrFail()->id,
                 'code' => $code,
                 'name_en' => 'Sargability '.$code,
                 'name_fa' => 'زیرسیستم تست',

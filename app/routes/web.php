@@ -12,6 +12,7 @@ use App\Http\Controllers\PunchController;
 use App\Http\Controllers\TransmittalController;
 use App\Http\Controllers\GateDemoController;
 use App\Http\Controllers\ProjectSetupController;
+use App\Http\Controllers\ProjectFittingDefinitionController;
 use Illuminate\Support\Facades\Route;
 
 // ---- Gate 1: authentication ----
@@ -84,6 +85,15 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::post('/projects/{projectCode}/piping/{lineId}/test-pack', [PipingLineController::class, 'assignTestPack'])->name('piping.test-packs.assign');
 
     Route::post('/projects/{projectCode}/piping/{lineId}/evidence/{linkId}/detach', [PipingLineController::class, 'detach'])->name('piping.evidence.detach');
+
+    // Project-specific fitting/material declarations and independent review.
+    // Literal project-fittings route must precede the {lineId} model route.
+    Route::get('/projects/{projectCode}/piping/project-fittings', [ProjectFittingDefinitionController::class, 'index'])->name('piping.project-fittings');
+    Route::post('/projects/{projectCode}/piping/project-fittings', [ProjectFittingDefinitionController::class, 'store'])->name('piping.project-fittings.store');
+    Route::post('/projects/{projectCode}/piping/project-fittings/review-policy', [ProjectFittingDefinitionController::class, 'configure'])->name('piping.project-fittings.policy');
+    Route::post('/projects/{projectCode}/piping/project-fittings/{definitionId}/submit', [ProjectFittingDefinitionController::class, 'submit'])->name('piping.project-fittings.submit');
+    Route::post('/projects/{projectCode}/piping/project-fittings/{definitionId}/decide', [ProjectFittingDefinitionController::class, 'decide'])->name('piping.project-fittings.decide');
+    Route::post('/projects/{projectCode}/piping/project-fittings/{definitionId}/correct', [ProjectFittingDefinitionController::class, 'correct'])->name('piping.project-fittings.correct');
 
     // Unit preferences (ADR-014). Declared before {lineId} routes for the same
     // reason config is: a literal segment must not be eaten as an id.

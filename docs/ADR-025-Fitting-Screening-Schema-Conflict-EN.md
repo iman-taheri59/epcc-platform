@@ -70,3 +70,16 @@ which has no route/controller on this branch. The services and DB tests are
 not a replacement for HTTP coverage. Reconcile a real controller, view and
 authorization/tenant contract as a separate integration step; do not rewrite
 the tests to expect 404 or add a dummy route for CI.
+
+### 2026-10-13 functional HTTP slice
+
+Ported only the project fitting/material declaration and review controller,
+route family and view/partials from the earlier source snapshot, adapting it
+to the current `MaterialScreeningEvidence` service. This is a real authenticated
+`auth` + `tenant` endpoint: project participation and membership are checked
+by `ProjectFittingDefinitionService::assertAccess`, reads use tenant-bound RLS,
+and mutations use the existing archive and independent-review service gates.
+It does **not** import finding response/disposition, parallel PMS authoring,
+ITP or baseline endpoints. Stored screening snapshots are rendered separately
+from the current live reference comparison; client-supplied findings and
+approval flags are ignored. HTTP tests and CI are not yet revalidated.

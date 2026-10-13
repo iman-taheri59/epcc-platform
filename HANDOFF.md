@@ -3877,3 +3877,25 @@ the current facility-to-subsystem schema without fabricating System. These
 changes still need CI validation. The four absent-route assertions and the
 quantity response mismatch remain open. Do not weaken RLS or add phantom
 schema to satisfy them. PMS write-path policy is still not enforced.
+
+## 2026-10-13 run 38378658637 and HTTP integration
+
+CI: five non-Laravel jobs green, Laravel red. Previous fixes removed the
+OrderGap lineage failure, stale class publish bypass and exact-factor error.
+Remaining issues included missing `project-fittings` HTTP route (four tests),
+two RLS sargability fixtures lacking required facility_id, a duplicate-branch
+constraint abort that poisoned a containing tenant transaction, a P1 test
+expecting publication despite missing corrosion allowance, one MR quantity
+HTTP 302/422 mismatch, and one PDF timeout under CI load.
+
+A cohesive, authenticated fitting/material declaration + review HTTP slice was
+ported with actual tenant-bound reads, service-authorized writes, archived
+project lock and stored-vs-live screening evidence, without importing the
+parallel PMS or finding disposition subsystem. Added link on piping register.
+Other fixes: sargability fixtures now attach to a real project facility;
+rule inserts use nested transaction/savepoint so database constraint failures
+can be converted to validation errors without poisoning the tenant transaction;
+P1 test now verifies missing corrosion allowance still blocks publish rather
+than inventing it. CI validation of all these changes pending. PDF timeout and
+MR quantity response mismatch are not yet resolved. Never claim all tests
+pass until a complete run confirms it.

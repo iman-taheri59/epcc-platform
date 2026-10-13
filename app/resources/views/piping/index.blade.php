@@ -97,6 +97,7 @@
 @include('partials.topbar')
 
   <h1>{{ $L('title') }}</h1>
+  <a href="{{ route('piping.project-fittings', ['projectCode' => $project->code, 'lang' => $lang]) }}">{{ $lang === 'fa' ? 'مشخصات فیتینگ و متریال پروژه' : 'Project fitting and material specifications' }}</a>
   <div class="sub">
     <span class="mono">{{ $project->code }}</span>
     · {{ $project->name($lang) }}
