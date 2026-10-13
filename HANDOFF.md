@@ -3947,3 +3947,18 @@ nomination policy still does **not** gate PipingClassService writes, and the
 partial stale-object state re-read is not an atomic publication lock. Next
 step is a dedicated ADR/tested design for full PMS write-path enforcement and
 concurrency protection; do not declare authoring protection shipped.
+
+## 2026-10-13 PMS authorization design checkpoint
+
+Commit `9c82a34` (documentation-only) completed all six CI jobs in run
+38389653045. The code baseline is green, but the current author nomination
+is not a write gate. Audited the six PipingClassService mutators and the
+shared `piping_classes` identity with the legacy line register. ADR-027 is a
+**PROPOSED** requirement/decision record: service-only `allows()` checks
+would leave direct writes and mutation provenance unprotected; a blanket DB
+class trigger would break legacy line entry. Recommend explicit activation
+and policy-bound write provenance on the shared identity with transaction
+locks and database backstops (option C), pending owner confirmation versus a
+separate PMS class aggregate (option B). No authoring gate code or schema has
+been added. Ask the owner to choose before enforcing it; never claim the
+policy is already effective.

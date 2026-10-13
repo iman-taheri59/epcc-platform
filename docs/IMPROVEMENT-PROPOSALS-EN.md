@@ -658,3 +658,14 @@ ignoring nine legitimate demo rows. Better: count probe rows by their unique
 `PI-` numbering while separately asserting foreign `KI-` rows remain hidden.
 This retains the positive isolation mirror and avoids resetting demo data or
 loosening a policy merely to satisfy a fixture. CI verification pending.
+
+### 2026-10-13: explicit PMS activation on shared class identity (OPEN — owner decision)
+
+Adding `PmsAccessService::allows()` to six methods would be easy but would
+leave direct writes and amendment/publish provenance unprotected. Better:
+ADR-027 option C explicitly activates PMS on the existing shared class
+identity, serializes writes with nomination updates and backstops PMS-only
+mutations in the database. A separate PMS aggregate (option B) is also valid
+if the owner wants strict domain separation, but requires mapping existing
+line/MTO foreign keys. This changes schema and workflow, so no partial
+security claim or silent implementation until the owner chooses.
