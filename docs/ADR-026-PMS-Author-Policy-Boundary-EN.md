@@ -34,3 +34,15 @@ rejects an unspecified span rather than inventing engineering coverage. The
 pre-existing tenant and archive policies on the register are retained; P1 adds
 policies only for its new child rule tables. Migration rollback removes only
 P1's additions, not the shared register. CI verification remains pending.
+
+### 2026-10-13 legacy class insert compatibility
+
+The pre-existing line editor creates `piping_classes` with `description_en`
+and without the later PMS `name_en`/`name_fa` fields. The initial P1 extension
+made both new names NOT NULL, causing older line/component tests to fail. A
+small BEFORE INSERT/UPDATE trigger now fills absent names from the legacy
+bilingual descriptions, falling back to code; explicitly supplied PMS names
+remain intact. This does **not** fabricate DN coverage or authorize publication.
+A regression test checks a legacy insert under tenant scope. CI verification
+pending. This is a compatibility adapter for the shared register, not a new
+PMS authoring path.

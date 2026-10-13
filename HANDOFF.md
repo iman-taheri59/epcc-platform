@@ -3818,3 +3818,12 @@ See `docs/PRE-WORK-BRANCH-INTEGRATION-REVIEW-EN.md` for boundaries.
   reached PHPUnit but failed on legacy `piping_classes.name_en` inserts and
   unrelated material-reference expectation errors; do not claim the whole
   suite is green. See GitHub Actions for the final run result.
+
+- The previous fully completed Laravel run 38362372660 reached PHPUnit:
+  legacy line/component tests failed because the P1 migration required names
+  older class creation never supplied; material-reference tests also reported
+  independent stale expectations. Added database name-fill trigger and focused
+  legacy-insert regression, still awaiting CI. Run 38368929870 was cancelled
+  by the newer push before its Laravel job completed; run 38370108973 was
+  in progress at last inspection. Do not report either cancelled run as a
+  Laravel test result.

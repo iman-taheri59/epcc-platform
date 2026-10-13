@@ -86,6 +86,21 @@ return new class extends Migration
         });
         DB::statement("UPDATE piping_classes SET name_en = COALESCE(description_en, code), name_fa = COALESCE(description_fa, description_en, code)");
         DB::statement('ALTER TABLE piping_classes ALTER COLUMN name_en SET NOT NULL, ALTER COLUMN name_fa SET NOT NULL');
+        // Older line-editor code still inserts description_en without PMS names.
+        // Preserve its contract while keeping names mandatory for every row.
+        DB::unprepared(<<<'SQL'
+            CREATE FUNCTION epcc_piping_class_fill_names() RETURNS trigger
+            LANGUAGE plpgsql AS $$
+            BEGIN
+                NEW.name_en := COALESCE(NULLIF(NEW.name_en, ''), NULLIF(NEW.description_en, ''), NEW.code);
+                NEW.name_fa := COALESCE(NULLIF(NEW.name_fa, ''), NULLIF(NEW.description_fa, ''), NEW.name_en);
+                RETURN NEW;
+            END;
+            $$;
+            CREATE TRIGGER piping_classes_fill_names BEFORE INSERT OR UPDATE ON piping_classes
+            FOR EACH ROW EXECUTE FUNCTION epcc_piping_class_fill_names();
+        SQL);
+
 
         // ---- piping_class_rules ---------------------------------------------
 
@@ -269,6 +284,8 @@ return new class extends Migration
 
         Schema::dropIfExists('piping_class_branch_rules');
         Schema::dropIfExists('piping_class_rules');
+        DB::statement('DROP TRIGGER IF EXISTS piping_classes_fill_names ON piping_classes');
+        DB::statement('DROP FUNCTION IF EXISTS epcc_piping_class_fill_names()');
         DB::statement('ALTER TABLE piping_classes DROP CONSTRAINT IF EXISTS piping_classes_state_valid');
         DB::statement('ALTER TABLE piping_classes DROP CONSTRAINT IF EXISTS piping_classes_span_not_empty');
         Schema::table('piping_classes', function (Blueprint $t): void {

@@ -86,6 +86,22 @@ final class PipingClassTest extends TestCase
         });
     }
 
+    public function test_legacy_line_register_creation_retains_required_names_without_inventing_a_span(): void
+    {
+        $class = $this->asPars(fn () => PipingClass::forceCreate([
+            'project_id' => $this->project()->id,
+            'company_id' => $this->company('EPC-PARS')->id,
+            'code' => 'LEGACY-NAME',
+            'description_en' => 'Carbon steel',
+        ]));
+
+        $saved = $this->asPars(fn () => $class->fresh());
+        $this->assertSame('Carbon steel', $saved->name_en);
+        $this->assertSame('Carbon steel', $saved->name_fa);
+        $this->assertNull($saved->dn_span);
+        $this->assertSame('DRAFT', $saved->state);
+    }
+
     // ------------------------------------------------------------------
     // One-dimensional rules
     // ------------------------------------------------------------------
