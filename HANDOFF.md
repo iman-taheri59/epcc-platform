@@ -3606,6 +3606,14 @@ port and requests owner choice (new material declaration host vs defer general
 screening). Added independent pure-PCF CI job so parser tests can run even
 while database migration is blocked. Full Laravel suite was NOT executed.
 
+### 2026-10-12 (cont.) — Pure PCF PHPUnit 12 compatibility correction
+
+PR #7 CI run 38343989948 executed 18 pure PCF tests: 17 passed, one
+`PcfAdmissionTest` errored because PHPUnit 12 no longer recognizes the
+legacy `@dataProvider` docblock. Changed to `#[DataProvider('invalidFiles')]`
+so the 11 unsafe-input cases actually execute. Full Laravel remains blocked
+by the unrelated step-2+3 migration collision (ADR-025).
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,

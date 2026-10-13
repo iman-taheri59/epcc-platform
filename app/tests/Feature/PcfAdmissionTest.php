@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Support\Piping\Pcf\PcfAdmission;
 use App\Support\Piping\Pcf\PcfParser;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class PcfAdmissionTest extends TestCase
@@ -26,7 +27,7 @@ final class PcfAdmissionTest extends TestCase
         $this->assertSame('L-1', $this->intake()->parse($this->valid())->lineNumber());
     }
 
-    /** @dataProvider invalidFiles */
+    #[DataProvider('invalidFiles')]
     public function test_refuses_unsafe_inputs(string $text): void
     {
         $this->expectException(InvalidArgumentException::class);
