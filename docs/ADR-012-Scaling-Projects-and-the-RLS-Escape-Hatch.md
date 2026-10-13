@@ -266,3 +266,15 @@ disjunction from queries that omit the predicate (6× faster even there).
    disjunction (scale-independent — discriminates at fixture size).
 5. Volume semantics: 30k + 30k generated rows; the bound view returns
    exactly the bound project's rows and none of the other company's.
+
+### 2026-10-13 CI-discovered owner-scope leak
+
+CI run 38381333457 showed an employer bound to PH-14 could also read a
+certificate on its other project KISH-1. Root cause was operator precedence in
+migration `2026_10_11_110000`: policy composition used `preamble AND body`,
+while `body` for owner-readable tables contains a top-level `OR` (`own row OR
+project owner`). SQL evaluated `(preamble AND own row) OR owner`, bypassing the
+bound-project narrowing for the owner. Policy generation now composes
+`(preamble) AND (body)`; the existing `RowLevelSecurityTest` positive and
+negative mirror is the regression guard. This is a **security correction**, not
+a relaxation of company or project isolation. CI verification pending.

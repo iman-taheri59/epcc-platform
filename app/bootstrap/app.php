@@ -24,6 +24,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // the global stack.
         $middleware->prepend(App\Http\Middleware\ConfigureForPreviewProxy::class);
 
+        // MR quantity is a source declaration, not display text. Preserve its
+        // exact spelling so the strict validator can reject leading spaces
+        // instead of accepting a silently trimmed quantity.
+        \Illuminate\Foundation\Http\Middleware\TrimStrings::except('mr.lines.*.quantity');
+
         // Cookie-less preview support. Two halves, and BOTH the classes and
         // their POSITIONS are load-bearing:
         //

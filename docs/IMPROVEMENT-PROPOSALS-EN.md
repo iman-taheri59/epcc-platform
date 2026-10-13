@@ -641,3 +641,12 @@ left the outer transaction aborted, obscuring the intended validation error.
 Rule inserts now use nested database transactions (savepoints) around the
 constraint-bearing insert, with error translation after rollback. The UNIQUE
 and GiST exclusion guards remain intact. CI verification pending.
+
+### 2026-10-13: parenthesize entire RLS membership bodies (BUILT)
+
+A top-level OR in an owner-readable policy escaped project binding because SQL
+AND binds more tightly than OR. The policy generator now parenthesizes both
+operands. A safer future option is to build a SQL policy-body expression API
+with explicit grouping and verify bound-project behavior for every OR-based
+policy (not only certificates); existing RLS regression catches the observed
+case. See ADR-012 security correction.

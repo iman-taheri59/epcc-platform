@@ -69,7 +69,11 @@ final class RlsSargabilityTest extends TestCase
             return $existing ?? Subsystem::create([
                 'project_id' => $project->id,
                 'company_id' => $company->id,
-                'facility_id' => Facility::where('project_id', $project->id)->firstOrFail()->id,
+                'facility_id' => Facility::firstOrCreate(
+                    ['project_id' => $project->id, 'code' => 'RLS-PROBE'],
+                    ['company_id' => $company->id, 'kind' => 'PLANT',
+                        'name_en' => 'RLS probe facility', 'name_fa' => 'تاسیسات آزمون']
+                )->id,
                 'code' => $code,
                 'name_en' => 'Sargability '.$code,
                 'name_fa' => 'زیرسیستم تست',
@@ -197,7 +201,9 @@ final class RlsSargabilityTest extends TestCase
                     $walk($child);
                 }
             };
-            $walk(json_decode(json_encode($plan[0]->{'QUERY PLAN'}), true)[0]['Plan']);
+            $rawPlan = $plan[0]->{'QUERY PLAN'};
+            $decoded = is_string($rawPlan) ? json_decode($rawPlan, true, 512, JSON_THROW_ON_ERROR) : $rawPlan;
+            $walk($decoded[0]['Plan']);
 
             foreach ($filters as $filter) {
                 $this->assertStringNotContainsString(

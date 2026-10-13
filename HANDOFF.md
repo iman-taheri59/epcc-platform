@@ -3899,3 +3899,18 @@ P1 test now verifies missing corrosion allowance still blocks publish rather
 than inventing it. CI validation of all these changes pending. PDF timeout and
 MR quantity response mismatch are not yet resolved. Never claim all tests
 pass until a complete run confirms it.
+
+## 2026-10-13 run 38381333457: security finding
+
+The HTTP fitting/material routes passed their previously missing-route tests;
+five non-Laravel jobs passed. Laravel found a **real RLS leak**: a PH-14-bound
+employer read its KISH-1 payment certificate because the generated policy
+combined `scope AND own OR owner` without parenthesizing the owner branch.
+Changed generator to `(scope) AND (membership body)`, affecting both migration
+directions on a fresh install; the existing RLS test pins the isolation.
+Other remaining failures: synthetic RLS fixture assumed a project facility
+exists (now create an actual facility under tenant scope), JSON EXPLAIN result
+was double-decoded as a string (now handles raw JSON), and invalid MR quantity
+`' 1'` was silently trimmed to `'1'` by global middleware (MR quantity key now
+excluded from TrimStrings, still strictly validated by service). CI pending.
+This is not evidence of a successful full suite or of complete PMS authoring.

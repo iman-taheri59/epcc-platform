@@ -509,8 +509,8 @@ return new class extends Migration
         DB::statement(<<<SQL
             CREATE POLICY {$table}_tenant_isolation ON {$table}
             USING (
-                {$preamble}
-                AND {$using}
+                ({$preamble})
+                AND ({$using})
             )
             WITH CHECK (
                 {$check}
