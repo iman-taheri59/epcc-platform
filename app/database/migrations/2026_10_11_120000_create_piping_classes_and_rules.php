@@ -71,31 +71,21 @@ return new class extends Migration
 
         // ---- piping_classes -------------------------------------------------
 
-        Schema::create('piping_classes', function (Blueprint $t): void {
-            $t->uuid('id')->primary();
-            $t->uuid('project_id');
-            $t->uuid('company_id');
-            $t->string('code', 32);
-            $t->string('name_en');
-            $t->string('name_fa');
+        // The line register already owns this table (2026_09_15). Extend it
+        // in place: piping_lines, MTO and estimates reference these IDs.
+        // Legacy rows have no declared size coverage; never invent one.
+        Schema::table('piping_classes', function (Blueprint $t): void {
+            $t->string('name_en')->nullable();
+            $t->string('name_fa')->nullable();
             $t->string('state', 16)->default('DRAFT');
-
-            // The declared coverage span for one-dimensional rules, e.g.
-            // [15,600). The publish gate demands each rule kind cover this
-            // span contiguously. Text here, cast to int4range below.
-            $t->text('dn_span');
-
+            $t->text('dn_span')->nullable();
             $t->timestampTz('published_at')->nullable();
             $t->uuid('published_by')->nullable();
-            $t->timestampsTz();
-
-            $t->foreign('project_id')->references('id')->on('projects')->cascadeOnDelete();
-            $t->foreign('company_id')->references('id')->on('companies')->cascadeOnDelete();
             $t->foreign('published_by')->references('id')->on('users')->nullOnDelete();
-
-            $t->unique(['project_id', 'code']);
             $t->index(['project_id', 'state']);
         });
+        DB::statement("UPDATE piping_classes SET name_en = COALESCE(description_en, code), name_fa = COALESCE(description_fa, description_en, code)");
+        DB::statement('ALTER TABLE piping_classes ALTER COLUMN name_en SET NOT NULL, ALTER COLUMN name_fa SET NOT NULL');
 
         // ---- piping_class_rules ---------------------------------------------
 
@@ -229,7 +219,7 @@ return new class extends Migration
         $gucC = "NULLIF(current_setting('epcc.company_id', true), '')::uuid";
         $gucP = "NULLIF(current_setting('epcc.project_id', true), '')";
 
-        foreach (['piping_classes', 'piping_class_rules', 'piping_class_branch_rules'] as $table) {
+        foreach (['piping_class_rules', 'piping_class_branch_rules'] as $table) {
             DB::statement("ALTER TABLE {$table} ENABLE ROW LEVEL SECURITY");
             DB::statement("ALTER TABLE {$table} FORCE ROW LEVEL SECURITY");
 
@@ -273,12 +263,18 @@ return new class extends Migration
 
     public function down(): void
     {
-        foreach (['piping_class_branch_rules', 'piping_class_rules', 'piping_classes'] as $table) {
+        foreach (['piping_class_branch_rules', 'piping_class_rules'] as $table) {
             DB::statement("DROP POLICY IF EXISTS {$table}_tenant_isolation ON {$table}");
         }
 
         Schema::dropIfExists('piping_class_branch_rules');
         Schema::dropIfExists('piping_class_rules');
-        Schema::dropIfExists('piping_classes');
+        DB::statement('ALTER TABLE piping_classes DROP CONSTRAINT IF EXISTS piping_classes_state_valid');
+        DB::statement('ALTER TABLE piping_classes DROP CONSTRAINT IF EXISTS piping_classes_span_not_empty');
+        Schema::table('piping_classes', function (Blueprint $t): void {
+            $t->dropIndex(['project_id', 'state']);
+            $t->dropForeign(['published_by']);
+            $t->dropColumn(['name_en', 'name_fa', 'state', 'dn_span', 'published_at', 'published_by']);
+        });
     }
 };

@@ -21,3 +21,16 @@ Migration and `PmsAuthorPolicyTest` require the GitHub Actions PostgreSQL/RLS jo
 ## First CI result after adaptation (run 38361131058)
 
 Migration 235700 now passes. The next unrelated blocker is `2026_10_11_110000_make_rls_project_scope_sargable.php`: its generic `STANDARD_CHECK` assumes `mto_staging_rows.company_id`, but that child table has no such column. Its original RLS delegated through `mto_revisions`. Fixed the sargability migration with an explicit staging policy preserving parent revision and project/participant checks (no fabricated column). This is an adjacent CI-discovered schema defect, not a reason to weaken PMS policy isolation. Full PHPUnit still awaits a clean migration.
+
+### 2026-10-13 integration follow-up: existing class register
+
+CI run 38361941268 passed the author-policy, RLS and extension migrations but
+failed at PMS P1: `piping_classes` already exists since the piping-line register
+migration (2026-09-15). The P1 migration now **extends** that shared register
+rather than recreating it, preserving line/MTO/estimate foreign keys, IDs and
+legacy descriptive fields. Legacy rows receive names from their descriptions
+(or code), remain DRAFT and have an unknown `dn_span` (NULL); publication
+rejects an unspecified span rather than inventing engineering coverage. The
+pre-existing tenant and archive policies on the register are retained; P1 adds
+policies only for its new child rule tables. Migration rollback removes only
+P1's additions, not the shared register. CI verification remains pending.

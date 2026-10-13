@@ -343,6 +343,12 @@ final class PipingClassService
                     'This piping class is already published; a published class is read-only.');
             }
 
+            if ($locked->dn_span === null) {
+                $this->fail($lang, 'dn_span',
+                    'بازه اندازه کلاس قدیمی باید پیش از انتشار تعیین شود.',
+                    'A legacy class needs an explicit DN span before publication.');
+            }
+
             $kinds = PipingClassRule::where('piping_class_id', $locked->id)
                 ->distinct()
                 ->pluck('rule_kind');
