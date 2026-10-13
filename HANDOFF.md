@@ -3914,3 +3914,8 @@ was double-decoded as a string (now handles raw JSON), and invalid MR quantity
 `' 1'` was silently trimmed to `'1'` by global middleware (MR quantity key now
 excluded from TrimStrings, still strictly validated by service). CI pending.
 This is not evidence of a successful full suite or of complete PMS authoring.
+
+- Added an HTTP-level mirror for the newly restored fitting/material register:
+  a nonparticipant must receive 404 on GET, create and submit, while a
+  participant retains a 200 read. This closes the gap where DB/service tests
+  alone could pass while the HTTP route is accidentally exposed. CI pending.

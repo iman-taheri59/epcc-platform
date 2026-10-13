@@ -220,6 +220,16 @@ final class FittingReviewTest extends TestCase
         self::assertSame('UNREVIEWED',$this->state($new)['state']);
     }
 
+    public function test_http_register_denies_nonparticipant_reads_and_writes(): void
+    {
+        $outsider = $this->userByEmail('hosseini@arvand.example');
+        $base = '/projects/PH-14/piping/project-fittings';
+        $this->actingAs($outsider)->get($base.'?lang=en')->assertNotFound();
+        $this->post($base, $this->data())->assertNotFound();
+        $this->post($base.'/'.$this->row->id.'/submit', ['lang' => 'en'])->assertNotFound();
+        $this->actingAs($this->author)->get($base.'?lang=en')->assertOk();
+    }
+
     public function test_foreign_project_or_foreign_company_cannot_act_on_a_definition(): void
     {
         $this->policy();
