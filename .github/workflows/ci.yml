@@ -81,6 +81,14 @@ jobs:
       - name: Run the rule-engine conformance corpus
         run: php packages/standards-engine/conformance/run.php
 
+      - name: Run read-only material screening regression and CLI smoke
+        run: |
+          php scripts/tests/test_material_screening.php
+          php scripts/screen-material.php docs/examples/material-screening-synthetic.json > /tmp/material-screening.json
+          python3 -c "import json; r=json.load(open('/tmp/material-screening.json')); assert r['engineering_approved'] is False and r['automatic_consumption_allowed'] is False"
+          php scripts/screen-material.php docs/examples/material-screening-synthetic.json --html > /tmp/material-screening.html
+          grep -q '<!doctype html>' /tmp/material-screening.html
+
   # -------------------------------------------------------------------------
   # The jsdom harnesses over the HTML prototype. jsdom comes from the ROOT
   # package.json (not app/), which is why cache-dependency-path points there.

@@ -3802,3 +3802,11 @@ features depend on a different schema, while logs, backups and screenshots are
 not deployable source. Never bulk-merge this branch. Next possible safe slice:
 adapt its read-only material-screening CLI with a synthetic fixture and run a
 PHP regression, after resolving the current CI PMS migration failures.
+
+## 2026-10-13 selective `pre-work` recovery
+
+Brought over only the independent read-only screening CLI, its synthetic
+fixture and its standalone assertions from nested `pre-work` tip `878d34f`.
+Wired it into CI's PHP standards job and the local degraded runner; no Laravel
+schema/service was replaced. Local PHP unavailable; CI verification pending.
+See `docs/PRE-WORK-BRANCH-INTEGRATION-REVIEW-EN.md` for boundaries.

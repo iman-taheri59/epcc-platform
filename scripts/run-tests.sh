@@ -36,6 +36,8 @@ fi
 hdr "Rule-engine conformance corpus (language-neutral contract)"
 if command -v php >/dev/null 2>&1; then
   php packages/standards-engine/conformance/run.php || fail=1
+  php scripts/tests/test_material_screening.php || fail=1
+  php scripts/screen-material.php docs/examples/material-screening-synthetic.json >/dev/null || fail=1
 else
   skipmsg "php not installed (need PHP 8.4, see compose.yaml)"
 fi

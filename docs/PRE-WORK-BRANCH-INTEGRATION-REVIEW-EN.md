@@ -23,3 +23,14 @@ Four source archives remain in the branch: `engineering-screening-source.tar.gz`
 ## Better path (proposal, not yet authorized)
 
 Create a feature-by-feature import matrix starting with the *read-only* material-screening CLI and synthetic example (low risk), then separately scope finding dispositions; leave PMS event/history enforcement to a dedicated ADR and end-to-end tenant tests. For every slice compare the nested snapshot's schema to current migrations, prove positive and negative tenant paths, run migration + Laravel tests in CI and update HANDOFF. Avoid a `git merge pre-work` or archive extraction into the application root.
+
+### 2026-10-13 first selective recovery
+
+Recovered the framework-free `scripts/screen-material.php`, its synthetic JSON
+example and its standalone PHP regression test from the nested snapshot at
+`878d34f`. The screening service itself was **not** replaced. CI's standards
+job now runs the test and CLI JSON/HTML smoke independently of Laravel database
+migrations; the degraded sandbox test runner includes the standalone test when
+PHP is available. JSON syntax and `git diff --check` pass locally; PHP is not
+installed in this sandbox, so CI is the first executable confirmation. This
+addition does not expose a web route, approve a material or grant PMS access.
