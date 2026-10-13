@@ -107,3 +107,9 @@ PostgreSQL function and the migration used `CREATE FUNCTION` instead of
 migrations and verifies inserted JSONB against the live source rows in its
 trigger. A user able to edit published source rows directly remains outside
 this protection; line admission remains unimplemented. Recheck in CI.
+
+Verification update: CI 38456241655 passed five jobs but its Laravel job
+failed on an annotated Chromium PDF-render 30-second timeout (zero assertion
+failures; nested JUnit reported three errors). The snapshot migration collision
+was resolved. The JSONB-forgery guard now has an explicit direct-INSERT test.
+Await a clean full rerun before claiming this slice green.

@@ -4071,3 +4071,12 @@ eligibility, class writer SQL protection or CDE nomination gate. CI pending.
   Also added DB verification of the inserted JSONB against the live class and
   ordered rule arrays, so a direct INSERT cannot forge snapshot contents.
   Awaiting a new CI run; the failed run does not verify the feature tests.
+
+- CI run 38456241655 for `f860fe6`: migration collision resolved;
+  Laravel suite reported 3246 tests with zero assertion failures and one
+  annotated `PdfExportTest::test_rendering_produces_a_real_pdf` Chromium render
+  timeout (30 s); JUnit's nested suite totals show three errors. The other
+  five jobs passed. Artifact retrieval and Actions log retrieval hit blocked
+  external redirects/EOF; available check-run annotations show no PMS error.
+  Added a direct forged-snapshot INSERT regression test for the trigger and
+  scheduled another full run. Do not describe this run as green.

@@ -81,6 +81,22 @@ final class PmsClassDocumentTest extends TestCase
             $this->assertSame('80', $unchanged['rules'][0]['value']['schedule']);
         }, $project->id);
         try {
+            $tenant->runAs($author->company_id, function () use ($class, $project, $author): void {
+                $snapshot = DB::table('pms_class_revision_snapshots')->where('piping_class_id', $class->id)->first();
+                DB::table('pms_class_revision_snapshots')->insert([
+                    'id' => (string) Str::uuid(), 'project_id' => $project->id,
+                    'company_id' => $author->company_id,
+                    'pms_document_id' => $snapshot->pms_document_id,
+                    'document_revision_id' => $snapshot->document_revision_id,
+                    'piping_class_id' => $snapshot->piping_class_id,
+                    'specification' => '{}', 'created_at' => now(),
+                ]);
+            }, $project->id);
+            $this->fail('Direct INSERT must not forge an approved specification.');
+        } catch (QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
+        try {
             $tenant->runAs($author->company_id, fn () => DB::table('pms_class_revision_snapshots')
                 ->where('piping_class_id', $class->id)->update(['specification' => '{}']), $project->id);
             $this->fail('Issued snapshots must be append-only.');
