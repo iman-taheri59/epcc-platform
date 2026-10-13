@@ -3962,3 +3962,16 @@ locks and database backstops (option C), pending owner confirmation versus a
 separate PMS class aggregate (option B). No authoring gate code or schema has
 been added. Ask the owner to choose before enforcing it; never claim the
 policy is already effective.
+
+## 2026-10-13 owner correction: class before line
+
+Owner explicitly requires piping classes to be registered before line-register
+entry. Recorded in ADR-006 and ADR-027. Current PipingLineService still permits
+nullable class references and tests create classes as fixtures; no runtime
+constraint has been changed yet. Need owner decision on whether a class must
+be PUBLISHED before line use and how to handle historical/imported lines with
+no mapped class. Do not create placeholder classes or assume the line may
+silently register its own class. Sandbox restored a base Git HEAD while keeping
+worktree files; fetched the remote branch and realigned HEAD to remote tip
+`38c8b8b` with `git reset --mixed FETCH_HEAD` (no worktree changes), then
+continued on the same tracked branch.

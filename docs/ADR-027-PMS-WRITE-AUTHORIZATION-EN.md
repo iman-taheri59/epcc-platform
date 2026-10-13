@@ -33,3 +33,25 @@ Should the existing shared `piping_classes` table remain the long-term identity 
 ## Falsifiers / acceptance evidence
 
 A green migration is not sufficient. Demonstrate a legacy line can still use its class, then show all six PMS mutations denied before nomination and after suspension, accepted when nominated, and blocked by direct SQL without the authorized actor context; demonstrate project/company cross-tenant negatives and concurrent suspension ordering. The saved policy/version and author provenance must be inspectable after a new policy replaces the old one. CI must finish with no skips.
+
+## 2026-10-13 owner correction: class precedes line registration
+
+The owner clarified: **piping classes must be created and registered before
+lines are entered into the line register**. The class is therefore upstream
+master data, not a side effect of line creation. This supersedes the context
+paragraph's implication that ordinary line entry should be allowed to create
+new class identities on demand. Existing `piping_lines.piping_class_id` is
+nullable and `PipingLineService` can currently register a line without a
+class; tests also call `PipingClass::firstOrCreate` as a fixture convenience.
+Those facts are current implementation, not the approved target workflow.
+
+Revised preferred direction: keep the shared `piping_classes` identity, but
+make class registration an explicit preceding operation. A line must select an
+existing class **from the same project**; neither number composition nor
+import may silently invent one. Registration/activation/publication are
+separate states: the owner has NOT yet specified whether selecting a class on
+a line requires a published PMS, or whether a registered draft is sufficient.
+Nor has an exception for historical line imports lacking class mapping been
+approved. Resolve those two details before adding a NOT NULL constraint or
+rejecting existing-line imports. Author nomination is still not an enforced
+PMS write gate.

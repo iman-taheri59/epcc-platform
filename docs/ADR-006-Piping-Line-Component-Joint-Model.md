@@ -648,3 +648,13 @@ projection; Plant 3D calls the weld a "tap weld"), so the leaning is now a
 frozen header reference on the joint rather than a synthesised wall port
 (proposal P-22). Decides together with ADR-008 build phase 3 wiring and the
 welding-phase (roadmap P5) design.
+
+### 2026-10-13 owner workflow correction (pending enforcement)
+
+Piping classes are upstream register/master data: **register the project's
+class before registering its lines**. Line entry should select a pre-existing
+same-project class rather than create one as a side effect. The existing
+nullable `piping_class_id` and legacy-import behavior predate this correction;
+the published-versus-draft selection threshold and treatment of historical
+unmapped lines remain open questions in ADR-027. Do not claim the current
+line-create API or database constraint already enforces this requirement.
