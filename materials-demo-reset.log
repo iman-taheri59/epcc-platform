@@ -1,0 +1,84 @@
+Explicitly confirmed demo reset of database: epcc
+
+  Dropping all tables .......................................... 149.42ms DONE
+
+   INFO  Preparing database.  
+
+  Creating migration table ....................................... 4.84ms DONE
+
+   INFO  Running migrations.  
+
+  0001_01_01_000000_create_users_table ........................... 7.58ms DONE
+  0001_01_01_000001_create_cache_table ........................... 4.30ms DONE
+  0001_01_01_000002_create_jobs_table ............................ 7.66ms DONE
+  2026_09_09_100000_create_epcc_core_tables ..................... 22.11ms DONE
+  2026_09_09_100100_enable_row_level_security .................... 4.17ms DONE
+  2026_09_09_100200_fix_rls_empty_guc ............................ 2.97ms DONE
+  2026_09_09_100300_fix_gate_evaluations_actor ................... 2.35ms DONE
+  2026_09_09_110000_multi_project_support ........................ 5.56ms DONE
+  2026_09_09_120000_authentication_and_authorization ............ 22.36ms DONE
+  2026_09_10_100000_create_document_register .................... 14.40ms DONE
+  2026_09_10_120000_create_document_files ....................... 10.47ms DONE
+  2026_09_10_130000_share_documents_with_participants ............ 5.23ms DONE
+  2026_09_10_140000_create_review_comments ...................... 12.57ms DONE
+  2026_09_10_150000_create_transmittals ......................... 23.30ms DONE
+  2026_09_10_160000_create_punch_list ........................... 22.31ms DONE
+  2026_09_11_120000_add_vendor_transmittals ...................... 8.92ms DONE
+  2026_09_11_130000_scope_employer_visibility_to_contractor_letters  1.60ms DONE
+  2026_09_11_140000_constrain_tenant_type ........................ 0.85ms DONE
+  2026_09_12_100000_secure_identity_tables ....................... 2.73ms DONE
+  2026_09_12_160000_snapshot_certificate_punch_summary ........... 0.98ms DONE
+  2026_09_13_100000_create_procurement_and_materials ............ 59.57ms DONE
+  2026_09_14_090000_create_facilities_and_areas ................. 17.78ms DONE
+  2026_09_15_120000_add_project_archive_state ................... 21.24ms DONE
+  2026_09_15_140000_create_piping_lines ......................... 34.92ms DONE
+  2026_09_15_160000_add_unit_preferences_and_canonical_values .... 7.44ms DONE
+  2026_09_17_120000_create_components_and_ports ................. 19.37ms DONE
+  2026_09_18_090000_create_joints ............................... 17.84ms DONE
+  2026_09_18_140000_create_systems_tier ......................... 15.86ms DONE
+  2026_09_18_170000_create_equipment_and_nozzles ................ 34.63ms DONE
+  2026_09_18_173000_add_rating_to_ports .......................... 2.17ms DONE
+  2026_09_18_180000_add_equipment_tag_start ...................... 2.51ms DONE
+  2026_09_18_184000_withdraw_auto_line_numbering ................. 4.11ms DONE
+  2026_09_18_200000_add_deleted_state_to_tagged_entities ........ 22.38ms DONE
+  2026_09_18_220000_create_model_imports ........................ 45.64ms DONE
+  2026_09_19_090000_create_engineering_baseline ................. 42.41ms DONE
+  2026_09_19_150000_create_itp .................................. 46.04ms DONE
+  2026_09_19_190000_add_itp_stage_references .................... 17.49ms DONE
+  2026_09_19_210000_register_itp_as_a_document .................. 57.04ms DONE
+  2026_09_20_100000_create_standards_library .................... 17.23ms DONE
+  2026_09_20_140000_fix_itp_tenant_policies ...................... 6.48ms DONE
+  2026_09_23_100000_create_piping_class_rules ................... 19.18ms DONE
+  2026_09_23_120000_piping_class_rules_per_size .................. 6.62ms DONE
+  2026_09_24_120000_enrich_piping_class_header .................. 17.38ms DONE
+  2026_09_24_140000_create_piping_class_items .................... 8.95ms DONE
+  2026_09_24_160000_create_specialty_items ...................... 12.59ms DONE
+  2026_09_24_180000_specials_leave_the_pms_body .................. 3.74ms DONE
+  2026_09_25_090000_create_piping_class_valve_specs .............. 8.67ms DONE
+  2026_09_25_190000_severe_cyclic_is_a_condition_not_a_service ... 2.92ms DONE
+  2026_09_28_100000_fix_baseline_tenant_policies ................ 19.30ms DONE
+  2026_09_28_140000_create_project_fitting_definitions .......... 11.87ms DONE
+  2026_09_29_090000_add_project_fitting_review .................. 39.76ms DONE
+  2026_09_29_150000_extend_project_material_declarations ........ 16.60ms DONE
+
+
+   INFO  Seeding database.  
+
+  Database\Seeders\EpccDemoSeeder .................................... RUNNING  
+  Database\Seeders\EpccDemoSeeder ................................. 38 ms DONE  
+
+  Database\Seeders\AuthSeeder ........................................ RUNNING  
+  Database\Seeders\AuthSeeder .................................. 2,851 ms DONE  
+
+  Database\Seeders\StandardsLibrarySeeder ............................ RUNNING  
+  Database\Seeders\StandardsLibrarySeeder ......................... 88 ms DONE  
+
+  Database\Seeders\ItpTemplateSeeder ................................. RUNNING  
+  Database\Seeders\ItpTemplateSeeder ............................... 4 ms DONE  
+
+
+   INFO  Seeding database.  
+
+  Database\Seeders\ProcurementSeeder ................................. RUNNING  
+  Database\Seeders\ProcurementSeeder ............................. 201 ms DONE  
+

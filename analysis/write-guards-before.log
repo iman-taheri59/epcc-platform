@@ -1,0 +1,43 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+FFFF                                                                4 / 4 (100%)
+
+Time: 00:10.503, Memory: 87.00 MB
+
+There were 4 failures:
+
+1) Tests\Feature\BaselineIsolationTest::test_shared_reader_gets_explicit_refusal_when_accepting_another_company_batch
+Failed asserting that exception of type "Illuminate\Auth\Access\AuthorizationException" is thrown.
+
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+2) Tests\Feature\BaselineIsolationTest::test_shared_reader_gets_explicit_refusal_when_resolving_another_company_discrepancy
+Failed asserting that exception of type "Illuminate\Auth\Access\AuthorizationException" is thrown.
+
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+3) Tests\Feature\BaselineIsolationTest::test_shared_reader_cannot_acknowledge_another_company_import_diff
+Expected response status code [403] but received 302.
+Failed asserting that 302 is identical to 403.
+
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:46
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:183
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/Concerns/AssertsStatusCodes.php:141
+/home/user/epcc-platform/app/tests/Feature/BaselineIsolationTest.php:157
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+4) Tests\Feature\BaselineIsolationTest::test_archive_acknowledgement_is_refused_explicitly
+Session is missing expected key [errors].
+Failed asserting that false is true.
+
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:46
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:1595
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:1706
+/home/user/epcc-platform/app/tests/Feature/BaselineIsolationTest.php:167
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+FAILURES!
+Tests: 4, Assertions: 4, Failures: 4.

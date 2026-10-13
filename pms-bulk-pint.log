@@ -1,0 +1,8 @@
+
+  ..✓✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   .................................... 4 files, 2 style issues fixed  
+  ✓ app/Http/Controllers/PmsController.php method_argument_space, unary_opera…  
+  ✓ tests/Feature/PmsBulkEntryTest.php fully_qualified_strict_types, concat_s…  
+

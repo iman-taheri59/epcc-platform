@@ -1,0 +1,9 @@
+No syntax errors detected in app/database/migrations/2026_09_29_210000_add_material_finding_responses.php
+No syntax errors detected in app/app/Services/Engineering/MaterialFindingResponses.php
+No syntax errors detected in app/app/Http/Controllers/ProjectFittingDefinitionController.php
+No syntax errors detected in app/routes/web.php
+No syntax errors detected in app/lang/fa/finding_responses.php
+No syntax errors detected in app/lang/en/finding_responses.php
+No syntax errors detected in app/tests/Feature/MaterialFindingResponseTest.php
+No syntax errors detected in app/tests/Feature/MaterialFindingResponseMigrationTest.php
+No syntax errors detected in scripts/verify-material-baseline.php

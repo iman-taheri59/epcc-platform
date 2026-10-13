@@ -1,0 +1,354 @@
+  ok  [iso] schema valid (v1.0.0)
+  ok  [awp] schema valid (v1.0.0)
+  ok  [ips-iran] schema valid (v1.0.0)
+  ok  [awp] extends 'iso' v1.0.0
+  ok  [ips-iran] extends 'iso' v1.0.0
+  ok  [seam] constraint engine used by IPS pack (6 types) - stays core
+  ok  [seam] AWP pack still complete for revival (3 lifecycles, 11 constraint types, 11 KPIs)
+  ok  [ref:pipe-sizes] schema valid (v1.0.0, ASME B36.10M-2022 (welded and seamless wroug...)
+  ok  [ref:pipe-schedules] schema valid (v1.0.0, ASME B36.10M-2022 (carbon and alloy steel); ...)
+  ok  [ref:end-types] schema valid (v1.0.0, PCF Reference Guide v15 (Hexagon) - end-conn...)
+  ok  [ref:flange-bolting] schema valid (v2.1.0, ASME B16.5-2025, the 'Templates for Drilling...)
+  ok  [ref:component-templates] schema valid (v1.0.0, ADR-009 section 2 (port counts come from tem...)
+  ok  [ref:units] schema valid (v1.0.0, ISO 80000 / NIST SP 811 Guide for the Use of...)
+  ok  [ref:materials] schema valid (v1.8.0, ASME B31.3 Table A-1 material groupings (met...)
+  ok  [ref:actuators] schema valid (v1.1.0, Valve actuator practice: ISO 5211 mounting, ...)
+  ok  [ref:flange-pt-ratings] schema valid (v2.0.0, ASME B16.5-2025, Tables 2-1.1 through 2-3.19...)
+  ok  [ref:valve-construction] schema valid (v1.11.0, Standard titles and scope statements. API 59...)
+  ok  [ref:valve-pt-ratings] schema valid (v1.2.0, ASME B16.34-2025, Tables 2-1.1 through 2-3.1...)
+  ok  [ref:valve-face-to-face] schema valid (v1.1.0, ASME B16.10-2022 (Revision of ASME B16.10-20...)
+  ok  [ref:valve-testing] schema valid (v1.0.0, API Standard 598, Valve Inspection and Testi...)
+  ok  [ref:fluid-service] schema valid (v1.1.0, ASME B31.3-2024, Process Piping. SLICE 1: cl...)
+  ok  [ref:allowable-stress] schema valid (v1.0.0, ASME B31.3-2024, Table A-1 (SI units). Slice...)
+  ok  [ref:fitting-dimensions] schema valid (v1.0.0, ASME B16.9-2018, Factory-Made Wrought Buttwe...)
+  ok  [ref] 36 sizes, 355 (size,schedule) pairs, divergence assertions hold
+  ok  [ref] 13 end types, 3 numbered
+  ok  [ref] 22 component templates, 41 port definitions
+  ok  [ref:units] 6 quantities, 29 units, anchors and absolute zero verified
+  ok  [ref:materials] 57 specs, 391 grades, 16 product forms, all unverified
+  ok  [ref:actuators] 9 actuators, 2 travels, 52 actuator/valve-type pairs, all unverified
+  ok  [ref:valve-construction] API 609 reaches NPS 60, past the largest size pipe-sizes holds (NPS 48) - declared
+  ok  [ref:valve-construction] API 6D covers AXIAL, a valve type the VALVE template does not offer - declared
+  ok  [ref:valve-construction] 13 standard(s), 10 verified / 3 not, covering 7 of 8 valve types
+  ok  [ref:valve-construction] 10 standard(s) held (API 600, API 602, API 603, API 623, API 594, API 608, API 609, API 599, API 6D, ISO 15761), 23 guess(es) corrected on contact with a purchased copy
+  ok  [ref:valve-pt-ratings] B16.34 Standard Class vs B16.5: 4039/4050 cells agree, 11 declared
+  ok  [ref:valve-pt-ratings] 100 curve(s) over 50 material group(s), 100 verified, 2002 temperature points, 4 anomaly/ies withheld from citation
+  ok  [ref:valve-face-to-face] class(es) ['4500'] are rated by B16.34 but B16.10 gives them no length
+  ok  [ref:valve-face-to-face] 1833 dimension(s) over class(es) 150/300/600/900/1500/2500 and 11 valve type(s), 267 ring joint adjustment(s), 12 facing rule(s)
+  ok  [ref:valve-testing] 60 requirement(s) over 6 column(s), 22 leakage row(s), 5 duration band(s), 3 valve variant(s) the PMS does not yet record
+  ok  [ref:fluid-service] 6 fluid service(s), 1 condition(s), 3 examination extent rule(s)
+  ok  [ref:allowable-stress] 798 material(s) joined and structurally sound, 77 independently confirmed against the 302.3.2 basis and citable, 721 held
+  ok  [ref:fitting-dimensions] 65 dimension(s), 40 confirmed against the take-out geometry, 4 at the standard's small-size floor
+  ok  [ref:flange-bolting] 8 ratings, 334 size rows (16 deferrals, 42 not offered), 334 verified
+  ok  [ref:flange-pt-ratings] group 1.18 at 600 C (1.05% spread, worst pair 300 vs 900) departs from class-linearity, as Table 2-1.18 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 100 C (1.95% spread, worst pair 2500 vs 300) departs from class-linearity, as Table 2-2.8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 150 C (10.00% spread, worst pair 2500 vs 300) departs from class-linearity, as Table 2-2.8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 200 C (9.97% spread, worst pair 2500 vs 400) departs from class-linearity, as Table 2-2.8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 250 C (10.17% spread, worst pair 2500 vs 400) departs from class-linearity, as Table 2-2.8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 300 C (10.59% spread, worst pair 2500 vs 300) departs from class-linearity, as Table 2-2.8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 325 C (10.74% spread, worst pair 2500 vs 400) departs from class-linearity, as Table 2-2.8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 350 C (10.34% spread, worst pair 2500 vs 300) departs from class-linearity, as Table 2-2.8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 375 C (10.61% spread, worst pair 2500 vs 400) departs from class-linearity, as Table 2-2.8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 399 C (10.34% spread, worst pair 2500 vs 300) departs from class-linearity, as Table 2-2.8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 3.6 at 475 C (1.23% spread, worst pair 400 vs 300) departs from class-linearity, as Table 2-3.6 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 3.19 at 600 C (1.05% spread, worst pair 300 vs 900) departs from class-linearity, as Table 2-3.19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 3.19 at 675 C (1.33% spread, worst pair 600 vs 300) departs from class-linearity, as Table 2-3.19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 3.19 at 700 C (1.49% spread, worst pair 300 vs 1500) departs from class-linearity, as Table 2-3.19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 3.19 at 725 C (3.13% spread, worst pair 300 vs 600) departs from class-linearity, as Table 2-3.19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 3.19 at 750 C (1.37% spread, worst pair 300 vs 600) departs from class-linearity, as Table 2-3.19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 3.19 at 775 C (1.79% spread, worst pair 300 vs 600) departs from class-linearity, as Table 2-3.19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 3.19 at 800 C (1.15% spread, worst pair 400 vs 300) departs from class-linearity, as Table 2-3.19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 3.19 at 816 C (5.41% spread, worst pair 600 vs 300) departs from class-linearity, as Table 2-3.19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.1 at 38 C (23.19% spread, worst pair 900 vs 75) departs from class-linearity, as Table 3 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.1 at 50 C (22.89% spread, worst pair 300 vs 75) departs from class-linearity, as Table 3 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.1 at 100 C (24.67% spread, worst pair 400 vs 75) departs from class-linearity, as Table 3 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.1 at 150 C (29.93% spread, worst pair 300 vs 75) departs from class-linearity, as Table 3 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.1 at 200 C (37.03% spread, worst pair 900 vs 75) departs from class-linearity, as Table 3 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.1 at 250 C (42.86% spread, worst pair 300 vs 75) departs from class-linearity, as Table 3 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.1 at 300 C (48.87% spread, worst pair 300 vs 75) departs from class-linearity, as Table 3 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.1 at 325 C (52.45% spread, worst pair 300 vs 75) departs from class-linearity, as Table 3 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.1 at 350 C (67.07% spread, worst pair 400 vs 75) departs from class-linearity, as Table 3 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.2 at 38 C (23.40% spread, worst pair 300 vs 75) departs from class-linearity, as Table 4 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.2 at 50 C (24.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 4 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.2 at 100 C (31.69% spread, worst pair 900 vs 75) departs from class-linearity, as Table 4 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.2 at 150 C (37.05% spread, worst pair 300 vs 75) departs from class-linearity, as Table 4 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.2 at 200 C (43.21% spread, worst pair 300 vs 75) departs from class-linearity, as Table 4 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.2 at 250 C (48.22% spread, worst pair 400 vs 75) departs from class-linearity, as Table 4 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.2 at 300 C (53.21% spread, worst pair 300 vs 75) departs from class-linearity, as Table 4 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.2 at 325 C (56.19% spread, worst pair 300 vs 75) departs from class-linearity, as Table 4 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.2 at 350 C (69.10% spread, worst pair 400 vs 75) departs from class-linearity, as Table 4 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.3 at 38 C (23.33% spread, worst pair 300 vs 75) departs from class-linearity, as Table 5 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.3 at 50 C (24.17% spread, worst pair 300 vs 75) departs from class-linearity, as Table 5 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.3 at 100 C (23.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 5 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.3 at 150 C (28.24% spread, worst pair 900 vs 75) departs from class-linearity, as Table 5 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.3 at 200 C (35.21% spread, worst pair 300 vs 75) departs from class-linearity, as Table 5 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.3 at 250 C (41.10% spread, worst pair 600 vs 75) departs from class-linearity, as Table 5 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.3 at 300 C (47.29% spread, worst pair 300 vs 75) departs from class-linearity, as Table 5 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.3 at 325 C (51.13% spread, worst pair 400 vs 75) departs from class-linearity, as Table 5 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.3 at 350 C (65.93% spread, worst pair 300 vs 75) departs from class-linearity, as Table 5 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.3 at 500 C (4.26% spread, worst pair 600 vs 900) departs from class-linearity, as Table 5 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.4 at 38 C (23.00% spread, worst pair 300 vs 75) departs from class-linearity, as Table 6 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.4 at 50 C (23.12% spread, worst pair 400 vs 75) departs from class-linearity, as Table 6 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.4 at 100 C (23.91% spread, worst pair 300 vs 75) departs from class-linearity, as Table 6 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.4 at 150 C (23.51% spread, worst pair 400 vs 75) departs from class-linearity, as Table 6 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.4 at 200 C (24.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 6 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.4 at 250 C (31.43% spread, worst pair 300 vs 75) departs from class-linearity, as Table 6 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.4 at 300 C (38.46% spread, worst pair 400 vs 75) departs from class-linearity, as Table 6 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.4 at 325 C (43.08% spread, worst pair 400 vs 75) departs from class-linearity, as Table 6 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.4 at 350 C (60.38% spread, worst pair 300 vs 75) departs from class-linearity, as Table 6 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.5 at 38 C (23.33% spread, worst pair 300 vs 75) departs from class-linearity, as Table 7 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.5 at 50 C (23.33% spread, worst pair 300 vs 75) departs from class-linearity, as Table 7 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.5 at 100 C (26.67% spread, worst pair 300 vs 75) departs from class-linearity, as Table 7 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.5 at 150 C (33.23% spread, worst pair 400 vs 75) departs from class-linearity, as Table 7 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.5 at 200 C (39.87% spread, worst pair 300 vs 75) departs from class-linearity, as Table 7 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.5 at 250 C (46.01% spread, worst pair 600 vs 75) departs from class-linearity, as Table 7 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.5 at 300 C (52.78% spread, worst pair 300 vs 75) departs from class-linearity, as Table 7 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.5 at 325 C (56.81% spread, worst pair 300 vs 75) departs from class-linearity, as Table 7 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.5 at 350 C (70.41% spread, worst pair 300 vs 75) departs from class-linearity, as Table 7 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.7 at 38 C (23.40% spread, worst pair 300 vs 75) departs from class-linearity, as Table 8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.7 at 50 C (24.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.7 at 100 C (31.69% spread, worst pair 900 vs 75) departs from class-linearity, as Table 8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.7 at 150 C (37.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.7 at 200 C (43.21% spread, worst pair 300 vs 75) departs from class-linearity, as Table 8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.7 at 250 C (48.22% spread, worst pair 400 vs 75) departs from class-linearity, as Table 8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.7 at 300 C (54.67% spread, worst pair 300 vs 75) departs from class-linearity, as Table 8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.7 at 325 C (57.51% spread, worst pair 300 vs 75) departs from class-linearity, as Table 8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.7 at 350 C (70.41% spread, worst pair 300 vs 75) departs from class-linearity, as Table 8 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.9 at 38 C (23.40% spread, worst pair 300 vs 75) departs from class-linearity, as Table 9 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.9 at 50 C (24.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 9 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.9 at 100 C (31.69% spread, worst pair 900 vs 75) departs from class-linearity, as Table 9 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.9 at 150 C (36.55% spread, worst pair 300 vs 75) departs from class-linearity, as Table 9 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.9 at 200 C (42.44% spread, worst pair 600 vs 75) departs from class-linearity, as Table 9 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.9 at 250 C (48.16% spread, worst pair 300 vs 75) departs from class-linearity, as Table 9 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.9 at 300 C (54.67% spread, worst pair 300 vs 75) departs from class-linearity, as Table 9 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.9 at 325 C (57.51% spread, worst pair 300 vs 75) departs from class-linearity, as Table 9 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.9 at 350 C (70.41% spread, worst pair 300 vs 75) departs from class-linearity, as Table 9 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.9 at 625 C (1.16% spread, worst pair 300 vs 600) departs from class-linearity, as Table 9 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.9 at 649 C (1.75% spread, worst pair 400 vs 300) departs from class-linearity, as Table 9 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.10 at 38 C (23.40% spread, worst pair 300 vs 75) departs from class-linearity, as Table 10 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.10 at 50 C (24.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 10 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.10 at 100 C (31.69% spread, worst pair 900 vs 75) departs from class-linearity, as Table 10 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.10 at 150 C (37.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 10 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.10 at 200 C (43.21% spread, worst pair 300 vs 75) departs from class-linearity, as Table 10 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.10 at 250 C (48.22% spread, worst pair 400 vs 75) departs from class-linearity, as Table 10 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.10 at 300 C (54.67% spread, worst pair 300 vs 75) departs from class-linearity, as Table 10 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.10 at 325 C (57.51% spread, worst pair 300 vs 75) departs from class-linearity, as Table 10 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.10 at 350 C (70.41% spread, worst pair 300 vs 75) departs from class-linearity, as Table 10 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.10 at 375 C (100.00% spread, worst pair 300 vs 75) departs from class-linearity, as Table 10 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.10 at 649 C (1.75% spread, worst pair 400 vs 300) departs from class-linearity, as Table 10 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.11 at 38 C (22.63% spread, worst pair 300 vs 75) departs from class-linearity, as Table 11 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.11 at 50 C (24.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 11 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.11 at 100 C (31.69% spread, worst pair 900 vs 75) departs from class-linearity, as Table 11 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.11 at 150 C (37.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 11 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.11 at 200 C (43.21% spread, worst pair 300 vs 75) departs from class-linearity, as Table 11 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.11 at 250 C (48.22% spread, worst pair 400 vs 75) departs from class-linearity, as Table 11 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.11 at 300 C (54.67% spread, worst pair 300 vs 75) departs from class-linearity, as Table 11 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.11 at 325 C (57.51% spread, worst pair 300 vs 75) departs from class-linearity, as Table 11 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.11 at 350 C (70.41% spread, worst pair 300 vs 75) departs from class-linearity, as Table 11 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.11 at 375 C (100.00% spread, worst pair 300 vs 75) departs from class-linearity, as Table 11 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.11 at 649 C (1.61% spread, worst pair 300 vs 600) departs from class-linearity, as Table 11 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.13 at 38 C (22.63% spread, worst pair 300 vs 75) departs from class-linearity, as Table 12 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.13 at 50 C (24.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 12 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.13 at 100 C (31.69% spread, worst pair 900 vs 75) departs from class-linearity, as Table 12 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.13 at 150 C (37.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 12 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.13 at 200 C (43.21% spread, worst pair 300 vs 75) departs from class-linearity, as Table 12 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.13 at 250 C (48.22% spread, worst pair 400 vs 75) departs from class-linearity, as Table 12 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.13 at 300 C (54.67% spread, worst pair 300 vs 75) departs from class-linearity, as Table 12 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.13 at 325 C (57.51% spread, worst pair 300 vs 75) departs from class-linearity, as Table 12 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.13 at 350 C (70.41% spread, worst pair 300 vs 75) departs from class-linearity, as Table 12 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.13 at 375 C (100.00% spread, worst pair 300 vs 75) departs from class-linearity, as Table 12 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.13 at 625 C (1.89% spread, worst pair 400 vs 300) departs from class-linearity, as Table 12 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.13 at 649 C (3.13% spread, worst pair 300 vs 400) departs from class-linearity, as Table 12 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.14 at 38 C (22.63% spread, worst pair 300 vs 75) departs from class-linearity, as Table 13 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.14 at 50 C (24.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 13 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.14 at 100 C (31.69% spread, worst pair 900 vs 75) departs from class-linearity, as Table 13 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.14 at 150 C (37.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 13 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.14 at 200 C (43.21% spread, worst pair 300 vs 75) departs from class-linearity, as Table 13 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.14 at 250 C (48.22% spread, worst pair 400 vs 75) departs from class-linearity, as Table 13 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.14 at 300 C (54.67% spread, worst pair 300 vs 75) departs from class-linearity, as Table 13 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.14 at 325 C (57.51% spread, worst pair 300 vs 75) departs from class-linearity, as Table 13 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.14 at 350 C (70.41% spread, worst pair 300 vs 75) departs from class-linearity, as Table 13 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.14 at 625 C (1.01% spread, worst pair 400 vs 300) departs from class-linearity, as Table 13 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.14 at 649 C (2.08% spread, worst pair 300 vs 400) departs from class-linearity, as Table 13 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.15 at 38 C (22.63% spread, worst pair 300 vs 75) departs from class-linearity, as Table 14 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.15 at 50 C (24.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 14 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.15 at 100 C (31.69% spread, worst pair 900 vs 75) departs from class-linearity, as Table 14 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.15 at 150 C (37.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 14 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.15 at 200 C (43.21% spread, worst pair 300 vs 75) departs from class-linearity, as Table 14 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.15 at 250 C (48.22% spread, worst pair 400 vs 75) departs from class-linearity, as Table 14 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.15 at 300 C (54.67% spread, worst pair 300 vs 75) departs from class-linearity, as Table 14 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.15 at 325 C (57.51% spread, worst pair 300 vs 75) departs from class-linearity, as Table 14 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.15 at 350 C (70.41% spread, worst pair 300 vs 75) departs from class-linearity, as Table 14 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.17 at 38 C (23.40% spread, worst pair 300 vs 75) departs from class-linearity, as Table 15 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.17 at 50 C (24.03% spread, worst pair 300 vs 75) departs from class-linearity, as Table 15 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.17 at 100 C (30.43% spread, worst pair 300 vs 75) departs from class-linearity, as Table 15 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.17 at 150 C (34.37% spread, worst pair 400 vs 75) departs from class-linearity, as Table 15 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.17 at 200 C (40.39% spread, worst pair 300 vs 75) departs from class-linearity, as Table 15 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.17 at 250 C (46.49% spread, worst pair 400 vs 75) departs from class-linearity, as Table 15 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.17 at 300 C (53.21% spread, worst pair 300 vs 75) departs from class-linearity, as Table 15 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.17 at 325 C (57.21% spread, worst pair 300 vs 75) departs from class-linearity, as Table 15 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.17 at 350 C (70.41% spread, worst pair 300 vs 75) departs from class-linearity, as Table 15 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.17 at 625 C (1.89% spread, worst pair 400 vs 300) departs from class-linearity, as Table 15 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.17 at 649 C (3.13% spread, worst pair 300 vs 400) departs from class-linearity, as Table 15 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.18 at 38 C (22.63% spread, worst pair 300 vs 75) departs from class-linearity, as Table 16 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.18 at 50 C (24.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 16 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.18 at 100 C (30.92% spread, worst pair 900 vs 75) departs from class-linearity, as Table 16 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.18 at 150 C (37.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 16 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.18 at 200 C (43.21% spread, worst pair 300 vs 75) departs from class-linearity, as Table 16 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.18 at 250 C (47.36% spread, worst pair 400 vs 75) departs from class-linearity, as Table 16 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.18 at 300 C (54.67% spread, worst pair 300 vs 75) departs from class-linearity, as Table 16 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.18 at 325 C (56.58% spread, worst pair 300 vs 75) departs from class-linearity, as Table 16 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.18 at 350 C (59.90% spread, worst pair 300 vs 75) departs from class-linearity, as Table 16 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 1.18 at 600 C (1.05% spread, worst pair 300 vs 900) departs from class-linearity, as Table 16 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.1 at 38 C (22.78% spread, worst pair 400 vs 75) departs from class-linearity, as Table 17 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.1 at 50 C (23.10% spread, worst pair 400 vs 75) departs from class-linearity, as Table 17 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.1 at 100 C (23.53% spread, worst pair 300 vs 75) departs from class-linearity, as Table 17 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.1 at 150 C (23.35% spread, worst pair 400 vs 75) departs from class-linearity, as Table 17 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.1 at 200 C (23.03% spread, worst pair 300 vs 75) departs from class-linearity, as Table 17 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.1 at 250 C (24.22% spread, worst pair 300 vs 75) departs from class-linearity, as Table 17 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.1 at 300 C (34.19% spread, worst pair 300 vs 75) departs from class-linearity, as Table 17 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.1 at 325 C (37.85% spread, worst pair 600 vs 75) departs from class-linearity, as Table 17 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.1 at 350 C (43.15% spread, worst pair 400 vs 75) departs from class-linearity, as Table 17 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.1 at 775 C (1.04% spread, worst pair 300 vs 600) departs from class-linearity, as Table 17 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.2 at 38 C (22.78% spread, worst pair 400 vs 75) departs from class-linearity, as Table 18 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.2 at 50 C (23.10% spread, worst pair 400 vs 75) departs from class-linearity, as Table 18 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.2 at 100 C (23.22% spread, worst pair 300 vs 75) departs from class-linearity, as Table 18 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.2 at 150 C (22.92% spread, worst pair 300 vs 75) departs from class-linearity, as Table 18 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.2 at 200 C (23.81% spread, worst pair 300 vs 75) departs from class-linearity, as Table 18 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.2 at 250 C (28.14% spread, worst pair 300 vs 75) departs from class-linearity, as Table 18 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.2 at 300 C (35.14% spread, worst pair 600 vs 75) departs from class-linearity, as Table 18 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.2 at 325 C (40.65% spread, worst pair 300 vs 75) departs from class-linearity, as Table 18 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.2 at 350 C (59.01% spread, worst pair 600 vs 75) departs from class-linearity, as Table 18 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.2 at 800 C (1.39% spread, worst pair 300 vs 600) departs from class-linearity, as Table 18 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.2 at 816 C (1.61% spread, worst pair 300 vs 600) departs from class-linearity, as Table 18 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.3 at 38 C (23.25% spread, worst pair 400 vs 75) departs from class-linearity, as Table 19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.3 at 50 C (22.96% spread, worst pair 300 vs 75) departs from class-linearity, as Table 19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.3 at 100 C (23.43% spread, worst pair 300 vs 75) departs from class-linearity, as Table 19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.3 at 150 C (22.42% spread, worst pair 600 vs 75) departs from class-linearity, as Table 19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.3 at 200 C (22.89% spread, worst pair 600 vs 75) departs from class-linearity, as Table 19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.3 at 250 C (22.63% spread, worst pair 300 vs 75) departs from class-linearity, as Table 19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.3 at 300 C (22.93% spread, worst pair 400 vs 75) departs from class-linearity, as Table 19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.3 at 325 C (26.13% spread, worst pair 600 vs 75) departs from class-linearity, as Table 19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.3 at 350 C (31.20% spread, worst pair 300 vs 75) departs from class-linearity, as Table 19 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.4 at 38 C (22.78% spread, worst pair 400 vs 75) departs from class-linearity, as Table 20 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.4 at 50 C (22.79% spread, worst pair 300 vs 75) departs from class-linearity, as Table 20 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.4 at 100 C (23.16% spread, worst pair 400 vs 75) departs from class-linearity, as Table 20 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.4 at 150 C (23.25% spread, worst pair 400 vs 75) departs from class-linearity, as Table 20 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.4 at 200 C (28.13% spread, worst pair 300 vs 75) departs from class-linearity, as Table 20 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.4 at 250 C (33.33% spread, worst pair 300 vs 75) departs from class-linearity, as Table 20 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.4 at 300 C (40.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 20 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.4 at 325 C (44.91% spread, worst pair 300 vs 75) departs from class-linearity, as Table 20 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.4 at 350 C (62.02% spread, worst pair 600 vs 75) departs from class-linearity, as Table 20 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.4 at 750 C (1.01% spread, worst pair 400 vs 300) departs from class-linearity, as Table 20 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.4 at 775 C (1.89% spread, worst pair 400 vs 300) departs from class-linearity, as Table 20 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.4 at 800 C (1.59% spread, worst pair 400 vs 300) departs from class-linearity, as Table 20 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.5 at 38 C (22.78% spread, worst pair 400 vs 75) departs from class-linearity, as Table 21 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.5 at 50 C (23.34% spread, worst pair 400 vs 75) departs from class-linearity, as Table 21 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.5 at 100 C (23.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 21 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.5 at 150 C (25.69% spread, worst pair 400 vs 75) departs from class-linearity, as Table 21 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.5 at 200 C (30.65% spread, worst pair 300 vs 75) departs from class-linearity, as Table 21 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.5 at 250 C (36.38% spread, worst pair 400 vs 75) departs from class-linearity, as Table 21 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.5 at 300 C (43.33% spread, worst pair 300 vs 75) departs from class-linearity, as Table 21 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.5 at 325 C (47.91% spread, worst pair 400 vs 75) departs from class-linearity, as Table 21 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.5 at 350 C (64.57% spread, worst pair 300 vs 75) departs from class-linearity, as Table 21 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.5 at 475 C (4.64% spread, worst pair 300 vs 600) departs from class-linearity, as Table 21 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.5 at 600 C (2.37% spread, worst pair 300 vs 900) departs from class-linearity, as Table 21 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.5 at 816 C (1.61% spread, worst pair 300 vs 600) departs from class-linearity, as Table 21 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.6 at 38 C (22.78% spread, worst pair 400 vs 75) departs from class-linearity, as Table 22 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.6 at 50 C (23.10% spread, worst pair 400 vs 75) departs from class-linearity, as Table 22 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.6 at 100 C (23.54% spread, worst pair 300 vs 75) departs from class-linearity, as Table 22 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.6 at 150 C (23.24% spread, worst pair 400 vs 75) departs from class-linearity, as Table 22 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.6 at 200 C (26.84% spread, worst pair 400 vs 75) departs from class-linearity, as Table 22 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.6 at 250 C (33.33% spread, worst pair 300 vs 75) departs from class-linearity, as Table 22 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.6 at 300 C (41.71% spread, worst pair 300 vs 75) departs from class-linearity, as Table 22 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.6 at 325 C (46.36% spread, worst pair 300 vs 75) departs from class-linearity, as Table 22 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.6 at 350 C (63.37% spread, worst pair 600 vs 75) departs from class-linearity, as Table 22 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.6 at 775 C (1.85% spread, worst pair 300 vs 600) departs from class-linearity, as Table 22 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.6 at 816 C (4.17% spread, worst pair 300 vs 400) departs from class-linearity, as Table 22 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.7 at 38 C (22.78% spread, worst pair 400 vs 75) departs from class-linearity, as Table 23 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.7 at 50 C (22.79% spread, worst pair 300 vs 75) departs from class-linearity, as Table 23 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.7 at 100 C (22.89% spread, worst pair 400 vs 75) departs from class-linearity, as Table 23 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.7 at 150 C (23.24% spread, worst pair 400 vs 75) departs from class-linearity, as Table 23 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.7 at 200 C (26.84% spread, worst pair 400 vs 75) departs from class-linearity, as Table 23 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.7 at 250 C (32.77% spread, worst pair 300 vs 75) departs from class-linearity, as Table 23 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.7 at 300 C (41.13% spread, worst pair 400 vs 75) departs from class-linearity, as Table 23 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.7 at 325 C (45.64% spread, worst pair 600 vs 75) departs from class-linearity, as Table 23 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.7 at 350 C (62.87% spread, worst pair 300 vs 75) departs from class-linearity, as Table 23 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.7 at 775 C (1.27% spread, worst pair 900 vs 300) departs from class-linearity, as Table 23 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.7 at 800 C (2.44% spread, worst pair 600 vs 300) departs from class-linearity, as Table 23 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.7 at 816 C (4.17% spread, worst pair 300 vs 400) departs from class-linearity, as Table 23 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 38 C (22.63% spread, worst pair 300 vs 75) departs from class-linearity, as Table 24 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 50 C (24.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 24 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 100 C (30.67% spread, worst pair 400 vs 75) departs from class-linearity, as Table 24 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 150 C (31.27% spread, worst pair 400 vs 75) departs from class-linearity, as Table 24 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 200 C (35.66% spread, worst pair 300 vs 75) departs from class-linearity, as Table 24 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 250 C (40.74% spread, worst pair 300 vs 75) departs from class-linearity, as Table 24 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 300 C (47.39% spread, worst pair 400 vs 75) departs from class-linearity, as Table 24 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 325 C (51.71% spread, worst pair 300 vs 75) departs from class-linearity, as Table 24 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.8 at 350 C (67.13% spread, worst pair 400 vs 75) departs from class-linearity, as Table 24 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 38 C (23.58% spread, worst pair 400 vs 75) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 50 C (23.10% spread, worst pair 400 vs 75) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 100 C (22.61% spread, worst pair 300 vs 75) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 150 C (23.24% spread, worst pair 400 vs 75) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 200 C (26.84% spread, worst pair 400 vs 75) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 250 C (32.77% spread, worst pair 300 vs 75) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 300 C (41.13% spread, worst pair 400 vs 75) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 325 C (45.64% spread, worst pair 600 vs 75) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 350 C (62.87% spread, worst pair 300 vs 75) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 675 C (1.35% spread, worst pair 300 vs 600) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 725 C (3.70% spread, worst pair 400 vs 300) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 750 C (4.76% spread, worst pair 400 vs 300) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 775 C (4.00% spread, worst pair 900 vs 300) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.9 at 816 C (10.00% spread, worst pair 300 vs 400) departs from class-linearity, as Table 25 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.10 at 38 C (23.11% spread, worst pair 300 vs 75) departs from class-linearity, as Table 26 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.10 at 50 C (23.43% spread, worst pair 400 vs 75) departs from class-linearity, as Table 26 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.10 at 100 C (22.99% spread, worst pair 300 vs 75) departs from class-linearity, as Table 26 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.10 at 150 C (23.43% spread, worst pair 300 vs 75) departs from class-linearity, as Table 26 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.10 at 200 C (23.81% spread, worst pair 300 vs 75) departs from class-linearity, as Table 26 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.10 at 250 C (26.49% spread, worst pair 600 vs 75) departs from class-linearity, as Table 26 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.10 at 300 C (35.65% spread, worst pair 300 vs 75) departs from class-linearity, as Table 26 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.10 at 325 C (41.03% spread, worst pair 300 vs 75) departs from class-linearity, as Table 26 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.10 at 350 C (59.34% spread, worst pair 300 vs 75) departs from class-linearity, as Table 26 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.10 at 725 C (1.09% spread, worst pair 300 vs 600) departs from class-linearity, as Table 26 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.10 at 775 C (1.00% spread, worst pair 300 vs 400) departs from class-linearity, as Table 26 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.10 at 800 C (2.50% spread, worst pair 300 vs 400) departs from class-linearity, as Table 26 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.10 at 816 C (1.75% spread, worst pair 300 vs 900) departs from class-linearity, as Table 26 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 38 C (22.78% spread, worst pair 400 vs 75) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 50 C (23.34% spread, worst pair 400 vs 75) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 100 C (23.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 150 C (25.69% spread, worst pair 400 vs 75) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 200 C (30.65% spread, worst pair 300 vs 75) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 250 C (36.38% spread, worst pair 400 vs 75) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 300 C (43.33% spread, worst pair 300 vs 75) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 325 C (47.91% spread, worst pair 400 vs 75) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 350 C (64.57% spread, worst pair 300 vs 75) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 500 C (5.65% spread, worst pair 300 vs 400) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 725 C (4.40% spread, worst pair 400 vs 300) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 750 C (1.61% spread, worst pair 300 vs 600) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 775 C (3.03% spread, worst pair 400 vs 300) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 800 C (2.88% spread, worst pair 400 vs 900) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.11 at 816 C (1.75% spread, worst pair 300 vs 900) departs from class-linearity, as Table 27 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.12 at 38 C (23.11% spread, worst pair 300 vs 75) departs from class-linearity, as Table 28 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.12 at 50 C (23.43% spread, worst pair 400 vs 75) departs from class-linearity, as Table 28 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.12 at 100 C (22.99% spread, worst pair 300 vs 75) departs from class-linearity, as Table 28 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.12 at 150 C (23.43% spread, worst pair 300 vs 75) departs from class-linearity, as Table 28 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.12 at 200 C (23.81% spread, worst pair 300 vs 75) departs from class-linearity, as Table 28 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.12 at 250 C (26.49% spread, worst pair 600 vs 75) departs from class-linearity, as Table 28 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.12 at 300 C (35.65% spread, worst pair 300 vs 75) departs from class-linearity, as Table 28 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.12 at 325 C (41.03% spread, worst pair 300 vs 75) departs from class-linearity, as Table 28 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.12 at 350 C (59.34% spread, worst pair 300 vs 75) departs from class-linearity, as Table 28 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.12 at 775 C (1.61% spread, worst pair 300 vs 600) departs from class-linearity, as Table 28 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.12 at 800 C (2.17% spread, worst pair 300 vs 400) departs from class-linearity, as Table 28 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.12 at 816 C (1.75% spread, worst pair 300 vs 900) departs from class-linearity, as Table 28 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.13 at 38 C (22.63% spread, worst pair 300 vs 75) departs from class-linearity, as Table 29 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.13 at 50 C (24.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 29 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.13 at 100 C (30.92% spread, worst pair 900 vs 75) departs from class-linearity, as Table 29 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.13 at 150 C (37.18% spread, worst pair 300 vs 75) departs from class-linearity, as Table 29 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.13 at 200 C (43.21% spread, worst pair 300 vs 75) departs from class-linearity, as Table 29 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 2.13 at 250 C (47.36% spread, worst pair 400 vs 75) departs from class-linearity, as Table 29 genuinely does; transcribed, not corrected
+  ok  [ref:flange-pt-ratings] group 3.3 class 2500 ticks up 10 kPa from 350 C to 375 C; one rounding step in Table 2-3.3, transcribed
+  ok  [ref:flange-pt-ratings] B16.47 group 2.5 class 600 RISES 70 kPa from 475 C to 500 C in Table 21 - a DECLARED cross-standard discrepancy, transcribed as printed. This rule found it independently of the comparison.
+  ok  [ref:flange-pt-ratings] B16.47 group 2.11 class 300 RISES 70 kPa from 475 C to 500 C in Table 27 - a DECLARED cross-standard discrepancy, transcribed as printed. This rule found it independently of the comparison.
+  ok  [ref:flange-pt-ratings] 72 curve(s), 72 verified / 0 not, 1253 temperature points, 1 derived class(es)
+
+All 3 standards packs + 16 reference packs valid. AWP seams intact (ADR-002).

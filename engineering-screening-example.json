@@ -1,0 +1,43 @@
+{
+    "ruleset": "material-screening/1.0.0",
+    "input_sha256": "ae53f61ba3dcf7cb5d327d83b029ae0b37b26d712e493696c0da853d35b84264",
+    "status": "REVIEW_REQUIRED",
+    "engineering_approved": false,
+    "automatic_consumption_allowed": false,
+    "findings": [
+        {
+            "code": "REFERENCE_VALUE_DIFFERENCE",
+            "severity": "REVIEW_REQUIRED",
+            "field": "properties.wall_thickness_mm",
+            "basis": "pipe-schedules 1.0.0; NPS 12; schedule STD",
+            "message": {
+                "en": "Declared value differs from loaded nominal reference (9.53 mm). Check the source and tolerances; do not overwrite it.",
+                "fa": "مقدار اظهارشده با مرجع اسمی موجود (9.53 میلی‌متر) متفاوت است؛ منبع و تلرانس بررسی شود؛ مقدار جایگزین نشود."
+            }
+        },
+        {
+            "code": "SOURCE_REVIEW_REQUIRED",
+            "severity": "REVIEW_REQUIRED",
+            "field": "source_text",
+            "basis": "Workflow boundary",
+            "message": {
+                "en": "Verify the actual Spec, standard edition, applicability and completeness. Automated screening is not engineering approval.",
+                "fa": "Spec واقعی، ویرایش استاندارد، کاربردپذیری و کامل‌بودن اطلاعات باید بررسی شوند؛ غربالگری خودکار تأیید مهندسی نیست."
+            }
+        }
+    ],
+    "references": [
+        {
+            "ref_id": "pipe-sizes",
+            "version": "1.0.0",
+            "source": "ASME B36.10M-2022 (welded and seamless wrought steel pipe); ASME B36.19M-2018 (stainless steel pipe)",
+            "sha256": "63ae478492c6a7ae6009f0d42405492937e9f39589748152d8a75a07d52a4212"
+        },
+        {
+            "ref_id": "pipe-schedules",
+            "version": "1.0.0",
+            "source": "ASME B36.10M-2022 (carbon and alloy steel); ASME B36.19M-2018 (stainless, the S schedules)",
+            "sha256": "de69cae9918057b06215fb2889a5e98da3d05fa3fd8b54c569a9dcc587561ec4"
+        }
+    ]
+}

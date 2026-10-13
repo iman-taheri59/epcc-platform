@@ -1,0 +1,27 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+F                                                                   1 / 1 (100%)
+
+Time: 00:02.686, Memory: 83.00 MB
+
+There was 1 failure:
+
+1) Tests\Feature\ItpTest::test_a_plan_can_be_registered_over_http
+Failed asserting that two strings are equal.
+--- Expected
++++ Actual
+@@ @@
+-'...4-8aab-bc7f21aa1b5b?lang=fa'
++'...4-8aab-bc7f21aa1b5b?lang=en'
+
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:46
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:440
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:214
+/home/user/epcc-platform/app/tests/Feature/ItpTest.php:1299
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+FAILURES!
+Tests: 1, Assertions: 2, Failures: 1.

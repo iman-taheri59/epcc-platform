@@ -1,0 +1,9 @@
+No syntax errors detected in app/app/Services/FittingReviewService.php
+No syntax errors detected in app/app/Services/ProjectFittingDefinitionService.php
+No syntax errors detected in app/app/Models/ProjectFittingDefinition.php
+No syntax errors detected in app/app/Http/Controllers/ProjectFittingDefinitionController.php
+No syntax errors detected in app/database/migrations/2026_09_29_090000_add_project_fitting_review.php
+No syntax errors detected in app/tests/Feature/FittingReviewTest.php
+No syntax errors detected in app/routes/web.php
+No syntax errors detected in app/lang/fa/fitting_review.php
+No syntax errors detected in app/lang/en/fitting_review.php

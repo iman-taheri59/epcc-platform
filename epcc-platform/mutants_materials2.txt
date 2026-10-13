@@ -1,0 +1,4 @@
+M460|app/Support/Reference/MaterialLibrary.php|                    ? null|                    ? 0.0|a non-metallic factor must never become zero
+M461|app/Support/Reference/MaterialLibrary.php|return $group !== null && $group['metallic'] === true;|return true;|a non-metallic group must not claim the metallic design route
+M462|app/Support/Reference/MaterialLibrary.php|return isset($this->formIndex()[$productForm]);|return true;|an unknown product form must not pass as known
+M463|app/Support/Reference/MaterialLibrary.php|return $spec === null ? [] : $spec['surfaceConditions'];|return ['BLACK'];|the surface conditions must come from the specification

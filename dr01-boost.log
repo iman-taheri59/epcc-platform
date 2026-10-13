@@ -1,0 +1,49 @@
+
+[38;5;81m  ██████╗   ██████╗   ██████╗  ███████╗ ████████╗[0m
+[38;5;75m  ██╔══██╗ ██╔═══██╗ ██╔═══██╗ ██╔════╝ ╚══██╔══╝[0m
+[38;5;69m  ██████╔╝ ██║   ██║ ██║   ██║ ███████╗    ██║   [0m
+[38;5;63m  ██╔══██╗ ██║   ██║ ██║   ██║ ╚════██║    ██║   [0m
+[38;5;57m  ██████╔╝ ╚██████╔╝ ╚██████╔╝ ███████║    ██║   [0m
+[38;5;21m  ╚═════╝   ╚═════╝   ╚═════╝  ╚══════╝    ╚═╝   [0m
+
+  [48;5;81m[30m[1m ✦ Laravel Boost :: Install :: We Must Ship ✦ [0m
+
+  Let's give [48;5;81m[30m[1mLaravel[0m a Boost
+
+
+Adding 9 guidelines to your selected agents
+
+ ┌─────────────────────┬──────────────┬────────────┐
+ │ boost               │ deployments  │ foundation │
+ ├─────────────────────┼──────────────┼────────────┤
+ │ laravel-octane/core │ laravel/core │ php        │
+ ├─────────────────────┼──────────────┼────────────┤
+ │ phpunit/core        │ pint/core    │ tests      │
+ └─────────────────────┴──────────────┴────────────┘
+
+
+  Claude Code... [32m✓[39m
+
+
+Syncing 6 skills for skills-capable agents
+
+ ┌─────────────────────────┬────────────────────────┐
+ │ deploying-to-cloud      │ infer-conventions      │
+ ├─────────────────────────┼────────────────────────┤
+ │ laravel-best-practices  │ octane-development     │
+ ├─────────────────────────┼────────────────────────┤
+ │ tailwindcss-development │ testing-best-practices │
+ └─────────────────────────┴────────────────────────┘
+
+
+  Claude Code... [32m✓[39m
+
+
+Installing MCP servers to your selected Agents
+
+  Claude Code... [32m✓[39m
+
+ 💡 Run the infer-conventions skill to record your app conventions and sharpen code generation.
+
+[48;5;81m[2K       [30m[1mEnjoy the boost 🚀 Next steps: ]8;;https://laravel.com/docs/boosthttps://laravel.com/docs/boost]8;;\[0m
+

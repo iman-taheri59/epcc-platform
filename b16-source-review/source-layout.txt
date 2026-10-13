@@ -1,0 +1,1978 @@
+                                   ASME B16.9-2018
+                                  (Revision of ASME B16.9-2012)
+
+
+
+
+Factory-Made
+Wrought
+Buttwelding
+Fittings
+
+
+
+
+A N A M E R I C A N N AT I O N A L STA N DA R D
+                            ASME B16.9-2018
+                            (Revision of ASME B16.9-2012)
+
+
+
+
+    Factory-Made
+    Wrought
+    Buttwelding
+    Fittings
+
+
+
+
+      AN AMERICAN NATIONAL STANDARD
+
+
+
+
+x
+                                                     Date of Issuance: October 29, 2018
+
+
+
+
+The next edition of this Standard is scheduled for publication in 2023.
+
+ASME issues written replies to inquiries concerning interpretations of technical aspects of this Standard. Periodically certain
+actions of the ASME B16 Committee may be published as Cases. Cases and interpretations are published on the ASME website
+under the Committee Pages at http://cstools.asme.org/ as they are issued.
+
+Errata to codes and standards may be posted on the ASME website under the Committee Pages to provide corrections to
+incorrectly published items, or to correct typographical or grammatical errors in codes and standards. Such errata shall be used
+on the date posted.
+
+The Committee Pages can be found at http://cstools.asme.org/. There is an option available to automatically receive an e-mail
+notification when errata are posted to a particular code or standard. This option can be found on the appropriate Committee
+Page after selecting “Errata” in the “Publication Information” section.
+
+
+
+
+                           ASME is the registered trademark of The American Society of Mechanical Engineers.
+
+   This code or standard was developed under procedures accredited as meeting the criteria for American National Standards. The Standards
+Committee that approved the code or standard was balanced to assure that individuals from competent and concerned interests have had an
+opportunity to participate. The proposed code or standard was made available for public review and comment that provides an opportunity
+for additional public input from industry, academia, regulatory agencies, and the public-at-large.
+   ASME does not “approve,” “rate,” or “endorse” any item, construction, proprietary device, or activity.
+   ASME does not take any position with respect to the validity of any patent rights asserted in connection with any items mentioned in this
+document, and does not undertake to insure anyone utilizing a standard against liability for infringement of any applicable letters patent, nor
+assume any such liability. Users of a code or standard are expressly advised that determination of the validity of any such patent rights, and the
+risk of infringement of such rights, is entirely their own responsibility.
+   Participation by federal agency representative(s) or person(s) affiliated with industry is not to be interpreted as government or industry
+endorsement of this code or standard.
+   ASME accepts responsibility for only those interpretations of this document issued in accordance with the established ASME procedures
+and policies, which precludes the issuance of interpretations by individuals.
+
+
+                                         No part of this document may be reproduced in any form,
+                                               in an electronic retrieval system or otherwise,
+                                           without the prior written permission of the publisher.
+
+
+                                               The American Society of Mechanical Engineers
+                                                Two Park Avenue, New York, NY 10016-5990
+
+
+                                                        Copyright © 2018 by
+                                           THE AMERICAN SOCIETY OF MECHANICAL ENGINEERS
+                                                         All rights reserved
+                                                          Printed in U.S.A.
+                                                                  CONTENTS
+
+Foreword . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      v
+Committee Roster . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         vi
+Correspondence With the B16 Committee . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .                      vii
+Summary of Changes . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .           ix
+List of Changes in Record Number Order . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .                      x
+
+1               Scope . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     1
+2               Pressure Ratings . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .            1
+3               Size . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .    2
+4               Marking . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       2
+5               Material . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .      3
+6               Fitting Dimensions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .            3
+7               Surface Contours . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .            3
+8               End Preparation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .             3
+9               Design Proof Test . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .             3
+10              Production Tests . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .            5
+11              Tolerances . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .        5
+
+Mandatory Appendix
+I         References . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .             28
+
+Nonmandatory Appendix
+A        Quality System Program . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .                    29
+
+Figure
+8-1             Maximum Envelope for Welding End Transitions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .                           24
+
+Tables
+5-1             Material Groupings . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .            6
+6.1-1           Dimensions of Long Radius Elbows . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .                    7
+6.1-2           Dimensions of Long Radius Reducing Elbows . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .                           8
+6.1-3           Dimensions of Long Radius Returns . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .                     9
+6.1-4           Dimensions of Short Radius Elbows . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .                     9
+6.1-5           Dimensions of Short Radius 180-deg Returns . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .                         10
+6.1-6           Dimensions of 3D Radius Elbows . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .                   11
+6.1-7           Dimensions of Straight Tees and Crosses . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .                    12
+6.1-8           Dimensions of Reducing Outlet Tees and Reducing Outlet Crosses . . . . . . . . . . . . . . . . . . . . . .                                   13
+6.1-9           Dimensions of Lap Joint Stub Ends . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .                  19
+6.1-10          Dimensions of Caps . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .           20
+
+
+                                                                               iii
+6.1-11    Dimensions of Reducers . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         21
+8-1       Welding Bevels and Root Face . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .             23
+9.2.1-1   Testing Coverage . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     25
+9.3.1-1   Test Factor, f, Determination . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .          25
+11-1      Tolerances . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .   26
+
+
+
+
+                                                                       iv
+                                                  FOREWORD
+
+  In 1921, the American Engineering Standards Committee, later the American Standards Association (ASA), organized
+Sectional Committee B16 to unify and further develop national standards for pipe flanges and fittings (and later, for
+valves, gaskets, and valve actuators). Cosponsors of the B16 Committee were The American Society of Mechanical
+Engineers (ASME), the Heating and Piping Contractors National Association [now the Mechanical Contractors
+Association of America (MCAA)], and the Manufacturers Standardization Society of the Valve and Fittings Industry
+(MSS). Cosponsors were later designated as cosecretariat organizations.
+  Standardization of welding fittings was initiated in 1937 by a subgroup (designated Subgroup 6) of Subcommittee 3.
+After consideration of several drafts, a standard was approved by the Committee, cosponsors, and ASA, and published
+with the designation ASA B16.9-1940.
+  Revisions were made in 1950 and 1955 to add sizes up to NPS 24 and to complete coverage of fittings in some sizes.
+These revisions were approved and published as ASA B16.9-1951 and ASA B16.9-1958. With the subgroup now desig-
+nated Subcommittee 6 (later Subcommittee F), further revisions were begun to clarify the intent of the Standard, to add
+angularity tolerances, and to include fittings of different types (long radius reducing elbows and crosses) and smaller sizes
+(NPS 1∕4 and NPS 1∕2). This revision was published as ASA B16.9-1964 after ASA approval.
+  After reorganization of ASA, first as the United States of America Standards Institute (USASI), then as the American
+National Standards Institute (ANSI), with the Sectional Committee being redesignated as an American National Standards
+Committee, another revision increasing the size range to NPS 48 and revising the text for clarity was approved and
+published as ANSI B16.9-1971.
+  In 1975, Subcommittee F began a major revision to bring the standard up to date with current practice and usage.
+Common fractions were expressed as decimals (but without intending higher precision) and metric dimensional equiva-
+lents were added. Provisions for step-wise change of radius for NPS 3∕4 long radius elbows and 180-deg returns were
+introduced. Following Standards Committee, cosecretariat, and ANSI approval, the revision was published as ANSI B16.9-
+1978. It was updated by a corrective addendum, B16.9a-1981, issued in February 1982.
+  In 1982, American National Standards Committee B16 was reorganized as an ASME Committee operating under
+procedures accredited by ANSI. In ASME/ANSI B16.9-1986, the text was revised and inch dimensions were established
+as the standard.
+  In 1991, the Subcommittee reviewed the Standard and made a number of revisions that were included in ASME B16.9-
+1993. Dimensions for short pattern lap joints were also added.
+  In ASME B16.9-2001, short radius elbows and returns were added, which included all dimensions and tolerances of
+ASME B16.28-1994. Metric units were provided as an independent but parallel alternative standard to U.S. Customary
+units. U.S. Customary units were moved into parentheses or separate tables in Mandatory Appendix I. In addition, a
+Quality System Program appendix was added.
+  In 2003, the Subcommittee reviewed the Standard and made a number of revisions. The scope of the Standard was
+changed to permit fabricated lap joint stub ends employing circumferential or intersection welds.
+  In 2006, the Subcommittee reviewed the Standard and made a number of additions and revisions. Segmental elbow
+requirements were added, as were 3D radius elbow dimensions. Reference documents were updated.
+  In 2012, the Subcommittee reviewed the Standard and made numerous revisions to the design proof test in section 9
+and updated the references in Mandatory Appendix II.
+  This edition adds more specific descriptions of acceptable design methods, revises the requirements for the design
+proof test, and updates the references. In addition, the U.S. Customary tables in Mandatory Appendix I have been merged
+with the Metric tables and all tables have been redesignated. Following the approval of the ASME B16 Standards
+Committee, ANSI approved ASME B16.9-2018 as an American National Standard on September 25, 2018.
+
+
+
+
+                                                             v
+                     ASME B16 COMMITTEE
+     Standardization of Valves, Flanges, Fittings, and Gaskets
+                         (The following is the roster of the Committee at the time of approval of this Standard.)
+
+
+
+                                           STANDARDS COMMITTEE OFFICERS
+                                                        R. M. Bojarczuk, Chair
+                                                        C. E. Davila, Vice Chair
+                                                       C. Ramcharran, Secretary
+
+
+
+                                         STANDARDS COMMITTEE PERSONNEL
+A. Appleton, Alloy Stainless Products Co., Inc.                           R. C. Merrick, Fluor Enterprises
+J. E. Barker, Dezurik Water Controls                                      M. L. Nayyar, NICE
+K. Barron, Ward Manufacturing                                             W. H. Patrick, The Dow Chemical Co.
+D. C. Bayreuther, Metso Automation, Flow Control Division                 D. Rahoi, CCM 2000
+W. B. Bedesem, Consultant                                                 C. Ramcharran, The American Society of Mechanical Engineers
+R. M. Bojarczuk, Consultant                                               D. F. Reid, VSP Technologies
+A. M. Cheta, Qatar Shell GTL                                              R. A. Schmidt, Canadoil
+M. A. Clark, Consultant                                                   J. P. Tucker, Flowserve Corp.
+G. A. Cuccio, Capitol Manufacturing Co.                                   F. R. Volgstadt, Volgstadt & Associates, Inc.
+J. D’Avanzo, Fluoroseal Valves                                            F. Feng, Delegate, China Productivity Center for Machinery
+C. E. Davila, Crane Energy                                                R. W. Barnes, Contributing Member, Anric Enterprises, Inc.
+K. S. Felder, Valero Energy                                               P. V. Craig, Contributing Member, Jomar Group
+D. R. Frikken, Becht Engineering Co.                                      B. G. Fabian, Contributing Member, Pennsylvania Machine Works
+D. Hunt, Jr., Fastenal                                                    M. Katcher, Contributing Member, Haynes International
+G. A. Jolly, Samshin Ltd.                                                 A. G. Kireta, Jr., Contributing Member, Copper Development
+E. J. Lain, Exelon Nuclear                                                   Association, Inc.
+T. A. McMahon, Emerson Process Management
+
+
+
+                      SUBCOMMITTEE F — STEEL THREADED AND WELDING FITTINGS
+B. G. Fabian, Chair, Pennsylvania Machine Works                           P. W. Heald, Bonney Forge
+R. A. Schmidt, Vice Chair, Canadoil                                       D. Hunt, Jr., Fastenal
+E. Lawson, Secretary, The American Society of Mechanical Engineers        G. A. Jolly, Samshin Ltd.
+J. Oh, Secretary, The American Society of Mechanical Engineers            F. Kavarana, CBI, Inc.
+A. Appleton, Alloy Stainless Products Co., Inc.                           W. Pritzl, Erne Fittings GmbH
+G. A. Cuccio, Capitol Manufacturing Co.                                   J. P. Tucker, Flowserve Corp.
+J. G. Dominguez, Welding Outlets, Inc.                                    G. T. Walden, Wolseley
+K. W. Doughty, CB&I Alloy Piping Products                                 M. M. Zaidi, Jacobs Engineering Group, Inc.
+J. P. Ellenberger                                                         D. J. Lafferty, Alternate, US Drop Forge Co.
+D. R. Frikken, Becht Engineering Co.
+
+
+
+
+                                                                     vi
+              CORRESPONDENCE WITH THE B16 COMMITTEE
+
+  General. ASME Standards are developed and maintained with the intent to represent the consensus of concerned
+interests. As such, users of this Standard may interact with the Committee by requesting interpretations, proposing
+revisions or a case, and attending Committee meetings. Correspondence should be addressed to:
+
+                     Secretary, B16 Standards Committee
+                     The American Society of Mechanical Engineers
+                     Two Park Avenue
+                     New York, NY 10016-5990
+                     http://go.asme.org/Inquiry
+
+   Proposing Revisions. Revisions are made periodically to the Standard to incorporate changes that appear necessary
+or desirable, as demonstrated by the experience gained from the application of the Standard. Approved revisions will be
+published periodically.
+   The Committee welcomes proposals for revisions to this Standard. Such proposals should be as specific as possible,
+citing the paragraph number(s), the proposed wording, and a detailed description of the reasons for the proposal,
+including any pertinent documentation.
+
+  Proposing a Case. Cases may be issued to provide alternative rules when justified, to permit early implementation of
+an approved revision when the need is urgent, or to provide rules not covered by existing provisions. Cases are effective
+immediately upon ASME approval and shall be posted on the ASME Committee web page.
+  Requests for Cases shall provide a Statement of Need and Background Information. The request should identify the
+Standard and the paragraph, figure, or table number(s), and be written as a Question and Reply in the same format as
+existing Cases. Requests for Cases should also indicate the applicable edition(s) of the Standard to which the proposed
+Case applies.
+
+  Interpretations. Upon request, the B16 Standards Committee will render an interpretation of any requirement of the
+Standard. Interpretations can only be rendered in response to a written request sent to the Secretary of the B16 Standards
+Committee.
+  Requests for interpretation should preferably be submitted through the online Interpretation Submittal Form. The
+form is accessible at http://go.asme.org/InterpretationRequest. Upon submittal of the form, the Inquirer will receive an
+automatic e-mail confirming receipt.
+  If the Inquirer is unable to use the online form, he/she may e-mail the request to the Secretary of the B16 Standards
+Committee at SecretaryB16@asme.org, or mail it to the above address. The request for an interpretation should be clear
+and unambiguous. It is further recommended that the Inquirer submit his/her request in the following format:
+Subject:                   Cite the applicable paragraph number(s) and the topic of the inquiry in one or two words.
+Edition:                   Cite the applicable edition of the Standard for which the interpretation is being requested.
+Question:               Phrase the question as a request for an interpretation of a specific requirement suitable for
+                          general understanding and use, not as a request for an approval of a proprietary design or
+                          situation. Please provide a condensed and precise question, composed in such a way that a
+                          “yes” or “no” reply is acceptable.
+Proposed Reply(ies):    Provide a proposed reply(ies) in the form of “Yes” or “No,” with explanation as needed. If entering
+                          replies to more than one question, please number the questions and replies.
+Background Information: Provide the Committee with any background information that will assist the Committee in
+                          understanding the inquiry. The Inquirer may also include any plans or drawings that are
+                          necessary to explain the question; however, they should not contain proprietary names or
+                          information.
+
+  Requests that are not in the format described above may be rewritten in the appropriate format by the Committee prior
+to being answered, which may inadvertently change the intent of the original request.
+
+
+                                                           vii
+  Moreover, ASME does not act as a consultant for specific engineering problems or for the general application or
+understanding of the Standard requirements. If, based on the inquiry information submitted, it is the opinion of
+the Committee that the Inquirer should seek assistance, the inquiry will be returned with the recommendation
+that such assistance be obtained.
+  ASME procedures provide for reconsideration of any interpretation when or if additional information that might affect
+an interpretation is available. Further, persons aggrieved by an interpretation may appeal to the cognizant ASME
+Committee or Subcommittee. ASME does not “approve,” “certify,” “rate,” or “endorse” any item, construction, proprietary
+device, or activity.
+
+  Attending Committee Meetings. The B16 Standards Committee regularly holds meetings and/or telephone confer-
+ences that are open to the public. Persons wishing to attend any meeting and/or telephone conference should contact the
+Secretary of the B16 Standards Committee.
+
+
+
+
+                                                         viii
+                                     ASME B16.9-2018
+                                   SUMMARY OF CHANGES
+
+Following approval by the ASME B16.9 Committee and ASME, and after public review, ASME B16.9-2018 was approved by
+the American National Standards Institute on September 29, 2018.
+
+In ASME B16.9-2018, the U.S. Customary tables formerly in Mandatory Appendix I have been merged with the Metric
+tables in the main text; the tables have been redesignated, Mandatory Appendix I deleted, and the cross-references
+updated accordingly. In addition, this edition includes the following changes identified by a margin note, (18). The
+Record Number listed below is explained in more detail in the “List of Changes in Record Number Order” following
+this Summary of Changes.
+
+
+     Page                       Location                           Change (Record Number)
+     1                          1.4                                First paragraph editorially revised
+     1                          1.5.1                              References to Mandatory Appendix II
+                                                                     editorially revised
+     2                          2.2                                Revised in its entirety (17-1543)
+     3                          Section 5                          Revised (17-1543)
+     3                          6.2.4                              In subpara. (c), “3D” revised to “3D radius”
+                                                                     (17-1543)
+     3                          Section 9                          Revised in its entirety (17-1543)
+     6                          Table 5-1                          Added (17-1543)
+     8                          Table 6.1-2                        Formerly Tables 2 and I-2; illustration
+                                                                     within table revised (17-1543)
+     10                         Table 6.1-5                        Formerly Tables 5 and I-5; General Note
+                                                                     editorially redesignated as Note (1), and
+                                                                     Note reference added to the illustration
+     11                         Table 6.1-6                        Formerly Tables 6 and I-6; in title, “3D”
+                                                                     revised to “3D Radius,” and in 45-deg
+                                                                     elbow entry for NPS 30, “964” mm revised
+                                                                     to “946” mm (17-1543)
+     23                         Table 8-1                          Formerly Table 12; Note (2) revised (17-
+                                                                     1543)
+     24                         Figure 8-1                         Editorially redesignated from Figure 1
+     28                         Mandatory Appendix I               Redesignated from Mandatory Appendix II
+                                                                     and updated (17-1543)
+
+
+
+
+                                                         ix
+          LIST OF CHANGES IN RECORD NUMBER ORDER
+
+  Record Number                                            Changes
+17-1543           Revised Table 6 title from “3D” to “3D Radius” in the Contents. Revised the Foreword.
+                    Revised section 2.2 in its entirety. Revised section 5. Revised “3D” to “3D radius” in
+                    section 6.2.4. Revised section 9 in its entirety. Replaced the figure in Tables 2 and I-2.
+                    Revised “3D” to “3D Radius” and “964” to “946” in Table 6. Revised the wording of Note
+                    (2) in Table 12. Revised “3D” to “3D Radius” in Table I-6. Made multiple revisions in
+                    Mandatory Appendix II.
+
+
+
+
+                                            x
+                                                            ASME B16.9-2018
+
+
+
+
+                FACTORY-MADE WROUGHT BUTTWELDING FITTINGS
+
+       1 SCOPE                                                             1.5.2 Codes and Regulations. A fitting used under the
+                                                                         jurisdiction of the ASME Boiler and Pressure Vessel Code
+       1.1 General                                                       (BPVC), the ASME Code for Pressure Piping, or a govern-
+                                                                         mental regulation is subject to any limitation of that code
+         This Standard covers overall dimensions, tolerances,
+                                                                         or regulation. This includes any maximum temperature
+       ratings, testing, and markings for factory-made
+                                                                         limitation or rule governing the use of a material at
+       wrought buttwelding fittings in sizes NPS 1∕2 through
+                                                                         low temperature.
+       NPS 48 (DN 15 through DN 1200).
+                                                                         1.6 Service Conditions
+       1.2 Special Fittings
+                                                                           Criteria for selection of fitting types and materials
+         Fittings may be made to special dimensions, sizes,
+                                                                         suitable for particular fluid service are not within the
+       shapes, and tolerances by agreement between the man-
+                                                                         scope of this Standard.
+       ufacturer and the purchaser.
+                                                                         1.7 Welding
+       1.3 Fabricated Fittings
+                                                                           Installation welding requirements are outside the scope
+          Fabricated laterals and other fittings employing circum-
+                                                                         of this Standard.
+       ferential or intersection welds are considered pipe fabri-
+       cation and are not within the scope of this Standard.             1.8 Quality Systems
+          Fabricated lap joint stub ends are exempt from the
+       above restrictions, provided they meet all the require-             Nonmandatory requirements relating to the fitting
+       ments of the applicable ASTM material specification               manufacturer’s Quality System Program are described
+       listed in section 5.                                              in Nonmandatory Appendix A.
+
+ð18Þ   1.4 Relevant Units                                                1.9 Convention
+          This Standard states values in both SI (Metric) and U.S.          For determining conformance with this Standard, the
+       Customary units. These systems of units are to be                 convention for fixing significant digits where limits
+       regarded separately as standard. Within the text and              (maximum and minimum values) are specified shall be
+       tables, the U.S. Customary units are shown in parentheses.        as defined in ASTM E29. This requires that an observed
+       The values stated in each system are not exact equivalents;       or calculated value be rounded off to the nearest unit in the
+       therefore, it is required that each system of units be used       last right-hand digit used for expressing the limit. Decimal
+       independently of the other. Combining values from the             values and tolerances do not imply a particular method of
+       two systems constitutes nonconformance with the                   measurement.
+       Standard.
+          The designation for size is NPS for both Metric- and           1.10 Pressure Rating Designation
+       Customary-dimensioned fittings. Fitting pressure rating             Class followed by a dimensionless number is the des-
+       is associated with the connecting wall thickness of               ignation for pressure–temperature ratings. Standardized
+       pipe of equivalent size and material.                             designations for flanges per ASME B16.5 referenced in this
+                                                                         Standard are Classes 150, 300, 600, 900, 1500, and 2500.
+       1.5 References
+ð18Þ      1.5.1 Referenced Standards. Standards and specifica-           2 PRESSURE RATINGS
+       tions adopted by reference in this Standard are shown in
+       Mandatory Appendix I. It is not considered practical to           2.1 Basis of Ratings
+       identify the specific edition of each standard and specifi-
+                                                                           The allowable pressure ratings for fittings designed in
+       cation in the individual references. Instead, the specific
+                                                                         accordance with this Standard may be calculated as for
+       edition reference is identified in Mandatory Appendix
+                                                                         straight seamless pipe of equivalent material (as
+       I. A product made in conformance with a prior edition
+                                                                         shown by comparison of composition and mechanical
+       of referenced standards and in all other respects
+                                                                         properties in the respective material specifications) in
+       conforming to this Standard will be considered to be
+                                                                         accordance with the rules established in the applicable
+       in conformance.
+                                                                         sections of ASME B31, Code for Pressure Piping. For
+                                                                         the calculation, applicable data for the pipe size, wall
+
+
+                                                                     1
+                                                               ASME B16.9-2018
+
+
+
+       thickness, and material that are equivalent to that of the            4 MARKING
+       fitting shall be used. Pipe size, wall thickness (or schedule
+       number), and material identity on the fittings are in lieu of         4.1 Standard Marking
+       pressure rating markings.
+                                                                                Each fitting shall be permanently marked to show the
+ð18Þ   2.2 Design of Fittings                                                following:
+                                                                                (a) manufacturer’s name or trademark
+          2.2.1 Acceptable Design Methods. The design of                        (b) material identification, either the ASTM or ASME
+       fittings shall be established by one of the following                 grade designation
+       methods:                                                                 (c) schedule number1 or nominal wall thickness in mm
+          (a) mathematical analyses contained in nationally                     (d) size — the nominal pipe size (NPS) identification
+       recognized pressure vessel or piping codes (e.g., ASME                number related to the end connections shall be used
+       B31.3 para. 304.2 for elbows and para. 304.3 for tees).                  (e) compliance — see para. 4.4 for standard and special
+          (b) proof testing in accordance with section 9 of this             fitting marking
+       Standard.                                                                A manufacturer may supplement these mandatory
+          (c) experimental stress analysis, such as described in             markings with others, including a DN size designation,
+       ASME BPVC, Section VIII, Division 2, Annex 5.F with vali-             but confusion with the required marking shall be avoided.
+       dation of results. Hydrostatic testing can be used to vali-
+       date experimental results.                                            4.2 Exceptions
+          (d) detailed stress analysis (e.g., finite element method)
+                                                                               Where the size of the fitting does not permit complete
+       with results evaluated as described in ASME BPVC, Section
+                                                                             marking, the identification marks may be omitted in
+       VIII, Division 2, Part 5 with validation of results. Strain
+                                                                             reverse of the order presented in para. 4.1.
+       measurement, photoelastic testing, or hydrostatic
+       testing can be used to validate calculated results.                   4.3 Depth of Stamping
+         2.2.2 Design Thickness. To meet design or manufac-                    Where steel stamps are used, care shall be taken so that
+       turing requirements, it is expected that some portion of              the marking is not deep enough or sharp enough to cause
+       formed fittings may have to be thicker than the pipe wall             cracks or to reduce the wall thickness of the fitting below
+       with which the fitting is intended to be used. The math-              the minimum allowed.
+       ematical analyses, if used, may take into account such
+       thicker sections.                                                     4.4 Compliance
+         2.2.3 Records. Copies of English-language records of                  4.4.1 Standard Fittings. That the fitting was manufac-
+       the mathematical analysis, the successful proof test, or              tured in conformance with this Standard, including all
+       both shall be made available to the purchaser or regula-              dimensional requirements, is certified by a prefix “WP”
+       tory authority upon request.                                          in the material grade designation marking.
+
+       3 SIZE                                                                  4.4.2 Special Fittings. That the fitting was manufac-
+                                                                             tured in conformance with this Standard, except that
+         NPS, followed by a dimensionless number, is the des-                dimensional requirements are as agreed between the
+       ignation for nominal fitting size. NPS is related to the refer-       purchaser and the manufacturer, is certified by a supple-
+       ence nominal diameter, DN, used in international                      mentary suffix to the material grade designation marking
+       standards. The relationship is, typically, as follows:                as follows:
+                     DN                             NPS                        (a) “S58” of ASTM A960 applies for fittings in accor-
+                     15                              1
+                                                         ∕2                  dance with ASTM A234, ASTM A403, and ASTM A420.
+                     20                              3
+                                                         ∕4
+                                                                               (b) “S8” applies for fittings in accordance with ASTM
+                                                                             A815.
+                     25                              1
+                                                                               (c) “SPLD” applies for fittings in accordance with ASTM
+                     32                             11∕4
+                                                                             B361, ASTM B363, and ASTM B366.
+
+                     40                             11∕2
+                     50                              2
+                     65                             21∕2
+                     80                              3
+                    100                              4                         1
+                                                                                 Schedule number is a dimensionless number that is widely used as a
+                                                                             convenient designation for use in ordering pipe and fittings. It is normally
+       NOTE: For NPS > 4, the equivalence is DN = 25 × NPS.                  associated with a group of standardized pipe wall thicknesses. Refer to
+                                                                             ASME B36.10M and ASME B36.19M for complete details on pipe schedule
+                                                                             numbers.
+
+
+                                                                         2
+                                                          ASME B16.9-2018
+
+
+
+
+ð18Þ   5 MATERIAL                                                        Bs = center-to-end dimension for segmented elbow
+                                                                          θ = angle of segmented elbow — 30 deg, 60 deg, 75
+          Wrought fittings covered by this Standard shall be in               deg, etc.
+       accordance with ASTM A234, ASTM A403, ASTM A420,
+       ASTM A815, ASTM B361, ASTM B363, ASTM B366, or
+                                                                         When special elbows are intended for field segmenting,
+       the corresponding specification listed in ASME BPVC,
+                                                                       the outside or inside diameter tolerance shall be furnished
+       Section II. The term “wrought” denotes fittings made of
+                                                                       throughout the fitting by agreement between the manu-
+       pipe, tubing, plate, or forgings. For purposes of deter-
+                                                                       facturer and the purchaser. Any mismatch on the outside
+       mining proof testing requirements of section 9, the mate-
+                                                                       or inside diameter needs to be corrected in the field by
+       rials are grouped by similar properties as shown in Table
+                                                                       grinding, back-welding, or bridging of weld to meet the
+       5-1.
+                                                                       applicable piping code requirements. Although the
+          Fittings made from block forgings may only be supplied
+                                                                       elbow intended for field segmenting must meet the re-
+       subject to agreement between the manufacturer and
+                                                                       quirements of this Standard, once the field-segmented
+       purchaser. Such fittings need not meet the requirements
+                                                                       elbow is cut, it is not a B16.9 product.
+       of section 7.
+                                                                       7 SURFACE CONTOURS
+       6 FITTING DIMENSIONS
+                                                                          Where adjacent openings in fittings are not in parallel
+       6.1 General                                                     planes, they shall be joined by a circular arc or radius on
+                                                                       the external surfaces. The arc or radius may be terminated
+         This Standard provides for a fixed position for the
+                                                                       in tangents. Except as provided for block forgings (see
+       welding ends with reference to either the centerline of
+                                                                       section 5), the projected profile of external surfaces of
+       the fittings or the overall dimensions. Dimensional re-
+                                                                       fittings shall not have sharp intersections (corners)
+       quirements for these fittings are in Tables 6.1-1
+                                                                       and/or collapsed arcs.
+       through 6.1-11.
+
+       6.2 Special Dimensions                                          8 END PREPARATION
+         6.2.1 Fatigue Loading. For applications where fatigue           Unless otherwise specified, the details of the welding
+       loading is a concern, required minimum dimensions shall         end preparation shall be in accordance with Table 8-1.
+       be furnished by the purchaser.                                  Transitions from the welding bevel to the outside
+                                                                       surface of the fitting and from the root face to the
+         6.2.2 Bore Diameter. Bore diameters away from the             inside surface of the fitting lying within the maximum
+       ends are not specified. If special flow path requirements       envelope shown in Figure 8-1 are at the manufacturer’s
+       are needed, the bore dimensions shall be specified by the       option, except as covered in Note (5) of Figure 8-1 or
+       purchaser.                                                      unless otherwise specifically ordered.
+         6.2.3 Stub Ends. Service conditions and joint construc-
+       tion often dictate stub end length requirements.                9 DESIGN PROOF TEST                                              ð18Þ
+       Therefore, the purchaser must specify long or short
+       pattern fitting when ordering. [See General Note (b) in         9.1 Required Tests
+       Table 6.1-9.]                                                      Proof tests shall be made as set forth in this Standard
+ð18Þ     6.2.4 Segmental Elbows. Factory-made segments of              when the manufacturer chooses proof testing to qualify
+       short radius, long radius, and 3D radius elbows may             the fitting design. The pressure design thickness for
+       be made to meet customer angle requirements. With               critical areas of each type of fitting shall be determined
+       the exception of the B dimension, factory-made segments         and recorded. The design thickness for other sizes or wall
+       of elbows shall meet all other requirements of this             thicknesses covered in para. 9.4 shall require a similar
+       Standard. The B dimension for segmented elbows can              percentage of reinforcement proportional by size or thick-
+       be calculated as follows:                                       ness. Critical areas are normally the inner radius of
+         For segments of 90-deg elbows                                 elbows, the crotch of tees and crosses, the knuckle
+                                                                       radius of caps, and the large ends of reducers. Proof
+                          Bs = A × tan( /2)
+                                                                       test shall be based on the computed burst pressure of
+       where                                                           the fitting and its connecting piping as defined in para. 9.3.
+         A = dimension A for appropriate 90-deg elbow being
+                                                                       9.2 Test Assembly
+             segmented from
+               (a) Table 6.1-1 for long radius elbow, mm (in.)            9.2.1 Representative Components. Each fitting type
+               (b) Table 6.1-4 for short radius elbow, mm (in.)        shall be tested, except that testing of certain types of
+               (c) Table 6.1-6 for 3D radius elbow, mm (in.)           fittings can qualify other fittings as described in Table
+
+
+                                                                   3
+                                                           ASME B16.9-2018
+
+
+
+9.2.1-1. Fittings from the same material group that have                 to a set of fittings. For example, testing an NPS 2, NPS 8, and NPS
+the same basic design configuration and method of manu-                  24 of the same basic design configuration and method of manu-
+facture shall be selected from production for testing and                facture would qualify for a test factor of 1.0 and would qualify
+                                                                         fittings of that type from NPS 1 to NPS 48 and thickness ranges in
+shall be identified as to material, grade, and lot, including
+                                                                         accordance with para. 9.4.2.
+heat treatment.
+   (a) Examples of different basic configurations include                  9.3.2 Computed Test Pressure. The minimum proof
+the following:                                                           test pressure shall be at least equal to the value computed
+     (1) elbows of different centerline radius (short                    by the following equation and rounded to the nearest 0.2
+versus long versus 3D radius)                                            MPa (25 psi):
+     (2) tees or crosses formed in full encircling dies
+versus cold or hot extrusion using a pad die                                                               2Sft
+                                                                                                     P=
+     (3) concentric versus eccentric shaped reducers                                                        D
+     (4) caps of different configurations
+                                                                         where
+   (b) Examples of different methods of manufacture
+                                                                          D = specified outside diameter of pipe
+include the following:
+                                                                           f = test factor from Table 9.3.1-1
+     (1) mandrel-formed elbows versus elbows welded
+                                                                           P = computed minimum proof test pressure for fitting
+from two half-shells versus bent pipe
+                                                                           S = actual tensile strength of the test fitting, deter-
+     (2) cold-formed tees or crosses versus extruded tees
+                                                                               mined on a specimen representative of the test
+versus machined from solid forgings
+                                                                               fitting, which shall meet the tensile strength re-
+     (3) conical reducers versus bell-shaped (integral
+                                                                               quirements of the applicable material of section 5
+tangents) reducers
+                                                                           t = nominal pipe wall thickness of the pipe that the
+     (4) caps formed by extruding through a draw ring
+                                                                               fitting marking identifies
+versus ends cut off cold-formed tees versus machined
+from solids
+     (5) hot forming versus cold forming or using differ-                NOTE: Any dimensionally consistent system of units may be
+ential heating                                                           used.
+
+   9.2.2 Other Components. Straight seamless or welded                     9.3.3 Test Media. The test shall be conducted with
+pipe whose calculated bursting strength is at least as great             water. Trapped air in the assembly shall be purged
+as the proof test pressure as calculated in para. 9.3 shall be           prior to the start of the test.
+welded to each end of the fitting to be tested. Pipe sections
+may have the nominal wall greater than the thickness indi-                  9.3.4 Application of Test Pressure. A pump with
+cated by the fitting markings. That greater thickness shall              suitable pressure capacity shall be used to uniformly
+not exceed 1.5 times the fitting markings wall. Any internal             increase the test pressure through yield. Any gauges
+misalignment greater than 1.5 mm (0.06 in.) shall be                     attached directly to the assembly may be removed and
+reduced by taper boring at a slope not greater than                      the pressure again uniformly increased at a suitable
+1:3. Any other unequal wall welding preparation shall                    rate until either failure or the required test pressure
+be in accordance with ASME B16.25. Length of pipe                        has been achieved and held for 180 s. It is acceptable
+sections for closures shall be as follows:                               to increase pressure in the test assembly to accommodate
+   (a) Minimum length of pipe shall be one pipe O.D. for                 reductions in test pressure caused by yielding in the test
+NPS 14 (DN 350) and smaller.                                             assembly.
+   (b) Minimum length of pipe shall be one-half pipe O.D.                  9.3.5 Recording Pressure–Time Readings. Test pres-
+for NPS greater than 14 (DN 350).                                        sure versus time readings shall be recorded periodically.
+                                                                         This may be achieved through electronic means or instru-
+9.3 Test Procedure                                                       mentation with appropriate resolution and range that has
+  To qualify a fitting by proof testing, the fitting shall be            been calibrated prior to the test.
+tested as described herein and shall withstand the                          9.3.6 Test Temperature. The temperature(s) of the
+minimum calculated pressure for at least 180 s (3 min).                  test fluid and components of the test assembly may
+  9.3.1 Number of Tests. At least three specimen tests for               not intentionally be increased or decreased if doing so
+each fitting, joint size, or configuration are recommended.              would significantly affect a mechanical property or
+The test factor, f, is based on the number of specimen tests             response of any component of the test assembly while
+performed. The test factor, f, described in Table 9.3.1-1, is            it is under test.
+used in the computed proof test pressure equation.                         9.3.7 Test Results. The test may be terminated if any
+NOTE: Tests of geometrically identical fittings of different sizes       component (e.g., fitting, pipe segment, fabrication weld) of
+and wall thicknesses that have overlapping ranges as described           the test assembly loses containment. The test of the fitting
+in para. 9.4 may be combined to establish the test factor applied        shall be considered unsuccessful if there is any loss of
+
+                                                                     4
+                                                       ASME B16.9-2018
+
+
+
+containment from the tested fitting before or during the               Whenever a significant change is made in the geometry
+time it is to be held at or above the computed pressure. A           or method of manufacture, the manufacturer shall either
+proof test is successful only when the fitting being tested          retest the new production or show by analysis that the
+withstands for at least 180 s a continuous proof test pres-          change would not affect the results of prior tests.
+sure of at least the computed minimum (see para. 9.3.2)              Examples of changes in geometry that require retests
+without exhibiting loss of containment or evidence of                are a change in starting thickness or revised tooling
+cracking, fissuring, tearing, etc. in the fitting under test.        configuration.
+
+9.4 Applicability of Test Results                                    9.6 Proof Test Report
+   It is not necessary to conduct an individual test of                 A report of the testing for each joint configuration shall
+fittings with all combinations of sizes, wall thicknesses,           be prepared and shall include
+and materials. A successful proof test on one representa-               (a) description of the test, including the number of tests
+tive fitting may qualify others to the extent described in           and f factor used to establish the target proof test
+paras. 9.4.1, 9.4.2, and 9.4.3.                                         (b) instrumentation and methods of calibration used
+                                                                        (c) material test reports for the assembly’s materials
+  9.4.1 Size Range. One test fitting may be used to qualify
+                                                                     (fitting, pipe, and end caps, if used)
+similarly proportioned fittings as defined in para. 9.2.1
+                                                                        (d) actual final test pressures achieved for each test
+with a size range from one-half to twice that for the
+                                                                        (e) length of time at or above the required test pressure
+tested fitting.
+                                                                     (see para. 9.3.4)
+  9.4.2 Thickness Range. One test fitting may be used to                (f) calculations performed
+qualify similarly proportioned fittings as defined in para.             (g) location of rupture, if any, including a sketch or
+9.2.1 with t/D ranges from one-half to three times that for          photographs of the assembly
+the tested fitting.                                                     (h) pressure design thickness required in critical areas
+                                                                        (i) certification by the manufacturer and by a licensed
+   9.4.3 Material Grades. The pressure-retaining capac-
+                                                                     Authorized Inspector or other third party having experi-
+ity of a fitting of the same basic design configuration and
+                                                                     ence in pressure component design and testing
+method of manufacture made from material in a material
+group as listed in Table 5-1 will be directly proportional to
+the tensile properties of the materials. Therefore, it is nec-       10 PRODUCTION TESTS
+essary to test only a representative fitting to prove the              Hydrostatic testing of wrought fittings is not required
+design of a fitting for all materials in a group.                    by this Standard. All fittings shall be capable of with-
+                                                                     standing, without leakage or impairment of serviceability,
+9.5 Maintenance of Results                                           a hydrostatic test pressure required by the applicable
+  The manufacturer shall have a quality control (QC)                 piping code for seamless pipe of material equivalent to
+program that verifies the manufacturing process and                  the fitting material, and of the size and wall thickness
+material used and ensures that the resulting geometry                the fitting marking identifies.
+and design thickness of the fittings or joints manufactured
+reasonably conform to the geometries tested. The QC                  11 TOLERANCES
+program shall control the manufacturing drawings and                   Tolerances for fittings are shown in Table 11-1 and
+maintain the QC records showing conformance to                       apply to the nominal dimensions given in Tables 6.1-1
+these drawings.                                                      through 6.1-11. Where given in the tables, the
+  Tests made in accordance with and at the time of                   minimum and maximum dimensions are based on
+previous editions of this Standard are not intended to               these tolerances. The listings with decimals do not
+be nullified by the changes made in this edition’s test              imply precision measurement, such as use of vernier,
+procedure and requirements, provided the design criteria             micrometer, or electronic readout equipment.
+for the type tested can be determined.
+
+
+
+
+                                                                 5
+                                            ASME B16.9-2018
+
+
+
+ð18Þ                                 Table 5-1 Material Groupings
+       Group No.                        Material                                      Standards
+          1        Carbon and low-alloy steels                      ASTM A234/A234M and ASTM A420/A420M
+          2        Austenitic and duplex stainless steels           ASTM A403/A403M and ASTM A815/A815M
+          3        Nickel alloys                                    ASTM B366/B366M
+          4        Aluminum alloys                                  ASTM B361
+          5        Titanium alloys                                  ASTM B363
+
+
+
+
+                                                     6
+                                          ASME B16.9-2018
+
+
+
+                     Table 6.1-1 Dimensions of Long Radius Elbows
+
+
+
+
+                                                                   Center-to-End, mm (in.)
+Nominal Pipe Size   Outside Diameter at Bevel,         90-deg Elbows,                45-deg Elbows,
+     (NPS)                   mm (in.)                        A                             B
+       1
+           ∕2               21.3 (0.84)                      38 (1.50)                  16 (0.62)
+       3
+           ∕4               26.7 (1.05)                      38 (1.50)                  19 (0.75)
+       1                    33.4 (1.32)                      38 (1.50)                  22 (0.88)
+      11∕4                  42.2 (1.66)                      48 (1.88)                  25 (1.00)
+      11∕2                  48.3 (1.90)                      57 (2.25)                  29 (1.12)
+
+       2                    60.3 (2.38)                      76 (3.00)                  35 (1.38)
+      21∕2                  73.0 (2.88)                      95 (3.75)                  44 (1.75)
+       3                    88.9 (3.50)                     114 (4.50)                  51 (2.00)
+      31∕2                 101.6 (4.00)                     133 (5.25)                  57 (2.25)
+       4                   114.3 (4.50)                     152 (6.00)                  64 (2.50)
+
+       5                   141.3 (5.56)                     190 (7.50)                  79 (3.12)
+       6                   168.3 (6.62)                     229 (9.00)                  95 (3.75)
+       8                   219.1 (8.62)                     305 (12.00)                127 (5.00)
+       10                  273.0 (10.75)                    381 (15.00)                159 (6.25)
+       12                  323.8 (12.75)                    457 (18.00)                190 (7.50)
+
+       14                  355.6 (14.00)                    533 (21.00)                222 (8.75)
+       16                  406.4 (16.00)                    610 (24.00)                254 (10.00)
+       18                  457.0 (18.00)                    686 (27.00)                286 (11.25)
+       20                  508.0 (20.00)                    762 (30.00)                318 (12.50)
+       22                  559.0 (22.00)                    838 (33.00)                343 (13.50)
+
+       24                  610.0 (24.00)                    914 (36.00)                381 (15.00)
+       26                  660.0 (26.00)                    991 (39.00)                406 (16.00)
+       28                  711.0 (28.00)                1 067 (42.00)                  438 (17.25)
+       30                  762.0 (30.00)                1 143 (45.00)                  470 (18.50)
+       32                  813.0 (32.00)                1 219 (48.00)                  502 (19.75)
+
+       34                  864.0 (34.00)                1 295 (51.00)                  533 (21.00)
+       36                  914.0 (36.00)                1 372 (54.00)                  565 (22.25)
+       38                  965.0 (38.00)                1 448 (57.00)                  600 (23.62)
+       40                1 016.0 (40.00)                1 524 (60.00)                  632 (24.88)
+       42                1 067.0 (42.00)                1 600 (63.00)                  660 (26.00)
+
+       44                1 118.0 (44.00)                1 676 (66.00)                  695 (27.38)
+       46                1 168.0 (46.00)                1 753 (69.00)                  727 (28.62)
+       48                1 219.0 (48.00)                1 829 (72.00)                  759 (29.88)
+
+
+
+
+                                                 7
+                                                          ASME B16.9-2018
+
+
+
+ð18Þ                                Table 6.1-2 Dimensions of Long Radius Reducing Elbows
+
+
+
+
+          Nominal         Outside Diameter                                Nominal        Outside Diameter
+            Pipe          at Bevel, mm (in.)          Center-               Pipe         at Bevel, mm (in.)           Center-
+            Size                                      to-End,               Size                                      to-End,
+           (NPS)      Large End       Small End     A, mm (in.)            (NPS)     Large End       Small End      A, mm (in.)
+             1
+       2 × 1 ∕2       60.3 (2.38)     48.3 (1.90)    76 (3.00)        10 × 8        273.0 (10.75)   219.1 (8.62)    381 (15.00)
+       2 × 11∕4       60.3 (2.38)     42.2 (1.66)    76 (3.00)        10 × 6        273.0 (10.75)   168.3 (6.62)    381 (15.00)
+       2×1            60.3 (2.38)     33.4 (1.32)    76 (3.00)        10 × 5        273.0 (10.75)   141.3 (5.56)    381 (15.00)
+
+
+       21∕2 × 2       73.0 (2.88)     60.3 (2.38)    95 (3.75)        12 × 10       323.8 (12.75)   273.0 (10.75)   457 (18.00)
+       21∕2 × 11∕2    73.0 (2.88)     48.3 (1.90)    95 (3.75)        12 × 8        323.8 (12.75)   219.1 (8.62)    457 (18.00)
+       21∕2 × 11∕4    73.0 (2.88)     42.2 (1.66)    95 (3.75)        12 × 6        323.8 (12.75)   168.3 (6.62)    457 (18.00)
+
+
+       3 × 21∕2       88.9 (3.50)     73.0 (2.88)   114 (4.50)        14 × 12       355.6 (14.00)   323.8 (12.75)   533 (21.00)
+       3×2            88.9 (3.50)     60.3 (2.38)   114 (4.50)        14 × 10       355.6 (14.00)   273.0 (10.75)   533 (21.00)
+       3 × 11∕2       88.9 (3.50)     48.3 (1.90)   114 (4.50)        14 × 8        355.6 (14.00)   219.1 (8.62)    533 (21.00)
+
+
+       31∕2 × 3      101.6 (4.00)     88.9 (3.50)   133 (5.25)        16 × 14       406.4 (16.00)   355.6 (14.00)   610 (24.00)
+       31∕2 × 21∕2   101.6 (4.00)     73.0 (2.88)   133 (5.25)        16 × 12       406.4 (16.00)   323.8 (12.75)   610 (24.00)
+       31∕2 × 2      101.6 (4.00)     60.3 (2.38)   133 (5.25)        16 × 10       406.4 (16.00)   273.0 (10.75)   610 (24.00)
+
+
+       4 × 31∕2      114.3 (4.50)    101.6 (4.00)   152 (6.00)        18 × 16       457.0 (18.00)   406.4 (16.00)   686 (27.00)
+       4×3           114.3 (4.50)     88.9 (3.50)   152 (6.00)        18 × 14       457.0 (18.00)   355.6 (14.00)   686 (27.00)
+             1
+       4 × 2 ∕2      114.3 (4.50)     73.0 (2.88)   152 (6.00)        18 × 12       457.0 (18.00)   323.8 (12.75)   686 (27.00)
+       4×2           114.3 (4.50)     60.3 (2.38)   152 (6.00)        18 × 10       457.0 (18.00)   273.0 (10.75)   686 (27.00)
+
+
+       5×4           141.3 (5.56)    114.3 (4.50)   190 (7.50)        20 × 18       508.0 (20.00)   457.0 (18.00)   762 (30.00)
+       5 × 31∕2      141.3 (5.56)    101.6 (4.00)   190 (7.50)        20 × 16       508.0 (20.00)   406.4 (16.00)   762 (30.00)
+       5×3           141.3 (5.56)     88.9 (3.50)   190 (7.50)        20 × 14       508.0 (20.00)   355.6 (14.00)   762 (30.00)
+       5 × 21∕2      141.3 (5.56)     73.0 (2.88)   190 (7.50)        20 × 12       508.0 (20.00)   323.8 (12.75)   762 (30.00)
+                                                                      20 × 10       508.0 (20.00)   273.0 (10.75)   762 (30.00)
+       6×5           168.3 (6.62)    141.3 (5.56)   229 (9.00)
+       6×4           168.3 (6.62)    114.3 (4.50)   229 (9.00)        24 × 22       610.0 (24.00)   559.0 (22.00)   914 (36.00)
+       6 × 31∕2      168.3 (6.62)    101.6 (4.00)   229 (9.00)        24 × 20       610.0 (24.00)   508.0 (20.00)   914 (36.00)
+       6×3           168.3 (6.62)     88.9 (3.50)   229 (9.00)        24 × 18       610.0 (24.00)   457.0 (18.00)   914 (36.00)
+                                                                      24 × 16       610.0 (24.00)   406.4 (16.00)   914 (36.00)
+       8×6           219.1 (8.62)    168.3 (6.62)   305 (12.00)       24 × 14       610.0 (24.00)   355.6 (14.00)   914 (36.00)
+       8×5           219.1 (8.62)    141.3 (5.56)   305 (12.00)       24 × 12       610.0 (24.00)   323.8 (12.75)   914 (36.00)
+       8×4           219.1 (8.62)    114.3 (4.50)   305 (12.00)       …                 …               …             …
+
+
+
+
+                                                                  8
+                                                            ASME B16.9-2018
+
+
+
+    Table 6.1-3 Dimensions of Long Radius Returns                        Table 6.1-4 Dimensions of Short Radius Elbows
+
+
+
+
+   Nominal         Outside          Center-           Back-
+     Pipe         Diameter            to-              to-                    Nominal       Outside           Center-
+     Size         at Bevel,         Center,           Face,                     Pipe       Diameter             to-
+    (NPS)         mm (in.)        O, mm (in.)      K, mm (in.)                  Size       at Bevel,           End,
+      1
+                                                                               (NPS)       mm (in.)         A, mm (in.)
+          ∕2     21.3 (0.84)        76 (3.00)        48 (1.88)
+      3
+                                                                                 1         33.4 (1.32)       25 (1.00)
+          ∕4     26.7 (1.05)        76 (3.00)        51 (2.00)                   1
+                                                                                1 ∕4       42.2 (1.66)       32 (1.25)
+      1          33.4 (1.32)        76 (3.00)        56 (2.19)
+      1
+                                                                                11∕2       48.3 (1.90)       38 (1.50)
+     1 ∕4        42.2 (1.66)        95 (3.75)        70 (2.75)
+      1
+                                                                                 2         60.3 (2.38)       51 (2.00)
+     1 ∕2        48.3 (1.90)       114 (4.50)        83 (3.25)
+                                                                                21∕2       73.0 (2.88)       64 (2.50)
+
+      2          60.3 (2.38)       152 (6.00)       106 (4.19)
+                                                                                 3         88.9 (3.50)       76 (3.00)
+     21∕2        73.0 (2.88)       190 (7.50)       132 (5.19)
+                                                                                31∕2      101.6 (4.00)       89 (3.50)
+      3          88.9 (3.50)       229 (9.00)       159 (6.25)
+                                                                                 4        114.3 (4.50)      102 (4.00)
+     31∕2       101.6 (4.00)       267 (10.50)      184 (7.25)
+                                                                                 5        141.3 (5.56)      127 (5.00)
+      4         114.3 (4.50)       305 (12.00)      210 (8.25)
+                                                                                 6        168.3 (6.62)      152 (6.00)
+
+      5         141.3 (5.56)       381 (15.00)      262 (10.31)
+                                                                                 8        219.1 (8.62)      203 (8.00)
+      6         168.3 (6.62)       457 (18.00)      313 (12.31)
+                                                                                10        273.0 (10.75)     254 (10.00)
+      8         219.1 (8.62)       610 (24.00)      414 (16.31)
+                                                                                12        323.8 (12.75)     305 (12.00)
+      10        273.0 (10.75)      762 (30.00)      518 (20.38)
+                                                                                14        355.6 (14.00)     356 (14.00)
+      12        323.8 (12.75)      914 (36.00)      619 (24.38)
+                                                                                16        406.4 (16.00)     406 (16.00)
+
+      14        355.6 (14.00)    1 067 (42.00)      711 (28.00)
+                                                                                18        457.0 (18.00)     457 (18.00)
+      16        406.4 (16.00)    1 219 (48.00)      813 (32.00)
+                                                                                20        508.0 (20.00)     508 (20.00)
+      18        457.0 (18.00)    1 372 (54.00)      914 (36.00)
+                                                                                22        559.0 (22.00)     559 (22.00)
+      20        508.0 (20.00)    1 524 (60.00)    1 016 (40.00)
+                                                                                24        610.0 (24.00)     610 (24.00)
+      22        559.0 (22.00)    1 676 (66.00)    1 118 (44.00)
+      24        610.0 (24.00)    1 829 (72.00)    1 219 (48.00)
+NOTES:
+(1) See Table 11-1 for tolerance for alignment of ends U.
+(2) Dimension A is equal to one-half of dimension O.
+
+
+
+
+                                                                  9
+                                                                  ASME B16.9-2018
+
+
+
+ð18Þ                                    Table 6.1-5 Dimensions of Short Radius 180-deg Returns
+
+
+
+
+              Nominal Pipe Size           Outside Diameter at Bevel,            Center-to-Center,   Back-to-Face,
+                   (NPS)                           mm (in.)                       O, mm (in.)        K, mm (in.)
+                      1                            33.4 (1.32)                         51 (2.00)      41 (1.62)
+                     11∕4                          42.2 (1.66)                         64 (2.50)      52 (2.06)
+                     11∕2                          48.3 (1.90)                         76 (3.00)      62 (2.44)
+                      2                            60.3 (2.38)                       102 (4.00)       81 (3.19)
+                     21∕2                          73.0 (2.88)                       127 (5.00)      100 (3.94)
+
+
+                      3                            88.9 (3.50)                       152 (6.00)      121 (4.75)
+                     31∕2                         101.6 (4.00)                       178 (7.00)      140 (5.50)
+                      4                           114.3 (4.50)                       203 (8.00)      159 (6.25)
+                      5                           141.3 (5.56)                       254 (10.00)     197 (7.75)
+                      6                           168.3 (6.62)                       305 (12.00)     237 (9.31)
+
+
+                      8                           219.1 (8.62)                       406 (16.00)     313 (12.31)
+                      10                          273.0 (10.75)                      508 (20.00)     391 (15.38)
+                      12                          323.8 (12.75)                      610 (24.00)     467 (18.38)
+                      14                          355.6 (14.00)                      711 (28.00)     533 (21.00)
+                      16                          406.4 (16.00)                      813 (32.00)     610 (24.00)
+
+
+                      18                          457.0 (18.00)                      914 (36.00)     686 (27.00)
+                      20                          508.0 (20.00)                     1 016 (40.00)    762 (30.00)
+                      22                          559.0 (22.00)                     1 118 (44.00)    838 (33.00)
+                      24                          610.0 (24.00)                     1 219 (48.00)    914 (36.00)
+       NOTE: (1) Dimension A is equal to one-half of dimension O.
+
+
+
+
+                                                                        10
+                                                  ASME B16.9-2018
+
+
+
+ð18Þ                           Table 6.1-6 Dimensions of 3D Radius Elbows
+
+
+
+
+                                                                               Center-to-End, mm (in.)
+       Nominal Pipe Size   Outside Diameter at Bevel,               90-deg Elbows,                45-deg Elbows,
+            (NPS)                   mm (in.)                              A                             B
+              3
+               ∕4                  26.7 (1.05)                         57 (2.25)                         24 (0.94)
+              1                    33.4 (1.32)                         76 (3.00)                         31 (1.25)
+             11∕4                  42.2 (1.66)                         95 (3.75)                         39 (1.56)
+             11∕2                  48.3 (1.90)                        114 (4.50)                         47 (1.88)
+
+
+              2                    60.3 (2.38)                        152 (6.00)                         63 (2.50)
+             21∕2                  73.0 (2.88)                        190 (7.50)                         79 (3.12)
+              3                    88.9 (3.50)                        229 (9.00)                         95 (3.75)
+             31∕2                 101.6 (4.00)                        267 (10.50)                    111 (4.38)
+              4                   114.3 (4.50)                        305 (12.00)                    127 (5.00)
+
+
+              5                   141.3 (5.56)                        381 (15.00)                    157 (6.19)
+              6                   168.3 (6.62)                        457 (18.00)                    189 (7.44)
+              8                   219.1 (8.62)                        610 (24.00)                    252 (9.94)
+              10                  273.0 (10.75)                       762 (30.00)                    316 (12.44)
+              12                  323.8 (12.75)                       914 (36.00)                    378 (14.88)
+
+
+              14                  355.6 (14.00)                     1 067 (42.00)                    441 (17.38)
+              16                  406.4 (16.00)                     1 219 (48.00)                    505 (19.88)
+              18                  457.0 (18.00)                     1 372 (54.00)                    568 (22.38)
+              20                  508.0 (20.00)                     1 524 (60.00)                    632 (24.88)
+              22                  559.0 (22.00)                     1 676 (66.00)                    694 (27.31)
+
+
+              24                  610.0 (24.00)                     1 829 (72.00)                    757 (29.81)
+              26                  660.0 (26.00)                     1 981 (78.00)                    821 (32.31)
+              28                  711.0 (28.00)                     2 134 (84.00)                    883 (34.75)
+              30                  762.0 (30.00)                     2 286 (90.00)                    946 (37.25)
+              32                  813.0 (32.00)                     2 438 (96.00)                  1 010 (39.75)
+
+
+              34                  864.0 (34.00)                     2 591 (102.00)                 1 073 (42.25)
+              36                  914.0 (36.00)                     2 743 (108.00)                 1 135 (44.69)
+              38                  965.0 (38.00)                     2 896 (114.00)                 1 200 (47.25)
+              40                1 016.0 (40.00)                     3 048 (120.00)                 1 264 (49.75)
+              42                1 067.0 (42.00)                     3 200 (126.00)                 1 326 (52.19)
+
+
+              44                1 118.0 (44.00)                     3 353 (132.00)                 1 389 (54.69)
+              46                1 168.0 (46.00)                     3 505 (138.00)                 1 453 (57.19)
+              48                1 219.0 (48.00)                     3 658 (144.00)                 1 516 (59.69)
+
+
+
+
+                                                        11
+                                                            ASME B16.9-2018
+
+
+
+                                   Table 6.1-7 Dimensions of Straight Tees and Crosses
+                                          C            C                      C             C
+
+
+
+                                                               M                                    M
+
+
+
+                                                                                                    M
+
+
+
+
+                                                                                              Center-to-End, mm (in.)
+       Nominal Pipe Size           Outside Diameter at Bevel,                                                        Outlet, M
+            (NPS)                           mm (in.)                               Run, C                       [Notes (1) and (2)]
+               1
+                   ∕2                         21.3 (0.84)                         25 (1.00)                             25 (1.00)
+               3
+                   ∕4                         26.7 (1.05)                         29 (1.12)                             29 (1.12)
+               1                              33.4 (1.32)                         38 (1.50)                             38 (1.50)
+              11∕4                            42.2 (1.66)                         48 (1.88)                             48 (1.88)
+              11∕2                            48.3 (1.90)                         57 (2.25)                             57 (2.25)
+
+               2                              60.3 (2.38)                         64 (2.50)                             64 (2.50)
+              21∕2                            73.0 (2.88)                         76 (3.00)                             76 (3.00)
+               3                              88.9 (3.50)                         86 (3.38)                             86 (3.38)
+               1
+              3 ∕2                         101.6 (4.00)                           95 (3.75)                             95 (3.75)
+               4                           114.3 (4.50)                       105 (4.12)                           105 (4.12)
+
+               5                           141.3 (5.56)                       124 (4.88)                           124 (4.88)
+               6                           168.3 (6.62)                       143 (5.62)                           143 (5.62)
+               8                           219.1 (8.62)                       178 (7.00)                           178 (7.00)
+              10                           273.0 (10.75)                      216 (8.50)                           216 (8.50)
+              12                           323.8 (12.75)                      254 (10.00)                          254 (10.00)
+
+              14                           355.6 (14.00)                      279 (11.00)                          279 (11.00)
+              16                           406.4 (16.00)                      305 (12.00)                          305 (12.00)
+              18                           457.0 (18.00)                      343 (13.50)                          343 (13.50)
+              20                           508.0 (20.00)                      381 (15.00)                          381 (15.00)
+              22                           559.0 (22.00)                      419 (16.50)                          419 (16.50)
+
+              24                           610.0 (24.00)                      432 (17.00)                          432 (17.00)
+              26                           660.0 (26.00)                      495 (19.50)                          495 (19.50)
+              28                           711.0 (28.00)                      521 (20.50)                          521 (20.50)
+              30                           762.0 (30.00)                      559 (22.00)                          559 (22.00)
+              32                           813.0 (32.00)                      597 (23.50)                          597 (23.50)
+
+              34                           864.0 (34.00)                      635 (25.00)                          635 (25.00)
+              36                           914.0 (36.00)                      673 (26.50)                          673 (26.50)
+              38                           965.0 (38.00)                      711 (28.00)                          711 (28.00)
+              40                         1 016.0 (40.00)                      749 (29.50)                          749 (29.50)
+              42                         1 067.0 (42.00)                      762 (30.00)                          711 (28.00)
+
+              44                         1 118.0 (44.00)                      813 (32.00)                          762 (30.00)
+              46                         1 168.0 (46.00)                      851 (33.50)                          800 (31.50)
+              48                         1 219.0 (48.00)                      889 (35.00)                          838 (33.00)
+NOTES:
+(1) Outlet dimension M for NPS 26 and larger is recommended but not required.
+(2) Dimensions applicable to crosses NPS 24 and smaller.
+
+
+
+
+                                                                   12
+                                                       ASME B16.9-2018
+
+
+
+                        Table 6.1-8 Dimensions of Reducing Outlet Tees and Reducing Outlet Crosses
+
+
+
+
+            Nominal Pipe Size          Outside Diameter at Bevel, mm (in.)            Center-to-End, mm (in.)
+                 (NPS)                    Run                    Outlet          Run, C          Outlet, M [Note (1)]
+1
+ ∕2 × 1∕2 × 3∕8                        21.3 (0.84)              17.3 (0.68)     25 (1.00)              25 (1.00)
+1
+ ∕2 × 1∕2 × 1∕4                        21.3 (0.84)              13.7 (0.54)     25 (1.00)              25 (1.00)
+3
+ ∕4 × 3∕4 × 1∕2                        26.7 (1.05)              21.3 (0.84)     29 (1.12)              29 (1.12)
+3       3       3
+ ∕4 × ∕4 × ∕8                          26.7 (1.05)              17.3 (0.68)     29 (1.12)              29 (1.12)
+1 × 1 × 3∕4                            33.4 (1.32)              26.7 (1.05)     38 (1.50)              38 (1.50)
+1 × 1 × 1∕2                            33.4 (1.32)              21.3 (0.84)     38 (1.50)              38 (1.50)
+
+
+11∕4 × 11∕4 × 1                        42.2 (1.66)              33.4 (1.32)     48 (1.88)              48 (1.88)
+11∕4 × 11∕4 × 3∕4                      42.2 (1.66)              26.7 (1.05)     48 (1.88)              48 (1.88)
+11∕4 × 11∕4 × 1∕2                      42.2 (1.66)              21.3 (0.84)     48 (1.88)              48 (1.88)
+
+
+11∕2 × 11∕2 × 11∕4                     48.3 (1.90)              42.2 (1.66)     57 (2.25)              57 (2.25)
+    1       1
+1 ∕2 × 1 ∕2 × 1                        48.3 (1.90)              33.4 (1.32)     57 (2.25)              57 (2.25)
+11∕2 × 11∕2 × 3∕4                      48.3 (1.90)              26.7 (1.05)     57 (2.25)              57 (2.25)
+11∕2 × 11∕2 × 1∕2                      48.3 (1.90)              21.3 (0.84)     57 (2.25)              57 (2.25)
+
+
+2 × 2 × 11∕2                           60.3 (2.38)              48.3 (1.90)     64 (2.50)              60 (2.38)
+2 × 2 × 11∕4                           60.3 (2.38)              42.2 (1.66)     64 (2.50)              57 (2.25)
+2×2×1                                  60.3 (2.38)              33.4 (1.32)     64 (2.50)              51 (2.00)
+2 × 2 × 3∕4                            60.3 (2.38)              26.7 (1.05)     64 (2.50)              44 (1.75)
+
+
+21∕2 × 21∕2 × 2                        73.0 (2.88)              60.3 (2.38)     76 (3.00)              70 (2.75)
+21∕2 × 21∕2 × 11∕2                     73.0 (2.88)              48.3 (1.90)     76 (3.00)              67 (2.62)
+21∕2 × 21∕2 × 11∕4                     73.0 (2.88)              42.2 (1.66)     76 (3.00)              64 (2.50)
+21∕2 × 21∕2 × 1                        73.0 (2.88)              33.4 (1.32)     76 (3.00)              57 (2.25)
+
+
+3 × 3 × 21∕2                           88.9 (3.50)              73.0 (2.88)     86 (3.38)              83 (3.25)
+3×3×2                                  88.9 (3.50)              60.3 (2.38)     86 (3.38)              76 (3.00)
+3 × 3 × 11∕2                           88.9 (3.50)              48.3 (1.90)     86 (3.38)              73 (2.88)
+3 × 3 × 11∕4                           88.9 (3.50)              42.2 (1.66)     86 (3.38)              70 (2.75)
+
+
+31∕2 × 31∕2 × 3                       101.6 (4.00)              88.9 (3.50)     95 (3.75)              92 (3.62)
+31∕2 × 31∕2 × 21∕2                    101.6 (4.00)              73.0 (2.88)     95 (3.75)              89 (3.50)
+31∕2 × 31∕2 × 2                       101.6 (4.00)              60.3 (2.38)     95 (3.75)              83 (3.25)
+31∕2 × 31∕2 × 11∕2                    101.6 (4.00)              48.3 (1.90)     95 (3.75)              79 (3.12)
+
+
+4 × 4 × 31∕2                          114.3 (4.50)             101.6 (4.00)    105 (4.12)             102 (4.00)
+4×4×3                                 114.3 (4.50)              88.9 (3.50)    105 (4.12)              98 (3.88)
+4 × 4 × 21∕2                          114.3 (4.50)              73.0 (2.88)    105 (4.12)              95 (3.75)
+4×4×2                                 114.3 (4.50)              60.3 (2.38)    105 (4.12)              89 (3.50)
+4 × 4 × 11∕2                          114.3 (4.50)              48.3 (1.90)    105 (4.12)              86 (3.38)
+
+
+
+                                                              13
+                                                  ASME B16.9-2018
+
+
+
+
+               Table 6.1-8 Dimensions of Reducing Outlet Tees and Reducing Outlet Crosses (Cont’d)
+
+       Nominal Pipe Size          Outside Diameter at Bevel, mm (in.)             Center-to-End, mm (in.)
+            (NPS)                    Run                    Outlet           Run, C          Outlet, M [Note (1)]
+
+
+5×5×4                            141.3 (5.56)             114.3 (4.50)     124 (4.88)             117 (4.62)
+5 × 5 × 31∕2                     141.3 (5.56)             101.6 (4.00)     124 (4.88)             114 (4.50)
+5×5×3                            141.3 (5.56)              88.9 (3.50)     124 (4.88)             111 (4.38)
+5 × 5 × 21∕2                     141.3 (5.56)              73.0 (2.88)     124 (4.88)             108 (4.25)
+5×5×2                            141.3 (5.56)              60.3 (2.38)     124 (4.88)             105 (4.12)
+
+
+6×6×5                            168.3 (6.62)             141.3 (5.56)     143 (5.62)             137 (5.38)
+6×6×4                            168.3 (6.62)             114.3 (4.50)     143 (5.62)             130 (5.12)
+6 × 6 × 31∕2                     168.3 (6.62)             101.6 (4.00)     143 (5.62)             127 (5.00)
+6×6×3                            168.3 (6.62)              88.9 (3.50)     143 (5.62)             124 (4.88)
+6 × 6 × 21∕2                     168.3 (6.62)              73.0 (2.88)     143 (5.62)             121 (4.75)
+
+
+8×8×6                            219.1 (8.62)             168.3 (6.62)     178 (7.00)             168 (6.62)
+8×8×5                            219.1 (8.62)             141.3 (5.56)     178 (7.00)             162 (6.38)
+8×8×4                            219.1 (8.62)             114.3 (4.50)     178 (7.00)             156 (6.12)
+8 × 8 × 31∕2                     219.1 (8.62)             101.6 (4.00)     178 (7.00)             152 (6.00)
+
+
+10 × 10 × 8                      273.0 (10.75)            219.1 (8.62)     216 (8.50)             203 (8.00)
+10 × 10 × 6                      273.0 (10.75)            168.3 (6.62)     216 (8.50)             194 (7.62)
+10 × 10 × 5                      273.0 (10.75)            141.3 (5.56)     216 (8.50)             191 (7.50)
+10 × 10 × 4                      273.0 (10.75)            114.3 (4.50)     216 (8.50)             184 (7.25)
+
+
+12 × 12 × 10                     323.8 (12.75)            273.0 (10.75)    254 (10.00)            241 (9.50)
+12 × 12 × 8                      323.8 (12.75)            219.1 (8.62)     254 (10.00)            229 (9.00)
+12 × 12 × 6                      323.8 (12.75)            168.3 (6.62)     254 (10.00)            219 (8.62)
+12 × 12 × 5                      323.8 (12.75)            141.3 (5.56)     254 (10.00)            216 (8.50)
+
+
+14 × 14 × 12                     355.6 (14.00)            323.8 (12.75)    279 (11.00)            270 (10.62)
+14 × 14 × 10                     355.6 (14.00)            273.0 (10.75)    279 (11.00)            257 (10.12)
+14 × 14 × 8                      355.6 (14.00)            219.1 (8.62)     279 (11.00)            248 (9.75)
+14 × 14 × 6                      355.6 (14.00)            168.3 (6.62)     279 (11.00)            238 (9.38)
+
+
+16 × 16 × 14                     406.4 (16.00)            355.6 (14.00)    305 (12.00)            305 (12.00)
+16 × 16 × 12                     406.4 (16.00)            323.8 (12.75)    305 (12.00)            295 (11.62)
+16 × 16 × 10                     406.4 (16.00)            273.0 (10.75)    305 (12.00)            283 (11.12)
+16 × 16 × 8                      406.4 (16.00)            219.1 (8.62)     305 (12.00)            273 (10.75)
+16 × 16 × 6                      406.4 (16.00)            168.3 (6.62)     305 (12.00)            264 (10.38)
+
+
+18 × 18 × 16                       457 (18.00)            406.4 (16.00)    343 (13.50)            330 (13.00)
+18 × 18 × 14                       457 (18.00)            355.6 (14.00)    343 (13.50)            330 (13.00)
+18 × 18 × 12                       457 (18.00)            323.8 (12.75)    343 (13.50)            321 (12.62)
+18 × 18 × 10                       457 (18.00)            273.0 (10.75)    343 (13.50)            308 (12.12)
+18 × 18 × 8                        457 (18.00)            219.1 (8.62)     343 (13.50)            298 (11.75)
+
+
+20 × 20 × 18                       508 (20.00)            457.0 (18.00)    381 (15.00)            368 (14.50)
+20 × 20 × 16                       508 (20.00)            406.4 (16.00)    381 (15.00)            356 (14.00)
+20 × 20 × 14                       508 (20.00)            355.6 (14.00)    381 (15.00)            356 (14.00)
+
+
+                                                         14
+                                                  ASME B16.9-2018
+
+
+
+
+               Table 6.1-8 Dimensions of Reducing Outlet Tees and Reducing Outlet Crosses (Cont’d)
+
+      Nominal Pipe Size           Outside Diameter at Bevel, mm (in.)             Center-to-End, mm (in.)
+           (NPS)                     Run                    Outlet           Run, C          Outlet, M [Note (1)]
+20 × 20 × 12                       508 (20.00)            323.8 (12.75)    381 (15.00)            346 (13.62)
+20 × 20 × 10                       508 (20.00)            273.0 (10.75)    381 (15.00)            333 (13.12)
+20 × 20 × 8                        508 (20.00)            219.1 (8.62)     381 (15.00)            324 (12.75)
+
+
+22 × 22 × 20                       559 (22.00)            508.0 (20.00)    419 (16.50)            406 (16.00)
+22 × 22 × 18                       559 (22.00)            457.0 (18.00)    419 (16.50)            394 (15.50)
+22 × 22 × 16                       559 (22.00)            406.4 (16.00)    419 (16.50)            381 (15.00)
+22 × 22 × 14                       559 (22.00)            355.6 (14.00)    419 (16.50)            381 (15.00)
+22 × 22 × 12                       559 (22.00)            323.8 (12.75)    419 (16.50)            371 (14.62)
+22 × 22 × 10                       559 (22.00)            273.0 (10.75)    419 (16.50)            359 (14.12)
+
+
+24 × 24 × 22                       610 (24.00)            559.0 (22.00)    432 (17.00)            432 (17.00)
+24 × 24 × 20                       610 (24.00)            508.0 (20.00)    432 (17.00)            432 (17.00)
+24 × 24 × 18                       610 (24.00)            457.0 (18.00)    432 (17.00)            419 (16.50)
+
+
+24 × 24 × 16                       610 (24.00)            406.4 (16.00)    432 (17.00)            406 (16.00)
+24 × 24 × 14                       610 (24.00)            355.6 (14.00)    432 (17.00)            406 (16.00)
+24 × 24 × 12                       610 (24.00)            323.8 (12.75)    432 (17.00)            397 (15.62)
+24 × 24 × 10                       610 (24.00)            273.0 (10.75)    432 (17.00)            384 (15.12)
+
+
+26 × 26 × 24                       660 (26.00)            610.0 (24.00)    495 (19.50)            483 (19.00)
+26 × 26 × 22                       660 (26.00)            559.0 (22.00)    495 (19.50)            470 (18.50)
+26 × 26 × 20                       660 (26.00)            508.0 (20.00)    495 (19.50)            457 (18.00)
+
+
+26 × 26 × 18                       660 (26.00)            457.0 (18.00)    495 (19.50)            444 (17.50)
+26 × 26 × 16                       660 (26.00)            406.4 (16.00)    495 (19.50)            432 (17.00)
+26 × 26 × 14                       660 (26.00)            355.6 (14.00)    495 (19.50)            432 (17.00)
+26 × 26 × 12                       660 (26.00)            323.8 (12.75)    495 (19.50)            422 (16.62)
+
+
+28 × 28 × 26                       711 (28.00)            660.0 (26.00)    521 (20.50)            521 (20.50)
+28 × 28 × 24                       711 (28.00)            610.0 (24.00)    521 (20.50)            508 (20.00)
+28 × 28 × 22                       711 (28.00)            559.0 (22.00)    521 (20.50)            495 (19.50)
+28 × 28 × 20                       711 (28.00)            508.0 (20.00)    521 (20.50)            483 (19.00)
+
+
+28 × 28 × 18                       711 (28.00)            457.0 (18.00)    521 (20.50)            470 (18.50)
+28 × 28 × 16                       711 (28.00)            406.4 (16.00)    521 (20.50)            457 (18.00)
+28 × 28 × 14                       711 (28.00)            355.6 (14.00)    521 (20.50)            457 (18.00)
+28 × 28 × 12                       711 (28.00)            323.8 (12.75)    521 (20.50)            448 (17.62)
+
+
+30 × 30 × 28                       762 (30.00)            711.0 (28.00)    559 (22.00)            546 (21.50)
+30 × 30 × 26                       762 (30.00)            660.0 (26.00)    559 (22.00)            546 (21.50)
+30 × 30 × 24                       762 (30.00)            610.0 (24.00)    559 (22.00)            533 (21.00)
+30 × 30 × 22                       762 (30.00)            559.0 (22.00)    559 (22.00)            521 (20.50)
+30 × 30 × 20                       762 (30.00)            508.0 (20.00)    559 (22.00)            508 (20.00)
+
+
+30 × 30 × 18                       762 (30.00)            457.0 (18.00)    559 (22.00)            495 (19.50)
+30 × 30 × 16                       762 (30.00)            406.4 (16.00)    559 (22.00)            483 (19.00)
+30 × 30 × 14                       762 (30.00)            355.6 (14.00)    559 (22.00)            483 (19.00)
+
+
+                                                         15
+                                                  ASME B16.9-2018
+
+
+
+
+               Table 6.1-8 Dimensions of Reducing Outlet Tees and Reducing Outlet Crosses (Cont’d)
+
+      Nominal Pipe Size           Outside Diameter at Bevel, mm (in.)             Center-to-End, mm (in.)
+           (NPS)                     Run                    Outlet           Run, C          Outlet, M [Note (1)]
+30 × 30 × 12                       762 (30.00)            323.8 (12.75)    559 (22.00)            473 (18.62)
+30 × 30 × 10                       762 (30.00)            273.0 (10.75)    559 (22.00)            460 (18.12)
+
+
+32 × 32 × 30                       813 (32.00)            762.0 (30.00)    597 (23.50)            584 (23.00)
+32 × 32 × 28                       813 (32.00)            711.0 (28.00)    597 (23.50)            572 (22.5)
+32 × 32 × 26                       813 (32.00)            660.0 (26.00)    597 (23.50)            572 (22.50)
+32 × 32 × 24                       813 (32.00)            610.0 (24.00)    597 (23.50)            559 (22.00)
+
+
+32 × 32 × 22                       813 (32.00)            559.0 (22.00)    597 (23.50)            546 (21.50)
+32 × 32 × 20                       813 (32.00)            508.0 (20.00)    597 (23.50)            533 (21.00)
+32 × 32 × 18                       813 (32.00)            457.0 (18.00)    597 (23.50)            521 (20.50)
+32 × 32 × 16                       813 (32.00)            406.4 (16.00)    597 (23.50)            508 (20.00)
+32 × 32 × 14                       813 (32.00)            355.6 (14.00)    597 (23.50)            508 (20.00)
+
+
+34 × 34 × 32                       864 (34.00)            813.0 (32.00)    635 (25.00)            622 (24.50)
+34 × 34 × 30                       864 (34.00)            762.0 (30.00)    635 (25.00)            610 (24.00)
+34 × 34 × 28                       864 (34.00)            711.0 (28.00)    635 (25.00)            597 (23.50)
+34 × 34 × 26                       864 (34.00)            660.0 (26.00)    635 (25.00)            597 (23.50)
+
+
+34 × 34 × 24                       864 (34.00)            610.0 (24.00)    635 (25.00)            584 (23.00)
+34 × 34 × 22                       864 (34.00)            559.0 (22.00)    635 (25.00)            572 (22.50)
+34 × 34 × 20                       864 (34.00)            508.0 (20.00)    635 (25.00)            559 (22.00)
+34 × 34 × 18                       864 (34.00)            457.0 (18.00)    635 (25.00)            546 (21.50)
+34 × 34 × 16                       864 (34.00)            406.4 (16.00)    635 (25.00)            533 (21.00)
+
+
+36 × 36 × 34                       914 (36.00)            864.0 (34.00)    673 (26.50)            660 (26.00)
+36 × 36 × 32                       914 (36.00)            813.0 (32.00)    673 (26.50)            648 (25.50)
+36 × 36 × 30                       914 (36.00)            762.0 (30.00)    673 (26.50)            635 (25.00)
+36 × 36 × 28                       914 (36.00)            711.0 (28.00)    673 (26.50)            622 (24.50)
+36 × 36 × 26                       914 (36.00)            660.0 (26.00)    673 (26.50)            622 (24.50)
+
+
+36 × 36 × 24                       914 (36.00)            610.0 (24.00)    673 (26.50)            610 (24.00)
+36 × 36 × 22                       914 (36.00)            559.0 (22.00)    673 (26.50)            597 (23.50)
+36 × 36 × 20                       914 (36.00)            508.0 (20.00)    673 (26.50)            584 (23.00)
+36 × 36 × 18                       914 (36.00)            457.0 (18.00)    673 (26.50)            572 (22.50)
+36 × 36 × 16                       914 (36.00)            406.4 (16.00)    673 (26.50)            559 (22.00)
+
+
+38 × 38 × 36                       965 (38.00)            914.0 (36.00)    711 (28.00)            711 (28.00)
+38 × 38 × 34                       965 (38.00)            864.0 (34.00)    711 (28.00)            698 (27.50)
+38 × 38 × 32                       965 (38.00)            813.0 (32.00)    711 (28.00)            686 (27.00)
+38 × 38 × 30                       965 (38.00)            762.0 (30.00)    711 (28.00)            673 (26.50)
+38 × 38 × 28                       965 (38.00)            711.0 (28.00)    711 (28.00)            648 (25.50)
+
+
+38 × 38 × 26                       965 (38.00)            660.0 (26.00)    711 (28.00)            648 (25.50)
+38 × 38 × 24                       965 (38.00)            610.0 (24.00)    711 (28.00)            635 (25.00)
+38 × 38 × 22                       965 (38.00)            559.0 (22.00)    711 (28.00)            622 (24.50)
+38 × 38 × 20                       965 (38.00)            508.0 (20.00)    711 (28.00)            610 (24.00)
+38 × 38 × 18                       965 (38.00)            457.0 (18.00)    711 (28.00)            597 (23.50)
+
+
+                                                         16
+                                                  ASME B16.9-2018
+
+
+
+
+               Table 6.1-8 Dimensions of Reducing Outlet Tees and Reducing Outlet Crosses (Cont’d)
+
+      Nominal Pipe Size           Outside Diameter at Bevel, mm (in.)             Center-to-End, mm (in.)
+           (NPS)                     Run                    Outlet           Run, C          Outlet, M [Note (1)]
+
+
+40 × 40 × 38                     1 016 (40.00)            965.0 (38.00)    749 (29.50)            749 (29.50)
+40 × 40 × 36                     1 016 (40.00)            914.0 (36.00)    749 (29.50)            737 (29.00)
+40 × 40 × 34                     1 016 (40.00)            864.0 (34.00)    749 (29.50)            724 (28.50)
+40 × 40 × 32                     1 016 (40.00)            813.0 (32.00)    749 (29.50)            711 (28.00)
+40 × 40 × 30                     1 016 (40.00)            762.0 (30.00)    749 (29.50)            698 (27.50)
+
+
+40 × 40 × 28                     1 016 (40.00)            711.0 (28.00)    749 (29.50)            673 (26.50)
+40 × 40 × 26                     1 016 (40.00)            660.0 (26.00)    749 (29.50)            673 (26.50)
+40 × 40 × 24                     1 016 (40.00)            610.0 (24.00)    749 (29.50)            660 (26.00)
+40 × 40 × 22                     1 016 (40.00)            559.0 (22.00)    749 (29.50)            648 (25.50)
+40 × 40 × 20                     1 016 (40.00)            508.0 (20.00)    749 (29.50)            635 (25.00)
+40 × 40 × 18                     1 016 (40.00)            457.0 (18.00)    749 (29.50)            622 (24.50)
+
+
+42 × 42 × 40                     1 067 (42.00)          1 016.0 (40.00)    762 (30.00)            711 (28.00)
+42 × 42 × 38                     1 067 (42.00)            965.0 (38.00)    762 (30.00)            711 (28.00)
+42 × 42 × 36                     1 067 (42.00)            914.0 (36.00)    762 (30.00)            711 (28.00)
+42 × 42 × 34                     1 067 (42.00)            864.0 (34.00)    762 (30.00)            711 (28.00)
+
+
+42 × 42 × 32                     1 067 (42.00)            813.0 (32.00)    762 (30.00)            711 (28.00)
+42 × 42 × 30                     1 067 (42.00)            762.0 (30.00)    762 (30.00)            711 (28.00)
+42 × 42 × 28                     1 067 (42.00)            711.0 (28.00)    762 (30.00)            698 (27.50)
+42 × 42 × 26                     1 067 (42.00)            660.0 (26.00)    762 (30.00)            698 (27.50)
+
+
+42 × 42 × 24                     1 067 (42.00)            610.0 (24.00)    762 (30.00)            660 (26.00)
+42 × 42 × 22                     1 067 (42.00)            559.0 (22.00)    762 (30.00)            660 (26.00)
+42 × 42 × 20                     1 067 (42.00)            508.0 (20.00)    762 (30.00)            660 (26.00)
+42 × 42 × 18                     1 067 (42.00)            457.0 (18.00)    762 (30.00)            648 (25.50)
+42 × 42 × 16                     1 067 (42.00)            406.4 (16.00)    762 (30.00)            635 (25.00)
+
+
+44 × 44 × 42                     1 118 (44.00)          1 067.0 (42.00)    813 (32.00)            762 (30.00)
+44 × 44 × 40                     1 118 (44.00)          1 016.0 (40.00)    813 (32.00)            749 (29.50)
+44 × 44 × 38                     1 118 (44.00)            965.0 (38.00)    813 (32.00)            737 (29.00)
+44 × 44 × 36                     1 118 (44.00)            914.0 (36.00)    813 (32.00)            724 (28.50)
+44 × 44 × 34                     1 118 (44.00)            864.0 (34.00)    813 (32.00)            724 (28.50)
+44 × 44 × 32                     1 118 (44.00)            813.0 (32.00)    813 (32.00)            711 (28.00)
+
+
+44 × 44 × 30                     1 118 (44.00)            762.0 (30.00)    813 (32.00)            711 (28.00)
+44 × 44 × 28                     1 118 (44.00)            711.0 (28.00)    813 (32.00)            698 (27.50)
+44 × 44 × 26                     1 118 (44.00)            660.0 (26.00)    813 (32.00)            698 (27.50)
+44 × 44 × 24                     1 118 (44.00)            610.0 (24.00)    813 (32.00)            698 (27.50)
+44 × 44 × 22                     1 118 (44.00)            559.0 (22.00)    813 (32.00)            686 (27.00)
+44 × 44 × 20                     1 118 (44.00)            508.0 (20.00)    813 (32.00)            686 (27.00)
+
+
+46 × 46 × 44                     1 168 (46.00)          1 118.0 (44.00)    851 (33.50)            800 (31.50)
+46 × 46 × 42                     1 168 (46.00)          1 067.0 (42.00)    851 (33.50)            787 (31.00)
+46 × 46 × 40                     1 168 (46.00)          1 016.0 (40.00)    851 (33.50)            775 (30.50)
+46 × 46 × 38                     1 168 (46.00)            965.0 (38.00)    851 (33.50)            762 (30.00)
+
+
+                                                         17
+                                                        ASME B16.9-2018
+
+
+
+
+               Table 6.1-8 Dimensions of Reducing Outlet Tees and Reducing Outlet Crosses (Cont’d)
+
+      Nominal Pipe Size                Outside Diameter at Bevel, mm (in.)                      Center-to-End, mm (in.)
+           (NPS)                          Run                     Outlet                  Run, C           Outlet, M [Note (1)]
+46 × 46 × 36                         1 168 (46.00)              914.0 (36.00)          851 (33.50)              762 (30.00)
+46 × 46 × 34                         1 168 (46.00)              864.0 (34.00)          851 (33.50)              749 (29.50)
+
+
+46 × 46 × 32                         1 168 (46.00)              813.0 (32.00)          851 (33.50)              749 (29.50)
+46 × 46 × 30                         1 168 (46.00)              762.0 (30.00)          851 (33.50)              737 (29.00)
+46 × 46 × 28                         1 168 (46.00)              711.0 (28.00)          851 (33.50)              737 (29.00)
+46 × 46 × 26                         1 168 (46.00)              660.0 (26.00)          851 (33.50)              737 (29.00)
+46 × 46 × 24                         1 168 (46.00)              610.0 (24.00)          851 (33.50)              724 (28.50)
+46 × 46 × 22                         1 168 (46.00)              559.0 (22.00)          851 (33.50)              724 (28.50)
+
+
+48 × 48 × 46                         1 219 (48.00)            1 168.0 (46.00)          889 (35.00)              838 (33.00)
+48 × 48 × 44                         1 219 (48.00)            1 118.0 (44.00)          889 (35.00)              838 (33.00)
+48 × 48 × 42                         1 219 (48.00)            1 067.0 (42.00)          889 (35.00)              813 (32.00)
+48 × 48 × 40                         1 219 (48.00)            1 016.0 (40.00)          889 (35.00)              813 (32.00)
+
+
+48 × 48 × 38                         1 219 (48.00)              965.0 (38.00)          889 (35.00)              813 (32.00)
+48 × 48 × 36                         1 219 (48.00)              914.0 (36.00)          889 (35.00)              787 (31.00)
+48 × 48 × 34                         1 219 (48.00)              864.0 (34.00)          889 (35.00)              787 (31.00)
+48 × 48 × 32                         1 219 (48.00)              813.0 (32.00)          889 (35.00)              787 (31.00)
+
+
+48 × 48 × 30                         1 219 (48.00)              762.0 (30.00)          889 (35.00)              762 (30.00)
+48 × 48 × 28                         1 219 (48.00)              711.0 (28.00)          889 (35.00)              762 (30.00)
+48 × 48 × 26                         1 219 (48.00)              660.0 (26.00)          889 (35.00)              762 (30.00)
+48 × 48 × 24                         1 219 (48.00)              610.0 (24.00)          889 (35.00)              737 (29.00)
+48 × 48 × 22                         1 219 (48.00)              559.0 (22.00)          889 (35.00)              737 (29.00)
+NOTE: (1) Outlet dimension M for run sizes NPS 14 and larger is recommended but not required.
+
+
+
+
+                                                               18
+                                                                ASME B16.9-2018
+
+
+
+                                           Table 6.1-9 Dimensions of Lap Joint Stub Ends
+
+
+
+
+    Nominal                    Outside Diameter                  Long Pattern        Short Pattern          Radius of        Diameter of
+    Pipe Size                 of Barrel, mm (in.)              Length, F, mm (in.) Length, F, mm (in.) Fillet, R, mm (in.) Lap, G, mm (in.)
+      (NPS)                 Max.                 Min.           [Notes (3), (4)]    [Notes (3), (4)]        [Note (5)]        [Note (6)]
+        1
+         ∕2             22.8 (0.896)         20.5 (0.809)           76 (3.00)             51 (2.00)             3 (0.12)            35 (1.38)
+        3
+         ∕4             28.1 (1.106)         25.9 (1.019)           76 (3.00)             51 (2.00)             3 (0.12)            43 (1.69)
+         1              35.0 (1.376)         32.6 (1.284)          102 (4.00)             51 (2.00)             3 (0.12)            51 (2.00)
+        11∕4            43.6 (1.716)         41.4 (1.629)          102 (4.00)             51 (2.00)             5 (0.19)            64 (2.50)
+        11∕2            49.9 (1.965)         47.5 (1.869)          102 (4.00)             51 (2.00)             6 (0.25)            73 (2.88)
+
+
+         2              62.4 (2.456)         59.5 (2.344)          152 (6.00)             64 (2.50)             8 (0.31)            92 (3.62)
+        21∕2            75.3 (2.966)         72.2 (2.844)          152 (6.00)             64 (2.50)             8 (0.31)           105 (4.12)
+         3              91.3 (3.596)         88.1 (3.469)          152 (6.00)             64 (2.50)            10 (0.38)           127 (5.00)
+        31∕2          104.0 (4.096)         100.8 (3.969)          152 (6.00)             76 (3.00)            10 (0.38)           140 (5.50)
+         4            116.7 (4.593)         113.5 (4.469)          152 (6.00)             76 (3.00)            11 (0.44)           157 (6.19)
+
+
+         5            144.3 (5.683)         140.5 (5.532)          203 (8.00)             76 (3.00)            11 (0.44)           186 (7.31)
+         6            171.3 (6.743)         167.5 (6.594)          203 (8.00)             89 (3.50)            13 (0.50)           216 (8.50)
+         8            222.1 (8.743)         218.3 (8.594)          203 (8.00)            102 (4.00)            13 (0.50)           270 (10.62)
+        10            277.2 (10.913)        272.3 (10.719)         254 (10.00)           127 (5.00)            13 (0.50)           324 (12.75)
+        12            328.0 (12.913)        323.1 (12.719)         254 (10.00)           152 (6.00)            13 (0.50)           381 (15.00)
+
+
+        14            359.9 (14.170)        354.8 (13.969)         305 (12.00)           152 (6.00)            13 (0.50)           413 (16.25)
+        16            411.0 (16.180)        405.6 (15.969)         305 (12.00)           152 (6.00)            13 (0.50)           470 (18.50)
+        18            462.0 (18.190)        456.0 (17.969)         305 (12.00)           152 (6.00)            13 (0.50)           533 (21.00)
+        20            514.0 (20.240)        507.0 (19.969)         305 (12.00)           152 (6.00)            13 (0.50)           584 (23.00)
+        22            565.0 (22.240)        558.0 (21.969)         305 (12.00)           152 (6.00)            13 (0.50)           641 (25.25)
+        24            616.0 (24.240)        609.0 (23.969)         305 (12.00)           152 (6.00)            13 (0.50)           692 (27.25)
+GENERAL NOTES:
+(a) See Table 11-1 for tolerances.
+(b) Service conditions and joint construction often dictate stub end length requirements. Therefore, the purchaser must specify long or short
+    pattern fitting when ordering.
+NOTES:
+(1) Gasket face finish shall be in accordance with ASME B16.5 for raised-face flanges.
+(2) The lap thickness, T, shall not be less than nominal pipe wall thickness. See Table 11-1 for tolerance.
+(3) When short pattern stub ends are used with larger flanges in Classes 300 and 600, with most sizes in Classes 900 and higher, and when long
+    pattern stub ends are used with larger flanges in Classes 1500 and 2500, it may be necessary to increase the length of the stub ends in order to
+    avoid covering the weld with the flange. Such increases in length shall be a matter of agreement between the manufacturer and purchaser.
+(4) When special facings such as tongue and groove or male and female are employed, additional lap thickness must be provided and such
+    additional thickness shall be in addition to (not included in) the basic length, F.
+(5) These dimensions conform to the radius established for lap joint flanges in ASME B16.5.
+(6) This dimension conforms to standard machined facings shown in ASME B16.5. The back face of the lap shall be machined to conform to the
+    surface on which it sits. Where ring joint facings are to be applied, use dimension K as given in ASME B16.5.
+
+
+
+
+                                                                        19
+                                                              ASME B16.9-2018
+
+
+
+                                                    Table 6.1-10 Dimensions of Caps
+
+
+
+
+                                                                            E or E1
+
+   Nominal Pipe Size        Outside Diameter at Bevel,       Length, E, mm (in.)       Limiting Wall Thickness        Length, E1, mm (in.)
+        (NPS)                       mm (in.)                     [Note (1)]             for Length, E, mm (in.)           [Note (2)]
+            1
+                ∕2                    21.3 (0.84)                  25 (1.00)                    4.57 (0.18)                  25 (1.00)
+            3
+                ∕4                    26.7 (1.05)                  25 (1.00)                    3.81 (0.15)                  25 (1.00)
+             1                        33.4 (1.32)                  38 (1.50)                    4.57 (0.18)                  38 (1.50)
+            11∕4                      42.2 (1.66)                  38 (1.50)                    4.83 (0.19)                  38 (1.50)
+            11∕2                      48.3 (1.90)                  38 (1.50)                    5.08 (0.20)                  38 (1.50)
+
+             2                        60.3 (2.38)                  38 (1.50)                    5.59 (0.22)                  44 (1.75)
+             1
+            2 ∕2                      73.0 (2.88)                  38 (1.50)                    7.11 (0.28)                  51 (2.00)
+             3                        88.9 (3.50)                  51 (2.00)                    7.62 (0.30)                  64 (2.50)
+            31∕2                    101.6 (4.00)                   64 (2.50)                    8.13 (0.32)                  76 (3.00)
+             4                      114.3 (4.50)                   64 (2.50)                    8.64 (0.34)                  76 (3.00)
+
+             5                      141.3 (5.56)                   76 (3.00)                    9.65 (0.38)                  89 (3.50)
+             6                      168.3 (6.62)                   89 (3.50)                  10.92 (0.43)                 102 (4.00)
+             8                      219.1 (8.62)                  102 (4.00)                  12.70 (0.50)                 127 (5.00)
+            10                      273.0 (10.75)                 127 (5.00)                  12.70 (0.50)                 152 (6.00)
+            12                      323.8 (12.75)                 152 (6.00)                  12.70 (0.50)                 178 (7.00)
+
+            14                      355.6 (14.00)                 165 (6.50)                  12.70 (0.50)                 191 (7.50)
+            16                      406.4 (16.00)                 178 (7.00)                  12.70 (0.50)                 203 (8.00)
+            18                      457.0 (18.00)                 203 (8.00)                  12.70 (0.50)                 229 (9.00)
+            20                      508.0 (20.00)                 229 (9.00)                  12.70 (0.50)                 254 (10.00)
+            22                      559.0 (22.00)                 254 (10.00)                 12.70 (0.50)                 254 (10.00)
+
+            24                      610.0 (24.00)                 267 (10.50)                 12.70 (0.50)                 305 (12.00)
+            26                      660.0 (26.00)                 267 (10.50)                      …                          …
+            28                      711.0 (28.00)                 267 (10.50)                      …                          …
+            30                      762.0 (30.00)                 267 (10.50)                      …                          …
+            32                      813.0 (32.00)                 267 (10.50)                      …                          …
+
+            34                      864.0 (34.00)                 267 (10.50)                      …                          …
+            36                      914.0 (36.00)                 267 (10.50)                      …                          …
+            38                      965.0 (38.00)                 305 (12.00)                      …                          …
+            40                    1 016.0 (40.00)                 305 (12.00)                      …                          …
+            42                    1 067.0 (42.00)                 305 (12.00)                      …                          …
+
+            44                    1 118.0 (44.00)                 343 (13.50)                      …                          …
+            46                    1 168.0 (46.00)                 343 (13.50)                      …                          …
+            48                    1 219.0 (48.00)                 343 (13.50)                      …                          …
+GENERAL NOTE: The shape of these caps shall be ellipsoidal and shall conform to the requirements given in the ASME Boiler and Pressure Vessel
+Code.
+NOTES:
+(1) Length E applies for thickness not exceeding that given in column “Limiting Wall Thickness for Length, E.”
+(2) Length E1 applies for thickness greater than that given in column “Limiting Wall Thickness for Length, E” for NPS 24 and smaller. For NPS 26
+    and larger, length E1 shall be by agreement between the manufacturer and purchaser.
+
+
+
+
+                                                                      20
+                                                           ASME B16.9-2018
+
+
+
+                                             Table 6.1-11 Dimensions of Reducers
+
+
+
+
+                                                 H                                 H
+
+        Nominal        Outside Diameter                                 Nominal         Outside Diameter
+          Pipe         at Bevel, mm (in.)                                 Pipe          at Bevel, mm (in.)
+          Size       Large           Small           End-to-End,          Size         Large          Small        End-to-End,
+         (NPS)        End             End            H, mm (in.)         (NPS)          End            End         H, mm (in.)
+3
+ ∕4 × 1∕2          26.7 (1.05)     21.3 (0.84)        38 (1.50)
+3        3
+ ∕4 × ∕8           26.7 (1.05)     17.3 (0.68)        38 (1.50)     5×4           141.3 (5.56)     114.3 (4.50)    127 (5.00)
+1 × 3∕4            33.4 (1.32)     26.7 (1.05)        51 (2.00)     5 × 31∕2      141.3 (5.56)     101.6 (4.00)    127 (5.00)
+1 × 1∕2            33.4 (1.32)     21.3 (0.84)        51 (2.00)     5×3           141.3 (5.56)      88.9 (3.50)    127 (5.00)
+                                                                    5 × 21∕2      141.3 (5.56)      73.0 (2.88)    127 (5.00)
+11∕4 × 1           42.2 (1.66)     33.4 (1.32)        51 (2.00)     5×2           141.3 (5.56)      60.3 (2.38)    127 (5.00)
+11∕4 × 3∕4         42.2 (1.66)     26.7 (1.05)        51 (2.00)
+11∕4 × 1∕2         42.2 (1.66)     21.3 (0.84)        51 (2.00)     6×5           168.3 (6.62)     141.3 (5.56)    140 (5.50)
+                                                                    6×4           168.3 (6.62)     114.3 (4.50)    140 (5.50)
+11∕2 × 11∕4        48.3 (1.90)     42.2 (1.66)        64 (2.50)     6 × 31∕2      168.3 (6.62)     101.6 (4.00)    140 (5.50)
+    1
+1 ∕2 × 1           48.3 (1.90)     33.4 (1.32)        64 (2.50)     6×3           168.3 (6.62)      88.9 (3.50)    140 (5.50)
+11∕2 × 3∕4         48.3 (1.90)     26.7 (1.05)        64 (2.50)     6 × 21∕2      168.3 (6.62)      73.0 (2.88)    140 (5.50)
+11∕2 × 1∕2         48.3 (1.90)     21.3 (0.84)        64 (2.50)
+                                                                    8×6           219.1 (8.62)     168.3 (6.62)    152 (6.00)
+2 × 11∕2           60.3 (2.38)     48.3 (1.90)        76 (3.00)     8×5           219.1 (8.62)     141.3 (5.56)    152 (6.00)
+2 × 11∕4           60.3 (2.38)     42.2 (1.66)        76 (3.00)     8×4           219.1 (8.62)     114.3 (4.50)    152 (6.00)
+2×1                60.3 (2.38)     33.4 (1.32)        76 (3.00)     8 × 31∕2      219.1 (8.62)     101.6 (4.00)    152 (6.00)
+2 × 3∕4            60.3 (2.38)     26.7 (1.05)        76 (3.00)
+                                                                    10 × 8        273.0 (10.75)    219.1 (8.62)    178 (7.00)
+21∕2 × 2           73.0 (2.88)     60.3 (2.38)        89 (3.50)     10 × 6        273.0 (10.75)    168.3 (6.62)    178 (7.00)
+    1        1
+2 ∕2 × 1 ∕2        73.0 (2.88)     48.3 (1.90)        89 (3.50)     10 × 5        273.0 (10.75)    141.3 (5.56)    178 (7.00)
+21∕2 × 11∕4        73.0 (2.88)     42.2 (1.66)        89 (3.50)     10 × 4        273.0 (10.75)    114.3 (4.50)    178 (7.00)
+21∕2 × 1           73.0 (2.88)     33.4 (1.32)        89 (3.50)
+                                                                    12 × 10       323.8 (12.75)    273.0 (10.75)   203 (8.00)
+3 × 21∕2           88.9 (3.50)     73.0 (2.88)        89 (3.50)     12 × 8        323.8 (12.75)    219.1 (8.62)    203 (8.00)
+3×2                88.9 (3.50)     60.3 (2.38)        89 (3.50)     12 × 6        323.8 (12.75)    168.3 (6.62)    203 (8.00)
+3 × 11∕2           88.9 (3.50)     48.3 (1.90)        89 (3.50)     12 × 5        323.8 (12.75)    141.3 (5.56)    203 (8.00)
+3 × 11∕4           88.9 (3.50)     42.2 (1.66)        89 (3.50)
+                                                                    14 × 12       355.6 (14.00)    323.8 (12.75)   330 (13.00)
+    1
+3 ∕2 × 3          101.6 (4.00)     88.9 (3.50)       102 (4.00)     14 × 10       355.6 (14.00)    273.0 (10.75)   330 (13.00)
+31∕2 × 21∕2       101.6 (4.00)     73.0 (2.88)       102 (4.00)     14 × 8        355.6 (14.00)    219.1 (8.62)    330 (13.00)
+31∕2 × 2          101.6 (4.00)     60.3 (2.38)       102 (4.00)     14 × 6        355.6 (14.00)    168.3 (6.62)    330 (13.00)
+31∕2 × 11∕2       101.6 (4.00)     48.3 (1.90)       102 (4.00)
+31∕2 × 11∕4       101.6 (4.00)     42.2 (1.66)       102 (4.00)     16 × 14       406.4 (16.00)    355.6 (14.00)   356 (14.00)
+                                                                    16 × 12       406.4 (16.00)    323.8 (12.75)   356 (14.00)
+4 × 31∕2          114.3 (4.50)    101.6 (4.00)       102 (4.00)     16 × 10       406.4 (16.00)    273.0 (10.75)   356 (14.00)
+4×3               114.3 (4.50)     88.9 (3.50)       102 (4.00)     16 × 8        406.4 (16.00)    219.1 (8.62)    356 (14.00)
+4 × 21∕2          114.3 (4.50)     73.0 (2.88)       102 (4.00)
+4×2               114.3 (4.50)     60.3 (2.38)       102 (4.00)     18 × 16        457 (18.00)     406.4 (16.00)   381 (15.00)
+4 × 11∕2          114.3 (4.50)     48.3 (1.90)       102 (4.00)     18 × 14        457 (18.00)     355.6 (14.00)   381 (15.00)
+
+
+
+                                                                   21
+                                                           ASME B16.9-2018
+
+
+
+                                         Table 6.1-11 Dimensions of Reducers (Cont’d)
+
+   Nominal             Outside Diameter                                 Nominal            Outside Diameter
+     Pipe              at Bevel, mm (in.)                                 Pipe             at Bevel, mm (in.)
+     Size           Large             Small          End-to-End,          Size           Large             Small       End-to-End,
+    (NPS)            End               End           H, mm (in.)         (NPS)            End               End        H, mm (in.)
+18 × 12           457 (18.00)     323.8 (12.75)      381 (15.00)
+18 × 10           457 (18.00)     273.0 (10.75)      381 (15.00)     36 × 34           914 (36.00)       864 (34.00)   610 (24.00)
+                                                                     36 × 32           914 (36.00)       813 (32.00)   610 (24.00)
+20 × 18           508 (20.00)     457.0 (18.00)      508 (20.00)     36 × 30           914 (36.00)       762 (30.00)   610 (24.00)
+20 × 16           508 (20.00)     406.4 (16.00)      508 (20.00)     36 × 26           914 (36.00)       660 (26.00)   610 (24.00)
+20 × 14           508 (20.00)     355.6 (14.00)      508 (20.00)     36 × 24           914 (36.00)       610 (24.00)   610 (24.00)
+20 × 12           508 (20.00)     323.8 (12.75)      508 (20.00)
+                                                                     38 × 36           965 (38.00)       914 (36.00)   610 (24.00)
+22 × 20           559 (22.00)     508.0 (20.00)      508 (20.00)     38 × 34           965 (38.00)       864 (34.00)   610 (24.00)
+22 × 18           559 (22.00)     457.0 (18.00)      508 (20.00)     38 × 32           965 (38.00)       813 (32.00)   610 (24.00)
+22 × 16           559 (22.00)     406.4 (16.00)      508 (20.00)     38 × 30           965 (38.00)       762 (30.00)   610 (24.00)
+22 × 14           559 (22.00)     355.4 (14.00)      508 (20.00)     38 × 28           965 (38.00)       711 (28.00)   610 (24.00)
+                                                                     38 × 26           965 (38.00)       660 (26.00)   610 (24.00)
+24 × 22           610 (24.00)     559.0 (22.00)      508 (20.00)
+24 × 20           610 (24.00)     508.0 (20.00)      508 (20.00)     40 × 38         1 016 (40.00)       965 (38.00)   610 (24.00)
+24 × 18           610 (24.00)     457.0 (18.00)      508 (20.00)     40 × 36         1 016 (40.00)       914 (36.00)   610 (24.00)
+24 × 16           610 (24.00)     406.4 (16.00)      508 (20.00)     40 × 34         1 016 (40.00)       864 (34.00)   610 (24.00)
+                                                                     40 × 32         1 016 (40.00)       813 (32.00)   610 (24.00)
+26 × 24           660 (26.00)     610.0 (24.00)      610 (24.00)     40 × 30         1 016 (40.00)       762 (30.00)   610 (24.00)
+26 × 22           660 (26.00)     559.0 (22.00)      610 (24.00)
+26 × 20           660 (26.00)     508.0 (20.00)      610 (24.00)     42 × 40         1 067 (42.00)     1 016 (40.00)   610 (24.00)
+26 × 18           660 (26.00)     457.0 (18.00)      610 (24.00)     42 × 38         1 067 (42.00)       965 (38.00)   610 (24.00)
+                                                                     42 × 36         1 067 (42.00)       914 (36.00)   610 (24.00)
+28 × 26           711 (28.00)     660.0 (26.00)      610 (24.00)     42 × 34         1 067 (42.00)       864 (34.00)   610 (24.00)
+28 × 24           711 (28.00)     610.0 (24.00)      610 (24.00)     42 × 32         1 067 (42.00)       813 (32.00)   610 (24.00)
+28 × 20           711 (28.00)     508.0 (20.00)      610 (24.00)     42 × 30         1 067 (42.00)       762 (30.00)   610 (24.00)
+28 × 18           711 (28.00)     457.0 (18.00)      610 (24.00)
+                                                                     44 × 42         1 118 (44.00)     1 067 (42.00)   610 (24.00)
+30 × 28           762 (30.00)     711.0 (28.00)      610 (24.00)     44 × 40         1 118 (44.00)     1 016 (40.00)   610 (24.00)
+30 × 26           762 (30.00)     660.0 (26.00)      610 (24.00)     44 × 38         1 118 (44.00)       965 (38.00)   610 (24.00)
+30 × 24           762 (30.00)     610.0 (24.00)      610 (24.00)     44 × 36         1 118 (44.00)       914 (36.00)   610 (24.00)
+30 × 20           762 (30.00)     508.0 (20.00)      610 (24.00)
+                                                                     46 × 44         1 168 (46.00)     1 118 (44.00)   711 (28.00)
+32 × 30           813 (32.00)     762.0 (30.00)      610 (24.00)     46 × 42         1 168 (46.00)     1 067 (42.00)   711 (28.00)
+32 × 28           813 (32.00)     711.0 (28.00)      610 (24.00)     46 × 40         1 168 (46.00)     1 016 (40.00)   711 (28.00)
+32 × 26           813 (32.00)     660.0 (26.00)      610 (24.00)     46 × 38         1 168 (46.00)       965 (38.00)   711 (28.00)
+32 × 24           813 (32.00)     610.0 (24.00)      610 (24.00)
+                                                                     48 × 46         1 219 (48.00)     1 168 (46.00)   711 (28.00)
+34 × 32           864 (34.00)     813.0 (32.00)      610 (24.00)     48 × 44         1 219 (48.00)     1 118 (44.00)   711 (28.00)
+34 × 30           864 (34.00)     762.0 (30.00)      610 (24.00)     48 × 42         1 219 (48.00)     1 067 (42.00)   711 (28.00)
+34 × 26           864 (34.00)     660.0 (26.00)      610 (24.00)     48 × 40         1 219 (48.00)     1 016 (40.00)   711 (28.00)
+34 × 24           864 (34.00)     610.0 (24.00)      610 (24.00)
+
+GENERAL NOTE: Although the figure illustrates a bell-shaped reducer, the use of a conical reducer is not prohibited.
+
+
+
+
+                                                                   22
+                                                                     ASME B16.9-2018
+
+
+
+ð18Þ                                                Table 8-1 Welding Bevels and Root Face
+
+
+
+
+                   Nominal Wall Thickness, t, mm (in.)                                               End Preparation
+       Less than x [Note (2)]                                          Cut square or slightly chamfer, at manufacturer’s option (not illustrated)
+       x to 22 (0.88), inclusive [Note (2)]                            Plain bevel as in illustration (a) above
+       More than 22 (0.88)                                             Compound bevel as in illustration (b) above
+       GENERAL NOTE: In the illustrations, dimensions in parentheses are in inches; other dimensions are in millimeters.
+       NOTES:
+       (1) See section 8 and Figure 8-1 for transition contours.
+       (2) x = 5 mm (0.19 in.) for carbon steel or ferritic alloy steel and 3 mm (0.12 in.) for austenitic steel or nonferrous alloys.
+
+
+
+
+                                                                            23
+                                                                       ASME B16.9-2018
+
+
+
+ð18Þ                                      Figure 8-1 Maximum Envelope for Welding End Transitions
+
+
+
+
+       NOTES:
+       (1) The value of tmin is whichever of the following is applicable:
+         (a) the minimum ordered wall thickness of the pipe, to include pipe that is purchased to a nominal wall thickness with an undertolerance other than
+       12.5%
+         (b) 0.875 times the nominal wall thickness of pipe ordered to a pipe schedule wall thickness that has an undertolerance of 12.5%
+       (2) The maximum thickness at the end of the component is as follows:
+         (a) the greater of [tmin + 4 mm (0.16 in.)] or 1.15tmin when ordered on a minimum wall basis
+         (b) the greater of [tmin + 4 mm (0.16 in.)] or 1.10tnom when ordered on a nominal wall basis
+       (3) Weld bevel shown is for illustration only.
+       (4) The weld reinforcement permitted by applicable code may lie outside the maximum envelope.
+       (5) Where transitions using maximum slope do not intersect the inside or outside surfaces within the transition region, as shown by the phantom
+           outline, maximum slopes shall be used. Alternatively, radii lying within the envelope may be used.
+
+
+
+
+                                                                               24
+                                                                   ASME B16.9-2018
+
+
+
+                                                      Table 9.2.1-1 Testing Coverage
+         Type of Fitting Tested [Note (1)]                           Qualifies the Following If the Same Design Thickness Is Used
+Short radius elbow [Note (2)]                            Short radius, long radius, reducing long radius, or 3D radius elbow
+Long radius elbow [Note (2)]                             Long radius, reducing long radius, or 3D radius elbow
+3D radius elbow [Note (2)]                               3D radius elbow
+Straight tee                                             Straight or reducing tees of any reduction
+Reducing tee                                             Reducing tees with the same or more reduction in outlet size
+Straight cross                                           Straight or reducing crosses of any reduction
+Reducing cross                                           Reducing crosses with the same or more reduction in outlet size
+Cap                                                      Caps of the same configuration
+Eccentric reducer [Note (3)]                             Eccentric or concentric reducers with the same or lesser included transition angle
+Concentric reducer [Note (3)]                            Concentric reducers with the same or lesser included transition angle [Note (4)]
+Lap joint stub ends                                      Lap joint stub ends are exempt from proof
+NOTES:
+(1) Paragraph 9.4 applies to as-tested and qualified fittings.
+(2) A test of any angle elbow covered in Tables 6.1-1 through 6.1-6 will qualify any other angle. A factory-made segment elbow that has a proof test
+    on a geometrically similar 45-deg or 90-deg elbow need not be tested separately.
+(3) Straight conical (no tangent) and bell-shaped reducers are considered different design configurations and require separate testing.
+(4) “Transition angle” is defined as the angle of the conical section and is calculated as the [arc tan (difference of diameters/twice the length)] for
+    concentric reducers or [arc tan (difference of diameters/length)] for eccentric reducers.
+
+
+
+        Table 9.3.1-1 Test Factor, f, Determination
+      Number of Tests Performed, or Number of                  Test
+        Geometrically Similar Fittings Tested                Factor, f
+One                                                         1.10
+Two                                                         1.05
+Three or more                                               1.0
+
+
+
+
+                                                                         25
+                                                                                             Table 11-1 Tolerances
+
+
+
+
+                                                                                                    Center-to-End
+
+
+
+
+                                                                                                                                                                                                                         ASME B16.9-2018
+                                  All Fittings [Notes (1) and (2)]                               Dimensions, mm (in.)                       Overall                                    180-deg Returns
+                                                   Outside                    Inside         90-deg and 45-deg                             Length of          Overall
+                                                Diameter at                  Diameter             Long and                              Reducers and           Length     Center-to-        Back-to-
+26
+
+
+
+
+                                              Bevel, D, mm (in.)         at End, mm (in.)       Short Radius       3D Radius               Lap Joint             of          Center           Face         Alignment
+     Nominal Pipe                                [Notes (3)               [Notes (3) and      Elbows and Tees,      Elbows,               Stub Ends,            Caps,     Dimension,       Dimension,        of Ends,
+      Size (NPS)             DN                   and (4)]                     (5)]               A, B, C, M          A, B              F, H, mm (in.)      E, mm (in.)   O, mm (in.)      K, mm (in.)     U, mm (in.)
+     1
+         ∕2 to 21∕2    15 to 65          +1.6, −0.8 (+0.06, −0.03)           0.8 (0.03)           2 (0.06)           3 (0.09)                 2 (0.06)        3 (0.12)      6 (0.25)        6 (0.25)         1 (0.03)
+     3 to 31∕2         80 to 90          1.6 (0.06)                          1.6 (0.06)           2 (0.06)           3 (0.09)                 2 (0.06)        3 (0.12)      6 (0.25)        6 (0.25)         1 (0.03)
+     4                 100               1.6 (0.06)                          1.6 (0.06)           2 (0.06)           3 (0.09)                 2 (0.06)        3 (0.12)      6 (0.25)        6 (0.25)         1 (0.03)
+     5 to 8            125 to 200        +2.4, −1.6 (+0.09, −0.06)           1.6 (0.06)           2 (0.06)           3 (0.09)                 2 (0.06)        6 (0.25)      6 (0.25)        6 (0.25)         1 (0.03)
+
+
+     10 to 18          250 to 450        +4.0, −3.2 (+0.16, −0.12)           3.2 (0.12)           2 (0.09)           3 (0.12)                 2 (0.09)        6 (0.25)     10 (0.38)        6 (0.25)         2 (0.06)
+     20 to 24          500 to 600        +6.4, −4.8 (+0.25, −0.19)           4.8 (0.19)           2 (0.09)           3 (0.12)                 2 (0.09)        6 (0.25)     10 (0.38)        6 (0.25)         2 (0.06)
+     26 to 30          650 to 750        +6.4, −4.8 (+0.25, −0.19)           4.8 (0.19)           3 (0.12)           6 (0.25)                 5 (0.19)       10 (0.38)        …                …               …
+     32 to 48          800 to 1 200      +6.4, −4.8 (+0.25, −0.19)           4.8 (0.19)           5 (0.19)           6 (0.38)                 5 (0.19)       10 (0.38)        …                …               …
+                                                                     Lap Joint Stub Ends [Note (6)]                                                                          Angularity Tolerances, mm (in.)
+                                                    Outside                        Fillet
+           Nominal                                 Diameter                       Radius                                             Nominal Pipe                                  Off                    Off
+           Pipe Size                                 of Lap,                      of Lap,                    Lap                         Size                                     Angle,                 Plane,
+             (NPS)           DN                   G, mm (in.)                  R, mm (in.)            Thickness, mm (in.)               (NPS)                  DN                   Q                      P
+     1
+         ∕2 to 21∕2    15 to 65                +0, −1 (+0, −0.03)           +0, −1 (+0, −0.03)        +1.6, −0 (+0.06, −0)      1
+                                                                                                                                    ∕2 to 4              15 to 100             1 (0.03)                  2 (0.06)
+     3 to 31∕2         80 to 90                +0, −1 (+0, −0.03)           +0, −1 (+0, −0.03)        +1.6, −0 (+0.06, −0)      5 to 8                   125 to 200            2 (0.06)                  4 (0.12)
+     4                 100                     +0, −1 (+0, −0.03)           +0, −2 (+0, −0.06)        +1.6, −0 (+0.06, −0)      10 to 12                 250 to 300            3 (0.09)                  5 (0.19)
+     5 to 8            125 to 200              +0, −1 (+0, −0.03)           +0, −2 (+0, −0.06)        +1.6, −0 (+0.06, −0)      14 to 16                 350 to 400            3 (0.09)                  6 (0.25)
+                                                                                 Table 11-1 Tolerances (Cont’d)
+                                                             Lap Joint Stub Ends [Note (6)]                                                                  Angularity Tolerances, mm (in.)
+                                               Outside                      Fillet
+        Nominal                               Diameter                     Radius                                      Nominal Pipe                              Off                  Off
+        Pipe Size                               of Lap,                    of Lap,                   Lap                   Size                                 Angle,               Plane,
+          (NPS)            DN                G, mm (in.)                R, mm (in.)           Thickness, mm (in.)         (NPS)               DN                  Q                    P
+     10 to 18        250 to 450      +0, −2 (+0, −0.06)              +0, −2 (+0, −0.06)       +3.2, −0 (+0.12, −0)   18 to 24          450 to 600              4 (0.12)            10 (0.38)
+     20 to 24        500 to 600      +0, −2 (+0, −0.06)              +0, −2 (+0, −0.06)       +3.2, −0 (+0.12, −0)   26 to 30          650 to 750              5 (0.19)            10 (0.38)
+     26 to 30        650 to 750                   …                          …                         …             32 to 42          800 to 1 050            5 (0.19)            13 (0.50)
+     32 to 48        800 to 1 200                 …                          …                         …             44 to 48          1 100 to 1 200          5 (0.19)            19 (0.75)
+
+     GENERAL NOTE: Tolerances are equal plus and minus except as noted.
+     NOTES:
+     (1) The inside diameter and the nominal wall thicknesses at ends are to be specified by the purchaser.
+     (2) A minimum wall thickness of 87.5% applies unless the purchaser specifies a different wall thickness tolerance. See Figure 8-1, Note (1)(a).
+     (3) Out-of-round is the sum of absolute values of plus and minus tolerances.
+     (4) This tolerance may not apply in localized areas of formed fittings where increased wall thickness is required to meet design requirements of para. 2.2.
+     (5) Unless otherwise specified by the purchaser, these tolerances apply to the nominal inside diameter, which equals the difference between the nominal outside diameter and twice the nominal
+         wall thickness.
+
+
+
+
+                                                                                                                                                                                                      ASME B16.9-2018
+     (6) See Table 6.1-9 for limiting dimensions of outside diameter of barrel.
+27
+                                                          ASME B16.9-2018
+
+
+
+
+                                         MANDATORY APPENDIX I
+ð18Þ                                         REFERENCES
+
+         The following is a list of standards and specifications        ASTM B361-16, Specification for Factory-Made Wrought
+       referenced in this Standard. Unless otherwise specified,           Aluminum and Aluminum-Alloy Welding Fittings
+       the latest edition of ASME publications shall apply.             ASTM B363-14, Specification for Seamless and Welded
+                                                                          Unalloyed Titanium and Titanium Alloy Welding
+       ASME B16.5, Pipe Flanges and Flanged Fittings: NPS 1∕2             Fittings
+         Through NPS 24 Metric/Inch Standard                            ASTM B366/B366M-17, Specification for Factory-Made
+       ASME B16.25, Buttwelding Ends                                      Wrought Nickel and Nickel Alloy Fittings
+       ASME B31, Code for Pressure Piping                               ASTM E29-13, Practice for Using Significant Digits in Test
+       ASME B31.3, Process Piping                                         Data to Determine Conformance With Specifications
+       ASME B36.10M, Welded and Seamless Wrought Steel Pipe             Publisher: American Society for Testing and Materials
+       ASME B36.19M, Stainless Steel Pipe                                 (ASTM International), 100 Barr Harbor Drive, P.O.
+       ASME Boiler and Pressure Vessel Code                               Box C700, West Conshohocken, PA 19428-2959
+       Publisher: The American Society of Mechanical Engineers            (www.astm.org)
+         (ASME), Two Park Avenue, New York, NY 10016-5990
+         (www.asme.org)                                                 ISO 6708:1995, Pipework components — Definition and
+                                                                          selection of DN (nominal size)
+       ASTM A234/A234M-17, Specification for Piping Fittings            ISO 9000:2015, Quality management systems —
+         of Wrought Carbon Steel and Alloy Steel for Moderate             Fundamentals and vocabulary1
+         and High Temperature Service                                   ISO 9001:2015, Quality management systems —
+       ASTM A403/A403M-16, Specification for Wrought                      Requirements1
+         Austenitic Stainless Steel Piping Fittings                     ISO 9004:2009, Managing for the sustained success of an
+       ASTM A420/A420M-16, Specification for Piping Fittings              organization — A quality management approach1
+         of Wrought Carbon Steel and Alloy Steel for Low-               Publisher: International Organization for Standardization
+         Temperature Service                                              (ISO), Central Secretariat, Chemin de Blandonnet 8, Case
+       ASTM A815/A815M-14e1, Specification for Wrought                    Postale 401, 1214 Vernier, Geneva, Switzerland
+         Ferritic, Ferritic/Austenitic and Martensitic Stainless          (www.iso.org)
+         Steel Piping Fittings
+       ASTM A960/A960M-16a, Specification for Common
+         Requirements for Wrought Steel Piping Fittings
+
+
+
+
+                                                                          1
+                                                                            May also be obtained from the American National Standards Institute
+                                                                        (ANSI), 25 West 43rd Street, New York, NY 10036.
+
+
+                                                                   28
+                                                                 ASME B16.9-2018
+
+
+
+
+                                      NONMANDATORY APPENDIX A
+                                       QUALITY SYSTEM PROGRAM
+
+  The products manufactured in accordance with this                              compliance shall be available to the purchaser at the
+Standard shall be produced under a Quality System                                manufacturer’s facility. A written summary description
+Program following the principles of an appropriate stan-                         of the program used by the product manufacturer shall
+dard from the ISO 9000 series.1 A determination of the                           be available to the purchaser upon request. The
+need for registration and/or certification of the                                “product manufacturer” is defined as the entity whose
+product manufacturer’s quality system by an independent                          name or trademark appears on the product in accordance
+organization shall be the responsibility of the manufactur-                      with the marking or identification requirements of this
+er. The detailed documentation demonstrating program                             Standard.
+
+
+
+
+  1
+    The series is also available from the American National Standards
+Institute (ANSI) and the American Society for Quality (ASQ) as
+American National Standards that are identified by the prefix “Q,” repla-
+cing the prefix “ISO.” Each standard of the series is listed under
+References in Mandatory Appendix I.
+
+
+                                                                            29
+ASME B16.9-2018
+

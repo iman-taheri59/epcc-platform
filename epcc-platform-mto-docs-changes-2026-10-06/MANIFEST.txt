@@ -1,0 +1,10 @@
+docs/ADR-005-Engineering-Data-Ingestion.md
+docs/ADR-006-Piping-Line-Component-Joint-Model.md
+docs/ADR-008-PMS-Piping-Class-Rules.md
+docs/ADR-018-Material-Management-Operational-Completion.md
+docs/ADR-RECONCILIATION-2026-09-29.md
+docs/ADR-DECISION-REVIEW-2026-09-29.md
+docs/TODO.md
+HANDOFF.md
+README.md
+MANIFEST.txt

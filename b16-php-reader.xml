@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="/home/user/epcc-platform/app/phpunit.xml" tests="7" assertions="296" errors="0" failures="0" skipped="0" time="0.378290">
+    <testsuite name="Feature" tests="7" assertions="296" errors="0" failures="0" skipped="0" time="0.378290">
+      <testsuite name="Tests\Feature\FittingDimensionsTest" file="/home/user/epcc-platform/app/tests/Feature/FittingDimensionsTest.php" tests="7" assertions="296" errors="0" failures="0" skipped="0" time="0.378290">
+        <testcase name="test_all_pack_rows_round_trip_without_reinterpreting_dimensions" file="/home/user/epcc-platform/app/tests/Feature/FittingDimensionsTest.php" line="21" class="Tests\Feature\FittingDimensionsTest" classname="Tests.Feature.FittingDimensionsTest" assertions="197" time="0.194784"/>
+        <testcase name="test_small_elbows_use_table_floor_not_a_radius_formula" file="/home/user/epcc-platform/app/tests/Feature/FittingDimensionsTest.php" line="34" class="Tests\Feature\FittingDimensionsTest" classname="Tests.Feature.FittingDimensionsTest" assertions="7" time="0.028415"/>
+        <testcase name="test_aliases_normalise_size_without_mutating_reference_data" file="/home/user/epcc-platform/app/tests/Feature/FittingDimensionsTest.php" line="45" class="Tests\Feature\FittingDimensionsTest" classname="Tests.Feature.FittingDimensionsTest" assertions="4" time="0.027433"/>
+        <testcase name="test_missing_coverage_is_explicit_and_never_zero_or_guessed" file="/home/user/epcc-platform/app/tests/Feature/FittingDimensionsTest.php" line="54" class="Tests\Feature\FittingDimensionsTest" classname="Tests.Feature.FittingDimensionsTest" assertions="40" time="0.030758"/>
+        <testcase name="test_pms_consumer_preserves_source_and_returns_provenance_not_cut_length" file="/home/user/epcc-platform/app/tests/Feature/FittingDimensionsTest.php" line="87" class="Tests\Feature\FittingDimensionsTest" classname="Tests.Feature.FittingDimensionsTest" assertions="5" time="0.033127"/>
+        <testcase name="test_pms_consumer_requires_compatible_standard_end_size_and_explicit_radius" file="/home/user/epcc-platform/app/tests/Feature/FittingDimensionsTest.php" line="99" class="Tests\Feature\FittingDimensionsTest" classname="Tests.Feature.FittingDimensionsTest" assertions="25" time="0.031129"/>
+        <testcase name="test_corrupted_packs_fail_loudly_and_do_not_cache_partial_rows" file="/home/user/epcc-platform/app/tests/Feature/FittingDimensionsTest.php" line="124" class="Tests\Feature\FittingDimensionsTest" classname="Tests.Feature.FittingDimensionsTest" assertions="18" time="0.032643"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>

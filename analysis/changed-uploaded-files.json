@@ -1,0 +1,39 @@
+{
+  "changed": [
+    "epcc-platform/restore.sh",
+    "epcc-platform/app/app/Http/Controllers/AuthController.php",
+    "epcc-platform/app/app/Http/Controllers/ModelImportController.php",
+    "epcc-platform/app/app/Http/Middleware/BindTenant.php",
+    "epcc-platform/app/app/Services/BaselineService.php",
+    "epcc-platform/app/config/epcc.php",
+    "epcc-platform/app/lang/en/epcc.php",
+    "epcc-platform/app/lang/fa/epcc.php",
+    "epcc-platform/app/resources/views/auth/login.blade.php",
+    "epcc-platform/app/tests/Browser/sidebar-animation.test.cjs",
+    "epcc-platform/app/tests/Browser/sidebar-toggle.test.cjs",
+    "epcc-platform/app/tests/Browser/table-tools.test.cjs",
+    "epcc-platform/app/tests/Feature/BindTenantMiddlewareTest.php",
+    "epcc-platform/app/tests/Feature/BlobIntegrityTest.php",
+    "epcc-platform/app/tests/TestCase.php",
+    "epcc-platform/app/tests/bootstrap.php",
+    "epcc-platform/app/.phpunit.result.cache",
+    "epcc-platform/REBUILD.md",
+    "epcc-platform/HANDOFF.md",
+    "epcc-platform/prototype/test/run-all.sh",
+    "epcc-platform/docs/DEFECT-001-Baseline-RLS-Binds-To-The-Outer-Table.md",
+    "epcc-platform/standards-packs/reference/fitting-dimensions.ref.json",
+    "epcc-platform/standards-packs/validate_packs.py"
+  ],
+  "missing": [
+    "epcc-platform/app/storage/framework/views/1ad05880d51b9b35d7952eb10d070f7a.php",
+    "epcc-platform/app/storage/framework/views/082bd62ff87500647a2543cd01a88b04.php",
+    "epcc-platform/app/storage/framework/views/c7323f38a1d1efba239ad6b1c7096570.php",
+    "epcc-platform/app/storage/framework/views/22ac8402c8face5a0ba6fc0700fb9be3.php",
+    "epcc-platform/app/storage/framework/views/641d2c9d9b440f70091dc615c81fd290.php",
+    "epcc-platform/app/storage/framework/views/325e36324c0101f59cdf1a55db3681fe.php",
+    "epcc-platform/app/storage/framework/views/a5157a674d0bf47135a772c8a71c614b.php",
+    "epcc-platform/app/storage/framework/views/d3d951819d61ef4bb372b83876950652.php",
+    "epcc-platform/app/storage/framework/views/d0d86c6019724a455a4c69c0e0146422.php",
+    "epcc-platform/app/storage/framework/views/e728279aa0428ae4d652ec6b18105136.php"
+  ]
+}

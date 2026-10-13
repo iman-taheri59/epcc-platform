@@ -1,0 +1,6 @@
+M440|app/Support/TenantType.php|public const MAY_ASSIGN_PARTY_ROLES = [self::OWN, self::MC, self::PMC];|public const MAY_ASSIGN_PARTY_ROLES = [self::OWN, self::MC, self::PMC, self::TPI];|a TPI must never be able to assign party roles
+M441|app/Support/TenantType.php|public const MAY_ASSIGN_PARTY_ROLES = [self::OWN, self::MC, self::PMC];|public const MAY_ASSIGN_PARTY_ROLES = [self::OWN];|the MC and the consultant must keep the right to assign roles
+M442|app/Services/ItpService.php|$this->assertMayAssignPartyRoles($user);|$x = $user;|copying a template must be refused to a party that may not assign roles
+M443|app/Support/TenantType.php|&& in_array($tenantType, self::MAY_ASSIGN_PARTY_ROLES, true);|&& true;|the guard must actually consult the list
+M444|database/migrations/2026_09_20_140000_fix_itp_tenant_policies.php|AND pc.company_id = NULLIF(current_setting('epcc.company_id', true), '')::uuid|AND pc.company_id IS NOT NULL|the read policy must scope to the acting company, not to any member
+M445|database/migrations/2026_09_20_140000_fix_itp_tenant_policies.php|                    company_id = NULLIF(current_setting('epcc.company_id', true), '')::uuid|                    TRUE|the write check must pin the row to the acting company

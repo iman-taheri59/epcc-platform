@@ -1,0 +1,1368 @@
+{
+  "pdfSha256": "f254b756cf54dc4115fba10c659f205cee913c816068736ee76f59b608052ab4",
+  "method": "SI cells matched by OD; NPS/DN linkage not independently rechecked. E-column equality does not prove cap thickness applicability.",
+  "pdfPages": {
+    "elbows": 18,
+    "caps": 31
+  },
+  "rowsChecked": 99,
+  "numericMatches": 99,
+  "results": [
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "1/2",
+      "odMm": 21.3,
+      "storedMm": 25.0,
+      "sourceMm": 25.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "3/4",
+      "odMm": 26.7,
+      "storedMm": 25.0,
+      "sourceMm": 25.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "1",
+      "odMm": 33.4,
+      "storedMm": 38.0,
+      "sourceMm": 38.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "1 1/4",
+      "odMm": 42.2,
+      "storedMm": 38.0,
+      "sourceMm": 38.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "1 1/2",
+      "odMm": 48.3,
+      "storedMm": 38.0,
+      "sourceMm": 38.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "2",
+      "odMm": 60.3,
+      "storedMm": 38.0,
+      "sourceMm": 38.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "2 1/2",
+      "odMm": 73.0,
+      "storedMm": 38.0,
+      "sourceMm": 38.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "3",
+      "odMm": 88.9,
+      "storedMm": 51.0,
+      "sourceMm": 51.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "3 1/2",
+      "odMm": 101.6,
+      "storedMm": 64.0,
+      "sourceMm": 64.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "4",
+      "odMm": 114.3,
+      "storedMm": 64.0,
+      "sourceMm": 64.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "5",
+      "odMm": 141.3,
+      "storedMm": 76.0,
+      "sourceMm": 76.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "6",
+      "odMm": 168.3,
+      "storedMm": 89.0,
+      "sourceMm": 89.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "8",
+      "odMm": 219.1,
+      "storedMm": 102.0,
+      "sourceMm": 102.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "10",
+      "odMm": 273.0,
+      "storedMm": 127.0,
+      "sourceMm": 127.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "12",
+      "odMm": 323.8,
+      "storedMm": 152.0,
+      "sourceMm": 152.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "14",
+      "odMm": 355.6,
+      "storedMm": 165.0,
+      "sourceMm": 165.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "16",
+      "odMm": 406.4,
+      "storedMm": 178.0,
+      "sourceMm": 178.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "18",
+      "odMm": 457.0,
+      "storedMm": 203.0,
+      "sourceMm": 203.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "20",
+      "odMm": 508.0,
+      "storedMm": 229.0,
+      "sourceMm": 229.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "22",
+      "odMm": 559.0,
+      "storedMm": 254.0,
+      "sourceMm": 254.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "24",
+      "odMm": 610.0,
+      "storedMm": 267.0,
+      "sourceMm": 267.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "26",
+      "odMm": 660.0,
+      "storedMm": 267.0,
+      "sourceMm": 267.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "28",
+      "odMm": 711.0,
+      "storedMm": 267.0,
+      "sourceMm": 267.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "30",
+      "odMm": 762.0,
+      "storedMm": 267.0,
+      "sourceMm": 267.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "32",
+      "odMm": 813.0,
+      "storedMm": 267.0,
+      "sourceMm": 267.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "34",
+      "odMm": 864.0,
+      "storedMm": 267.0,
+      "sourceMm": 267.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "36",
+      "odMm": 914.0,
+      "storedMm": 267.0,
+      "sourceMm": 267.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "38",
+      "odMm": 965.0,
+      "storedMm": 305.0,
+      "sourceMm": 305.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "40",
+      "odMm": 1016.0,
+      "storedMm": 305.0,
+      "sourceMm": 305.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "42",
+      "odMm": 1067.0,
+      "storedMm": 305.0,
+      "sourceMm": 305.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "44",
+      "odMm": 1118.0,
+      "storedMm": 343.0,
+      "sourceMm": 343.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "46",
+      "odMm": 1168.0,
+      "storedMm": 343.0,
+      "sourceMm": 343.0,
+      "match": true
+    },
+    {
+      "fitting": "CAP",
+      "qualifier": null,
+      "nps": "48",
+      "odMm": 1219.0,
+      "storedMm": 343.0,
+      "sourceMm": 343.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "1/2",
+      "odMm": 21.3,
+      "storedMm": 16.0,
+      "sourceMm": 16.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "3/4",
+      "odMm": 26.7,
+      "storedMm": 19.0,
+      "sourceMm": 19.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "1",
+      "odMm": 33.4,
+      "storedMm": 22.0,
+      "sourceMm": 22.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "1 1/4",
+      "odMm": 42.2,
+      "storedMm": 25.0,
+      "sourceMm": 25.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "1 1/2",
+      "odMm": 48.3,
+      "storedMm": 29.0,
+      "sourceMm": 29.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "2",
+      "odMm": 60.3,
+      "storedMm": 35.0,
+      "sourceMm": 35.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "2 1/2",
+      "odMm": 73.0,
+      "storedMm": 44.0,
+      "sourceMm": 44.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "3",
+      "odMm": 88.9,
+      "storedMm": 51.0,
+      "sourceMm": 51.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "3 1/2",
+      "odMm": 101.6,
+      "storedMm": 57.0,
+      "sourceMm": 57.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "4",
+      "odMm": 114.3,
+      "storedMm": 64.0,
+      "sourceMm": 64.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "5",
+      "odMm": 141.3,
+      "storedMm": 79.0,
+      "sourceMm": 79.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "6",
+      "odMm": 168.3,
+      "storedMm": 95.0,
+      "sourceMm": 95.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "8",
+      "odMm": 219.1,
+      "storedMm": 127.0,
+      "sourceMm": 127.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "10",
+      "odMm": 273.0,
+      "storedMm": 159.0,
+      "sourceMm": 159.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "12",
+      "odMm": 323.8,
+      "storedMm": 190.0,
+      "sourceMm": 190.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "14",
+      "odMm": 355.6,
+      "storedMm": 222.0,
+      "sourceMm": 222.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "16",
+      "odMm": 406.4,
+      "storedMm": 254.0,
+      "sourceMm": 254.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "18",
+      "odMm": 457.0,
+      "storedMm": 286.0,
+      "sourceMm": 286.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "20",
+      "odMm": 508.0,
+      "storedMm": 318.0,
+      "sourceMm": 318.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "22",
+      "odMm": 559.0,
+      "storedMm": 343.0,
+      "sourceMm": 343.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "24",
+      "odMm": 610.0,
+      "storedMm": 381.0,
+      "sourceMm": 381.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "26",
+      "odMm": 660.0,
+      "storedMm": 406.0,
+      "sourceMm": 406.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "28",
+      "odMm": 711.0,
+      "storedMm": 438.0,
+      "sourceMm": 438.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "30",
+      "odMm": 762.0,
+      "storedMm": 470.0,
+      "sourceMm": 470.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "32",
+      "odMm": 813.0,
+      "storedMm": 502.0,
+      "sourceMm": 502.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "34",
+      "odMm": 864.0,
+      "storedMm": 533.0,
+      "sourceMm": 533.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "36",
+      "odMm": 914.0,
+      "storedMm": 565.0,
+      "sourceMm": 565.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "38",
+      "odMm": 965.0,
+      "storedMm": 600.0,
+      "sourceMm": 600.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "40",
+      "odMm": 1016.0,
+      "storedMm": 632.0,
+      "sourceMm": 632.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "42",
+      "odMm": 1067.0,
+      "storedMm": 660.0,
+      "sourceMm": 660.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "44",
+      "odMm": 1118.0,
+      "storedMm": 695.0,
+      "sourceMm": 695.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "46",
+      "odMm": 1168.0,
+      "storedMm": 727.0,
+      "sourceMm": 727.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_45",
+      "nps": "48",
+      "odMm": 1219.0,
+      "storedMm": 759.0,
+      "sourceMm": 759.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "1/2",
+      "odMm": 21.3,
+      "storedMm": 38.0,
+      "sourceMm": 38.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "3/4",
+      "odMm": 26.7,
+      "storedMm": 38.0,
+      "sourceMm": 38.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "1",
+      "odMm": 33.4,
+      "storedMm": 38.0,
+      "sourceMm": 38.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "1 1/4",
+      "odMm": 42.2,
+      "storedMm": 48.0,
+      "sourceMm": 48.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "1 1/2",
+      "odMm": 48.3,
+      "storedMm": 57.0,
+      "sourceMm": 57.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "2",
+      "odMm": 60.3,
+      "storedMm": 76.0,
+      "sourceMm": 76.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "2 1/2",
+      "odMm": 73.0,
+      "storedMm": 95.0,
+      "sourceMm": 95.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "3",
+      "odMm": 88.9,
+      "storedMm": 114.0,
+      "sourceMm": 114.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "3 1/2",
+      "odMm": 101.6,
+      "storedMm": 133.0,
+      "sourceMm": 133.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "4",
+      "odMm": 114.3,
+      "storedMm": 152.0,
+      "sourceMm": 152.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "5",
+      "odMm": 141.3,
+      "storedMm": 190.0,
+      "sourceMm": 190.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "6",
+      "odMm": 168.3,
+      "storedMm": 229.0,
+      "sourceMm": 229.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "8",
+      "odMm": 219.1,
+      "storedMm": 305.0,
+      "sourceMm": 305.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "10",
+      "odMm": 273.0,
+      "storedMm": 381.0,
+      "sourceMm": 381.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "12",
+      "odMm": 323.8,
+      "storedMm": 457.0,
+      "sourceMm": 457.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "14",
+      "odMm": 355.6,
+      "storedMm": 533.0,
+      "sourceMm": 533.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "16",
+      "odMm": 406.4,
+      "storedMm": 610.0,
+      "sourceMm": 610.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "18",
+      "odMm": 457.0,
+      "storedMm": 686.0,
+      "sourceMm": 686.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "20",
+      "odMm": 508.0,
+      "storedMm": 762.0,
+      "sourceMm": 762.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "22",
+      "odMm": 559.0,
+      "storedMm": 838.0,
+      "sourceMm": 838.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "24",
+      "odMm": 610.0,
+      "storedMm": 914.0,
+      "sourceMm": 914.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "26",
+      "odMm": 660.0,
+      "storedMm": 991.0,
+      "sourceMm": 991.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "28",
+      "odMm": 711.0,
+      "storedMm": 1067.0,
+      "sourceMm": 1067.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "30",
+      "odMm": 762.0,
+      "storedMm": 1143.0,
+      "sourceMm": 1143.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "32",
+      "odMm": 813.0,
+      "storedMm": 1219.0,
+      "sourceMm": 1219.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "34",
+      "odMm": 864.0,
+      "storedMm": 1295.0,
+      "sourceMm": 1295.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "36",
+      "odMm": 914.0,
+      "storedMm": 1372.0,
+      "sourceMm": 1372.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "38",
+      "odMm": 965.0,
+      "storedMm": 1448.0,
+      "sourceMm": 1448.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "40",
+      "odMm": 1016.0,
+      "storedMm": 1524.0,
+      "sourceMm": 1524.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "42",
+      "odMm": 1067.0,
+      "storedMm": 1600.0,
+      "sourceMm": 1600.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "44",
+      "odMm": 1118.0,
+      "storedMm": 1676.0,
+      "sourceMm": 1676.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "46",
+      "odMm": 1168.0,
+      "storedMm": 1753.0,
+      "sourceMm": 1753.0,
+      "match": true
+    },
+    {
+      "fitting": "ELBOW",
+      "qualifier": "LONG_RADIUS_90",
+      "nps": "48",
+      "odMm": 1219.0,
+      "storedMm": 1829.0,
+      "sourceMm": 1829.0,
+      "match": true
+    }
+  ],
+  "capApplicabilityCells": [
+    {
+      "nps": "1/2",
+      "field": "limitingWallThicknessMm",
+      "stored": 4.57,
+      "source": 4.57,
+      "match": true
+    },
+    {
+      "nps": "1/2",
+      "field": "e1Mm",
+      "stored": 25.0,
+      "source": 25.0,
+      "match": true
+    },
+    {
+      "nps": "3/4",
+      "field": "limitingWallThicknessMm",
+      "stored": 3.81,
+      "source": 3.81,
+      "match": true
+    },
+    {
+      "nps": "3/4",
+      "field": "e1Mm",
+      "stored": 25.0,
+      "source": 25.0,
+      "match": true
+    },
+    {
+      "nps": "1",
+      "field": "limitingWallThicknessMm",
+      "stored": 4.57,
+      "source": 4.57,
+      "match": true
+    },
+    {
+      "nps": "1",
+      "field": "e1Mm",
+      "stored": 38.0,
+      "source": 38.0,
+      "match": true
+    },
+    {
+      "nps": "1 1/4",
+      "field": "limitingWallThicknessMm",
+      "stored": 4.83,
+      "source": 4.83,
+      "match": true
+    },
+    {
+      "nps": "1 1/4",
+      "field": "e1Mm",
+      "stored": 38.0,
+      "source": 38.0,
+      "match": true
+    },
+    {
+      "nps": "1 1/2",
+      "field": "limitingWallThicknessMm",
+      "stored": 5.08,
+      "source": 5.08,
+      "match": true
+    },
+    {
+      "nps": "1 1/2",
+      "field": "e1Mm",
+      "stored": 38.0,
+      "source": 38.0,
+      "match": true
+    },
+    {
+      "nps": "2",
+      "field": "limitingWallThicknessMm",
+      "stored": 5.59,
+      "source": 5.59,
+      "match": true
+    },
+    {
+      "nps": "2",
+      "field": "e1Mm",
+      "stored": 44.0,
+      "source": 44.0,
+      "match": true
+    },
+    {
+      "nps": "2 1/2",
+      "field": "limitingWallThicknessMm",
+      "stored": 7.11,
+      "source": 7.11,
+      "match": true
+    },
+    {
+      "nps": "2 1/2",
+      "field": "e1Mm",
+      "stored": 51.0,
+      "source": 51.0,
+      "match": true
+    },
+    {
+      "nps": "3",
+      "field": "limitingWallThicknessMm",
+      "stored": 7.62,
+      "source": 7.62,
+      "match": true
+    },
+    {
+      "nps": "3",
+      "field": "e1Mm",
+      "stored": 64.0,
+      "source": 64.0,
+      "match": true
+    },
+    {
+      "nps": "3 1/2",
+      "field": "limitingWallThicknessMm",
+      "stored": 8.13,
+      "source": 8.13,
+      "match": true
+    },
+    {
+      "nps": "3 1/2",
+      "field": "e1Mm",
+      "stored": 76.0,
+      "source": 76.0,
+      "match": true
+    },
+    {
+      "nps": "4",
+      "field": "limitingWallThicknessMm",
+      "stored": 8.64,
+      "source": 8.64,
+      "match": true
+    },
+    {
+      "nps": "4",
+      "field": "e1Mm",
+      "stored": 76.0,
+      "source": 76.0,
+      "match": true
+    },
+    {
+      "nps": "5",
+      "field": "limitingWallThicknessMm",
+      "stored": 9.65,
+      "source": 9.65,
+      "match": true
+    },
+    {
+      "nps": "5",
+      "field": "e1Mm",
+      "stored": 89.0,
+      "source": 89.0,
+      "match": true
+    },
+    {
+      "nps": "6",
+      "field": "limitingWallThicknessMm",
+      "stored": 10.92,
+      "source": 10.92,
+      "match": true
+    },
+    {
+      "nps": "6",
+      "field": "e1Mm",
+      "stored": 102.0,
+      "source": 102.0,
+      "match": true
+    },
+    {
+      "nps": "8",
+      "field": "limitingWallThicknessMm",
+      "stored": 12.7,
+      "source": 12.7,
+      "match": true
+    },
+    {
+      "nps": "8",
+      "field": "e1Mm",
+      "stored": 127.0,
+      "source": 127.0,
+      "match": true
+    },
+    {
+      "nps": "10",
+      "field": "limitingWallThicknessMm",
+      "stored": 12.7,
+      "source": 12.7,
+      "match": true
+    },
+    {
+      "nps": "10",
+      "field": "e1Mm",
+      "stored": 152.0,
+      "source": 152.0,
+      "match": true
+    },
+    {
+      "nps": "12",
+      "field": "limitingWallThicknessMm",
+      "stored": 12.7,
+      "source": 12.7,
+      "match": true
+    },
+    {
+      "nps": "12",
+      "field": "e1Mm",
+      "stored": 178.0,
+      "source": 178.0,
+      "match": true
+    },
+    {
+      "nps": "14",
+      "field": "limitingWallThicknessMm",
+      "stored": 12.7,
+      "source": 12.7,
+      "match": true
+    },
+    {
+      "nps": "14",
+      "field": "e1Mm",
+      "stored": 191.0,
+      "source": 191.0,
+      "match": true
+    },
+    {
+      "nps": "16",
+      "field": "limitingWallThicknessMm",
+      "stored": 12.7,
+      "source": 12.7,
+      "match": true
+    },
+    {
+      "nps": "16",
+      "field": "e1Mm",
+      "stored": 203.0,
+      "source": 203.0,
+      "match": true
+    },
+    {
+      "nps": "18",
+      "field": "limitingWallThicknessMm",
+      "stored": 12.7,
+      "source": 12.7,
+      "match": true
+    },
+    {
+      "nps": "18",
+      "field": "e1Mm",
+      "stored": 229.0,
+      "source": 229.0,
+      "match": true
+    },
+    {
+      "nps": "20",
+      "field": "limitingWallThicknessMm",
+      "stored": 12.7,
+      "source": 12.7,
+      "match": true
+    },
+    {
+      "nps": "20",
+      "field": "e1Mm",
+      "stored": 254.0,
+      "source": 254.0,
+      "match": true
+    },
+    {
+      "nps": "22",
+      "field": "limitingWallThicknessMm",
+      "stored": 12.7,
+      "source": 12.7,
+      "match": true
+    },
+    {
+      "nps": "22",
+      "field": "e1Mm",
+      "stored": 254.0,
+      "source": 254.0,
+      "match": true
+    },
+    {
+      "nps": "24",
+      "field": "limitingWallThicknessMm",
+      "stored": 12.7,
+      "source": 12.7,
+      "match": true
+    },
+    {
+      "nps": "24",
+      "field": "e1Mm",
+      "stored": 305.0,
+      "source": 305.0,
+      "match": true
+    },
+    {
+      "nps": "26",
+      "field": "limitingWallThicknessMm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "26",
+      "field": "e1Mm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "28",
+      "field": "limitingWallThicknessMm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "28",
+      "field": "e1Mm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "30",
+      "field": "limitingWallThicknessMm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "30",
+      "field": "e1Mm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "32",
+      "field": "limitingWallThicknessMm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "32",
+      "field": "e1Mm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "34",
+      "field": "limitingWallThicknessMm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "34",
+      "field": "e1Mm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "36",
+      "field": "limitingWallThicknessMm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "36",
+      "field": "e1Mm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "38",
+      "field": "limitingWallThicknessMm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "38",
+      "field": "e1Mm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "40",
+      "field": "limitingWallThicknessMm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "40",
+      "field": "e1Mm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "42",
+      "field": "limitingWallThicknessMm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "42",
+      "field": "e1Mm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "44",
+      "field": "limitingWallThicknessMm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "44",
+      "field": "e1Mm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "46",
+      "field": "limitingWallThicknessMm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "46",
+      "field": "e1Mm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "48",
+      "field": "limitingWallThicknessMm",
+      "stored": null,
+      "source": null,
+      "match": true
+    },
+    {
+      "nps": "48",
+      "field": "e1Mm",
+      "stored": null,
+      "source": null,
+      "match": true
+    }
+  ],
+  "capApplicabilityMatches": 66
+}

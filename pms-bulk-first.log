@@ -1,0 +1,36 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+.........[31;1mE[0m.[31;1mE[0m                                                      12 / 12 (100%)
+
+Time: 00:28.630, Memory: 83.00 MB
+
+There were 2 errors:
+
+1) Tests\Feature\PmsBulkEntryTest::test_nominated_other_company_cannot_preview_class_and_cross_project_class_is_not_found
+Illuminate\Validation\ValidationException: The suspend field is required.
+
+/home/user/epcc-platform/app/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:600
+/home/user/epcc-platform/app/app/Services/PmsAccessService.php:107
+/home/user/epcc-platform/app/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:502
+/home/user/epcc-platform/app/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:364
+/home/user/epcc-platform/app/app/Services/PmsAccessService.php:96
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/app/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/app/Services/PmsAccessService.php:96
+/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php:255
+
+2) Tests\Feature\PmsBulkEntryTest::test_approved_definition_link_is_preserved_per_row_and_unapproved_definition_is_rejected
+Illuminate\Validation\ValidationException: Your company has already registered this definition for the same size and source reference.
+
+/home/user/epcc-platform/app/vendor/laravel/framework/src/Illuminate/Validation/ValidationException.php:70
+/home/user/epcc-platform/app/app/Services/ProjectFittingDefinitionService.php:56
+/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php:94
+/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php:283
+
+[37;41mERRORS![0m
+[37;41mTests: 12[0m[37;41m, Assertions: 88[0m[37;41m, Errors: 2[0m[37;41m.[0m

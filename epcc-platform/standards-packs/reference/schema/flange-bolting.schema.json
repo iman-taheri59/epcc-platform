@@ -1,0 +1,227 @@
+{
+ "$schema": "http://json-schema.org/draft-07/schema#",
+ "title": "Flange bolting reference pack",
+ "type": "object",
+ "required": [
+  "refId",
+  "version",
+  "source",
+  "note",
+  "units",
+  "conventions",
+  "ratings",
+  "coverage"
+ ],
+ "additionalProperties": false,
+ "properties": {
+  "refId": {
+   "const": "flange-bolting"
+  },
+  "version": {
+   "type": "string",
+   "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+  },
+  "source": {
+   "type": "string",
+   "minLength": 20
+  },
+  "note": {
+   "type": "string",
+   "minLength": 20
+  },
+  "units": {
+   "type": "object"
+  },
+  "conventions": {
+   "type": "object",
+   "minProperties": 1
+  },
+  "ratings": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "required": [
+     "rating",
+     "bolting",
+     "standard",
+     "series"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "rating": {
+      "type": "string",
+      "pattern": "^[0-9]+#$"
+     },
+     "bolting": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+       "type": "object",
+       "required": [
+        "nps",
+        "verified"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "nps": {
+         "type": "string"
+        },
+        "boltCount": {
+         "type": "integer",
+         "minimum": 4,
+         "multipleOf": 4
+        },
+        "boltDiameterIn": {
+         "type": "string"
+        },
+        "minLengthMm": {
+         "type": "integer",
+         "minimum": 1
+        },
+        "verified": {
+         "type": "boolean"
+        },
+        "minLengthMachineBoltMm": {
+         "type": "integer",
+         "minimum": 1
+        },
+        "boltHoleDiameterIn": {
+         "type": "string"
+        },
+        "flangeOdMm": {
+         "type": "integer",
+         "minimum": 1
+        },
+        "boltCircleMm": {
+         "type": "number",
+         "minimum": 1
+        },
+        "minLengthRingJointMm": {
+         "type": "integer",
+         "minimum": 1
+        },
+        "minLengthTongueGrooveMm": {
+         "type": "integer",
+         "minimum": 1
+        },
+        "deferredToClass": {
+         "type": "string",
+         "description": "This size has no dimensions of its own; the standard says to use another class."
+        },
+        "source": {
+         "type": "string",
+         "minLength": 3
+        },
+        "readOn": {
+         "type": "string",
+         "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "notOffered": {
+         "type": "boolean",
+         "description": "The standard does not offer this size at this class and series."
+        }
+       }
+      }
+     },
+     "standard": {
+      "type": "string",
+      "minLength": 3
+     },
+     "series": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "enum": [
+       "A",
+       "B",
+       null
+      ]
+     }
+    }
+   }
+  },
+  "coverage": {
+   "type": "array",
+   "minItems": 1,
+   "description": "What this pack claims to cover, and where it stops. Exists so a lookup outside the covered range can answer UNKNOWN instead of null.",
+   "items": {
+    "type": "object",
+    "required": [
+     "standard",
+     "editionYear",
+     "series",
+     "npsFrom",
+     "npsTo",
+     "hasRows",
+     "note"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "standard": {
+      "type": "string",
+      "minLength": 3
+     },
+     "editionYear": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2100
+     },
+     "series": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "enum": [
+       "A",
+       "B",
+       null
+      ],
+      "description": "B16.47 dimensional series. Null for B16.5, which has none."
+     },
+     "npsFrom": {
+      "type": "string",
+      "minLength": 1
+     },
+     "npsTo": {
+      "type": "string",
+      "minLength": 1
+     },
+     "hasRows": {
+      "type": "boolean"
+     },
+     "note": {
+      "type": "string",
+      "minLength": 20
+     }
+    }
+   }
+  },
+  "sizesBeyondPipeSizesPack": {
+   "type": "object",
+   "required": [
+    "nps",
+    "reason",
+    "declaredOn"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "nps": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "reason": {
+     "type": "string",
+     "minLength": 20
+    },
+    "declaredOn": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    }
+   }
+  }
+ }
+}

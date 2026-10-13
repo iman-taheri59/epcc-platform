@@ -1,0 +1,65 @@
+
+   INFO  Preparing database.  
+
+  Creating migration table ....................................... 6.53ms DONE
+
+   INFO  Running migrations.  
+
+  0001_01_01_000000_create_users_table ........................... 9.00ms DONE
+  0001_01_01_000001_create_cache_table ........................... 4.76ms DONE
+  0001_01_01_000002_create_jobs_table ............................ 7.74ms DONE
+  2026_09_09_100000_create_epcc_core_tables ..................... 23.20ms DONE
+  2026_09_09_100100_enable_row_level_security .................... 4.18ms DONE
+  2026_09_09_100200_fix_rls_empty_guc ............................ 4.05ms DONE
+  2026_09_09_100300_fix_gate_evaluations_actor ................... 2.78ms DONE
+  2026_09_09_110000_multi_project_support ........................ 6.40ms DONE
+  2026_09_09_120000_authentication_and_authorization ............ 24.93ms DONE
+  2026_09_10_100000_create_document_register .................... 15.65ms DONE
+  2026_09_10_120000_create_document_files ....................... 12.91ms DONE
+  2026_09_10_130000_share_documents_with_participants ............ 6.11ms DONE
+  2026_09_10_140000_create_review_comments ...................... 21.20ms DONE
+  2026_09_10_150000_create_transmittals ......................... 32.84ms DONE
+  2026_09_10_160000_create_punch_list ........................... 30.40ms DONE
+  2026_09_11_120000_add_vendor_transmittals ..................... 13.71ms DONE
+  2026_09_11_130000_scope_employer_visibility_to_contractor_letters  2.54ms DONE
+  2026_09_11_140000_constrain_tenant_type ........................ 1.42ms DONE
+  2026_09_12_100000_secure_identity_tables ....................... 3.65ms DONE
+  2026_09_12_160000_snapshot_certificate_punch_summary ........... 1.44ms DONE
+  2026_09_13_100000_create_procurement_and_materials ............ 65.41ms DONE
+  2026_09_14_090000_create_facilities_and_areas ................. 22.50ms DONE
+  2026_09_15_120000_add_project_archive_state ................... 28.38ms DONE
+  2026_09_15_140000_create_piping_lines ......................... 40.53ms DONE
+  2026_09_15_160000_add_unit_preferences_and_canonical_values .... 7.45ms DONE
+  2026_09_17_120000_create_components_and_ports ................. 18.41ms DONE
+  2026_09_18_090000_create_joints ............................... 16.04ms DONE
+  2026_09_18_140000_create_systems_tier ......................... 13.05ms DONE
+  2026_09_18_170000_create_equipment_and_nozzles ................ 23.33ms DONE
+  2026_09_18_173000_add_rating_to_ports .......................... 1.44ms DONE
+  2026_09_18_180000_add_equipment_tag_start ...................... 2.01ms DONE
+  2026_09_18_184000_withdraw_auto_line_numbering ................. 2.61ms DONE
+  2026_09_18_200000_add_deleted_state_to_tagged_entities ........ 15.21ms DONE
+  2026_09_18_220000_create_model_imports ........................ 30.57ms DONE
+  2026_09_19_090000_create_engineering_baseline ................. 38.33ms DONE
+  2026_09_19_150000_create_itp .................................. 45.06ms DONE
+  2026_09_19_190000_add_itp_stage_references .................... 11.97ms DONE
+  2026_09_19_210000_register_itp_as_a_document ................. 819.28ms DONE
+  2026_09_20_100000_create_standards_library .................... 18.52ms DONE
+  2026_09_20_140000_fix_itp_tenant_policies ...................... 7.15ms DONE
+  2026_09_23_100000_create_piping_class_rules ................... 45.88ms DONE
+  2026_09_23_120000_piping_class_rules_per_size .................. 7.03ms DONE
+  2026_09_24_120000_enrich_piping_class_header .................. 19.64ms DONE
+  2026_09_24_140000_create_piping_class_items ................... 11.60ms DONE
+  2026_09_24_160000_create_specialty_items ...................... 15.01ms DONE
+  2026_09_24_180000_specials_leave_the_pms_body .................. 5.16ms DONE
+  2026_09_25_090000_create_piping_class_valve_specs .............. 9.20ms DONE
+  2026_09_25_190000_severe_cyclic_is_a_condition_not_a_service ... 4.41ms DONE
+  2026_09_28_100000_fix_baseline_tenant_policies ................ 29.38ms DONE
+  2026_09_28_140000_create_project_fitting_definitions .......... 14.48ms DONE
+  2026_09_29_090000_add_project_fitting_review .................. 47.53ms DONE
+  2026_09_29_150000_extend_project_material_declarations ........ 16.82ms DONE
+  2026_09_29_180000_capture_material_screening_snapshots ........ 11.61ms DONE
+  2026_09_29_210000_add_material_finding_responses .............. 16.24ms DONE
+  2026_09_29_230000_add_material_finding_dispositions ........... 20.29ms DONE
+  2026_09_29_235000_add_pms_entry_provenance .................... 25.91ms DONE
+  2026_09_29_235500_freeze_document_standard_references .......... 4.13ms DONE
+

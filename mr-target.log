@@ -1,0 +1,23 @@
+
+  [90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\MaterialRequisitionEntryTest[22m [90m>[39m other project subsys…   
+[39;1m  Failed asserting that null is not null.[39;22m
+
+  at [32mtests/Feature/MaterialRequisitionEntryTest.php[39m:[32m235[39m
+    231▕     {
+    232▕         $this->nominate();
+    233▕         $foreignProject = Project::where('code', 'BB-2')->firstOrFail();
+    234▕         $foreignSubsystem = app(TenantContext::class)->runAs($this->writer->company_id, fn () => Subsystem::where('project_id', $foreignProject->id)->value('id'), $foreignProject->id);
+  ➜ 235▕         $this->assertNotNull($foreignSubsystem);
+    236▕         $data = $this->payload();
+    237▕         $data['lines'][0]['subsystem_id'] = $foreignSubsystem;
+    238▕         $this->actingAs($this->writer)->postJson($this->createUrl, ['mr' => $data])->assertUnprocessable()->assertJsonValidationErrors('lines.0.subsystem_id');
+    239▕         $this->actingAs($this->userByEmail('ahmadi@nigc.example'))->postJson($this->createUrl, ['mr' => $this->payload()])->assertNotFound();
+
+  [33m1   [39m[39;1mtests/Feature/MaterialRequisitionEntryTest.php[39;22m:[39;1m235[39;22m
+
+
+  [90mTests:[39m    [31;1m1 failed[39;22m[90m,[39m[39m [39m[32;1m17 passed[39;22m[90m (213 assertions)[39m
+  [90mDuration:[39m [39m37.65s[39m
+

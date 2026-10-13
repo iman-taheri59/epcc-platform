@@ -1,0 +1,17 @@
+{
+  "unique_phpunit_tests": 1596,
+  "assertions_latest_per_test": 48455,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "sources": [
+    "full-suite/epcc_test_audit_1.xml",
+    "full-suite/epcc_test_audit_2.xml",
+    "full-suite/epcc_test_audit_3.xml",
+    "full-suite/epcc_test_audit_4.xml",
+    "auth-regression.xml",
+    "security-final.xml",
+    "login-final.xml"
+  ],
+  "inventory_matches_current_code": true
+}

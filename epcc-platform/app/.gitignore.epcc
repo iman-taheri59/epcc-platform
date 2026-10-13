@@ -1,0 +1,2 @@
+# (informational) vendor/ and node_modules/ are excluded from workspace snapshots.
+# Rebuild with: cd app && composer install

@@ -1,0 +1,6 @@
+No syntax errors detected in app/app/Services/Engineering/MaterialFindingDispositions.php
+No syntax errors detected in app/database/migrations/2026_09_29_230000_add_material_finding_dispositions.php
+No syntax errors detected in app/lang/fa/finding_dispositions.php
+No syntax errors detected in app/lang/en/finding_dispositions.php
+No syntax errors detected in app/tests/Feature/MaterialFindingDispositionTest.php
+No syntax errors detected in app/tests/Feature/MaterialFindingDispositionMigrationTest.php

@@ -1,0 +1,49 @@
+{
+  "pages": [
+    {
+      "actor": "author",
+      "lang": "fa",
+      "width": 430,
+      "overflow": false,
+      "kinds": [
+        "EXPLANATION",
+        "NA_REQUEST"
+      ],
+      "buttonUnobstructed": true
+    },
+    {
+      "actor": "author",
+      "lang": "en",
+      "width": 430,
+      "overflow": false,
+      "kinds": [
+        "EXPLANATION",
+        "NA_REQUEST"
+      ],
+      "buttonUnobstructed": true
+    },
+    {
+      "actor": "reviewer",
+      "lang": "fa",
+      "width": 430,
+      "overflow": false,
+      "kinds": [
+        "REVIEW_NOTE"
+      ],
+      "buttonUnobstructed": true
+    },
+    {
+      "actor": "reviewer",
+      "lang": "en",
+      "width": 430,
+      "overflow": false,
+      "kinds": [
+        "REVIEW_NOTE"
+      ],
+      "buttonUnobstructed": true
+    }
+  ],
+  "errors": [],
+  "definition": "69802529-5a8a-4364-973d-7e29aa9af48e",
+  "ok": true
+}

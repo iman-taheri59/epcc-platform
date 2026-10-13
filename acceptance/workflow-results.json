@@ -1,0 +1,16 @@
+{
+  "run": "1790592251890",
+  "steps": [
+    "Create bilingual document from the actual form",
+    "Attach PNG and download identical bytes through authenticated route",
+    "Transition WIP to SHARED with suitability S1",
+    "Import PCF fixture through UI; unknown line remains quarantined",
+    "Owner creates piping ITP from seeded template",
+    "Register draft ITP as a project document; no publication or activation",
+    "Owner reads the contractor import: repaired shared RLS visible through UI"
+  ],
+  "issues": [],
+  "documentRow": null,
+  "documentTitle": "مدرک آزمایش پذیرش — داده نمایشی 1790592251890",
+  "itpPath": "/projects/PH-14/itp/a14b5d08-4c0b-4875-b635-a6e70e0ce2ca"
+}

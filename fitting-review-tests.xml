@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="/home/user/epcc-platform/app/phpunit.xml" tests="25" assertions="138" errors="0" failures="4" skipped="0" time="61.672675">
+    <testsuite name="Feature" tests="25" assertions="138" errors="0" failures="4" skipped="0" time="61.672675">
+      <testsuite name="Tests\Feature\FittingReviewTest" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" tests="11" assertions="55" errors="0" failures="4" skipped="0" time="26.980282">
+        <testcase name="test_no_configuration_blocks_submission_and_approval" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="72" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="3" time="2.514340"/>
+        <testcase name="test_configured_ordered_independent_review_reaches_approval_without_mutating_definition" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="78" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="3" time="2.011081">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\FittingReviewTest::test_configured_ordered_independent_review_reaches_approval_without_mutating_definition
+Failed asserting that two strings are not identical.
+
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:65
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:83
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104</failure>
+        </testcase>
+        <testcase name="test_policy_change_does_not_rewrite_in_flight_snapshot" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="92" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="4" time="2.842257"/>
+        <testcase name="test_authors_cannot_approve_and_impossible_independent_assignment_is_blocked" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="103" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="3" time="2.454426"/>
+        <testcase name="test_only_authorized_employer_can_configure_and_selectors_must_be_valid" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="112" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="1" time="2.331173">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\FittingReviewTest::test_only_authorized_employer_can_configure_and_selectors_must_be_valid
+Failed asserting that two strings are not identical.
+
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:65
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:114
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104</failure>
+        </testcase>
+        <testcase name="test_current_role_and_account_status_are_rechecked_on_signing" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="122" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="1" time="2.402701">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\FittingReviewTest::test_current_role_and_account_status_are_rechecked_on_signing
+Failed asserting that two strings are not identical.
+
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:65
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:127
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104</failure>
+        </testcase>
+        <testcase name="test_return_ends_cycle_and_correction_preserves_source_revision_and_decisions" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="130" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="9" time="2.482661"/>
+        <testcase name="test_correcting_an_approved_record_does_not_transfer_approval" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="148" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="3" time="2.616329"/>
+        <testcase name="test_corrections_require_ownership_reason_and_actual_change" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="157" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="1" time="2.120967">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\FittingReviewTest::test_corrections_require_ownership_reason_and_actual_change
+Failed asserting that two strings are not identical.
+
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:65
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:159
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104</failure>
+        </testcase>
+        <testcase name="test_events_are_immutable_and_hidden_from_wrong_project_and_nonparticipant" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="166" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="15" time="2.619924"/>
+        <testcase name="test_http_forms_language_and_archived_project_lock" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="181" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="12" time="2.584423"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\ProjectFittingDefinitionTest" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" tests="14" assertions="83" errors="0" failures="0" skipped="0" time="34.692392">
+        <testcase name="test_persian_and_english_pages_and_registration_preserve_language_and_source" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="53" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="14" time="2.419376"/>
+        <testcase name="test_contractor_can_discover_form_on_fresh_piping_register_without_creating_owner_config" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="70" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="3" time="2.376511"/>
+        <testcase name="test_scope_validation_rejects_in_range_and_bad_numeric_inputs" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="78" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="8" time="2.244671"/>
+        <testcase name="test_required_sources_geometry_and_no_silent_rounding" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="88" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="10" time="2.220056"/>
+        <testcase name="test_identity_and_approval_cannot_be_spoofed_and_html_is_escaped" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="100" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="9" time="2.394603"/>
+        <testcase name="test_duplicate_is_validation_error_and_does_not_overwrite_original" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="117" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="5" time="2.590145"/>
+        <testcase name="test_participants_can_read_but_no_one_can_update_or_delete" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="128" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="6" time="2.475706"/>
+        <testcase name="test_cross_project_outsider_and_removed_participant_are_hidden" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="140" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="4" time="2.483012"/>
+        <testcase name="test_wrong_project_http_and_archived_project_cannot_create" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="152" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="5" time="2.488563"/>
+        <testcase name="test_rls_rejects_forged_creator_company_and_archived_insert" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="161" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="2" time="2.554964"/>
+        <testcase name="test_unscoped_queries_and_user_without_membership_cannot_access_registry" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="180" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="3" time="2.446011"/>
+        <testcase name="test_database_constraints_reject_in_range_and_forged_approval_even_without_service" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="191" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="4" time="2.758867"/>
+        <testcase name="test_disabled_user_is_denied_and_post_keeps_english_language" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="203" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="4" time="2.684984"/>
+        <testcase name="test_registry_paginates_and_preserves_language" file="/home/user/epcc-platform/app/tests/Feature/ProjectFittingDefinitionTest.php" line="213" class="Tests\Feature\ProjectFittingDefinitionTest" classname="Tests.Feature.ProjectFittingDefinitionTest" assertions="6" time="2.554923"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>

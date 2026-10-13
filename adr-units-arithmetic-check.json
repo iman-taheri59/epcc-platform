@@ -1,0 +1,10 @@
+{
+  "source": "ADR-014 \u00a72.1 and \u00a73; units.ref.json factor, static arithmetic only",
+  "factor_kpa_per_psi": "6.89475729",
+  "input_psi": "285",
+  "exact_product_with_declared_factor": "1965.00582765",
+  "stored_kpa_4_decimals": "1965.0058",
+  "round_trip_psi": "284.9999959897065499168571893",
+  "adr_claim_round_trip": "285.0006",
+  "application_tests_run": false
+}

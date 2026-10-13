@@ -1,0 +1,24 @@
+{
+  "documentation_files": [
+    "AGENTS.md",
+    "README.md",
+    "HANDOFF.md",
+    "docs/TODO.md",
+    "docs/ADR-PROCESS.md",
+    "docs/ADR-INDEX.md",
+    "docs/ADR-RECONCILIATION-2026-09-29.md",
+    "docs/ADR-017-Project-Material-Review-and-Finding-Dispositions.md",
+    "docs/ADR-007-Reference-Data-Engineering-Standards.md",
+    "docs/ADR-008-PMS-Piping-Class-Rules.md",
+    "docs/ADR-013-Project-Backup-Export-and-Deletion.md",
+    "docs/ADR-014-Units-of-Measure.md",
+    "docs/ADR-016-Standards-Library.md",
+    "docs/PMS-ENTRY-2026-09-29.md"
+  ],
+  "local_links_checked": 34,
+  "missing_local_links": [],
+  "application_reference_files_compared_with_previous_delivery": 527,
+  "changed_application_reference_files": [],
+  "runtime_tests_rerun": false,
+  "scope": "Documentation-only governance and scoped static ADR reconciliation; no conformity gaps closed."
+}

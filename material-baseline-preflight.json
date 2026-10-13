@@ -1,0 +1,13 @@
+{
+    "status": "INCOMPLETE_BASELINE",
+    "missing": [
+        "app/app/Services/ProjectMaterialSchema.php",
+        "app/database/migrations/2026_09_29_150000_extend_project_material_declarations.php",
+        "app/lang/fa/project_materials.php",
+        "app/tests/Feature/MaterialReviewTest.php",
+        "app/tests/Feature/MaterialMigrationTest.php",
+        "app/app/Services/FittingReviewService.php [missing material_family]",
+        "app/app/Services/ProjectFittingDefinitionService.php [missing ProjectMaterialSchema]",
+        "app/app/Http/Controllers/ProjectFittingDefinitionController.php [missing ProjectMaterialSchema]"
+    ]
+}

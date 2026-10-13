@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Pipe schedules reference pack",
+  "type": "object",
+  "required": ["refId", "version", "source", "schedules", "walls"],
+  "additionalProperties": false,
+  "properties": {
+    "refId": {"const": "pipe-schedules"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "source": {"type": "string", "minLength": 10},
+    "note": {"type": "string"},
+    "units": {"type": "object"},
+    "aliasWarning": {"type": "object"},
+    "schedules": {
+      "type": "array",
+      "minItems": 5,
+      "items": {"type": "string", "pattern": "^([0-9]+S?|STD|XS|XXS)$"},
+      "uniqueItems": true
+    },
+    "walls": {
+      "type": "object",
+      "minProperties": 20,
+      "additionalProperties": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": {"type": "number", "exclusiveMinimum": 0}
+      }
+    }
+  }
+}

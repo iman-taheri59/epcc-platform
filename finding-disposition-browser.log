@@ -1,0 +1,40 @@
+{
+  "steps": [
+    "Author submitted cited N/A proposal",
+    "Author and future-stage reviewer cannot dispose",
+    "REQUEST_EVIDENCE saved without advancing review or changing capture",
+    "ACCEPT_NA saved without advancing review or changing capture"
+  ],
+  "pages": [
+    {
+      "lang": "fa",
+      "width": 1440,
+      "dir": "rtl",
+      "overflow": false,
+      "buttonUnobstructed": true
+    },
+    {
+      "lang": "en",
+      "width": 1440,
+      "dir": "ltr",
+      "overflow": false,
+      "buttonUnobstructed": true
+    },
+    {
+      "lang": "fa",
+      "width": 430,
+      "dir": "rtl",
+      "overflow": false,
+      "buttonUnobstructed": true
+    },
+    {
+      "lang": "en",
+      "width": 430,
+      "dir": "ltr",
+      "overflow": false,
+      "buttonUnobstructed": true
+    }
+  ],
+  "errors": [],
+  "ok": true
+}

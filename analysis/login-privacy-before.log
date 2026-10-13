@@ -1,0 +1,317 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+F.F                                                                 3 / 3 (100%)
+
+Time: 00:05.643, Memory: 85.00 MB
+
+There were 2 failures:
+
+1) Tests\Feature\LoginPrivacyTest::test_default_login_does_not_publish_or_query_the_user_directory
+Failed asserting that '<!DOCTYPE html>\n
+<html lang="en" dir="ltr">\n
+<head>\n
+<meta charset="utf-8">\n
+<meta name="viewport" content="width=device-width, initial-scale=1">\n
+<title>Sign in</title>\n
+<style>\n
+  :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --muted:#94a3b8; --accent:#8b5cf6; --bad:#ef4444; }\n
+  * { box-sizing:border-box; }\n
+  body { margin:0; background:var(--bg); color:#e2e8f0; min-height:100vh;\n
+    font-family:ui-sans-serif, system-ui, sans-serif;\n
+    display:flex; align-items:center; justify-content:center; padding:24px; line-height:1.7; }\n
+  .wrap { width:100%; max-width:940px; display:grid; grid-template-columns:1fr 1fr; gap:22px; }\n
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:26px; }\n
+  h1 { font-size:21px; margin:0 0 4px; }\n
+  .sub { color:var(--muted); font-size:13.5px; margin-bottom:22px; }\n
+  label { display:block; font-size:13px; color:var(--muted); margin:14px 0 6px; }\n
+  input[type=email], input[type=password] { width:100%; background:#0b1220; color:#e2e8f0;\n
+    border:1px solid var(--line); border-radius:9px; padding:11px 13px; font-size:14px;\n
+    font-family:inherit; direction:ltr; text-align:left; }\n
+  input:focus { outline:none; border-color:var(--accent); }\n
+  .row { display:flex; align-items:center; gap:8px; margin-top:14px; font-size:13px; color:var(--muted); }\n
+  button { width:100%; margin-top:20px; background:var(--accent); color:#fff; border:0;\n
+    border-radius:9px; padding:12px; font-size:15px; font-weight:600; font-family:inherit; cursor:pointer; }\n
+  button:hover { background:#7c3aed; }\n
+  .err { background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.4); color:#fca5a5;\n
+    border-radius:9px; padding:11px 13px; font-size:13px; margin-bottom:16px; }\n
+  .lang { position:fixed; top:18px; right:18px; }\n
+  .lang a { color:var(--accent); font-size:13px; text-decoration:none; font-weight:600; }\n
+  h2 { font-size:14px; margin:0 0 4px; }\n
+  .hint { font-size:12px; color:var(--muted); margin-bottom:14px; }\n
+  .u { display:flex; justify-content:space-between; gap:10px; align-items:center; width:100%;\n
+    background:#0b1220; border:1px solid var(--line); border-radius:9px; padding:9px 12px;\n
+    margin-bottom:7px; cursor:pointer; text-align:left; color:inherit;\n
+    font-family:inherit; font-size:13px; }\n
+  .u:hover { border-color:var(--accent); }\n
+  .u .who { font-weight:600; }\n
+  .u .mail { font-size:11.5px; color:var(--muted); direction:ltr; }\n
+  .u .co { font-size:11px; color:#c4b5fd; font-family:ui-monospace,monospace; white-space:nowrap; }\n
+  @media (max-width:760px){ .wrap{grid-template-columns:1fr;} }\n
+</style>\n
+</head>\n
+<body>\n
+<div class="lang"><a href="?lang=fa">فارسی</a></div>\n
+\n
+<div class="wrap">\n
+  <div class="card">\n
+    <h1>Sign in</h1>\n
+    <div class="sub">EPCC Project Management Platform</div>\n
+\n
+    \n
+    <form method="post" action="/login">\n
+      <input type="hidden" name="_token" value="b8ULaQLfrZ4CR39COIQvCHKiNBjKEYfkjZ11FoY5" autocomplete="off">      <label for="email">Email</label>\n
+      <input id="email" name="email" type="email" value="" required autofocus>\n
+\n
+      <label for="password">Password</label>\n
+      <input id="password" name="password" type="password" required>\n
+\n
+      <div class="row">\n
+        <input id="remember" name="remember" type="checkbox" value="1">\n
+        <label for="remember" style="margin:0;">Remember me</label>\n
+      </div>\n
+\n
+      <button type="submit">Sign in</button>\n
+    </form>\n
+  </div>\n
+\n
+  <div class="card">\n
+    <h2>Demo accounts (password for all: password)</h2>\n
+    <div class="hint">Click an account to fill the form.</div>\n
+          <button type="button" class="u" onclick="fill('ahmadi@nigc.example')">\n
+        <span>\n
+          <span class="who">مهندس احمدی</span><br>\n
+          <span class="mail">ahmadi@nigc.example</span>\n
+        </span>\n
+        <span class="co">NIGC-REF</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('hosseini@arvand.example')">\n
+        <span>\n
+          <span class="who">مهندس حسینی</span><br>\n
+          <span class="mail">hosseini@arvand.example</span>\n
+        </span>\n
+        <span class="co">EPC-ARVAND</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('jafari@karan.example')">\n
+        <span>\n
+          <span class="who">مهندس جعفری</span><br>\n
+          <span class="mail">jafari@karan.example</span>\n
+        </span>\n
+        <span class="co">MC-KARAN</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('karimi@nioc.example')">\n
+        <span>\n
+          <span class="who">مهندس کریمی</span><br>\n
+          <span class="mail">karimi@nioc.example</span>\n
+        </span>\n
+        <span class="co">NIOC-AFF</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('mousavi@sahand.example')">\n
+        <span>\n
+          <span class="who">مهندس موسوی</span><br>\n
+          <span class="mail">mousavi@sahand.example</span>\n
+        </span>\n
+        <span class="co">EPC-SAHAND</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('naderi@bazrasi.example')">\n
+        <span>\n
+          <span class="who">مهندس نادری</span><br>\n
+          <span class="mail">naderi@bazrasi.example</span>\n
+        </span>\n
+        <span class="co">TPI-BAZRASI</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('rezaei@pars.example')">\n
+        <span>\n
+          <span class="who">مهندس رضایی</span><br>\n
+          <span class="mail">rezaei@pars.example</span>\n
+        </span>\n
+        <span class="co">EPC-PARS</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('sadeghi@pars.example')">\n
+        <span>\n
+          <span class="who">مهندس صادقی</span><br>\n
+          <span class="mail">sadeghi@pars.example</span>\n
+        </span>\n
+        <span class="co">EPC-PARS</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('tehrani@pmc.example')">\n
+        <span>\n
+          <span class="who">مهندس تهرانی</span><br>\n
+          <span class="mail">tehrani@pmc.example</span>\n
+        </span>\n
+        <span class="co">PMC-TEHRAN</span>\n
+      </button>\n
+      </div>\n
+</div>\n
+\n
+<script>\n
+  function fill(email) {\n
+    document.getElementById('email').value = email;\n
+    document.getElementById('password').value = 'password';\n
+  }\n
+</script>\n
+</body>\n
+</html>\n
+' [UTF-8](length: 6376) does not contain "karimi@nioc.example" [ASCII](length: 19).
+
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:46
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:812
+/home/user/epcc-platform/app/tests/Feature/LoginPrivacyTest.php:27
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+2) Tests\Feature\LoginPrivacyTest::test_production_never_lists_demo_accounts_even_with_misconfigured_opt_in
+Failed asserting that '<!DOCTYPE html>\n
+<html lang="en" dir="ltr">\n
+<head>\n
+<meta charset="utf-8">\n
+<meta name="viewport" content="width=device-width, initial-scale=1">\n
+<title>Sign in</title>\n
+<style>\n
+  :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --muted:#94a3b8; --accent:#8b5cf6; --bad:#ef4444; }\n
+  * { box-sizing:border-box; }\n
+  body { margin:0; background:var(--bg); color:#e2e8f0; min-height:100vh;\n
+    font-family:ui-sans-serif, system-ui, sans-serif;\n
+    display:flex; align-items:center; justify-content:center; padding:24px; line-height:1.7; }\n
+  .wrap { width:100%; max-width:940px; display:grid; grid-template-columns:1fr 1fr; gap:22px; }\n
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:26px; }\n
+  h1 { font-size:21px; margin:0 0 4px; }\n
+  .sub { color:var(--muted); font-size:13.5px; margin-bottom:22px; }\n
+  label { display:block; font-size:13px; color:var(--muted); margin:14px 0 6px; }\n
+  input[type=email], input[type=password] { width:100%; background:#0b1220; color:#e2e8f0;\n
+    border:1px solid var(--line); border-radius:9px; padding:11px 13px; font-size:14px;\n
+    font-family:inherit; direction:ltr; text-align:left; }\n
+  input:focus { outline:none; border-color:var(--accent); }\n
+  .row { display:flex; align-items:center; gap:8px; margin-top:14px; font-size:13px; color:var(--muted); }\n
+  button { width:100%; margin-top:20px; background:var(--accent); color:#fff; border:0;\n
+    border-radius:9px; padding:12px; font-size:15px; font-weight:600; font-family:inherit; cursor:pointer; }\n
+  button:hover { background:#7c3aed; }\n
+  .err { background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.4); color:#fca5a5;\n
+    border-radius:9px; padding:11px 13px; font-size:13px; margin-bottom:16px; }\n
+  .lang { position:fixed; top:18px; right:18px; }\n
+  .lang a { color:var(--accent); font-size:13px; text-decoration:none; font-weight:600; }\n
+  h2 { font-size:14px; margin:0 0 4px; }\n
+  .hint { font-size:12px; color:var(--muted); margin-bottom:14px; }\n
+  .u { display:flex; justify-content:space-between; gap:10px; align-items:center; width:100%;\n
+    background:#0b1220; border:1px solid var(--line); border-radius:9px; padding:9px 12px;\n
+    margin-bottom:7px; cursor:pointer; text-align:left; color:inherit;\n
+    font-family:inherit; font-size:13px; }\n
+  .u:hover { border-color:var(--accent); }\n
+  .u .who { font-weight:600; }\n
+  .u .mail { font-size:11.5px; color:var(--muted); direction:ltr; }\n
+  .u .co { font-size:11px; color:#c4b5fd; font-family:ui-monospace,monospace; white-space:nowrap; }\n
+  @media (max-width:760px){ .wrap{grid-template-columns:1fr;} }\n
+</style>\n
+</head>\n
+<body>\n
+<div class="lang"><a href="?lang=fa">فارسی</a></div>\n
+\n
+<div class="wrap">\n
+  <div class="card">\n
+    <h1>Sign in</h1>\n
+    <div class="sub">EPCC Project Management Platform</div>\n
+\n
+    \n
+    <form method="post" action="/login">\n
+      <input type="hidden" name="_token" value="XOCzjP6dmckyTVWa7bwIVYU7gwzBNYbGy1wTuhcD" autocomplete="off">      <label for="email">Email</label>\n
+      <input id="email" name="email" type="email" value="" required autofocus>\n
+\n
+      <label for="password">Password</label>\n
+      <input id="password" name="password" type="password" required>\n
+\n
+      <div class="row">\n
+        <input id="remember" name="remember" type="checkbox" value="1">\n
+        <label for="remember" style="margin:0;">Remember me</label>\n
+      </div>\n
+\n
+      <button type="submit">Sign in</button>\n
+    </form>\n
+  </div>\n
+\n
+  <div class="card">\n
+    <h2>Demo accounts (password for all: password)</h2>\n
+    <div class="hint">Click an account to fill the form.</div>\n
+          <button type="button" class="u" onclick="fill('ahmadi@nigc.example')">\n
+        <span>\n
+          <span class="who">مهندس احمدی</span><br>\n
+          <span class="mail">ahmadi@nigc.example</span>\n
+        </span>\n
+        <span class="co">NIGC-REF</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('hosseini@arvand.example')">\n
+        <span>\n
+          <span class="who">مهندس حسینی</span><br>\n
+          <span class="mail">hosseini@arvand.example</span>\n
+        </span>\n
+        <span class="co">EPC-ARVAND</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('jafari@karan.example')">\n
+        <span>\n
+          <span class="who">مهندس جعفری</span><br>\n
+          <span class="mail">jafari@karan.example</span>\n
+        </span>\n
+        <span class="co">MC-KARAN</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('karimi@nioc.example')">\n
+        <span>\n
+          <span class="who">مهندس کریمی</span><br>\n
+          <span class="mail">karimi@nioc.example</span>\n
+        </span>\n
+        <span class="co">NIOC-AFF</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('mousavi@sahand.example')">\n
+        <span>\n
+          <span class="who">مهندس موسوی</span><br>\n
+          <span class="mail">mousavi@sahand.example</span>\n
+        </span>\n
+        <span class="co">EPC-SAHAND</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('naderi@bazrasi.example')">\n
+        <span>\n
+          <span class="who">مهندس نادری</span><br>\n
+          <span class="mail">naderi@bazrasi.example</span>\n
+        </span>\n
+        <span class="co">TPI-BAZRASI</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('rezaei@pars.example')">\n
+        <span>\n
+          <span class="who">مهندس رضایی</span><br>\n
+          <span class="mail">rezaei@pars.example</span>\n
+        </span>\n
+        <span class="co">EPC-PARS</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('sadeghi@pars.example')">\n
+        <span>\n
+          <span class="who">مهندس صادقی</span><br>\n
+          <span class="mail">sadeghi@pars.example</span>\n
+        </span>\n
+        <span class="co">EPC-PARS</span>\n
+      </button>\n
+          <button type="button" class="u" onclick="fill('tehrani@pmc.example')">\n
+        <span>\n
+          <span class="who">مهندس تهرانی</span><br>\n
+          <span class="mail">tehrani@pmc.example</span>\n
+        </span>\n
+        <span class="co">PMC-TEHRAN</span>\n
+      </button>\n
+      </div>\n
+</div>\n
+\n
+<script>\n
+  function fill(email) {\n
+    document.getElementById('email').value = email;\n
+    document.getElementById('password').value = 'password';\n
+  }\n
+</script>\n
+</body>\n
+</html>\n
+' [UTF-8](length: 6376) does not contain "karimi@nioc.example" [ASCII](length: 19).
+
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:46
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:812
+/home/user/epcc-platform/app/tests/Feature/LoginPrivacyTest.php:46
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+FAILURES!
+Tests: 3, Assertions: 7, Failures: 2.

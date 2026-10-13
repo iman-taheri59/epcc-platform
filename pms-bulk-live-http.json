@@ -1,0 +1,30 @@
+[
+  {
+    "role": "owner",
+    "lang": "fa",
+    "status": 200,
+    "correct_direction": true,
+    "content_editor_present": false
+  },
+  {
+    "role": "owner",
+    "lang": "en",
+    "status": 200,
+    "correct_direction": true,
+    "content_editor_present": false
+  },
+  {
+    "role": "writer",
+    "lang": "fa",
+    "status": 200,
+    "correct_direction": true,
+    "content_editor_present": false
+  },
+  {
+    "role": "writer",
+    "lang": "en",
+    "status": 200,
+    "correct_direction": true,
+    "content_editor_present": false
+  }
+]

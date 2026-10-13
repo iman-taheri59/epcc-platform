@@ -1,0 +1,42 @@
+{
+  "pages": 60,
+  "pdfs": [
+    {
+      "name": "transmittals",
+      "lang": "fa",
+      "status": 200,
+      "bytes": 49814,
+      "ok": true
+    },
+    {
+      "name": "punch",
+      "lang": "fa",
+      "status": 200,
+      "bytes": 40872,
+      "ok": true
+    },
+    {
+      "name": "transmittals",
+      "lang": "en",
+      "status": 200,
+      "bytes": 47030,
+      "ok": true
+    },
+    {
+      "name": "punch",
+      "lang": "en",
+      "status": 200,
+      "bytes": 39460,
+      "ok": true
+    }
+  ],
+  "interactions": [
+    "Desktop sidebar collapse survives navigation",
+    "Mobile drawer opens and closes with Escape",
+    "Contractor can open its vendor-transmittal stream",
+    "Nonparticipant contractor denied KISH-1"
+  ],
+  "issues": [],
+  "consoleErrors": [],
+  "failedRequests": []
+}

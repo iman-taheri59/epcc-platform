@@ -1,0 +1,426 @@
+{
+ "refId": "fluid-service",
+ "version": "1.1.0",
+ "source": "ASME B31.3-2024, Process Piping. SLICE 1: clause 300.2 fluid services and 341.4 examination extent. SLICE 2: clause 304.1.2 the internal pressure design thickness equation, Table 304.1.1-1 coefficient Y, and Table A-1 product form vocabulary. Table A-1 ALLOWABLE STRESSES are slice 3 and are NOT here.",
+ "note": "The piping class header has carried a fluid_service_category since step 4, with five values taken from industry habit and never checked. B31.3-2024 defines SEVEN fluid services and \"severe cyclic conditions\" is NOT one of them - it is a CONDITION the owner or designer designates, on any fluid service. The platform was conflating an axis with a value.",
+ "units": {
+  "pressure": "kPa",
+  "temperature": "C"
+ },
+ "conventions": {
+  "aConditionIsNotAService": "Clause 300.2 lists Category D, Category M, Elevated Temperature, High Pressure, High Purity and Normal as FLUID SERVICES. \"severe cyclic conditions\" is defined separately as \"conditions applying to specific piping components or joints for which the owner or the designer determines that design and construction to better resist fatigue loading is warranted\". A line in Normal Fluid Service can be under severe cyclic conditions; so can a line in Category M. One enum cannot hold both.",
+  "categoryDIsTheOnlyTESTABLEone": "Category D is the only fluid service B31.3 defines with numbers: nonflammable, nontoxic, not damaging to tissue, design gauge pressure not over 1 035 kPa (150 psi), design temperature not over 186 C (366 F), and fluid temperature not below -29 C (-20 F). Every other service is defined by judgement - the owner determines, the engineering design specifies. So Category D is the one the platform can CHECK, and the others it can only record.",
+  "extentIsAMinimum": "The percentages in 341.4 are minima: \"to the extent specified herein or to any greater extent specified in the engineering design\". A project specification that demands more is not in conflict with the Code."
+ },
+ "standard": {
+  "code": "B31.3",
+  "editionYear": 2024,
+  "title": "Process Piping",
+  "sourceClauses": [
+   "300.2",
+   "304.1.2",
+   "341.4.1",
+   "341.4.2",
+   "341.4.3",
+   "M341.4",
+   "Table 304.1.1-1",
+   "Table A-1 (product forms only)"
+  ]
+ },
+ "fluidServices": [
+  {
+   "code": "NORMAL",
+   "clause": "300.2(f)",
+   "isCondition": false,
+   "name": {
+    "en": "Normal Fluid Service",
+    "fa": "سرویس سیال عادی"
+   },
+   "definitionIsTestable": false,
+   "definition": "A fluid service pertaining to most piping covered by the Code - the default, not a choice. Anything not designated as one of the others.",
+   "bounds": null
+  },
+  {
+   "code": "CATEGORY_D",
+   "clause": "300.2(a)",
+   "isCondition": false,
+   "name": {
+    "en": "Category D Fluid Service",
+    "fa": "سرویس سیال دستهٔ D"
+   },
+   "definitionIsTestable": true,
+   "definition": "A fluid service in which ALL of the following apply: the fluid is nonflammable, nontoxic and not damaging to human tissues; the design gauge pressure does not exceed 1 035 kPa (150 psi); the design temperature is not greater than 186 C (366 F); and the fluid temperature caused by anything other than atmospheric conditions is not less than -29 C (-20 F).",
+   "bounds": {
+    "maxDesignGaugePressureKpa": 1035,
+    "maxDesignGaugePressurePsi": 150,
+    "maxDesignTemperatureC": 186,
+    "maxDesignTemperatureF": 366,
+    "minFluidTemperatureC": -29,
+    "minFluidTemperatureF": -20,
+    "fluidMustBe": [
+     "NONFLAMMABLE",
+     "NONTOXIC",
+     "NOT_DAMAGING_TO_TISSUE"
+    ]
+   }
+  },
+  {
+   "code": "CATEGORY_M",
+   "clause": "300.2(b)",
+   "isCondition": false,
+   "name": {
+    "en": "Category M Fluid Service",
+    "fa": "سرویس سیال دستهٔ M"
+   },
+   "definitionIsTestable": false,
+   "definition": "A fluid so highly toxic that a single exposure to a very small quantity, caused by leakage, can produce serious irreversible harm on breathing or bodily contact even with prompt restorative measures - AND the owner determines that Normal Fluid Service does not sufficiently provide the leak tightness needed to protect personnel.",
+   "bounds": null
+  },
+  {
+   "code": "ELEVATED_TEMPERATURE",
+   "clause": "300.2(c)",
+   "isCondition": false,
+   "name": {
+    "en": "Elevated Temperature Fluid Service",
+    "fa": "سرویس سیال دمای بالا"
+   },
+   "definitionIsTestable": false,
+   "definition": "A fluid service in which the piping metal temperature is sustained equal to or greater than Tcr as defined in Table 302.3.5-1, General Note (b). Tcr is not in this slice.",
+   "bounds": null
+  },
+  {
+   "code": "HIGH_PRESSURE",
+   "clause": "300.2(d)",
+   "isCondition": false,
+   "name": {
+    "en": "High Pressure Fluid Service",
+    "fa": "سرویس سیال فشار بالا"
+   },
+   "definitionIsTestable": false,
+   "definition": "A fluid service for which the OWNER specifies the use of Chapter IX for piping design and construction. Not a pressure threshold - an owner election.",
+   "bounds": null
+  },
+  {
+   "code": "HIGH_PURITY",
+   "clause": "300.2(e)",
+   "isCondition": false,
+   "name": {
+    "en": "High Purity Fluid Service",
+    "fa": "سرویس سیال با خلوص بالا"
+   },
+   "definitionIsTestable": false,
+   "definition": "A fluid service requiring alternative methods of fabrication, inspection, examination and testing not covered elsewhere in the Code, to produce a controlled level of cleanness. Covers what is elsewhere called high purity, ultra high purity, hygienic or aseptic.",
+   "bounds": null
+  }
+ ],
+ "conditions": [
+  {
+   "code": "SEVERE_CYCLIC",
+   "clause": "300.2 (definition) and 341.4.3",
+   "isCondition": true,
+   "name": {
+    "en": "Severe cyclic conditions",
+    "fa": "شرایط سیکلی شدید"
+   },
+   "definition": "Conditions applying to specific piping components or joints for which the owner or the designer determines that design and construction to better resist FATIGUE loading is warranted. See Appendix F para. F301.10.3 for guidance on designating piping as being under severe cyclic conditions.",
+   "appliesAlongsideAnyFluidService": true,
+   "note": "NOT a fluid service. The platform held it as one of five values in a single enum, which makes \"Category M under severe cyclic conditions\" unrecordable - and that is an ordinary line in a real plant."
+  }
+ ],
+ "examinationExtent": [
+  {
+   "appliesTo": "NORMAL",
+   "clause": "341.4.1",
+   "verified": true,
+   "source": "ASME B31.3-2024",
+   "readOn": "2026-09-25",
+   "requirements": [
+    {
+     "what": "Visual examination",
+     "extent": "Per 341.4.1(a): materials and components, fabrication, joints, erection, supports and cold spring, selected as stated"
+    },
+    {
+     "what": "Radiography of circumferential butt and miter groove welds",
+     "extentPercent": 5,
+     "basis": "RANDOM_PER_DESIGNATED_LOT",
+     "text": "At least 5% of circumferential butt and miter groove welds within each designated lot shall be subjected to random examination by radiography"
+    },
+    {
+     "what": "Examination of brazed joints",
+     "extentPercent": 5,
+     "basis": "RANDOM_PER_DESIGNATED_LOT",
+     "text": "At least 5% of all brazed joints within each designated lot"
+    },
+    {
+     "what": "Fabrication examination",
+     "extentPercent": 5,
+     "basis": "RANDOM"
+    }
+   ]
+  },
+  {
+   "appliesTo": "CATEGORY_D",
+   "clause": "341.4.2",
+   "verified": true,
+   "source": "ASME B31.3-2024",
+   "readOn": "2026-09-25",
+   "requirements": [
+    {
+     "what": "Visual examination only",
+     "extentPercent": null,
+     "basis": "TO_THE_EXTENT_THE_EXAMINER_NEEDS",
+     "text": "Piping in Category D Fluid Service requires VISUAL EXAMINATION ONLY (Table 341.3.2-1 note 5), to the extent necessary to satisfy the examiner that components, materials and workmanship conform, unless the engineering design specifies otherwise"
+    }
+   ]
+  },
+  {
+   "appliesTo": "SEVERE_CYCLIC",
+   "clause": "341.4.3",
+   "verified": true,
+   "source": "ASME B31.3-2024",
+   "readOn": "2026-09-25",
+   "isCondition": true,
+   "requirements": [
+    {
+     "what": "Radiography of circumferential butt and miter groove welds",
+     "extentPercent": 100,
+     "basis": "ALL",
+     "text": "Examined by 100% radiography, or by 100% ultrasonic examination if specified in the engineering design"
+    },
+    {
+     "what": "All threaded, bolted and other joints",
+     "extentPercent": 100,
+     "basis": "ALL"
+    },
+    {
+     "what": "All piping erection",
+     "extentPercent": 100,
+     "basis": "ALL",
+     "text": "Examined to verify dimensions and alignment"
+    }
+   ]
+  }
+ ],
+ "notBuiltInThisSlice": {
+  "items": [
+   "Table A-1 BASIC ALLOWABLE STRESSES (the S in the equation)",
+   "Table A-1A longitudinal weld joint quality factors Ej",
+   "Table A-1B casting quality factors Ec",
+   "Table 302.3.5 weld joint strength reduction factor W",
+   "Table 341.3.2-1 acceptance criteria (the A-to-M letter matrix)",
+   "Chapter VIII Category M",
+   "Chapter IX High Pressure",
+   "Tcr from Table 302.3.5-1"
+  ],
+  "reason": "The equation is transcribed and the coefficient Y with it, but S is not. Table A-1 runs to about 600 materials whose identification and stress values are printed in SEPARATE page blocks - 35 of them in the SI table alone - joined only by a line number. A parse that mis-joins one block gives a material the wrong allowable stress, the wall thickness comes out wrong, and NOTHING downstream can tell. That is the most consequential number in the Code and it is not worth guessing at, so WallThickness refuses to calculate without an S supplied by the caller rather than inventing one.",
+  "whatWouldFixIt": "Slice 3: parse the A-1 identification blocks and stress blocks separately, join on line number, and assert that every line number resolves to exactly one material and one contiguous temperature series before trusting a value."
+ },
+ "wallThickness": {
+  "clause": "304.1.2",
+  "verified": true,
+  "source": "ASME B31.3-2024",
+  "readOn": "2026-09-25",
+  "equation3a": "t = P*D / (2*(S*E*W + P*Y))",
+  "equation3b": "t = P*(d + 2*c) / (2*(S*E*W - P*(1 - Y)))",
+  "minimumRequired": "tm = t + c",
+  "symbols": {
+   "t": "pressure design thickness",
+   "tm": "minimum required thickness, INCLUDING mechanical, corrosion and erosion allowances",
+   "P": "internal design gauge pressure",
+   "D": "outside diameter of pipe",
+   "d": "inside diameter of pipe",
+   "c": "sum of the mechanical allowances plus corrosion and erosion allowances",
+   "S": "stress value for material from Table A-1 - NOT TRANSCRIBED, see slice 3",
+   "E": "quality factor from Table A-1A (Ej, longitudinal weld joint) or A-1B (Ec, casting)",
+   "W": "weld joint strength reduction factor, para. 302.3.5(e)",
+   "Y": "coefficient from Table 304.1.1-1, valid for t < D/6"
+  },
+  "validity": {
+   "thinWallOnly": "Equations 3a and 3b apply for t < D/6 only. For t >= D/6 OR for P/SE > 0.385, clause 304.1.2(b) requires \"special consideration of factors such as theory of failure, effects of fatigue, and thermal stress\" - which is to say the Code stops giving a formula and the platform must refuse rather than keep multiplying.",
+   "thickWallY": "For t >= D/6, Y is not from the table at all: Y = (d + 2c) / (D + d + 2c). Recorded because a consumer that keeps using the tabulated 0.4 past the limit gets a plausible wrong answer.",
+   "pOverSeLimit": 0.385
+  }
+ },
+ "coefficientY": {
+  "table": "Table 304.1.1-1",
+  "verified": true,
+  "source": "ASME B31.3-2024",
+  "readOn": "2026-09-25",
+  "temperaturesC": [
+   482,
+   510,
+   538,
+   566,
+   593,
+   621,
+   649,
+   677
+  ],
+  "note": "The first column is \"482 C (900 F) AND BELOW\" and the last is \"677 C (1 250 F) AND ABOVE\" - they are open bands, not points. Values may be interpolated for intermediate temperatures (304.1.2 symbol list).",
+  "firstColumnIsAndBelow": true,
+  "lastColumnIsAndAbove": true,
+  "rows": [
+   {
+    "material": "FERRITIC_STEEL",
+    "values": [
+     0.4,
+     0.5,
+     0.7,
+     0.7,
+     0.7,
+     0.7,
+     0.7,
+     0.7
+    ]
+   },
+   {
+    "material": "AUSTENITIC_STEEL",
+    "values": [
+     0.4,
+     0.4,
+     0.4,
+     0.4,
+     0.5,
+     0.7,
+     0.7,
+     0.7
+    ]
+   },
+   {
+    "material": "NICKEL_ALLOY",
+    "values": [
+     0.4,
+     0.4,
+     0.4,
+     0.4,
+     0.4,
+     0.4,
+     0.5,
+     0.7
+    ],
+    "appliesToUns": [
+     "N06617",
+     "N08800",
+     "N08810",
+     "N08825"
+    ]
+   },
+   {
+    "material": "GRAY_IRON",
+    "values": [
+     0.0,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "note": "Y is zero and the table gives nothing above 482 C - gray iron is not used there."
+   },
+   {
+    "material": "OTHER_DUCTILE_METAL",
+    "values": [
+     0.4,
+     0.4,
+     0.4,
+     0.4,
+     0.4,
+     0.4,
+     0.4,
+     0.4
+    ]
+   }
+  ]
+ },
+ "tableA1ProductForms": {
+  "table": "Table A-1 (SI), Product Form column",
+  "verified": true,
+  "source": "ASME B31.3-2024",
+  "readOn": "2026-09-25",
+  "forms": [
+   {
+    "form": "Pipe & tube",
+    "rows": 173
+   },
+   {
+    "form": "Plate & sheet",
+    "rows": 118
+   },
+   {
+    "form": "Castings",
+    "rows": 95
+   },
+   {
+    "form": "Pipe",
+    "rows": 94
+   },
+   {
+    "form": "Forgings & fittings",
+    "rows": 93
+   },
+   {
+    "form": "Plate",
+    "rows": 43
+   },
+   {
+    "form": "Tube",
+    "rows": 40
+   },
+   {
+    "form": "Wld. pipe",
+    "rows": 37
+   },
+   {
+    "form": "Forgings",
+    "rows": 29
+   },
+   {
+    "form": "Bar",
+    "rows": 28
+   },
+   {
+    "form": "Smls. pipe",
+    "rows": 19
+   },
+   {
+    "form": "Fittings",
+    "rows": 17
+   },
+   {
+    "form": "Smls. fittings",
+    "rows": 6
+   },
+   {
+    "form": "Sheet",
+    "rows": 4
+   },
+   {
+    "form": "Wld. tube",
+    "rows": 3
+   },
+   {
+    "form": "Wld. fittings",
+    "rows": 3
+   },
+   {
+    "form": "Smls. & wld.",
+    "rows": 2
+   },
+   {
+    "form": "Bar, wire",
+    "rows": 2
+   },
+   {
+    "form": "Sheet & strip",
+    "rows": 1
+   },
+   {
+    "form": "Smls. tube",
+    "rows": 1
+   }
+  ],
+  "whyItIsHere": "materials.ref.json has always cited \"ASME B31.3 Table A-1 material groupings\" as its source, and the library is keyed by PRODUCT FORM rather than by metallurgy. This is that claim checked: Table A-1 really does organise metals by product form, and these are the fourteen it uses. The library’s own group codes are a coarser cut of the same idea - it has PIPE where the Code separates \"Pipe\", \"Pipe & tube\", \"Smls. pipe\" and \"Wld. pipe\", because the distinction that matters to a purchase order is not the one that matters to a stress table."
+ }
+}

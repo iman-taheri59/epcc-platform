@@ -1,0 +1,8 @@
+M110|app/Services/EquipmentService.php|$connected->isNotEmpty()|false
+M111|app/Services/EquipmentService.php|'state' => Equipment::STATE_DELETED,|'state' => 'PLANNED',
+M112|app/Services/EquipmentService.php|if ($reason === '') {|if (false) {
+M113|app/Services/EquipmentService.php|$equipment->nozzles()->where('is_deleted', false)->update([|$equipment->nozzles()->whereRaw('false')->update([
+M114|app/Services/EquipmentService.php|if ($nozzle->isConnected()) {|if (false) {
+M115|app/Services/PipingLineService.php|if ($components > 0) {|if (false) {
+M116|app/Support/LineReleaseState.php|self::DELETED => [],|self::DELETED => [self::DRAFT],
+M117|app/Support/LineReleaseState.php|self::DELETED => -1,|self::DELETED => 3,

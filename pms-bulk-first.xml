@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Tests\Feature\PmsBulkEntryTest" file="/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php" tests="12" assertions="88" errors="2" failures="0" skipped="0" time="28.624260">
+    <testcase name="test_preview_is_read_only_and_confirmation_creates_only_explicit_independent_sizes_with_audit" file="/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php" line="116" class="Tests\Feature\PmsBulkEntryTest" classname="Tests.Feature.PmsBulkEntryTest" assertions="23" time="2.875906"/>
+    <testcase name="test_existing_null_qualifier_axis_and_intervening_insert_block_entire_batch_without_overwrite" file="/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php" line="145" class="Tests\Feature\PmsBulkEntryTest" classname="Tests.Feature.PmsBulkEntryTest" assertions="7" time="2.143902"/>
+    <testcase name="test_late_database_failure_rolls_back_earlier_row_and_its_audit" file="/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php" line="160" class="Tests\Feature\PmsBulkEntryTest" classname="Tests.Feature.PmsBulkEntryTest" assertions="3" time="2.141187"/>
+    <testcase name="test_header_or_note_changes_require_new_preview" file="/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php" line="178" class="Tests\Feature\PmsBulkEntryTest" classname="Tests.Feature.PmsBulkEntryTest" assertions="3" time="2.343468"/>
+    <testcase name="test_tampered_expired_and_cross_actor_or_class_tokens_do_not_write" file="/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php" line="188" class="Tests\Feature\PmsBulkEntryTest" classname="Tests.Feature.PmsBulkEntryTest" assertions="7" time="2.359838"/>
+    <testcase name="test_invalid_size_selections_or_missing_source_are_refused_without_writes" file="/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php" line="204" class="Tests\Feature\PmsBulkEntryTest" classname="Tests.Feature.PmsBulkEntryTest" assertions="9" time="2.410635"/>
+    <testcase name="test_http_preview_is_bilingual_escaped_and_confirm_ignores_forged_row_changes" file="/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php" line="215" class="Tests\Feature\PmsBulkEntryTest" classname="Tests.Feature.PmsBulkEntryTest" assertions="18" time="2.502233"/>
+    <testcase name="test_revoked_nomination_after_preview_blocks_http_confirmation" file="/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php" line="232" class="Tests\Feature\PmsBulkEntryTest" classname="Tests.Feature.PmsBulkEntryTest" assertions="3" time="2.454936"/>
+    <testcase name="test_archive_after_preview_refuses_confirmation" file="/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php" line="243" class="Tests\Feature\PmsBulkEntryTest" classname="Tests.Feature.PmsBulkEntryTest" assertions="2" time="2.298701"/>
+    <testcase name="test_nominated_other_company_cannot_preview_class_and_cross_project_class_is_not_found" file="/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php" line="252" class="Tests\Feature\PmsBulkEntryTest" classname="Tests.Feature.PmsBulkEntryTest" assertions="0" time="2.363477">
+      <error type="Illuminate\Validation\ValidationException">Tests\Feature\PmsBulkEntryTest::test_nominated_other_company_cannot_preview_class_and_cross_project_class_is_not_found
+Illuminate\Validation\ValidationException: The suspend field is required.
+
+/home/user/epcc-platform/app/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:600
+/home/user/epcc-platform/app/app/Services/PmsAccessService.php:107
+/home/user/epcc-platform/app/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:502
+/home/user/epcc-platform/app/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:364
+/home/user/epcc-platform/app/app/Services/PmsAccessService.php:96
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/app/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/app/Services/PmsAccessService.php:96
+/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php:255</error>
+    </testcase>
+    <testcase name="test_http_validation_and_guest_boundary_are_applied" file="/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php" line="262" class="Tests\Feature\PmsBulkEntryTest" classname="Tests.Feature.PmsBulkEntryTest" assertions="6" time="2.212072"/>
+    <testcase name="test_approved_definition_link_is_preserved_per_row_and_unapproved_definition_is_rejected" file="/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php" line="272" class="Tests\Feature\PmsBulkEntryTest" classname="Tests.Feature.PmsBulkEntryTest" assertions="7" time="2.517905">
+      <error type="Illuminate\Validation\ValidationException">Tests\Feature\PmsBulkEntryTest::test_approved_definition_link_is_preserved_per_row_and_unapproved_definition_is_rejected
+Illuminate\Validation\ValidationException: Your company has already registered this definition for the same size and source reference.
+
+/home/user/epcc-platform/app/vendor/laravel/framework/src/Illuminate/Validation/ValidationException.php:70
+/home/user/epcc-platform/app/app/Services/ProjectFittingDefinitionService.php:56
+/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php:94
+/home/user/epcc-platform/app/tests/Feature/PmsBulkEntryTest.php:283</error>
+    </testcase>
+  </testsuite>
+</testsuites>

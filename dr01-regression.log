@@ -1,0 +1,56 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+...............................................................  63 / 128 ( 49%)
+............................................................... 126 / 128 ( 98%)
+[31;1mE[0m.                                                              128 / 128 (100%)
+
+Time: 05:58.676, Memory: 81.00 MB
+
+There was 1 error:
+
+1) Tests\Feature\ItpTest::test_the_employer_the_mc_and_the_consultant_may_assign_roles
+Illuminate\Database\QueryException: SQLSTATE[23514]: Check violation: 7 ERROR:  DR01_HOST_MISMATCH
+CONTEXT:  PL/pgSQL function dr01_assert_open_itp(uuid,uuid) line 7 at RAISE
+SQL statement "SELECT dr01_assert_open_itp(OLD.itp_id, OLD.project_id)"
+PL/pgSQL function dr01_guard_stage() line 8 at PERFORM
+SQL statement "DELETE FROM ONLY "public"."itp_stages" WHERE $1 OPERATOR(pg_catalog.=) "itp_id"" (Connection: pgsql, Host: 127.0.0.1, Port: 5432, Database: epcc_test, SQL: delete from "itps" where "id" = 7ace0786-033e-4a1b-9418-1e0e965059cd)
+
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Connection.php:857
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Connection.php:614
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Connection.php:578
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4576
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1547
+/home/user/epcc-platform/app/tests/Feature/ItpTest.php:1515
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/ItpTest.php:1515
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+Caused by
+PDOException: SQLSTATE[23514]: Check violation: 7 ERROR:  DR01_HOST_MISMATCH
+CONTEXT:  PL/pgSQL function dr01_assert_open_itp(uuid,uuid) line 7 at RAISE
+SQL statement "SELECT dr01_assert_open_itp(OLD.itp_id, OLD.project_id)"
+PL/pgSQL function dr01_guard_stage() line 8 at PERFORM
+SQL statement "DELETE FROM ONLY "public"."itp_stages" WHERE $1 OPERATOR(pg_catalog.=) "itp_id""
+
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Connection.php:626
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Connection.php:846
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Connection.php:614
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Connection.php:578
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4576
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1547
+/home/user/epcc-platform/app/tests/Feature/ItpTest.php:1515
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/ItpTest.php:1515
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+[37;41mERRORS![0m
+[37;41mTests: 128[0m[37;41m, Assertions: 315[0m[37;41m, Errors: 1[0m[37;41m.[0m

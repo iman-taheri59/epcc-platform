@@ -1,0 +1,246 @@
+{
+  "refId": "actuators",
+  "version": "1.1.0",
+  "source": "Valve actuator practice: ISO 5211 mounting, quarter-turn vs multi-turn travel matching, and fail-safe modes FC/FO/FL as used on process datasheets. NOT transcribed from a purchased standard - every row is unverified.",
+  "note": "Actuators are an ENGINEERED selection on a valve, not a material. This pack is reference data only: it is not yet offered on any screen, exactly as flange-bolting landed before its check. The load-bearing fact here is TRAVEL - an actuator must match the travel of the valve it drives, and a quarter-turn actuator cannot drive a gate valve.",
+  "conventions": {
+    "travelMustMatch": "An actuator drives a valve only if their TRAVEL matches. A ball, butterfly or plug valve turns 90 degrees; a gate or globe valve needs many turns of a rising stem. This is a hard mechanical fact, not a preference, and it is the same shape as the trim rule the user caught: a thing that is in the library is not thereby usable on any component. permittedValveTypes is derived from travel, never typed in twice.",
+    "failSafeIsNotAType": "Fail-safe is a property of the ACTUATOR AS FITTED, not of its type. Only a spring return actually drives the valve anywhere on failure. A double acting pneumatic actuator and an electric MOV both STAY WHERE THEY ARE, and calling that 'fail safe' on a datasheet is how a safety case gets built on a valve that will not move. Hence supportsFailSafe: only a spring-return actuator may claim FC or FO.",
+    "manualHasNoFailSafe": "A handwheel, lever or gearbox has no power to lose, so its fail state is always FAIL_LAST. Recording FC on a hand-operated valve is a category error, and the validator refuses it.",
+    "positionerIsForModulating": "A positioner is what makes an actuator hold an intermediate position. An on/off actuator does not need one; a modulating actuator without one cannot do its job. Recorded so a requisition can be checked rather than so the system can choose.",
+    "notAMaterial": "An actuator is bought as an assembly with a model number, like a valve itself. It is deliberately NOT in the material library: it has no ASTM specification, no grade and no product form, and forcing it into the four-step cascade would have repeated the mistake that put trim there. Same reasoning as VALVE_TRIM, which is reached by its own selector.",
+    "sizeThresholds": "Real projects say things like 'gear operator above NPS 8'. That threshold is a PROJECT decision that belongs to the piping class or the valve datasheet, not to this pack, so no size limits are stored here. What is stored is what is mechanically possible."
+  },
+  "travels": [
+    {
+      "code": "QUARTER_TURN",
+      "name": {
+        "en": "Quarter turn (90 degrees)",
+        "fa": "یک‌چهارم دور (۹۰ درجه)"
+      },
+      "valveTypes": [
+        "BALL",
+        "BUTTERFLY",
+        "PLUG"
+      ],
+      "note": "The closure member rotates 90 degrees between open and shut. Ball, butterfly and plug valves.",
+      "verified": false
+    },
+    {
+      "code": "MULTI_TURN",
+      "name": {
+        "en": "Multi turn (rising stem)",
+        "fa": "چنددور (ساقه بالارونده)"
+      },
+      "valveTypes": [
+        "GATE",
+        "GLOBE",
+        "NEEDLE",
+        "DIAPHRAGM"
+      ],
+      "note": "The stem travels through several revolutions. Gate and globe valves, and anything else with a rising stem.",
+      "verified": false
+    }
+  ],
+  "failSafeModes": [
+    {
+      "code": "FAIL_CLOSED",
+      "name": {
+        "en": "Fail closed (FC)",
+        "fa": "بسته‌شونده در خطا"
+      },
+      "note": "The valve drives shut on loss of power or air. The safe state where stopping the flow is safe - fuel gas, hazardous chemical feed.",
+      "verified": false
+    },
+    {
+      "code": "FAIL_OPEN",
+      "name": {
+        "en": "Fail open (FO)",
+        "fa": "بازشونده در خطا"
+      },
+      "note": "The valve drives open on loss of power or air. The safe state where flow is safe - cooling water, flare and relief paths, lubricant.",
+      "verified": false
+    },
+    {
+      "code": "FAIL_LAST",
+      "name": {
+        "en": "Fail last / fail in place (FL)",
+        "fa": "ماندن در وضعیت آخر"
+      },
+      "note": "The valve holds its last commanded position. The correct answer for a manual actuator and for anything without a spring - and NOT a safety function.",
+      "verified": false
+    }
+  ],
+  "controlModes": [
+    {
+      "code": "ON_OFF",
+      "name": {
+        "en": "On / off (isolation)",
+        "fa": "قطع و وصل"
+      },
+      "note": "Two states only. Limit switches at each end of travel.",
+      "verified": false
+    },
+    {
+      "code": "MODULATING",
+      "name": {
+        "en": "Modulating (throttling)",
+        "fa": "تنظیمی (مدوله)"
+      },
+      "note": "Any position between shut and open, held against process upset. Needs continuous position feedback and a positioner.",
+      "verified": false
+    }
+  ],
+  "actuators": [
+    {
+      "code": "HANDWHEEL",
+      "name": {
+        "en": "Handwheel",
+        "fa": "چرخ‌دست"
+      },
+      "power": "MANUAL",
+      "travels": [
+        "MULTI_TURN"
+      ],
+      "defaultFailSafe": "FAIL_LAST",
+      "supportsFailSafe": false,
+      "supportsModulating": false,
+      "note": "The default on a gate or globe valve. No power, no fail-safe: it stays exactly where it was left.",
+      "verified": false
+    },
+    {
+      "code": "LEVER",
+      "name": {
+        "en": "Lever / wrench",
+        "fa": "اهرم"
+      },
+      "power": "MANUAL",
+      "travels": [
+        "QUARTER_TURN"
+      ],
+      "defaultFailSafe": "FAIL_LAST",
+      "supportsFailSafe": false,
+      "supportsModulating": false,
+      "note": "The default on a small ball or plug valve. One 90 degree pull; unsuitable above roughly NPS 6 because the torque is more than a person can apply.",
+      "verified": false
+    },
+    {
+      "code": "GEAR",
+      "name": {
+        "en": "Gear operator (worm / bevel)",
+        "fa": "گیربکس (حلزونی/مخروطی)"
+      },
+      "power": "MANUAL",
+      "travels": [
+        "QUARTER_TURN",
+        "MULTI_TURN"
+      ],
+      "defaultFailSafe": "FAIL_LAST",
+      "supportsFailSafe": false,
+      "supportsModulating": false,
+      "note": "A manual gearbox multiplies hand torque. Fitted where a lever or bare handwheel would need more force than a person can give - large valves, and high differential pressure.",
+      "verified": false
+    },
+    {
+      "code": "CHAINWHEEL",
+      "name": {
+        "en": "Chainwheel",
+        "fa": "چرخ زنجیری"
+      },
+      "power": "MANUAL",
+      "travels": [
+        "QUARTER_TURN",
+        "MULTI_TURN"
+      ],
+      "defaultFailSafe": "FAIL_LAST",
+      "supportsFailSafe": false,
+      "supportsModulating": false,
+      "note": "Not a way of making torque - a way of REACHING the valve. A chain loop hung from a handwheel or a gearbox so a valve mounted out of reach can be worked from grade. It is fitted ON TOP of another manual operator, so a row that says CHAINWHEEL has not said whether there is a gearbox underneath; the PMS records what the document says.",
+      "verified": false
+    },
+    {
+      "code": "PNEUMATIC_SPRING",
+      "name": {
+        "en": "Pneumatic, spring return (single acting)",
+        "fa": "پنوماتیک فنربرگشت (یک‌طرفه)"
+      },
+      "power": "PNEUMATIC",
+      "travels": [
+        "QUARTER_TURN",
+        "MULTI_TURN"
+      ],
+      "defaultFailSafe": null,
+      "supportsFailSafe": true,
+      "supportsModulating": true,
+      "note": "Air drives one way, a spring returns the other. THIS is the actuator that gives a real fail-safe: the spring acts with no air and no power, which is why an ESD valve is specified this way.",
+      "verified": false
+    },
+    {
+      "code": "PNEUMATIC_DOUBLE",
+      "name": {
+        "en": "Pneumatic, double acting",
+        "fa": "پنوماتیک دوطرفه"
+      },
+      "power": "PNEUMATIC",
+      "travels": [
+        "QUARTER_TURN",
+        "MULTI_TURN"
+      ],
+      "defaultFailSafe": "FAIL_LAST",
+      "supportsFailSafe": false,
+      "supportsModulating": true,
+      "note": "Air drives both ways. There is no spring, so on air failure it stays where it is - which is NOT a fail-safe, however often a datasheet calls it one.",
+      "verified": false
+    },
+    {
+      "code": "ELECTRIC",
+      "name": {
+        "en": "Electric motor (MOV)",
+        "fa": "الکتریکی (MOV)"
+      },
+      "power": "ELECTRIC",
+      "travels": [
+        "QUARTER_TURN",
+        "MULTI_TURN"
+      ],
+      "defaultFailSafe": "FAIL_LAST",
+      "supportsFailSafe": false,
+      "supportsModulating": true,
+      "note": "A motor operated valve. Holds its last position on power loss unless a battery or spring pack is added, so FAIL_LAST is the honest default.",
+      "verified": false
+    },
+    {
+      "code": "HYDRAULIC",
+      "name": {
+        "en": "Hydraulic",
+        "fa": "هیدرولیک"
+      },
+      "power": "HYDRAULIC",
+      "travels": [
+        "QUARTER_TURN",
+        "MULTI_TURN"
+      ],
+      "defaultFailSafe": "FAIL_LAST",
+      "supportsFailSafe": false,
+      "supportsModulating": true,
+      "note": "Very high torque for large pipeline valves. Fail behaviour depends on an accumulator, so it is not assumed here.",
+      "verified": false
+    },
+    {
+      "code": "GAS_OVER_OIL",
+      "name": {
+        "en": "Gas over oil",
+        "fa": "گاز روی روغن"
+      },
+      "power": "HYDRAULIC",
+      "travels": [
+        "QUARTER_TURN"
+      ],
+      "defaultFailSafe": "FAIL_LAST",
+      "supportsFailSafe": false,
+      "supportsModulating": true,
+      "note": "Pipeline practice where line gas is the power source and no electricity or air is available at the station.",
+      "verified": false
+    }
+  ]
+}

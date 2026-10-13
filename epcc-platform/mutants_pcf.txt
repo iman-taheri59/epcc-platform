@@ -1,0 +1,10 @@
+M200|app/Services/ModelImportService.php|if ($file->unitsBore() === null) {|if (false) {
+M201|app/Services/ModelImportService.php|if ($reason !== null) {|if (false) {
+M202|app/Services/ModelImportService.php|if (count($group) !== 2) {|if (count($group) < 2) {
+M203|app/Services/ModelImportService.php|return 'FITTED_JOINT';|return null;
+M204|app/Services/ModelImportService.php|if ($component->manually_edited_at !== null) {|if (false) {
+M205|app/Services/ModelImportService.php|'is_quarantined' => true,|'is_quarantined' => false,
+M206|app/Support/Piping/Pcf/PcfParser.php|$current['keypoints'][] = $this->parseKeypoint($keyword, $tokens, $lineNo);|$current['attributes'][$keyword] = $rest;
+M207|app/Support/Piping/Pcf/PcfVocabulary.php|'TEE-SET-ON' => 'OLET',|'TEE-SET-ON' => 'TEE',
+M208|app/Support/Piping/Pcf/PcfVocabulary.php|if ($code === '**' || $code === '') {|if (false) {
+M209|app/Services/ModelImportService.php|$update['x_mm'] = round((float) $kp->x * $scale, 3);|$update['x_mm'] = round((float) $kp->x, 3);

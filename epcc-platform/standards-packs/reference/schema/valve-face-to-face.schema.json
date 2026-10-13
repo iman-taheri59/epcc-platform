@@ -1,0 +1,327 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "title": "Valve face-to-face and end-to-end dimensions (ASME B16.10)",
+ "type": "object",
+ "required": [
+  "refId",
+  "version",
+  "source",
+  "units",
+  "standard",
+  "dimensions"
+ ],
+ "additionalProperties": false,
+ "properties": {
+  "refId": {
+   "const": "valve-face-to-face"
+  },
+  "version": {
+   "type": "string",
+   "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+  },
+  "source": {
+   "type": "string",
+   "minLength": 10
+  },
+  "note": {
+   "type": "string"
+  },
+  "conventions": {
+   "type": "object"
+  },
+  "units": {
+   "type": "object",
+   "required": [
+    "length",
+    "alternate"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "length": {
+     "const": "mm"
+    },
+    "alternate": {
+     "const": "in"
+    }
+   }
+  },
+  "standard": {
+   "type": "object",
+   "required": [
+    "code",
+    "editionYear",
+    "materialsCovered",
+    "sourceTables"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "code": {
+     "const": "B16.10"
+    },
+    "editionYear": {
+     "type": "integer",
+     "minimum": 1900
+    },
+    "erratumYear": {
+     "type": "integer",
+     "minimum": 1900
+    },
+    "title": {
+     "type": "string"
+    },
+    "materialsCovered": {
+     "type": "array",
+     "items": {
+      "enum": [
+       "STEEL"
+      ]
+     }
+    },
+    "materialsExcluded": {
+     "type": "array",
+     "items": {
+      "enum": [
+       "CAST_IRON"
+      ]
+     }
+    },
+    "sourceTables": {
+     "type": "array",
+     "minItems": 1,
+     "items": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "dimensions": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "required": [
+     "valveTypes",
+     "pattern",
+     "closure",
+     "pressureClass",
+     "endType",
+     "symbol",
+     "dn",
+     "nps",
+     "npsDecimal",
+     "mm",
+     "in",
+     "noteRefs",
+     "sourceTable",
+     "column"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "valveTypes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+       "type": "string"
+      }
+     },
+     "pattern": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "closure": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "pressureClass": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "pattern": "^[0-9]+$"
+     },
+     "endType": {
+      "enum": [
+       "RF",
+       "BW",
+       "WAFER",
+       "LUG_WAFER",
+       "GROOVED",
+       "FF"
+      ]
+     },
+     "symbol": {
+      "enum": [
+       "A",
+       "B",
+       "D",
+       "E"
+      ]
+     },
+     "dn": {
+      "type": "integer",
+      "minimum": 1
+     },
+     "nps": {
+      "type": "string"
+     },
+     "npsDecimal": {
+      "type": "number",
+      "exclusiveMinimum": 0
+     },
+     "mm": {
+      "type": "number",
+      "exclusiveMinimum": 0
+     },
+     "in": {
+      "type": "number",
+      "exclusiveMinimum": 0
+     },
+     "noteRefs": {
+      "type": "array",
+      "items": {
+       "type": "integer"
+      }
+     },
+     "sourceTable": {
+      "type": "string"
+     },
+     "column": {
+      "type": "integer",
+      "minimum": 1
+     }
+    }
+   }
+  },
+  "facingAdjustments": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "pressureClasses",
+     "facing"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "pressureClasses": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+       "type": "string"
+      }
+     },
+     "facing": {
+      "type": "string"
+     },
+     "adjustmentMm": {
+      "type": [
+       "number",
+       "null"
+      ]
+     },
+     "adjustmentIn": {
+      "type": "number"
+     },
+     "seeNote": {
+      "type": "integer"
+     },
+     "note": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "ringJoint": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "pressureClass",
+     "symbol",
+     "dn",
+     "nps",
+     "npsDecimal",
+     "mm",
+     "in",
+     "noteRefs",
+     "sourceTable"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "pressureClass": {
+      "type": "string",
+      "pattern": "^[0-9]+$"
+     },
+     "symbol": {
+      "enum": [
+       "X",
+       "S"
+      ]
+     },
+     "dn": {
+      "type": "integer",
+      "minimum": 1
+     },
+     "nps": {
+      "type": "string"
+     },
+     "npsDecimal": {
+      "type": "number",
+      "exclusiveMinimum": 0
+     },
+     "mm": {
+      "type": "number"
+     },
+     "in": {
+      "type": "number"
+     },
+     "noteRefs": {
+      "type": "array",
+      "items": {
+       "type": "integer"
+      }
+     },
+     "sourceTable": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "erratumCheck": {
+   "type": "object"
+  },
+  "anomalies": {
+   "type": "object",
+   "required": [
+    "unitPairsThatDoNotConvert",
+    "lengthFallsWithSize",
+    "why"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "unitPairsThatDoNotConvert": {
+     "type": "array",
+     "items": {
+      "type": "object"
+     }
+    },
+    "lengthFallsWithSize": {
+     "type": "array",
+     "items": {
+      "type": "object"
+     }
+    },
+    "why": {
+     "type": "string",
+     "minLength": 60
+    }
+   }
+  },
+  "corroboration": {
+   "type": "object"
+  }
+ }
+}

@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Document register — PH-14</title>
+<script>
+(function () {
+  var d = document.documentElement;
+  d.classList.add('no-js');
+  try { if (localStorage.getItem('epcc.sb.rail') === '1') d.classList.add('rail'); } catch (e) {}
+  d.classList.remove('no-js');
+})();
+</script>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --muted:#94a3b8; --ok:#10b981; --bad:#ef4444; --warn:#f59e0b; --accent:#8b5cf6; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:#e2e8f0; font-family:ui-sans-serif, system-ui, sans-serif; line-height:1.7; padding:24px; }
+  .wrap { max-width:1080px; margin:0 auto; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:18px; }
+  a { color:var(--accent); }
+  .topnav { display:flex; gap:16px; margin-bottom:12px; font-size:13px; font-weight:600; }
+  .topnav a { text-decoration:none; }
+  .bar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:14px; }
+  .bar label { font-size:13px; color:var(--muted); }
+  select { background:#0b1220; color:#e2e8f0; border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:14px; font-family:inherit; }
+  .count { margin-left:auto; font-size:13px; color:var(--muted); }
+  .count b { color:#fff; font-size:16px; }
+  .note { font-size:12.5px; color:var(--muted); background:rgba(139,92,246,.08); border:1px solid rgba(139,92,246,.3); border-radius:10px; padding:11px 14px; margin-bottom:18px; }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  th { background:#0b1220; font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); text-align:left; padding:11px 14px; font-weight:600; }
+  td { padding:13px 14px; border-top:1px solid var(--line); font-size:14px; vertical-align:top; }
+  /*
+   * `inline-block` is what makes `direction:ltr` actually contain a Latin
+   * identifier inside an RTL sentence - without it the bidi algorithm reorders
+   * neighbouring punctuation. But on a <td> it REPLACES `display:table-cell`,
+   * so the cell drops out of the column layout and every following column
+   * shifts by one: the header "Subsystem" ends up over the category data.
+   * Table cells therefore keep their table display and only take the LTR run.
+   */
+  .mono { font-family:ui-monospace,monospace; font-size:13px; direction:ltr; display:inline-block; }
+  td.mono, th.mono { display:table-cell; }
+  .amt { font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap; }
+  .pill { display:inline-block; font-size:12px; font-weight:700; padding:3px 11px; border-radius:999px; white-space:nowrap; }
+  .pill.ok { background:rgba(16,185,129,.16); color:#6ee7b7; border:1px solid rgba(16,185,129,.35); }
+  .pill.bad { background:rgba(239,68,68,.16); color:#fca5a5; border:1px solid rgba(239,68,68,.35); }
+  .pill.abs { background:rgba(239,68,68,.3); color:#fecaca; border:1px solid rgba(239,68,68,.5); margin-left:6px; }
+  .pill.none { background:rgba(148,163,184,.14); color:#cbd5e1; border:1px dashed rgba(148,163,184,.5); }
+  .whynot { font-size:12px; color:var(--muted); margin-top:7px; max-width:46ch; }
+  .pill.pack { background:rgba(139,92,246,.16); color:#c4b5fd; border:1px solid rgba(139,92,246,.4); font-family:ui-monospace,monospace; font-size:11px; }
+  ul.rs { list-style:none; margin:9px 0 0; padding:0; }
+  ul.rs li { font-size:12.5px; color:#fca5a5; padding:3px 0; }
+  ul.rs code { color:#f87171; font-size:11px; direction:ltr; display:inline-block; margin-right:6px; }
+  .empty { text-align:center; padding:38px; color:var(--muted); font-size:14px; }
+  .foot { margin-top:18px; font-size:12.5px; color:var(--muted); border-top:1px solid var(--line); padding-top:14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
+  .pcard { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; text-decoration:none; color:inherit; display:block; transition:border-color .15s; }
+  .pcard:hover { border-color:var(--accent); }
+  .pcard h3 { margin:0 0 4px; font-size:15.5px; }
+  .pcard .code { font-family:ui-monospace,monospace; font-size:11.5px; color:var(--muted); direction:ltr; display:inline-block; }
+  .stats { display:flex; gap:18px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
+  .stat .k { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  .stat .v { font-size:17px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .v.bad { color:#fca5a5; } .v.ok { color:#6ee7b7; }
+  @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
+
+  /* ---------- App shell: sidebar + content ----------
+     The sidebar is a sibling of .wrap, so body becomes the layout container.
+     Logical properties (inline-start/end) do the RTL work: the sidebar sits on
+     the right in Farsi and the left in English with no duplicated rules. */
+  body { padding:0; }
+  .app { display:flex; min-height:100vh; align-items:stretch; }
+  /*
+   * min-width:0 is load-bearing, not tidiness.
+   *
+   * A flex item's default min-width is `auto`, which means "never shrink below
+   * my content's intrinsic width". A wide table therefore widens .wrap past
+   * the viewport instead of overflowing inside it. In LTR that merely clips on
+   * the right and the page still reads; in RTL the block is laid out from the
+   * right edge, so the overflow pushes the ENTIRE document off-screen to the
+   * left and the page renders as a blank rectangle.
+   *
+   * That is exactly what happened: /projects/{p}/documents?lang=fa at 430px
+   * wide rendered ONE unique colour - the background - while the same page in
+   * English at the same width was fine. The documents table is 1032px of
+   * intrinsic width; the phone viewport was 485px.
+   */
+  .app > .wrap { flex:1; min-width:0; padding:24px; margin:0 auto; }
+
+  .sb {
+    flex:0 0 252px; width:252px; background:#0b1220;
+    border-inline-end:1px solid var(--line);
+    display:flex; flex-direction:column; position:sticky; top:0;
+    height:100vh; overflow-y:auto;
+  }
+  .sb-brand { display:flex; gap:10px; align-items:center; padding:16px 16px 14px; border-bottom:1px solid var(--line); }
+  .sb-logo {
+    width:32px; height:32px; border-radius:9px; flex:0 0 32px;
+    background:linear-gradient(135deg,var(--accent),#6366f1);
+    color:#fff; font-size:12.5px; font-weight:800; letter-spacing:.02em;
+    display:flex; align-items:center; justify-content:center; direction:ltr;
+  }
+  .sb-brand-t { display:flex; flex-direction:column; line-height:1.35; min-width:0; }
+  .sb-brand-t b { font-size:13.5px; color:#f1f5f9; }
+  .sb-brand-t small { font-size:11px; color:var(--muted); font-family:ui-monospace,monospace; direction:ltr; }
+
+  .sb-nav { padding:10px 8px; flex:1; }
+  .sb-sec { font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:#64748b; font-weight:700; padding:12px 10px 6px; }
+  .sb-i {
+    display:flex; align-items:center; gap:10px; padding:8px 10px; margin-bottom:2px;
+    border-radius:9px; font-size:13.5px; font-weight:500; color:#cbd5e1;
+    text-decoration:none; border:1px solid transparent; transition:background .13s,color .13s;
+  }
+  .sb-i:hover { background:rgba(148,163,184,.09); color:#f1f5f9; }
+  .sb-i.on { background:rgba(139,92,246,.15); border-color:rgba(139,92,246,.4); color:#ddd6fe; font-weight:650; }
+  /* The active marker must flip with the writing direction, hence a logical
+     border rather than border-left. */
+  .sb-i.on .sb-ic { color:var(--accent); }
+  .sb-ic { width:17px; height:17px; flex:0 0 17px; display:block; color:#94a3b8; }
+  .sb-ic svg { width:100%; height:100%; display:block; }
+
+  /* Inert items: dimmed, not hidden. A locked module is the upsell surface. */
+  .sb-i.off { cursor:not-allowed; color:#64748b; }
+  .sb-i.off:hover { background:transparent; color:#64748b; }
+  .sb-i.off .sb-ic { color:#475569; }
+  .sb-i.off > span { flex:1; min-width:0; }
+  .sb-b { font-size:9.5px; font-style:normal; font-weight:700; padding:2px 6px; border-radius:5px; white-space:nowrap; letter-spacing:.02em; }
+  .sb-b.locked { background:rgba(245,158,11,.16); color:#fcd34d; border:1px solid rgba(245,158,11,.32); }
+  .sb-b.planned { background:rgba(148,163,184,.13); color:#94a3b8; border:1px solid rgba(148,163,184,.28); }
+
+  .sb-foot { border-top:1px solid var(--line); padding:12px; }
+  .sb-user { display:flex; gap:9px; align-items:center; margin-bottom:10px; }
+  .sb-av {
+    width:29px; height:29px; flex:0 0 29px; border-radius:50%;
+    background:rgba(139,92,246,.2); border:1px solid rgba(139,92,246,.4);
+    color:#c4b5fd; font-size:12.5px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .sb-user-t { display:flex; flex-direction:column; line-height:1.35; min-width:0; }
+  .sb-user-t b { font-size:12.5px; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sb-user-t small { font-size:10.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sb-plan { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); margin-bottom:10px; }
+  .sb-acts { display:flex; align-items:center; gap:10px; font-size:12px; }
+  .sb-acts a { color:var(--muted); text-decoration:none; font-weight:600; }
+  .sb-acts a:hover { color:#e2e8f0; }
+  .sb-acts form { margin-inline-start:auto; }
+  .sb-acts button { background:none; border:0; color:#fca5a5; font:inherit; font-size:12px; font-weight:600; cursor:pointer; padding:0; }
+  .sb-acts button:hover { color:#f87171; }
+
+  /* ---------- Collapsible: icon rail on desktop, off-canvas drawer on mobile
+     Mirrors prototype/index.html, whose behaviour is pinned by 19 jsdom
+     assertions in prototype/test/sidebar.test.js. Same class names (`rail`,
+     `drawer`) so the two cannot drift apart. */
+  .sb-burger {
+    background:var(--card); border:1px solid var(--line); border-radius:8px;
+    color:#cbd5e1; width:34px; height:32px; font-size:15px; line-height:1;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    flex:0 0 auto; padding:0; transition:border-color .15s ease, color .15s ease;
+  }
+  .sb-burger:hover { border-color:var(--accent); color:var(--accent); }
+  /* The toggle lives in a bar above the page content, not inside the sidebar:
+     a control that collapses the sidebar must stay reachable once it has. */
+  .topbar { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .topbar .tb-t { font-size:12.5px; color:var(--muted); font-weight:600; }
+  .scrim { display:none; position:fixed; inset:0; background:rgba(4,9,18,.6); z-index:40; }
+
+  /* ---- Animation ----
+     Collapsing used to be instantaneous and jarring for two independent
+     reasons, and fixing only one leaves it still broken:
+
+       1. `.sb` had NO transition on desktop - the only one in the file lived
+          inside the mobile media query, on `transform`. Width simply snapped.
+       2. The labels were hidden with `display:none`, which is a discrete
+          property: it cannot be interpolated, so text vanished in one frame
+          however smooth the container was.
+
+     So the width animates here, and the labels collapse via `max-width` +
+     `opacity`, both of which ARE animatable. `overflow-x:hidden` on the panel
+     clips the text as the rail closes instead of showing a scrollbar. */
+  .sb {
+    transition: flex-basis .24s cubic-bezier(.4,0,.2,1),
+                width .24s cubic-bezier(.4,0,.2,1);
+    overflow-x: hidden;
+  }
+  /* Labels: inline pieces collapse horizontally... */
+  /* display:inline-block is LOAD-BEARING, not cosmetic.
+     `max-width` and `overflow` have NO effect on a non-replaced inline box, so
+     an inline element given `max-width:220px; overflow:hidden` is sized purely
+     by its content - and when the rail sets `max-width:0` it is simply ignored
+     too. The language switch is an <a>, i.e. inline by default: it inherited
+     these rules, laid out at zero usable width inside the flex footer, and
+     vanished from the expanded sidebar entirely. Every element collapsed this
+     way must be inline-block (or block) for the animation to apply at all. */
+  .sb-brand-t, .sb-i > span, .sb-b, .sb-user-t, .sb-acts a {
+    display: inline-block; vertical-align: middle;
+    max-width: 220px; overflow: hidden; white-space: nowrap;
+    transition: max-width .24s cubic-bezier(.4,0,.2,1), opacity .14s ease;
+  }
+  /* .sb-brand-t and .sb-user-t are flex columns; inline-block above would
+     destroy their internal stacking, so restore it. They are already sized by
+     the flex parent, and max-width still applies to a flex container. */
+  .sb-brand-t, .sb-user-t { display: flex; }
+  /* ...block-level pieces collapse vertically. max-width would leave their
+     line box behind and the rail would keep a row of blank gaps. */
+  .sb-sec, .sb-plan {
+    overflow: hidden;
+    transition: height .2s cubic-bezier(.4,0,.2,1),
+                padding .2s cubic-bezier(.4,0,.2,1),
+                margin .2s cubic-bezier(.4,0,.2,1),
+                opacity .14s ease;
+  }
+  .sb-i {
+    transition: background .13s, color .13s,
+                padding .24s cubic-bezier(.4,0,.2,1),
+                gap .24s cubic-bezier(.4,0,.2,1);
+  }
+  .sb-brand { transition: padding .24s cubic-bezier(.4,0,.2,1); }
+
+  /* Desktop: collapse to a 60px icon rail. Icons stay, labels go. */
+  body.rail .sb, html.rail .sb { flex-basis:60px; width:60px; }
+  body.rail .sb-brand, html.rail .sb-brand { padding-inline:0; justify-content:center; }
+  /* Zero max-width rather than display:none, so it can actually animate.
+     pointer-events + visibility keep the collapsed text unclickable and out
+     of the accessibility tree. */
+  body.rail .sb-brand-t, html.rail .sb-brand-t,
+  body.rail .sb-i > span, html.rail .sb-i > span,
+  body.rail .sb-b, html.rail .sb-b,
+  body.rail .sb-user-t, html.rail .sb-user-t,
+  body.rail .sb-acts a, html.rail .sb-acts a {
+    max-width:0; opacity:0; pointer-events:none;
+  }
+  body.rail .sb-sec, html.rail .sb-sec,
+  body.rail .sb-plan, html.rail .sb-plan {
+    height:0; padding-top:0; padding-bottom:0; margin:0; opacity:0; pointer-events:none;
+  }
+  body.rail .sb-i, html.rail .sb-i { justify-content:center; padding-inline:0; gap:0; }
+  body.rail .sb-user, html.rail .sb-user { justify-content:center; }
+  body.rail .sb-acts, html.rail .sb-acts { justify-content:center; }
+  body.rail .sb-acts form, html.rail .sb-acts form { margin-inline-start:0; }
+  body.rail .sb-foot, html.rail .sb-foot { padding-inline:6px; }
+
+  @media (max-width:860px) {
+    /*
+     * min-width:0 above stops the overflow escaping the viewport; this is what
+     * makes the overflowing part reachable. Without it a wide table is simply
+     * clipped and the columns past the fold are unreadable on a phone - which
+     * on a document register means the state and the revision, i.e. the two
+     * fields somebody is actually looking for.
+     */
+    .app > .wrap { padding:16px; overflow-x:auto; }
+    /* Off-canvas. inset-inline-start + a direction-aware transform means RTL
+       slides in from the right with no duplicated rules. */
+    .sb {
+      position:fixed; inset-block:0; inset-inline-start:0; z-index:50;
+      width:250px; flex-basis:250px; height:100vh;
+      transform:translateX(-105%);
+      transition:transform .24s cubic-bezier(.4,0,.2,1);
+      box-shadow:0 0 30px rgba(0,0,0,.5);
+    }
+    html[dir="rtl"] .sb { transform:translateX(105%); }
+    body.drawer .sb, html[dir="rtl"] body.drawer .sb { transform:translateX(0); }
+    body.drawer .scrim { display:block; }
+    /* The desktop rail state must NOT leak into mobile: a 60px off-canvas
+       panel would slide in showing icons and nothing else. Every rail
+       collapse is undone here, including the animated ones. */
+    body.rail .sb, html.rail .sb { width:250px; flex-basis:250px; }
+    body.rail .sb-brand, html.rail .sb-brand { padding-inline:16px; justify-content:flex-start; }
+    body.rail .sb-brand-t, html.rail .sb-brand-t,
+    body.rail .sb-i > span, html.rail .sb-i > span,
+    body.rail .sb-b, html.rail .sb-b,
+    body.rail .sb-user-t, html.rail .sb-user-t,
+    body.rail .sb-acts a, html.rail .sb-acts a {
+      max-width:220px; opacity:1; pointer-events:auto;
+    }
+    body.rail .sb-sec, html.rail .sb-sec {
+      height:auto; padding:12px 10px 6px; opacity:1; pointer-events:auto;
+    }
+    body.rail .sb-plan, html.rail .sb-plan {
+      height:auto; padding:0; margin-bottom:10px; opacity:1; pointer-events:auto;
+    }
+    body.rail .sb-i, html.rail .sb-i { justify-content:flex-start; padding-inline:10px; gap:10px; }
+    body.rail .sb-acts form, html.rail .sb-acts form { margin-inline-start:auto; }
+  }
+
+  /* No-JS / pre-hydration safety: never leave the page with an unreachable
+     sidebar if the script fails to run. */
+  @media (max-width:860px) { html.no-js .sb { position:static; transform:none; height:auto; box-shadow:none; } }
+
+  /* Motion is a vestibular accessibility issue, not a preference. Honour the
+     OS setting: the sidebar still collapses, it just does not animate. */
+  @media (prefers-reduced-motion: reduce) {
+    .sb, .sb *, .scrim, .sb-burger { transition:none !important; }
+  }
+</style>
+<style>
+  .tt-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 10px; }
+  .tt-search { position:relative; flex:1 1 240px; min-width:190px; max-width:420px; }
+  .tt-search input {
+    width:100%; padding:8px 32px 8px 12px; font:inherit; font-size:13px; border-radius:9px;
+    background:#0b1220; color:#e2e8f0; border:1px solid var(--line);
+  }
+  html[dir="rtl"] .tt-search input { padding:8px 12px 8px 32px; }
+  .tt-search input:focus { outline:2px solid var(--accent); outline-offset:1px; border-color:transparent; }
+  .tt-search .tt-clear {
+    position:absolute; inset-inline-end:6px; top:50%; transform:translateY(-50%);
+    background:none; border:0; color:var(--muted); cursor:pointer; font-size:16px;
+    line-height:1; padding:2px 5px; border-radius:5px; font-family:inherit;
+  }
+  .tt-search .tt-clear:hover { color:#e2e8f0; background:rgba(148,163,184,.14); }
+  .tt-facet select {
+    padding:7px 10px; font:inherit; font-size:12.5px; border-radius:8px;
+    background:#0b1220; color:#e2e8f0; border:1px solid var(--line); max-width:190px;
+  }
+  .tt-facet select:focus { outline:2px solid var(--accent); outline-offset:1px; }
+  .tt-count { font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; margin-inline-start:auto; }
+  .tt-count.tt-filtered { color:#fcd34d; }
+  .tt-reset {
+    background:transparent; border:1px solid var(--line); color:#cbd5e1; border-radius:8px;
+    padding:6px 11px; font:inherit; font-size:12px; cursor:pointer;
+  }
+  .tt-reset:hover { background:rgba(148,163,184,.12); color:#fff; }
+
+  /* Sortable headers. The whole cell is the hit target, and it is a real
+     <button> so it is reachable and operable from the keyboard. */
+  th.tt-sortable { padding:0; }
+  th.tt-sortable > button {
+    all:unset; box-sizing:border-box; display:flex; align-items:center; gap:6px; width:100%;
+    padding:11px 14px; cursor:pointer; font:inherit; font-size:12px; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--muted); font-weight:600;
+  }
+  th.tt-sortable > button:hover { color:#e2e8f0; background:rgba(148,163,184,.07); }
+  th.tt-sortable > button:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+  .tt-ind { flex:none; width:9px; height:9px; opacity:.35; transition:opacity .12s ease; }
+  th[aria-sort="ascending"] .tt-ind,
+  th[aria-sort="descending"] .tt-ind { opacity:1; color:var(--accent); }
+  th[aria-sort="ascending"] > button,
+  th[aria-sort="descending"] > button { color:#e2e8f0; }
+  .tt-none td { text-align:center; color:var(--muted); font-size:13px; padding:26px 14px; }
+  /* A row hidden by the filter must be hidden from assistive tech too, which
+     `hidden` does and a class alone does not. */
+  tr[hidden] { display:none; }
+  @media (prefers-reduced-motion: reduce) { .tt-ind { transition:none; } }
+</style>
+<script>
+(function () {
+  'use strict';
+
+  var FA = "en" === 'fa';
+  var T = {
+    search:  FA ? 'جستجو در جدول…'   : 'Search this table…',
+    clear:   FA ? 'پاک کردن'          : 'Clear',
+    reset:   FA ? 'بازنشانی'          : 'Reset',
+    all:     FA ? 'همه'               : 'All',
+    none:    FA ? 'موردی یافت نشد.'   : 'Nothing matches that filter.',
+    of:      FA ? 'از'                : 'of',
+    rows:    FA ? 'ردیف'              : 'rows',
+    sortBy:  FA ? 'مرتب‌سازی بر اساس' : 'Sort by'
+  };
+
+  /* Persian and Arabic-Indic digits -> ASCII.
+     Without this, typing "14" would not find "۱۴-P-۱۲۰۱" and a numeric column
+     rendered in Persian digits would sort as text. Both are everyday cases in
+     this product, not edge cases. */
+  var DIGITS = { '۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9',
+                 '٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9' };
+
+  function fold(s) {
+    if (!s) return '';
+    var out = '';
+    for (var i = 0; i < s.length; i++) {
+      var ch = s[i];
+      if (DIGITS[ch]) { out += DIGITS[ch]; continue; }
+      /* Arabic yeh/kaf vs Persian yeh/kaf, and the zero-width non-joiner.
+         A user typing on an Arabic keyboard - or pasting from an older Windows
+         document - must still match text stored with Persian characters. */
+      if (ch === 'ي' || ch === 'ی' || ch === 'ئ') { out += 'ی'; continue; }
+      if (ch === 'ك') { out += 'ک'; continue; }
+      if (ch === 'ة') { out += 'ه'; continue; }
+      if (ch === 'أ' || ch === 'إ' || ch === 'آ' || ch === 'ا') { out += 'ا'; continue; }
+      if (ch === '\u200c' || ch === '\u200f' || ch === '\u200e') { out += ' '; continue; }
+      /* Arabic/Persian diacritics carry no search value. */
+      if (ch >= '\u064B' && ch <= '\u0652') { continue; }
+      out += ch;
+    }
+    return out.toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+
+  function numify(s) {
+    var t = fold(s).replace(/[^0-9.\-]/g, '');
+    if (t === '' || t === '-' || t === '.') return null;
+    var n = parseFloat(t);
+    return isNaN(n) ? null : n;
+  }
+
+  function cellText(row, i) {
+    var td = row.cells[i];
+    if (!td) return '';
+    /* An explicit sort key wins: the displayed text is for humans, this is for
+       ordering. */
+    if (td.hasAttribute('data-sortkey')) return td.getAttribute('data-sortkey');
+    return (td.textContent || '').trim();
+  }
+
+  /* What a faceted column groups by. An explicit `data-facet-value` wins over
+     the cell's text, which may contain far more than the headline. */
+  function facetValue(row, i) {
+    var td = row.cells[i];
+    if (!td) return '';
+    if (td.hasAttribute('data-facet-value')) return td.getAttribute('data-facet-value');
+    return (td.textContent || '').trim().replace(/\s+/g, ' ');
+  }
+
+  var collator = null;
+  try { collator = new Intl.Collator(FA ? 'fa' : 'en', { numeric: true, sensitivity: 'base' }); } catch (e) {}
+
+  function enhance(table) {
+    var thead = table.tHead, tbody = table.tBodies[0];
+    if (!thead || !tbody) return;
+
+    var headers = Array.prototype.slice.call(thead.rows[0].cells);
+    /* Rows spanning the table (an "empty" message) are structural, never data. */
+    var dataRows = Array.prototype.slice.call(tbody.rows).filter(function (r) {
+      return !r.querySelector('td[colspan]');
+    });
+    if (dataRows.length === 0) return;
+
+    /* Remember the server's order so a third click can restore it. The server
+       ordered these deliberately (discipline, then sequence); "no sort" has to
+       mean that, not whatever the last sort left behind. */
+    dataRows.forEach(function (r, i) { r.setAttribute('data-tt-i', String(i)); });
+
+    var wrap = document.createElement('div');
+    var bar = document.createElement('div');
+    bar.className = 'tt-bar';
+    table.parentNode.insertBefore(bar, table);
+
+    /* ---- free-text search ---- */
+    var sBox = document.createElement('div');
+    sBox.className = 'tt-search';
+    var input = document.createElement('input');
+    input.type = 'search';
+    input.placeholder = T.search;
+    input.setAttribute('aria-label', T.search);
+    var clear = document.createElement('button');
+    clear.type = 'button';
+    clear.className = 'tt-clear';
+    clear.innerHTML = '&times;';
+    clear.title = T.clear;
+    clear.setAttribute('aria-label', T.clear);
+    clear.hidden = true;
+    sBox.appendChild(input);
+    sBox.appendChild(clear);
+    bar.appendChild(sBox);
+
+    /* ---- one dropdown per faceted column ---- */
+    var facets = [];
+    headers.forEach(function (th, i) {
+      if (!th.hasAttribute('data-facet')) return;
+      var seen = [], sel = document.createElement('select');
+      var label = (th.textContent || '').trim();
+      sel.setAttribute('aria-label', label);
+      var opt0 = document.createElement('option');
+      opt0.value = '';
+      opt0.textContent = label + ': ' + T.all;
+      sel.appendChild(opt0);
+      dataRows.forEach(function (r) {
+        var v = facetValue(r, i);
+        if (v && seen.indexOf(v) === -1) seen.push(v);
+      });
+      seen.sort(function (a, b) { return collator ? collator.compare(a, b) : (a < b ? -1 : 1); });
+      seen.forEach(function (v) {
+        var o = document.createElement('option');
+        o.value = v; o.textContent = v;
+        sel.appendChild(o);
+      });
+      var box = document.createElement('div');
+      box.className = 'tt-facet';
+      box.appendChild(sel);
+      bar.appendChild(box);
+      facets.push({ index: i, select: sel });
+    });
+
+    var reset = document.createElement('button');
+    reset.type = 'button';
+    reset.className = 'tt-reset';
+    reset.textContent = T.reset;
+    reset.hidden = true;
+    bar.appendChild(reset);
+
+    var count = document.createElement('span');
+    count.className = 'tt-count';
+    count.setAttribute('aria-live', 'polite');
+    bar.appendChild(count);
+
+    /* Empty-state row, created once and reused. */
+    var noneRow = document.createElement('tr');
+    noneRow.className = 'tt-none';
+    var noneCell = document.createElement('td');
+    noneCell.colSpan = headers.length;
+    noneCell.textContent = T.none;
+    noneRow.appendChild(noneCell);
+    noneRow.hidden = true;
+    tbody.appendChild(noneRow);
+
+    /* Cache the folded text of each row once. Re-folding on every keystroke is
+       what makes this kind of filter feel sluggish. */
+    var haystack = dataRows.map(function (r) { return fold(r.textContent || ''); });
+
+    function localeNum(n) {
+      var s = String(n);
+      if (!FA) return s;
+      return s.replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[+d]; });
+    }
+
+    function apply() {
+      var q = fold(input.value);
+      var active = q !== '';
+      var shown = 0;
+
+      dataRows.forEach(function (row, i) {
+        var ok = q === '' || haystack[i].indexOf(q) !== -1;
+        if (ok) {
+          for (var f = 0; f < facets.length; f++) {
+            var want = facets[f].select.value;
+            if (!want) continue;
+            active = true;
+            if (facetValue(row, facets[f].index) !== want) { ok = false; break; }
+          }
+        }
+        row.hidden = !ok;
+        if (ok) shown++;
+      });
+
+      noneRow.hidden = shown !== 0;
+      clear.hidden = input.value === '';
+      reset.hidden = !active;
+      count.classList.toggle('tt-filtered', active && shown !== dataRows.length);
+      count.textContent = active
+        ? localeNum(shown) + ' ' + T.of + ' ' + localeNum(dataRows.length) + ' ' + T.rows
+        : localeNum(dataRows.length) + ' ' + T.rows;
+    }
+
+    /* ---- sorting ---- */
+    var sortCol = -1, sortDir = 0; /* 0 none, 1 asc, -1 desc */
+
+    function sortBy(index, mode) {
+      var rows = dataRows.slice();
+
+      if (sortDir === 0) {
+        rows.sort(function (a, b) {
+          return (+a.getAttribute('data-tt-i')) - (+b.getAttribute('data-tt-i'));
+        });
+      } else {
+        rows.sort(function (a, b) {
+          var x = cellText(a, index), y = cellText(b, index), r;
+          if (mode === 'num') {
+            var nx = numify(x), ny = numify(y);
+            /* Empty cells sort last in BOTH directions. A blank is missing
+               data, not the smallest value; flipping it to the top on a
+               descending sort just buries the rows the user asked to see. */
+            if (nx === null && ny === null) r = 0;
+            else if (nx === null) return 1;
+            else if (ny === null) return -1;
+            else r = nx - ny;
+          } else {
+            r = collator ? collator.compare(x, y) : (x === y ? 0 : (x < y ? -1 : 1));
+          }
+          /* Stable tie-break on the server's original order, so equal values
+             never shuffle between clicks. */
+          if (r === 0) r = (+a.getAttribute('data-tt-i')) - (+b.getAttribute('data-tt-i'));
+          return r * sortDir;
+        });
+      }
+
+      rows.forEach(function (r) { tbody.appendChild(r); });
+      tbody.appendChild(noneRow);
+
+      headers.forEach(function (th, i) {
+        if (!th.classList.contains('tt-sortable')) return;
+        th.setAttribute('aria-sort',
+          i === index && sortDir === 1 ? 'ascending'
+          : i === index && sortDir === -1 ? 'descending'
+          : 'none');
+      });
+    }
+
+    headers.forEach(function (th, i) {
+      var mode = th.getAttribute('data-sort');
+      if (!mode || mode === 'none') return;
+      th.classList.add('tt-sortable');
+      th.setAttribute('aria-sort', 'none');
+
+      var label = (th.textContent || '').trim();
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.setAttribute('aria-label', T.sortBy + ' ' + label);
+      btn.appendChild(document.createTextNode(label));
+
+      var ind = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      ind.setAttribute('class', 'tt-ind');
+      ind.setAttribute('viewBox', '0 0 10 10');
+      ind.setAttribute('aria-hidden', 'true');
+      var up = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      up.setAttribute('fill', 'currentColor');
+      up.setAttribute('d', 'M5 0 L9 4 H1 Z');
+      var dn = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      dn.setAttribute('fill', 'currentColor');
+      dn.setAttribute('d', 'M5 10 L1 6 H9 Z');
+      ind.appendChild(up);
+      ind.appendChild(dn);
+      btn.appendChild(ind);
+
+      th.textContent = '';
+      th.appendChild(btn);
+
+      btn.addEventListener('click', function () {
+        if (sortCol === i) {
+          /* asc -> desc -> back to the server's order. The third state matters:
+             without it there is no way to undo a sort. */
+          sortDir = sortDir === 1 ? -1 : (sortDir === -1 ? 0 : 1);
+        } else {
+          sortCol = i; sortDir = 1;
+        }
+        if (sortDir === 0) sortCol = -1;
+        sortBy(i, mode);
+      });
+    });
+
+    input.addEventListener('input', apply);
+    input.addEventListener('search', apply);
+    clear.addEventListener('click', function () { input.value = ''; input.focus(); apply(); });
+    facets.forEach(function (f) { f.select.addEventListener('change', apply); });
+    reset.addEventListener('click', function () {
+      input.value = '';
+      facets.forEach(function (f) { f.select.value = ''; });
+      if (sortDir !== 0) { sortDir = 0; sortCol = -1; sortBy(0, 'text'); }
+      apply();
+      input.focus();
+    });
+
+    apply();
+  }
+
+  function init() {
+    var tables = document.querySelectorAll('table[data-tt]');
+    for (var i = 0; i < tables.length; i++) enhance(tables[i]);
+  }
+
+  /* The same readiness guard the sidebar needs: this partial is included in
+     <head>, long before the tables it enhances have been parsed. Running
+     immediately would find nothing and fail silently. */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+<style>
+  .docstats { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+  .dstat { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 14px; min-width:118px; }
+  .dstat .k { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  .dstat .v { font-size:19px; font-weight:700; font-variant-numeric:tabular-nums; margin-top:2px; }
+  .st { display:inline-block; font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:999px; white-space:nowrap; }
+  .st.WIP       { background:rgba(148,163,184,.16); color:#cbd5e1; border:1px solid rgba(148,163,184,.35); }
+  .st.SHARED    { background:rgba(245,158,11,.16); color:#fcd34d; border:1px solid rgba(245,158,11,.35); }
+  .st.PUBLISHED { background:rgba(16,185,129,.16); color:#6ee7b7; border:1px solid rgba(16,185,129,.35); }
+  .st.ARCHIVED  { background:rgba(100,116,139,.16); color:#94a3b8; border:1px solid rgba(100,116,139,.35); }
+  .inline-form { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .inline-form select, .inline-form input { padding:5px 8px; font-size:12px; border-radius:6px;
+    background:#0b1220; color:#e2e8f0; border:1px solid var(--line); font-family:inherit; }
+  .btn { background:var(--accent); color:#fff; border:0; border-radius:7px; padding:6px 12px;
+    font:inherit; font-size:12px; font-weight:600; cursor:pointer; }
+  .btn:hover { filter:brightness(1.1); }
+  .btn.ghost { background:transparent; border:1px solid var(--line); color:#cbd5e1; }
+  fieldset { border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:18px; background:var(--card); }
+  legend { padding:0 8px; font-size:13px; font-weight:700; color:#e2e8f0; }
+  .frow { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:12px; }
+  .frow label { display:block; font-size:12px; color:var(--muted); margin-bottom:5px; }
+  .frow input, .frow select { width:100%; padding:8px 10px; font-size:13.5px; border-radius:8px;
+    background:#0b1220; color:#e2e8f0; border:1px solid var(--line); font-family:inherit; }
+  .ok { background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.4); color:#6ee7b7;
+    border-radius:9px; padding:10px 14px; font-size:13px; margin-bottom:14px; }
+  .err { background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.4); color:#fca5a5;
+    border-radius:9px; padding:10px 14px; font-size:13px; margin-bottom:14px; }
+  .err ul { margin:0; padding-inline-start:18px; }
+  /* --- attachments (FR-DOC-01/02) --- */
+  .files { display:flex; flex-direction:column; gap:5px; }
+  .f { display:flex; align-items:center; gap:7px; font-size:12px; min-width:0; }
+  .f .ext { flex:none; font-size:9.5px; font-weight:800; letter-spacing:.05em; padding:2px 5px;
+    border-radius:4px; background:rgba(56,132,255,.16); color:#93c5fd;
+    border:1px solid rgba(56,132,255,.35); text-transform:uppercase; }
+  .f .nm { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:210px;
+    color:#cbd5e1; text-decoration:none; border-bottom:1px dotted rgba(203,213,225,.4); }
+  .f .nm:hover { color:#fff; border-bottom-color:#fff; }
+  .f .sz { flex:none; color:var(--muted); font-variant-numeric:tabular-nums; font-size:11px; }
+  /* The hash is the integrity record (FR-AUD-02); shown so it can be quoted
+     in a transmittal or a claim without opening the file. */
+  .f .hash { flex:none; font-family:var(--mono,monospace); font-size:10px; color:#64748b; }
+  .f .x { flex:none; background:none; border:0; color:#64748b; cursor:pointer; font-size:14px;
+    line-height:1; padding:0 3px; font-family:inherit; }
+  .f .x:hover { color:#fca5a5; }
+  .nofiles { font-size:11.5px; color:var(--muted); }
+  .up { display:flex; align-items:center; gap:6px; margin-top:7px; flex-wrap:wrap; }
+  .up input[type=file] { font:inherit; font-size:11px; color:var(--muted); max-width:190px; }
+  .up input[type=file]::file-selector-button { font:inherit; font-size:11px; margin-inline-end:6px;
+    padding:4px 9px; border-radius:6px; border:1px solid var(--line); background:#0b1220;
+    color:#cbd5e1; cursor:pointer; }
+  .up .hint { font-size:10.5px; color:#64748b; }
+</style>
+</head>
+<body>
+<div class="app">
+<div class="scrim" id="scrim" aria-hidden="true"></div>
+
+<aside class="sb" id="sb" aria-label="Main navigation">
+  <div class="sb-brand">
+    <span class="sb-logo" aria-hidden="true">EP</span>
+    <span class="sb-brand-t">
+      <b>EPCC Platform</b>
+      <small>EPC-PARS</small>
+    </span>
+  </div>
+
+  <nav class="sb-nav">
+                  <div class="sb-sec">Workspace</div>
+                              <a class="sb-i"
+               href="/?lang=en"
+               >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></i>
+              <span>Portfolio</span>
+            </a>
+                                          <div class="sb-sec">Project: PH-14</div>
+                              <a class="sb-i"
+               href="/projects/PH-14?lang=en"
+               >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v6h6M8.5 14.5l2 2 4-4"/></svg></i>
+              <span>Certificates</span>
+            </a>
+                                        <a class="sb-i"
+               href="/projects/PH-14/team?lang=en"
+               >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M17 11.2A3 3 0 1 0 16 5.4M21.5 20a5.6 5.6 0 0 0-3.6-5.2"/></svg></i>
+              <span>Project team</span>
+            </a>
+                                        <a class="sb-i on"
+               href="/projects/PH-14/documents?lang=en"
+                aria-current="page" >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h9l3 3h4v13H4z"/><path d="M8 12h8M8 16h5"/></svg></i>
+              <span>Documents / CDE</span>
+            </a>
+                                        <a class="sb-i"
+               href="/projects/PH-14/transmittals?lang=en"
+               >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6.5h18v11H3z"/><path d="M3 7l9 6 9-6"/></svg></i>
+              <span>Transmittals</span>
+            </a>
+                                        <a class="sb-i"
+               href="/projects/PH-14/vendor-transmittals?lang=en"
+               >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h13v8H3z"/><path d="M16 11h3l2 3v3h-5z"/><circle cx="7" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg></i>
+              <span>Vendor transmittals</span>
+            </a>
+                                        <a class="sb-i"
+               href="/projects/PH-14/piping?lang=en"
+               >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18"/><path d="M7 9v6"/><path d="M17 9v6"/></svg></i>
+              <span>Piping lines</span>
+            </a>
+                                        <a class="sb-i"
+               href="/projects/PH-14/piping/model-import?lang=en"
+               >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></i>
+              <span>3D model import</span>
+            </a>
+                                        <a class="sb-i"
+               href="/projects/PH-14/standards?lang=en"
+               >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></i>
+              <span>Codes &amp; standards</span>
+            </a>
+                                        <a class="sb-i"
+               href="/projects/PH-14/itp?lang=en"
+               >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></i>
+              <span>Inspection plans (ITP)</span>
+            </a>
+                                        <a class="sb-i"
+               href="/projects/PH-14/punch?lang=en"
+               >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l2.5 2.5L16 9"/><circle cx="12" cy="12" r="9"/></svg></i>
+              <span>QA/QC &amp; punch list</span>
+            </a>
+                                        <a class="sb-i"
+               href="/projects/PH-14/procurement?lang=en"
+               >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2l2.4 10.4a2 2 0 0 0 2 1.6h7.4a2 2 0 0 0 2-1.55L20.5 8H6"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg></i>
+              <span>Procurement</span>
+            </a>
+                                        <a class="sb-i"
+               href="/projects/PH-14/materials?lang=en"
+               >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5L12 4l9 4.5v7L12 20l-9-4.5z"/><path d="M3 8.5L12 13l9-4.5M12 13v7"/></svg></i>
+              <span>Warehouse &amp; materials</span>
+            </a>
+                                        
+            <span class="sb-i off planned" title="This module is not built yet." aria-disabled="true">
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5 3.5 16.7V7.3z"/><path d="M3.5 7.3L12 12l8.5-4.7M12 12v9.5"/></svg></i>
+              <span>Work packages (AWP)</span>
+              <em class="sb-b planned">Soon</em>
+            </span>
+                                          <div class="sb-sec">Tools</div>
+                              <a class="sb-i"
+               href="/gate?lang=en"
+               >
+              <i class="sb-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14"/><path d="M4 20h16M9 20V9h6v11"/></svg></i>
+              <span>Rule-engine playground</span>
+            </a>
+                              </nav>
+
+  <div class="sb-foot">
+    <div class="sb-user">
+      <span class="sb-av" aria-hidden="true">م</span>
+      <span class="sb-user-t">
+        <b>مهندس رضایی</b>
+        <small>Pars Construction &amp; Engineering</small>
+      </span>
+    </div>
+
+          <div class="sb-plan">
+        <span>Plan</span>
+        <span class="pill pack">Full</span>
+      </div>
+    
+    <div class="sb-acts">
+      <a href="/projects/PH-14/documents?lang=fa">فارسی</a>
+      <form method="post" action="/logout">
+        <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">        <button type="submit">Sign out</button>
+      </form>
+    </div>
+  </div>
+</aside>
+
+
+<script>
+(function () {
+  // WAIT FOR THE DOM.
+  //
+  // This partial renders the sidebar, which must come first in the document
+  // for the flex layout - but the toggle button lives in the content column
+  // (partials/topbar), i.e. LATER in the document. Running immediately meant
+  // getElementById('sb-burger') returned null and the whole script bailed at
+  // the guard below: the button rendered, looked right, and did nothing.
+  //
+  // Do not "fix" this by moving the button into the sidebar - it has to stay
+  // outside, or it slides off-canvas with the drawer on mobile and strands
+  // the user. Waiting for DOMContentLoaded is the fix, and it keeps this
+  // partial independent of include order.
+  function init() {
+  var body = document.body,
+      burger = document.getElementById('sb-burger'),
+      scrim = document.getElementById('scrim');
+
+  if (!burger) return;
+
+  // Feature-detected: on older Safari/Android WebViews matchMedia or its
+  // addEventListener may be missing, and an unguarded call kills the whole
+  // script - which previously blanked the prototype.
+  var mq = window.matchMedia ? window.matchMedia('(max-width:860px)') : null;
+  var MOBILE = function () { return mq ? mq.matches : (window.innerWidth || 1024) <= 860; };
+
+  var KEY = 'epcc.sb.rail';
+
+  // Restore the desktop preference before the first paint below.
+  // <html> already carries the class from the pre-paint script in the shell;
+  // mirror it onto <body> so both selectors agree from here on.
+  if (document.documentElement.classList.contains('rail')) body.classList.add('rail');
+
+  function sync() {
+    var open = MOBILE() ? body.classList.contains('drawer') : !body.classList.contains('rail');
+    burger.setAttribute('aria-expanded', String(open));
+    burger.textContent = (MOBILE() && open) ? '\u2715' : '\u2630';
+  }
+
+  function toggle() {
+    if (MOBILE()) {
+      body.classList.toggle('drawer');
+    } else {
+      var railed = body.classList.toggle('rail');
+      document.documentElement.classList.toggle('rail', railed);
+      try { localStorage.setItem(KEY, railed ? '1' : '0'); } catch (e) {}
+    }
+    sync();
+  }
+
+  function closeDrawer() {
+    if (body.classList.contains('drawer')) { body.classList.remove('drawer'); sync(); }
+  }
+
+  burger.addEventListener('click', toggle);
+  if (scrim) scrim.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrawer(); });
+
+  // Following a link closes the drawer; otherwise it stays over the new page.
+  var nav = document.querySelector('.sb-nav');
+  if (nav) nav.addEventListener('click', function (e) { if (e.target.closest('a')) closeDrawer(); });
+
+  // Crossing the breakpoint must not leave a stale state behind.
+  var onBreak = function () { body.classList.remove('drawer'); sync(); };
+  if (mq && mq.addEventListener) mq.addEventListener('change', onBreak);
+  else if (mq && mq.addListener) mq.addListener(onBreak); // legacy Safari
+  else window.addEventListener('resize', onBreak);
+
+  sync();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+<div class="wrap">
+<div class="topbar">
+  <button type="button" class="sb-burger" id="sb-burger"
+          aria-controls="sb" aria-expanded="true"
+          aria-label="Toggle navigation"
+          title="Toggle navigation">&#9776;</button>
+  </div>
+
+  <h1>Document register</h1>
+  <div class="sub">
+    South Pars Phase 14 - Utilities · <span class="mono">PH-14</span>
+    · <span class="pill pack">ips-iran</span> · 1405/07/06
+  </div>
+
+  
+  
+  <div class="docstats">
+          <div class="dstat">
+        <div class="k">Work in progress</div>
+        <div class="v">1</div>
+      </div>
+          <div class="dstat">
+        <div class="k">Shared for review</div>
+        <div class="v">2</div>
+      </div>
+          <div class="dstat">
+        <div class="k">Published</div>
+        <div class="v">4</div>
+      </div>
+          <div class="dstat">
+        <div class="k">Archived</div>
+        <div class="v">1</div>
+      </div>
+        <div class="dstat">
+      <div class="k">documents</div>
+      <div class="v">8</div>
+    </div>
+  </div>
+
+      <fieldset>
+      <legend>Register a document</legend>
+      <form method="post" action="/projects/PH-14/documents?lang=en">
+        <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">        <div class="frow">
+          <div>
+            <label for="discipline">Discipline</label>
+            <select id="discipline" name="discipline" required>
+              <option value="CIVIL">CIVIL</option><option value="STRUCT">STRUCT</option><option value="ARCH">ARCH</option><option value="MECH">MECH</option><option value="PIPING">PIPING</option><option value="PROCESS">PROCESS</option><option value="ELEC">ELEC</option><option value="INST">INST</option><option value="HVAC">HVAC</option><option value="HSE">HSE</option><option value="PIPELINE">PIPELINE</option><option value="TELECOM">TELECOM</option>            </select>
+          </div>
+          <div>
+            <label for="doc_type">Type</label>
+            <select id="doc_type" name="doc_type" required>
+              <option value="DWG">DWG</option><option value="SPEC">SPEC</option><option value="DS">DS</option><option value="CALC">CALC</option><option value="MTO">MTO</option><option value="RPT">RPT</option><option value="PID">PID</option><option value="ITP">ITP</option>            </select>
+          </div>
+          <div>
+            <label for="title_en">Title (English)</label>
+            <input id="title_en" name="title_en" value="" required dir="ltr">
+          </div>
+          <div>
+            <label for="title_fa">Title (Farsi)</label>
+            <input id="title_fa" name="title_fa" value="" required dir="rtl">
+          </div>
+        </div>
+        <button type="submit" class="btn">Register</button>
+      </form>
+    </fieldset>
+  
+      
+    <table data-tt>
+      <thead>
+        <tr>
+          <th data-sort="text">Document no.</th>
+          <th data-sort="text">Title</th>
+          <th data-sort="text">Rev</th>
+          
+          <th data-sort="text" data-facet>CDE state</th>
+          <th data-sort="text">Suitability</th>
+          <th data-sort="text" data-facet>Originator</th>
+          <th data-sort="num">Files</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+                      <tr>
+          
+          <td data-sortkey="CIVIL-DWG-000001"><span class="mono">PH-14-CIVIL-DWG-0001</span></td>
+          <td>Foundation Plan - Compressor House</td>
+          <td><span class="mono">A</span></td>
+          
+          <td data-sortkey="0">
+                          <span class="st WIP">Work in progress</span>
+                      </td>
+          <td><span class="mono">—</span></td>
+          <td><span class="pill pack">EPC-PARS</span></td>
+                    <td data-sortkey="1">
+                                      <div class="files">
+                                  <div class="f">
+                    <span class="ext">pdf</span>
+                    <a class="nm"
+                       href="/projects/PH-14/documents/d9c52118-58fd-457a-a050-805aa1e41e0f/files/a2ae9f84-1554-423b-870e-604faf7b65bc?lang=en"
+                       target="_blank" rel="noopener"
+                       title="foundation-plan-revA.pdf · SHA-256 365474debd51c0f3650a9e5c16ef61aabcfb91273ceb294d9140dfd21052d1aa">foundation-plan-revA.pdf</a>
+                    <span class="sz">83 B</span>
+                    <span class="hash" dir="ltr">365474debd51</span>
+                                          <form method="post" style="display:inline"
+                            action="/projects/PH-14/documents/d9c52118-58fd-457a-a050-805aa1e41e0f/files/a2ae9f84-1554-423b-870e-604faf7b65bc/delete?lang=en"
+                            onsubmit="return confirm('Remove this file?')">
+                        <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                        <button type="submit" class="x" title="Remove" aria-label="Remove">&times;</button>
+                      </form>
+                                      </div>
+                              </div>
+            
+                          <form class="up" method="post" enctype="multipart/form-data"
+                    action="/projects/PH-14/documents/d9c52118-58fd-457a-a050-805aa1e41e0f/files?lang=en">
+                <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                <input type="file" name="file" required
+                       accept=".pdf,.dwg,.dxf,.docx,.xlsx,.png,.jpg,.jpeg,.tif,.tiff,.zip"
+                       aria-label="Attach file">
+                <button type="submit" class="btn ghost">Attach file</button>
+              </form>
+                      </td>
+          <td>
+                        
+            <div style="margin-bottom:7px;">
+              <a href="/projects/PH-14/documents/d9c52118-58fd-457a-a050-805aa1e41e0f/review?lang=en"
+                 style="font-size:12px;color:var(--muted);text-decoration:none;border-bottom:1px dotted currentColor;">
+                Comments                              </a>
+            </div>
+                                      
+              <form class="inline-form" method="post"
+                    action="/projects/PH-14/documents/d9c52118-58fd-457a-a050-805aa1e41e0f?lang=en">
+                <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                <select name="cde_state" aria-label="Move to">
+                                      <option value="SHARED">Shared for review</option>
+                                  </select>
+                <select name="suitability" aria-label="Suitability">
+                  <option value="">—</option>
+                                      <option value="S0">S0</option>
+                                      <option value="S1">S1</option>
+                                      <option value="S2">S2</option>
+                                      <option value="S3">S3</option>
+                                      <option value="S4">S4</option>
+                                      <option value="S5">S5</option>
+                                      <option value="S6">S6</option>
+                                      <option value="S7">S7</option>
+                                  </select>
+                <button type="submit" class="btn">Apply</button>
+              </form>
+                      </td>
+        </tr>
+                      <tr>
+          
+          <td data-sortkey="CIVIL-CALC-000001"><span class="mono">PH-14-CIVIL-CALC-0001</span></td>
+          <td>Structural Calculation - Pipe Rack</td>
+          <td><span class="mono">A</span></td>
+          
+          <td data-sortkey="1">
+                          <span class="st SHARED">Shared for review</span>
+                      </td>
+          <td><span class="mono">S1</span></td>
+          <td><span class="pill pack">EPC-PARS</span></td>
+                    <td data-sortkey="1">
+                                      <div class="files">
+                                  <div class="f">
+                    <span class="ext">xlsx</span>
+                    <a class="nm"
+                       href="/projects/PH-14/documents/71de2ac1-7a95-4084-9acd-35659b94430d/files/c4433d76-3aae-48a2-8b81-30871226f926?lang=en&amp;download=1"
+                       target="_blank" rel="noopener"
+                       title="pipe-rack-calc.xlsx · SHA-256 29a9bdf4befd662d2b8b560cabfa78f266ff6067c84c6ad1420109a5a83ac33b">pipe-rack-calc.xlsx</a>
+                    <span class="sz">79 B</span>
+                    <span class="hash" dir="ltr">29a9bdf4befd</span>
+                                          <form method="post" style="display:inline"
+                            action="/projects/PH-14/documents/71de2ac1-7a95-4084-9acd-35659b94430d/files/c4433d76-3aae-48a2-8b81-30871226f926/delete?lang=en"
+                            onsubmit="return confirm('Remove this file?')">
+                        <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                        <button type="submit" class="x" title="Remove" aria-label="Remove">&times;</button>
+                      </form>
+                                      </div>
+                              </div>
+            
+                          <form class="up" method="post" enctype="multipart/form-data"
+                    action="/projects/PH-14/documents/71de2ac1-7a95-4084-9acd-35659b94430d/files?lang=en">
+                <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                <input type="file" name="file" required
+                       accept=".pdf,.dwg,.dxf,.docx,.xlsx,.png,.jpg,.jpeg,.tif,.tiff,.zip"
+                       aria-label="Attach file">
+                <button type="submit" class="btn ghost">Attach file</button>
+              </form>
+                      </td>
+          <td>
+                        
+            <div style="margin-bottom:7px;">
+              <a href="/projects/PH-14/documents/71de2ac1-7a95-4084-9acd-35659b94430d/review?lang=en"
+                 style="font-size:12px;color:var(--muted);text-decoration:none;border-bottom:1px dotted currentColor;">
+                Comments                              </a>
+            </div>
+                                      
+              <form class="inline-form" method="post"
+                    action="/projects/PH-14/documents/71de2ac1-7a95-4084-9acd-35659b94430d?lang=en">
+                <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                <select name="cde_state" aria-label="Move to">
+                                      <option value="PUBLISHED">Published</option>
+                                      <option value="WIP">Work in progress</option>
+                                  </select>
+                <select name="suitability" aria-label="Suitability">
+                  <option value="">—</option>
+                                      <option value="A1">A1</option>
+                                      <option value="A2">A2</option>
+                                      <option value="A3">A3</option>
+                                      <option value="A4">A4</option>
+                                      <option value="A5">A5</option>
+                                      <option value="B1">B1</option>
+                                      <option value="B2">B2</option>
+                                      <option value="B3">B3</option>
+                                      <option value="B4">B4</option>
+                                      <option value="B5">B5</option>
+                                  </select>
+                <button type="submit" class="btn">Apply</button>
+              </form>
+                      </td>
+        </tr>
+                      <tr>
+          
+          <td data-sortkey="ELEC-SPEC-000001"><span class="mono">PH-14-ELEC-SPEC-0001</span></td>
+          <td>Specification - LV Switchgear</td>
+          <td><span class="mono">A</span></td>
+          
+          <td data-sortkey="3">
+                          <span class="st ARCHIVED">Archived</span>
+                      </td>
+          <td><span class="mono">A2</span></td>
+          <td><span class="pill pack">EPC-PARS</span></td>
+                    <td data-sortkey="0">
+                                      <span class="nofiles">No files</span>
+            
+                      </td>
+          <td>
+                        
+            <div style="margin-bottom:7px;">
+              <a href="/projects/PH-14/documents/a5da9a5a-5fe6-484d-9600-36668c2e832d/review?lang=en"
+                 style="font-size:12px;color:var(--muted);text-decoration:none;border-bottom:1px dotted currentColor;">
+                Comments                              </a>
+            </div>
+                                  </td>
+        </tr>
+                      <tr>
+          
+          <td data-sortkey="PIPING-FORM-000001"><span class="mono">PH-14-PIPING-FORM-0001</span></td>
+          <td>Form - Incoming Material Inspection Report</td>
+          <td><span class="mono">A</span></td>
+          
+          <td data-sortkey="2">
+                          <span class="st PUBLISHED">Published</span>
+                      </td>
+          <td><span class="mono">A1</span></td>
+          <td><span class="pill pack">EPC-PARS</span></td>
+                    <td data-sortkey="0">
+                                      <span class="nofiles">No files</span>
+            
+                      </td>
+          <td>
+                        
+            <div style="margin-bottom:7px;">
+              <a href="/projects/PH-14/documents/a779533d-99ee-469e-932f-a4c677b08796/review?lang=en"
+                 style="font-size:12px;color:var(--muted);text-decoration:none;border-bottom:1px dotted currentColor;">
+                Comments                              </a>
+            </div>
+                                      
+              <form class="inline-form" method="post"
+                    action="/projects/PH-14/documents/a779533d-99ee-469e-932f-a4c677b08796?lang=en">
+                <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                <select name="cde_state" aria-label="Move to">
+                                      <option value="ARCHIVED">Archived</option>
+                                  </select>
+                <select name="suitability" aria-label="Suitability">
+                  <option value="">—</option>
+                                      <option value="A1">A1</option>
+                                      <option value="A2">A2</option>
+                                      <option value="A3">A3</option>
+                                      <option value="A4">A4</option>
+                                      <option value="A5">A5</option>
+                                      <option value="B1">B1</option>
+                                      <option value="B2">B2</option>
+                                      <option value="B3">B3</option>
+                                      <option value="B4">B4</option>
+                                      <option value="B5">B5</option>
+                                  </select>
+                <button type="submit" class="btn">Apply</button>
+              </form>
+                      </td>
+        </tr>
+                      <tr>
+          
+          <td data-sortkey="PIPING-PID-000001"><span class="mono">PH-14-PIPING-PID-0001</span></td>
+          <td>P&amp;ID - Compressor Suction Header</td>
+          <td><span class="mono">C</span></td>
+          
+          <td data-sortkey="2">
+                          <span class="st PUBLISHED">Published</span>
+                      </td>
+          <td><span class="mono">A1</span></td>
+          <td><span class="pill pack">EPC-PARS</span></td>
+                    <td data-sortkey="0">
+                                      <span class="nofiles">No files</span>
+            
+                      </td>
+          <td>
+                        
+            <div style="margin-bottom:7px;">
+              <a href="/projects/PH-14/documents/5404ce2c-2378-4b50-a873-610ba978abf3/review?lang=en"
+                 style="font-size:12px;color:var(--muted);text-decoration:none;border-bottom:1px dotted currentColor;">
+                Comments                              </a>
+            </div>
+                                      
+              <form class="inline-form" method="post"
+                    action="/projects/PH-14/documents/5404ce2c-2378-4b50-a873-610ba978abf3?lang=en">
+                <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                <select name="cde_state" aria-label="Move to">
+                                      <option value="ARCHIVED">Archived</option>
+                                  </select>
+                <select name="suitability" aria-label="Suitability">
+                  <option value="">—</option>
+                                      <option value="A1">A1</option>
+                                      <option value="A2">A2</option>
+                                      <option value="A3">A3</option>
+                                      <option value="A4">A4</option>
+                                      <option value="A5">A5</option>
+                                      <option value="B1">B1</option>
+                                      <option value="B2">B2</option>
+                                      <option value="B3">B3</option>
+                                      <option value="B4">B4</option>
+                                      <option value="B5">B5</option>
+                                  </select>
+                <button type="submit" class="btn">Apply</button>
+              </form>
+                      </td>
+        </tr>
+                      <tr>
+          
+          <td data-sortkey="PIPING-DWG-000001"><span class="mono">PH-14-PIPING-DWG-0001</span></td>
+          <td>Isometric - Line 14-P-1201</td>
+          <td><span class="mono">B</span></td>
+          
+          <td data-sortkey="1">
+                          <span class="st SHARED">Shared for review</span>
+                      </td>
+          <td><span class="mono">S2</span></td>
+          <td><span class="pill pack">EPC-PARS</span></td>
+                    <td data-sortkey="2">
+                                      <div class="files">
+                                  <div class="f">
+                    <span class="ext">pdf</span>
+                    <a class="nm"
+                       href="/projects/PH-14/documents/a478964a-cdbc-47ce-af9c-19fecd139148/files/c39b6797-d76b-4cdf-a15e-bf538985c756?lang=en"
+                       target="_blank" rel="noopener"
+                       title="14-P-1201-iso.pdf · SHA-256 be8a51e99ab0725f956e0c6e5538f0991452270027802ad8923e4c5ea9d2e0ea">14-P-1201-iso.pdf</a>
+                    <span class="sz">77 B</span>
+                    <span class="hash" dir="ltr">be8a51e99ab0</span>
+                                          <form method="post" style="display:inline"
+                            action="/projects/PH-14/documents/a478964a-cdbc-47ce-af9c-19fecd139148/files/c39b6797-d76b-4cdf-a15e-bf538985c756/delete?lang=en"
+                            onsubmit="return confirm('Remove this file?')">
+                        <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                        <button type="submit" class="x" title="Remove" aria-label="Remove">&times;</button>
+                      </form>
+                                      </div>
+                                  <div class="f">
+                    <span class="ext">dwg</span>
+                    <a class="nm"
+                       href="/projects/PH-14/documents/a478964a-cdbc-47ce-af9c-19fecd139148/files/81c2e2e5-651d-4d3e-8289-67eceb69c198?lang=en&amp;download=1"
+                       target="_blank" rel="noopener"
+                       title="14-P-1201.dwg · SHA-256 30cfe78c8cb47cdd30196cc90f7ef52ce3a2553099b75becbbe094b3ce977f62">14-P-1201.dwg</a>
+                    <span class="sz">73 B</span>
+                    <span class="hash" dir="ltr">30cfe78c8cb4</span>
+                                          <form method="post" style="display:inline"
+                            action="/projects/PH-14/documents/a478964a-cdbc-47ce-af9c-19fecd139148/files/81c2e2e5-651d-4d3e-8289-67eceb69c198/delete?lang=en"
+                            onsubmit="return confirm('Remove this file?')">
+                        <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                        <button type="submit" class="x" title="Remove" aria-label="Remove">&times;</button>
+                      </form>
+                                      </div>
+                              </div>
+            
+                          <form class="up" method="post" enctype="multipart/form-data"
+                    action="/projects/PH-14/documents/a478964a-cdbc-47ce-af9c-19fecd139148/files?lang=en">
+                <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                <input type="file" name="file" required
+                       accept=".pdf,.dwg,.dxf,.docx,.xlsx,.png,.jpg,.jpeg,.tif,.tiff,.zip"
+                       aria-label="Attach file">
+                <button type="submit" class="btn ghost">Attach file</button>
+              </form>
+                      </td>
+          <td>
+                        
+            <div style="margin-bottom:7px;">
+              <a href="/projects/PH-14/documents/a478964a-cdbc-47ce-af9c-19fecd139148/review?lang=en"
+                 style="font-size:12px;color:#fca5a5;text-decoration:none;border-bottom:1px dotted currentColor;">
+                Comments (4)                                  <strong>· 2 blocking</strong>
+                              </a>
+            </div>
+                                      
+              <form class="inline-form" method="post"
+                    action="/projects/PH-14/documents/a478964a-cdbc-47ce-af9c-19fecd139148?lang=en">
+                <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                <select name="cde_state" aria-label="Move to">
+                                      <option value="PUBLISHED">Published</option>
+                                      <option value="WIP">Work in progress</option>
+                                  </select>
+                <select name="suitability" aria-label="Suitability">
+                  <option value="">—</option>
+                                      <option value="A1">A1</option>
+                                      <option value="A2">A2</option>
+                                      <option value="A3">A3</option>
+                                      <option value="A4">A4</option>
+                                      <option value="A5">A5</option>
+                                      <option value="B1">B1</option>
+                                      <option value="B2">B2</option>
+                                      <option value="B3">B3</option>
+                                      <option value="B4">B4</option>
+                                      <option value="B5">B5</option>
+                                  </select>
+                <button type="submit" class="btn">Apply</button>
+              </form>
+                      </td>
+        </tr>
+                      <tr>
+          
+          <td data-sortkey="PIPING-SPEC-000001"><span class="mono">PH-14-PIPING-SPEC-0001</span></td>
+          <td>Specification - Line Pipe and Fittings Supply</td>
+          <td><span class="mono">B</span></td>
+          
+          <td data-sortkey="2">
+                          <span class="st PUBLISHED">Published</span>
+                      </td>
+          <td><span class="mono">A1</span></td>
+          <td><span class="pill pack">EPC-PARS</span></td>
+                    <td data-sortkey="0">
+                                      <span class="nofiles">No files</span>
+            
+                      </td>
+          <td>
+                        
+            <div style="margin-bottom:7px;">
+              <a href="/projects/PH-14/documents/49739dd5-3826-4901-b7ae-98adb151b417/review?lang=en"
+                 style="font-size:12px;color:var(--muted);text-decoration:none;border-bottom:1px dotted currentColor;">
+                Comments                              </a>
+            </div>
+                                      
+              <form class="inline-form" method="post"
+                    action="/projects/PH-14/documents/49739dd5-3826-4901-b7ae-98adb151b417?lang=en">
+                <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                <select name="cde_state" aria-label="Move to">
+                                      <option value="ARCHIVED">Archived</option>
+                                  </select>
+                <select name="suitability" aria-label="Suitability">
+                  <option value="">—</option>
+                                      <option value="A1">A1</option>
+                                      <option value="A2">A2</option>
+                                      <option value="A3">A3</option>
+                                      <option value="A4">A4</option>
+                                      <option value="A5">A5</option>
+                                      <option value="B1">B1</option>
+                                      <option value="B2">B2</option>
+                                      <option value="B3">B3</option>
+                                      <option value="B4">B4</option>
+                                      <option value="B5">B5</option>
+                                  </select>
+                <button type="submit" class="btn">Apply</button>
+              </form>
+                      </td>
+        </tr>
+                      <tr>
+          
+          <td data-sortkey="PIPING-FORM-000002"><span class="mono">PH-14-PIPING-FORM-0002</span></td>
+          <td>Form - Positive Material Identification Record</td>
+          <td><span class="mono">A</span></td>
+          
+          <td data-sortkey="2">
+                          <span class="st PUBLISHED">Published</span>
+                      </td>
+          <td><span class="mono">A1</span></td>
+          <td><span class="pill pack">EPC-PARS</span></td>
+                    <td data-sortkey="0">
+                                      <span class="nofiles">No files</span>
+            
+                      </td>
+          <td>
+                        
+            <div style="margin-bottom:7px;">
+              <a href="/projects/PH-14/documents/5180ebf9-1684-4c13-8262-bcea33558f0e/review?lang=en"
+                 style="font-size:12px;color:var(--muted);text-decoration:none;border-bottom:1px dotted currentColor;">
+                Comments                              </a>
+            </div>
+                                      
+              <form class="inline-form" method="post"
+                    action="/projects/PH-14/documents/5180ebf9-1684-4c13-8262-bcea33558f0e?lang=en">
+                <input type="hidden" name="_token" value="WoZhhyk0xg95JD2zX2Kvf9hF5fQAtO9hEMaeOQE2" autocomplete="off">                <select name="cde_state" aria-label="Move to">
+                                      <option value="ARCHIVED">Archived</option>
+                                  </select>
+                <select name="suitability" aria-label="Suitability">
+                  <option value="">—</option>
+                                      <option value="A1">A1</option>
+                                      <option value="A2">A2</option>
+                                      <option value="A3">A3</option>
+                                      <option value="A4">A4</option>
+                                      <option value="A5">A5</option>
+                                      <option value="B1">B1</option>
+                                      <option value="B2">B2</option>
+                                      <option value="B3">B3</option>
+                                      <option value="B4">B4</option>
+                                      <option value="B5">B5</option>
+                                  </select>
+                <button type="submit" class="btn">Apply</button>
+              </form>
+                      </td>
+        </tr>
+            </tbody>
+    </table>
+  
+  <div class="foot">
+    States follow ISO 19650: WIP → Shared → Published → Archived. Illegal transitions are refused server-side.
+    <br>
+    Files attach to open revisions only and are stored with a SHA-256 fingerprint. Max 100.0 MB.
+  </div>
+</div>
+</div>
+</body>
+</html>

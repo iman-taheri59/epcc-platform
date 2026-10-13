@@ -1,0 +1,6 @@
+M450|app/Support/Reference/MaterialLibrary.php|return $spec['grades'] === [] ? [] : null;|return [];|a missing grade must not resolve on a spec that has grades
+M451|app/Support/Reference/MaterialLibrary.php|return isset($forms[$productForm]) ? (float) $forms[$productForm]['weldJointQualityFactor'] : null;|return isset($forms[$productForm]) ? (float) $forms[$productForm]['weldJointQualityFactor'] : 1.0;|an unknown product form must never default to a factor of one
+M452|app/Support/Reference/MaterialLibrary.php|            : $code.' '.$classOrType;|            : $code;|the class must form part of the grade identity
+M453|app/Support/Reference/MaterialLibrary.php|if (in_array($componentType, $group['componentTypes'], true)) {|if (true) {|a group must only be offered for the component types it supplies
+M454|app/Support/Reference/MaterialLibrary.php|static fn (array $p): bool => ($p['verified'] ?? false) === true,|static fn (array $p): bool => true,|an unverified property must not be presented as verified
+M455|app/Support/Reference/MaterialLibrary.php|if ($f['code'] === $productForm) {|if (true) {|a form the specification does not offer must not validate

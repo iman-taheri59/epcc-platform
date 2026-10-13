@@ -1,0 +1,42 @@
+{
+  "checks": [
+    {
+      "actor": "karimi@nioc.example",
+      "lang": "fa",
+      "status": 200,
+      "direction": "rtl",
+      "configuration_form": true,
+      "content_writing": false,
+      "policy": "unconfigured"
+    },
+    {
+      "actor": "karimi@nioc.example",
+      "lang": "en",
+      "status": 200,
+      "direction": "ltr",
+      "configuration_form": true,
+      "content_writing": false,
+      "policy": "unconfigured"
+    },
+    {
+      "actor": "rezaei@pars.example",
+      "lang": "fa",
+      "status": 200,
+      "direction": "rtl",
+      "configuration_form": false,
+      "content_writing": false,
+      "policy": "unconfigured"
+    },
+    {
+      "actor": "rezaei@pars.example",
+      "lang": "en",
+      "status": 200,
+      "direction": "ltr",
+      "configuration_form": false,
+      "content_writing": false,
+      "policy": "unconfigured"
+    }
+  ],
+  "business_data_writes": false,
+  "visual_browser_qa": false
+}

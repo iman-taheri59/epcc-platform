@@ -1,0 +1,15 @@
+
+   INFO  Seeding database.  
+
+  Database\Seeders\EpccDemoSeeder .................................... RUNNING  
+  Database\Seeders\EpccDemoSeeder ................................. 51 ms DONE  
+
+  Database\Seeders\AuthSeeder ........................................ RUNNING  
+  Database\Seeders\AuthSeeder .................................. 3,046 ms DONE  
+
+  Database\Seeders\StandardsLibrarySeeder ............................ RUNNING  
+  Database\Seeders\StandardsLibrarySeeder ......................... 71 ms DONE  
+
+  Database\Seeders\ItpTemplateSeeder ................................. RUNNING  
+  Database\Seeders\ItpTemplateSeeder ............................... 5 ms DONE  
+

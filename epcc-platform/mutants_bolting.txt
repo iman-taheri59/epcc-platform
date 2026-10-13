@@ -1,0 +1,16 @@
+M480|app/Support/Reference/FlangeBolting.php|$supplied['bolts'] < $neededBolts|$supplied['bolts'] <= $neededBolts|an exact bolt count reported as short
+M481|app/Support/Reference/FlangeBolting.php|$neededBolts += $ref['boltCount'] * $joints;|$neededBolts += $ref['boltCount'];|joint count ignored, one set per rating
+M482|app/Support/Reference/FlangeBolting.php|$neededNuts = max($neededBolts, (int) $supplied['bolts']) * $nutsPerBolt;|$neededNuts = $neededBolts * $nutsPerBolt;|nuts counted against need not against studs ordered
+M483|app/Support/Reference/FlangeBolting.php|public const NUTS_PER_STUD = 2;|public const NUTS_PER_STUD = 1;|one nut per stud
+M484|app/Support/Reference/FlangeBolting.php|if ($have < $widestDecimal) {|if (false) {|a thin bolt accepted
+M485|app/Support/Reference/FlangeBolting.php|} elseif ($have > $widestDecimal) {|} elseif (false) {|a fat bolt accepted as surplus
+M486|app/Support/Reference/FlangeBolting.php|if ($ref['boltDiameterDecimal'] > $widestDecimal) {|if ($ref['boltDiameterDecimal'] < $widestDecimal) {|narrowest joint drives the diameter check
+M487|app/Support/Reference/FlangeBolting.php|'severity' => $lengthUnverified ? self::SEVERITY_ADVISORY : self::SEVERITY_SHORTFALL,|'severity' => self::SEVERITY_SHORTFALL,|unverified length blocks an order
+M488|app/Support/Reference/FlangeBolting.php|if ($flangeCount % 2 !== 0) {|if (false) {|odd flange count silently halved
+M489|app/Support/Reference/FlangeBolting.php|if ($finding['severity'] !== self::SEVERITY_ADVISORY) {|if (false) {|isSufficient always true
+M490|app/Support/Reference/FlangeBolting.php|$nutsPerBolt = $machine ? self::NUTS_PER_MACHINE_BOLT : self::NUTS_PER_STUD;|$nutsPerBolt = self::NUTS_PER_STUD;|machine bolt charged two nuts
+M491|app/Support/Reference/FlangeBolting.php|? ($ref['minLengthMachineBoltMm'] ?? $ref['minLengthMm'])|? $ref['minLengthMm']|machine bolt measured against the stud column
+M492|app/Support/Reference/FlangeBolting.php|if ($machine && ! in_array($rating, self::MACHINE_BOLT_CLASSES, true)) {|if (false) {|machine bolt allowed at any class
+M493|app/Support/Reference/FlangeBolting.php|public const MACHINE_BOLT_CLASSES = ['150#', '300#'];|public const MACHINE_BOLT_CLASSES = ['150#', '300#', '600#'];|machine bolts admitted at 600#
+M494|app/Support/Reference/FlangeBolting.php|if (! in_array($style, [self::STYLE_STUD, self::STYLE_MACHINE], true)) {|if (false) {|an unknown fastener style accepted silently
+M495|app/Support/Reference/FlangeBolting.php|'severity' => self::SEVERITY_MISFIT,\n                    'rating' => $rating,|'severity' => self::SEVERITY_ADVISORY,\n                    'rating' => $rating,|forbidden style downgraded to advisory

@@ -1,0 +1,26 @@
+test_cap_fields_are_not_allowed_on_elbows (test_fitting_dimensions.FittingDimensionsTest.test_cap_fields_are_not_allowed_on_elbows) ... ok
+test_cap_fields_are_required_and_finite (test_fitting_dimensions.FittingDimensionsTest.test_cap_fields_are_required_and_finite) ... ok
+test_complete_loaded_size_range_for_three_existing_fitting_families (test_fitting_dimensions.FittingDimensionsTest.test_complete_loaded_size_range_for_three_existing_fitting_families) ... ok
+test_duplicate_key (test_fitting_dimensions.FittingDimensionsTest.test_duplicate_key) ... ok
+test_e1_must_not_be_shorter_than_e (test_fitting_dimensions.FittingDimensionsTest.test_e1_must_not_be_shorter_than_e) ... ok
+test_large_cap_null_cells_are_not_zero_or_invented_thresholds (test_fitting_dimensions.FittingDimensionsTest.test_large_cap_null_cells_are_not_zero_or_invented_thresholds) ... ok
+test_missing_pipe_reference (test_fitting_dimensions.FittingDimensionsTest.test_missing_pipe_reference) ... ok
+test_od_mismatch (test_fitting_dimensions.FittingDimensionsTest.test_od_mismatch) ... ok
+test_original_is_accepted (test_fitting_dimensions.FittingDimensionsTest.test_original_is_accepted) ... ok
+test_oversized_elbow_is_not_a_floor (test_fitting_dimensions.FittingDimensionsTest.test_oversized_elbow_is_not_a_floor) ... ok
+test_schema_requires_caps_fields_and_rejects_them_on_elbows (test_fitting_dimensions.FittingDimensionsTest.test_schema_requires_caps_fields_and_rejects_them_on_elbows) ... ok
+test_small_size_exception_is_bounded (test_fitting_dimensions.FittingDimensionsTest.test_small_size_exception_is_bounded) ... ok
+test_source_backed_cap_values (test_fitting_dimensions.FittingDimensionsTest.test_source_backed_cap_values) ... ok
+test_source_backed_upper_boundary (test_fitting_dimensions.FittingDimensionsTest.test_source_backed_upper_boundary) ... ok
+test_table_manifest_mismatch (test_fitting_dimensions.FittingDimensionsTest.test_table_manifest_mismatch) ... ok
+test_unknown_nps (test_fitting_dimensions.FittingDimensionsTest.test_unknown_nps) ... ok
+test_unknown_qualifier (test_fitting_dimensions.FittingDimensionsTest.test_unknown_qualifier) ... ok
+test_wrong_dimension (test_fitting_dimensions.FittingDimensionsTest.test_wrong_dimension) ... ok
+test_wrong_dn (test_fitting_dimensions.FittingDimensionsTest.test_wrong_dn) ... ok
+test_wrong_symbol (test_fitting_dimensions.FittingDimensionsTest.test_wrong_symbol) ... ok
+test_wrong_table (test_fitting_dimensions.FittingDimensionsTest.test_wrong_table) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 1.352s
+
+OK

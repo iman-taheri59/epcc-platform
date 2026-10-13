@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="/home/user/epcc-platform/app/phpunit.xml" tests="11" assertions="67" errors="0" failures="1" skipped="0" time="32.271049">
+    <testsuite name="Feature" tests="11" assertions="67" errors="0" failures="1" skipped="0" time="32.271049">
+      <testsuite name="Tests\Feature\FittingReviewTest" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" tests="11" assertions="67" errors="0" failures="1" skipped="0" time="32.271049">
+        <testcase name="test_no_configuration_blocks_submission_and_approval" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="75" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="3" time="2.764126"/>
+        <testcase name="test_configured_ordered_independent_review_reaches_approval_without_mutating_definition" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="81" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="7" time="3.051802">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">Tests\Feature\FittingReviewTest::test_configured_ordered_independent_review_reaches_approval_without_mutating_definition
+Failed asserting that two arrays are equal.
+--- Expected
++++ Actual
+@@ @@
+ Array (
+     'component_type' =&gt; 'ELBOW'
+     'qualifier' =&gt; '90LR'
+-    'nps' =&gt; '52'
++    'nps' =&gt; '52.0000'
+     'dn' =&gt; null
+-    'od_mm' =&gt; '1320.8'
++    'od_mm' =&gt; '1320.8000'
+     'dimension' =&gt; 'CENTRE_TO_END'
+-    'dimension_mm' =&gt; '1981.2'
++    'dimension_mm' =&gt; '1981.2000'
+     'spec_number' =&gt; 'REVIEW-QA'
+     'spec_revision' =&gt; 'A'
+     'spec_clause' =&gt; 'QA-1'
+@@ @@
+     'provenance' =&gt; 'PROJECT_SPEC'
+     'review_state' =&gt; 'UNREVIEWED'
+     'id' =&gt; '4778c6e7-d986-4566-b703-89c80ff1ca91'
+-    'updated_at' =&gt; '2026-09-28 21:05:13'
+-    'created_at' =&gt; '2026-09-28 21:05:13'
++    'updated_at' =&gt; '2026-09-28 21:05:13+00'
++    'created_at' =&gt; '2026-09-28 21:05:13+00'
++    'revises_id' =&gt; null
++    'root_id' =&gt; null
++    'correction_reason' =&gt; null
+ )
+
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:92
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104</failure>
+        </testcase>
+        <testcase name="test_policy_change_does_not_rewrite_in_flight_snapshot" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="95" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="4" time="2.725318"/>
+        <testcase name="test_authors_cannot_approve_and_impossible_independent_assignment_is_blocked" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="106" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="3" time="2.448330"/>
+        <testcase name="test_only_authorized_employer_can_configure_and_selectors_must_be_valid" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="115" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="6" time="2.747091"/>
+        <testcase name="test_current_role_and_account_status_are_rechecked_on_signing" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="125" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="2" time="3.029328"/>
+        <testcase name="test_return_ends_cycle_and_correction_preserves_source_revision_and_decisions" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="133" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="9" time="3.383978"/>
+        <testcase name="test_correcting_an_approved_record_does_not_transfer_approval" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="151" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="3" time="3.286035"/>
+        <testcase name="test_corrections_require_ownership_reason_and_actual_change" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="160" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="3" time="3.414857"/>
+        <testcase name="test_events_are_immutable_and_hidden_from_wrong_project_and_nonparticipant" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="169" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="15" time="2.432267"/>
+        <testcase name="test_http_forms_language_and_archived_project_lock" file="/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php" line="184" class="Tests\Feature\FittingReviewTest" classname="Tests.Feature.FittingReviewTest" assertions="12" time="2.987917"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>

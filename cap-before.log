@@ -1,0 +1,24 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+F                                                                   1 / 1 (100%)
+
+Time: 00:00.256, Memory: 67.50 MB
+
+There was 1 failure:
+
+1) Tests\Feature\CapApplicabilityTest::test_cap_without_thickness_cannot_return_an_unconditional_length
+Failed asserting that two strings are identical.
+--- Expected
++++ Actual
+@@ @@
+-'UNAVAILABLE'
++'AVAILABLE'
+
+/home/user/epcc-platform/app/tests/Feature/CapApplicabilityTest.php:17
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+FAILURES!
+Tests: 1, Assertions: 1, Failures: 1.

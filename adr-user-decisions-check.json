@@ -1,0 +1,16 @@
+{
+  "accepted_answers": [
+    "freeze_at_release",
+    "separate_adoption",
+    "distinguish_results",
+    "advisory_unless_evidenced",
+    "verified_restore_protocol",
+    "independent_datum"
+  ],
+  "explicitly_deferred": "DR-02 adoption authority",
+  "checked_application_reference_files": 527,
+  "changed_application_reference_files": [],
+  "missing_report_local_links": [],
+  "implementation_performed": false,
+  "application_or_restore_tests_run": false
+}

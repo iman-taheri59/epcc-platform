@@ -1,0 +1,191 @@
+{
+  "steps": [
+    "Owner configures two ordered steps: consultant role, named owner",
+    "Author submits; no self-approval control",
+    "Assigned consultant returns for correction with a recorded comment",
+    "Correction appends a linked version, keeps Spec A, starts fresh review",
+    "Policy v2 saved; owner still cannot bypass consultant step of the submitted v1 run",
+    "Independent owner completes the second step; both signatures and original return remain visible",
+    "Original submission evidence remains identical; correction has a distinct captured review run",
+    "FLANGE: source and family-specific attributes saved, no inherited workflow or submission",
+    "VALVE: source and family-specific attributes saved, no inherited workflow or submission",
+    "GASKET: source and family-specific attributes saved, no inherited workflow or submission",
+    "BOLTING: source and family-specific attributes saved, no inherited workflow or submission"
+  ],
+  "pages": [
+    {
+      "family": "FITTING",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FITTING",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "FITTING",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FITTING",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "original": "7a5d786e-dd15-45f5-ab46-23df555d9eee",
+  "originalRun": "de26cd75-aa8f-40ea-a9d8-ec90db898f7e",
+  "corrected": "ee901797-1f1e-4097-ab0f-d0a294e9dce1",
+  "correctedRun": "32adf95e-da69-44f1-94ba-20542202a560",
+  "ok": true
+}

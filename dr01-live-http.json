@@ -1,0 +1,16 @@
+[
+  {
+    "lang": "fa",
+    "status": 200,
+    "direction": "rtl",
+    "page": "document standard-reference basis",
+    "scope": "HTTP smoke only; no business-data writes; no browser visual QA"
+  },
+  {
+    "lang": "en",
+    "status": 200,
+    "direction": "ltr",
+    "page": "document standard-reference basis",
+    "scope": "HTTP smoke only; no business-data writes; no browser visual QA"
+  }
+]

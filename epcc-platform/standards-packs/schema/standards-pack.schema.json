@@ -1,0 +1,419 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://epcc-suite.example/schemas/standards-pack.schema.json",
+  "title": "EPCC Standards Pack",
+  "description": "Declarative configuration bundle that reconfigures breakdown structures, lifecycles, workflows, numbering, KPIs, terminology and compliance checks for a project. Packs are versioned, signed, importable and exportable. See ARC-EPCC-001 section 4.",
+  "type": "object",
+  "required": ["packId", "version", "name", "kind", "terminology", "breakdownStructures", "lifecycles", "progressRules", "kpis"],
+  "additionalProperties": false,
+  "properties": {
+    "packId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)*$",
+      "description": "Stable identifier, e.g. 'iso', 'awp', 'hybrid', 'custom.nioc-2026'."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version. Records are stamped with the pack version active at creation."
+    },
+    "kind": { "enum": ["iso", "awp", "hybrid", "custom"] },
+    "extends": {
+      "type": "object",
+      "description": "Optional inheritance from another pack; this pack's values override the parent's.",
+      "required": ["packId", "version"],
+      "properties": {
+        "packId": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    },
+    "name": { "$ref": "#/$defs/i18nText" },
+    "description": { "$ref": "#/$defs/i18nText" },
+    "standardsReferences": {
+      "type": "array",
+      "description": "Human-readable list of the external standards this pack implements.",
+      "items": {
+        "type": "object",
+        "required": ["code"],
+        "properties": {
+          "code": { "type": "string", "examples": ["ISO 19650-2:2018", "CII RT-272"] },
+          "title": { "$ref": "#/$defs/i18nText" },
+          "scope": { "type": "string" }
+        }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "description": "Detached signature over the canonical JSON, verified at import.",
+      "properties": {
+        "algorithm": { "enum": ["RS256", "ES256"] },
+        "keyId": { "type": "string" },
+        "value": { "type": "string" }
+      }
+    },
+
+    "terminology": {
+      "type": "object",
+      "description": "Term overrides applied across the whole UI, reports and notifications. Key is a canonical platform term.",
+      "additionalProperties": { "$ref": "#/$defs/i18nText" }
+    },
+
+    "breakdownStructures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["code", "name", "enabled"],
+        "additionalProperties": false,
+        "properties": {
+          "code": { "enum": ["WBS", "CBS", "OBS", "PBS", "SBS", "CWA", "CWP", "EWP", "PWP", "IWP", "TWP", "AREA"] },
+          "name": { "$ref": "#/$defs/i18nText" },
+          "enabled": { "type": "boolean" },
+          "mandatory": { "type": "boolean", "default": false },
+          "maxDepth": { "type": "integer", "minimum": 1, "maximum": 12 },
+          "parentOf": { "type": "array", "items": { "type": "string" } },
+          "mustBelongTo": { "type": "string", "description": "Structural integrity rule, e.g. IWP mustBelongTo CWP." },
+          "codingRule": { "type": "string", "description": "Reference to a numberingRules entry." }
+        }
+      }
+    },
+
+    "objectTypes": {
+      "type": "array",
+      "description": "Which business object types this pack enables, and their mandatory attributes per lifecycle state.",
+      "items": {
+        "type": "object",
+        "required": ["type", "enabled"],
+        "properties": {
+          "type": { "type": "string", "examples": ["deliverable", "iwp", "punchItem", "ncr", "certificate"] },
+          "enabled": { "type": "boolean" },
+          "lifecycle": { "type": "string", "description": "Reference to a lifecycles entry." },
+          "numbering": { "type": "string", "description": "Reference to a numberingRules entry." },
+          "requiredAttributes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["field", "requiredFromState"],
+              "properties": {
+                "field": { "type": "string" },
+                "requiredFromState": { "type": "string" },
+                "message": { "$ref": "#/$defs/i18nText" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "lifecycles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "appliesTo", "states", "transitions"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "appliesTo": { "type": "array", "items": { "type": "string" } },
+          "states": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "required": ["code", "name"],
+              "properties": {
+                "code": { "type": "string" },
+                "name": { "$ref": "#/$defs/i18nText" },
+                "category": { "enum": ["draft", "inReview", "approved", "issued", "closed", "cancelled"] },
+                "suitabilityCode": { "type": "string", "description": "ISO 19650 suitability, e.g. S0, S2, A1." },
+                "colour": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+                "isTerminal": { "type": "boolean", "default": false }
+              }
+            }
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["from", "to", "capability"],
+              "properties": {
+                "from": { "type": "string" },
+                "to": { "type": "string" },
+                "capability": { "type": "string", "description": "Atomic permission required, e.g. 'document.approve'." },
+                "allowedCompanyTypes": {
+                  "type": "array",
+                  "items": { "enum": ["OWN", "EPC", "PMC", "SUB", "VEN", "MC", "TPI", "CB"] }
+                },
+                "guards": { "type": "array", "items": { "$ref": "#/$defs/guard" } },
+                "slaHours": { "type": "integer", "minimum": 1 },
+                "escalateAfterHours": { "type": "integer", "minimum": 1 },
+                "signatureRequired": { "enum": ["none", "simple", "advanced", "qualified"] },
+                "emitsEvent": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "gates": {
+      "type": "array",
+      "description": "Governance / stage gates with entry and exit criteria.",
+      "items": {
+        "type": "object",
+        "required": ["code", "name", "exitCriteria"],
+        "properties": {
+          "code": { "type": "string" },
+          "name": { "$ref": "#/$defs/i18nText" },
+          "phase": { "type": "string" },
+          "approverCompanyType": { "enum": ["OWN", "EPC", "PMC", "SUB", "VEN", "MC", "TPI", "CB"] },
+          "entryCriteria": { "type": "array", "items": { "$ref": "#/$defs/criterion" } },
+          "exitCriteria": { "type": "array", "items": { "$ref": "#/$defs/criterion" } }
+        }
+      }
+    },
+
+    "constraintTypes": {
+      "type": "array",
+      "description": "AWP constraint taxonomy. Hard constraints block work package release.",
+      "items": {
+        "type": "object",
+        "required": ["code", "name", "severity"],
+        "properties": {
+          "code": { "type": "string" },
+          "name": { "$ref": "#/$defs/i18nText" },
+          "severity": { "enum": ["hard", "soft"] },
+          "defaultOwnerRole": { "type": "string" },
+          "autoCheck": {
+            "type": "object",
+            "description": "Event-driven automatic clearance rule.",
+            "properties": {
+              "source": { "type": "string", "examples": ["engineering.deliverable", "procurement.material", "hse.permit"] },
+              "clearWhenEvent": { "type": "string", "examples": ["document.approved.v1", "material.reserved.v1"] },
+              "condition": { "type": "string", "description": "Expression evaluated against the event payload." }
+            }
+          },
+          "waiverAllowed": { "type": "boolean", "default": false },
+          "waiverApproverCapability": { "type": "string" }
+        }
+      }
+    },
+
+    "releaseGates": {
+      "type": "array",
+      "description": "Hard blocks applied before an object can be released/issued.",
+      "items": {
+        "type": "object",
+        "required": ["objectType", "rules"],
+        "properties": {
+          "objectType": { "type": "string" },
+          "hardBlock": { "type": "boolean", "default": true },
+          "rules": { "type": "array", "items": { "$ref": "#/$defs/guard" } },
+          "waiver": {
+            "type": "object",
+            "properties": {
+              "allowed": { "type": "boolean" },
+              "approverCapability": { "type": "string" },
+              "justificationRequired": { "type": "boolean", "default": true }
+            }
+          }
+        }
+      }
+    },
+
+    "numberingRules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "pattern"],
+        "properties": {
+          "id": { "type": "string" },
+          "appliesTo": { "type": "array", "items": { "type": "string" } },
+          "pattern": {
+            "type": "string",
+            "description": "Segment template, e.g. '{PROJECT}-{PLANT}-{AREA}-{DISCIPLINE}-{DOCTYPE}-{SEQ:4}'.",
+            "examples": ["{PROJECT}-{ORIGINATOR}-{VOLUME}-{LEVEL}-{TYPE}-{ROLE}-{SEQ:4}"]
+          },
+          "separator": { "type": "string", "default": "-" },
+          "case": { "enum": ["upper", "lower", "asIs"], "default": "upper" },
+          "reservable": { "type": "boolean", "default": true },
+          "revisionScheme": {
+            "type": "object",
+            "properties": {
+              "preIssue": { "type": "array", "items": { "type": "string" }, "examples": [["A", "B", "C"]] },
+              "postIssue": { "type": "array", "items": { "type": "string" }, "examples": [["0", "1", "2"]] },
+              "statusCodes": { "type": "array", "items": { "type": "string" }, "examples": [["IFR", "IFA", "IFD", "IFC", "AB"]] }
+            }
+          }
+        }
+      }
+    },
+
+    "progressRules": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Rules of credit. Weights within a rule must sum to 100.",
+      "items": {
+        "type": "object",
+        "required": ["id", "method", "steps"],
+        "properties": {
+          "id": { "type": "string" },
+          "appliesTo": { "type": "array", "items": { "type": "string" } },
+          "discipline": { "type": "string" },
+          "method": { "enum": ["ruleOfCredit", "quantityBased", "milestone", "levelOfEffort", "unitsCompleted", "weightedMilestone"] },
+          "unitOfMeasure": { "type": "string", "examples": ["m3", "ton", "dia-inch", "m", "each"] },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["code", "name", "weight"],
+              "properties": {
+                "code": { "type": "string" },
+                "name": { "$ref": "#/$defs/i18nText" },
+                "weight": { "type": "number", "minimum": 0, "maximum": 100 },
+                "evidenceRequired": { "type": "boolean", "default": false },
+                "verifierCompanyType": { "enum": ["OWN", "EPC", "PMC", "SUB", "VEN", "MC", "TPI", "CB"] }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "kpis": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["code", "name", "formula"],
+        "properties": {
+          "code": { "type": "string" },
+          "name": { "$ref": "#/$defs/i18nText" },
+          "definition": { "$ref": "#/$defs/i18nText" },
+          "formula": { "type": "string", "description": "Declarative expression over the analytics model." },
+          "unit": { "type": "string", "examples": ["%", "days", "ratio", "count"] },
+          "target": { "type": "number" },
+          "direction": { "enum": ["higherIsBetter", "lowerIsBetter"] },
+          "thresholds": {
+            "type": "object",
+            "properties": {
+              "green": { "type": "number" },
+              "amber": { "type": "number" },
+              "red": { "type": "number" }
+            }
+          },
+          "ownerRole": { "type": "string" },
+          "dashboards": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+
+    "visibilityMatrix": {
+      "type": "array",
+      "description": "Default cross-company visibility. Project admins may override with audited justification.",
+      "items": {
+        "type": "object",
+        "required": ["objectType", "grants"],
+        "properties": {
+          "objectType": { "type": "string" },
+          "grants": {
+            "type": "object",
+            "description": "Company type -> access level.",
+            "additionalProperties": {
+              "enum": ["hidden", "metadata", "read", "comment", "review", "approve", "edit", "own"]
+            }
+          }
+        }
+      }
+    },
+
+    "documentTemplates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "appliesTo", "layout"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "$ref": "#/$defs/i18nText" },
+          "appliesTo": { "type": "string", "examples": ["transmittal", "mcCertificate", "minutesOfMeeting", "ncr"] },
+          "layout": { "enum": ["en", "fa", "bilingual-side-by-side", "bilingual-stacked"] },
+          "engine": { "enum": ["handlebars", "docx-template"], "default": "handlebars" },
+          "path": { "type": "string" }
+        }
+      }
+    },
+
+    "complianceChecklist": {
+      "type": "array",
+      "description": "Drives the real-time conformance dashboard (FR-STD-07).",
+      "items": {
+        "type": "object",
+        "required": ["id", "requirement", "evidence"],
+        "properties": {
+          "id": { "type": "string" },
+          "standardRef": { "type": "string" },
+          "requirement": { "$ref": "#/$defs/i18nText" },
+          "evidence": {
+            "type": "object",
+            "properties": {
+              "objectType": { "type": "string" },
+              "condition": { "type": "string" },
+              "minimumCount": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "severity": { "enum": ["mandatory", "recommended", "informational"] }
+        }
+      }
+    },
+
+    "settings": {
+      "type": "object",
+      "description": "Pack-level defaults for module settings; overridable per project where the module allows it.",
+      "additionalProperties": true
+    }
+  },
+
+  "$defs": {
+    "i18nText": {
+      "type": "object",
+      "required": ["en", "fa"],
+      "additionalProperties": { "type": "string" },
+      "properties": {
+        "en": { "type": "string", "minLength": 1 },
+        "fa": { "type": "string", "minLength": 1 }
+      }
+    },
+    "guard": {
+      "type": "object",
+      "required": ["check"],
+      "properties": {
+        "check": {
+          "type": "string",
+          "description": "Named guard evaluated by the standards engine.",
+          "examples": [
+            "allHardConstraintsCleared",
+            "linkedDrawingsAtStatus:IFC",
+            "materialAvailability:100",
+            "noOpenPunchOfCategory:A",
+            "allItrsSigned",
+            "reviewCommentsDispositioned",
+            "budgetWithinAuthority"
+          ]
+        },
+        "params": { "type": "object", "additionalProperties": true },
+        "message": { "$ref": "#/$defs/i18nText" }
+      }
+    },
+    "criterion": {
+      "type": "object",
+      "required": ["id", "text"],
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "$ref": "#/$defs/i18nText" },
+        "evidenceObjectType": { "type": "string" },
+        "automatable": { "type": "boolean", "default": false },
+        "guard": { "$ref": "#/$defs/guard" }
+      }
+    }
+  }
+}

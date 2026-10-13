@@ -1,0 +1,45 @@
+{
+  "steps": [
+    "Created class header from browser with explicit library material; source escaped",
+    "Recorded numbered source note",
+    "Created PIPE with library DN/NPS/material and approved version link; schedule discrepancy retained",
+    "Edited row using version token; before/after history retained",
+    "Created in-scope B16.9 elbow row",
+    "Recorded NPS 60 / explicit DN 1500 as project-Spec transcription, not B16.9 data",
+    "Other participant companies read but cannot edit this company-owned class"
+  ],
+  "pages": [
+    {
+      "lang": "fa",
+      "width": 1440,
+      "dir": "rtl",
+      "overflow": false,
+      "submitUnobstructed": true
+    },
+    {
+      "lang": "en",
+      "width": 1440,
+      "dir": "ltr",
+      "overflow": false,
+      "submitUnobstructed": true
+    },
+    {
+      "lang": "fa",
+      "width": 430,
+      "dir": "rtl",
+      "overflow": false,
+      "submitUnobstructed": true
+    },
+    {
+      "lang": "en",
+      "width": 430,
+      "dir": "ltr",
+      "overflow": false,
+      "submitUnobstructed": true
+    }
+  ],
+  "errors": [],
+  "classId": "e89fbece-7f60-4392-856c-c5f8c3f04cdb",
+  "pipeId": "0f00cabd-55b8-47b1-98b6-8bdc8d37d192",
+  "ok": true
+}

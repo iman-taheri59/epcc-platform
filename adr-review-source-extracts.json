@@ -1,0 +1,44 @@
+[
+  {
+    "url": "https://www.postgresql.org/docs/17/runtime-config-client.html",
+    "local_file": "/home/user/organization-report/adr-review-sources/pg17-client.txt",
+    "matches": [
+      {
+        "needle": "Since foreign keys are implemented",
+        "snippet": "ues for their internal purposes, for example using local to designate a session whose changes should not be replicated. Since foreign keys are implemented as triggers, setting this parameter to replica also disables all foreign key checks, which can leave data in an inconsistent state if improperly used. statement_timeout ( integer ) # Abort any statement that takes more than the specified amount of time. If log_min_error_statement is set to ERROR or lower, the statement that timed out will also be logged. If this value is specified without units, it is taken as milliseconds. A value of zero (the default) disables the timeout. The timeout is measured from the time a command arrives at the server until it is completed by the server. If multiple SQL statements appear in a single simple-query message, the timeout is applied to each statement separately. ( PostgreSQL versions before 13 usually treated the timeout as applying to the whole query string.) In extended query protocol, the timeout starts running when any query-related message (Parse, Bind, Execute, Describe) arrives, and it is canceled by completion of an Execute or Sync message. Setting statement_timeout in postgresql.conf is not recommended because it would affect all sessions. transaction_timeout ( integer ) # Terminate any session that spans longer than the specified amount of time in a transaction. The limit applies both to explicit transactions (started with BEGIN ) and to an implici"
+      },
+      {
+        "needle": "session_replication_role",
+        "snippet": "lue of default_transaction_deferrable . Any subsequent attempt to change it is equivalent to a SET TRANSACTION command. session_replication_role ( enum ) # Controls firing of replication-related triggers and rules for the current session. Possible values are origin (the default), replica and local . Setting this parameter results in discarding any previously cached query plans. Only superusers and users with the appropriate SET privilege can change this setting. The intended use of this setting is that logical replication systems set it to replica when they are applying replicated changes. The effect of that will be that triggers and rules (that have not been altered from their default configuration) will not fire on the replica. See the ALTER TABLE clauses ENABLE TRIGGER and ENABLE RULE for more information. PostgreSQL treats the settings origin and local the same internally. Third-party replication systems may use these two values for their internal purposes, for example using local to designate a session whose changes should not be replicated. Since foreign keys are implemented as triggers, setting this parameter to replica also disables all foreign key checks, which can leave data in an inconsistent state if improperly used. statement_timeout ( integer ) # Abort any statement that takes more than the specified amount of time. If log_min_error_statement is set to ERROR or lower, the statement that timed out will also be logged. If this value i"
+      }
+    ]
+  },
+  {
+    "url": "https://www.postgresql.org/docs/17/sql-altertable.html",
+    "local_file": "/home/user/organization-report/adr-review-sources/pg17-alter.txt",
+    "matches": [
+      {
+        "needle": "Nothing happens if the constraint is already marked valid",
+        "snippet": "sly created as NOT VALID , by scanning the table to ensure there are no rows for which the constraint is not satisfied. Nothing happens if the constraint is already marked valid. (See Notes below for an explanation of the usefulness of this command.) This command acquires a SHARE UPDATE EXCLUSIVE lock. DROP CONSTRAINT [ IF EXISTS ] # This form drops the specified constraint on a table, along with any index underlying the constraint. If IF EXISTS is specified and the constraint does not exist, no error is thrown. In this case a notice is issued instead. DISABLE / ENABLE [ REPLICA | ALWAYS ] TRIGGER # These forms configure the firing of trigger(s) belonging to the table. A disabled trigger is still known to the system, but is not executed when its triggering event occurs. (For a deferred trigger, the enable status is checked when the event occurs, not when the trigger function is actually executed.) One can disable or enable a single trigger specified by name, or all triggers on the table, or only user triggers (this option excludes internally generated constraint triggers, such as those that are used to implement foreign key constraints or deferrable uniqueness and exclusion constraints). Disabling or enabling internally generated constraint triggers requires superuser privileges; it should be done with caution since of course the integrity of the constraint cannot be guaranteed if the triggers are not executed. The trigger firing mechanism is als"
+      }
+    ]
+  },
+  {
+    "url": "https://www.postgresql.org/docs/18/app-pgdump.html",
+    "local_file": "/home/user/organization-report/adr-review-sources/pg18-dump.txt",
+    "matches": [
+      {
+        "needle": "--enable-row-security",
+        "snippet": "tting an archive (non-text) output file. For the archive formats, you can specify the option when you call pg_restore . --enable-row-security This option is relevant only when dumping the contents of a table which has row security. By default, pg_dump will set row_security to off, to ensure that all data is dumped from the table. If the user does not have sufficient privileges to bypass row security, then an error is thrown. This parameter instructs pg_dump to set row_security to on instead, allowing the user to dump the parts of the contents of the table that they have access to. Note that if you use this option currently, you probably also want the dump be in INSERT format, as the COPY FROM during restore does not support row security. --exclude-extension= pattern Do not dump any extensions matching pattern . The pattern is interpreted according to the same rules as for -e . --exclude-extension can be given more than once to exclude extensions matching any of several patterns. When both -e and --exclude-extension are given, the behavior is to dump just the extensions that match at least one -e switch but no --exclude-extension switches. If --exclude-extension appears without -e , then extensions matching --exclude-extension are excluded from what is otherwise a normal dump. --exclude-table-and-children= pattern This is the same as the -T / --exclude-table option, except that it also excludes any partitions or inheritance child tables of the tab"
+      },
+      {
+        "needle": "--filter",
+        "snippet": "nt data, instead of the maximum available precision. Routine dumps made for backup purposes should not use this option. --filter= filename Specify a filename from which to read patterns for objects to include or exclude from the dump. The patterns are interpreted according to the same rules as the corresponding options: -t / --table , --table-and-children , -T / --exclude-table , and --exclude-table-and-children for tables, -n / --schema and -N / --exclude-schema for schemas, --include-foreign-data for data on foreign servers, --exclude-table-data and --exclude-table-data-and-children for table data, and -e / --extension and --exclude-extension for extensions. To read from STDIN , use - as the filename. The --filter option can be specified in conjunction with the above listed options for including or excluding objects, and can also be specified more than once for multiple filter files. The file lists one object pattern per row, with the following format: { include | exclude } { extension | foreign_data | table | table_and_children | table_data | table_data_and_children | schema } PATTERN The first keyword specifies whether the objects matched by the pattern are to be included or excluded. The second keyword specifies the type of object to be filtered using the pattern: extension : extensions. This works like the -e / --extension or --exclude-extension option. foreign_data : data on foreign servers. This works like the --include-foreign-data optio"
+      },
+      {
+        "needle": "--where",
+        "snippet": "NOT FOUND IN FULL PAGE"
+      }
+    ]
+  }
+]

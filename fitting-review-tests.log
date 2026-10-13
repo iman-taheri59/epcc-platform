@@ -1,0 +1,41 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+.F..FF..F................                                         25 / 25 (100%)
+
+Time: 01:01.757, Memory: 91.00 MB
+
+There were 4 failures:
+
+1) Tests\Feature\FittingReviewTest::test_configured_ordered_independent_review_reaches_approval_without_mutating_definition
+Failed asserting that two strings are not identical.
+
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:65
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:83
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+2) Tests\Feature\FittingReviewTest::test_only_authorized_employer_can_configure_and_selectors_must_be_valid
+Failed asserting that two strings are not identical.
+
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:65
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:114
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+3) Tests\Feature\FittingReviewTest::test_current_role_and_account_status_are_rechecked_on_signing
+Failed asserting that two strings are not identical.
+
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:65
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:127
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+4) Tests\Feature\FittingReviewTest::test_corrections_require_ownership_reason_and_actual_change
+Failed asserting that two strings are not identical.
+
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:65
+/home/user/epcc-platform/app/tests/Feature/FittingReviewTest.php:159
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+FAILURES!
+Tests: 25, Assertions: 138, Failures: 4.

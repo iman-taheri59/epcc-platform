@@ -1,0 +1,3398 @@
+[
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_equipment.sh",
+    "bytes": 2111,
+    "sha256": "3cefd84282dbfb288383813dd6342056bc59ca8ea13b5aed09b03e983a283ff5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/rebuild-env.sh",
+    "bytes": 3441,
+    "sha256": "48cd0e505ba20eb09d96179c1f883c5dcc8b43b0c3fe0b5928418052023acc65"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/restore.sh",
+    "bytes": 4220,
+    "sha256": "1eebf8706b3fa0df9fd065b6c4a5072a8bb70852f87a3fe0e636348800d1a55d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Console/Commands/VerifyAirgap.php",
+    "bytes": 13152,
+    "sha256": "daa543f42cf8708ff26b6a0e6da2c593f43c14a03758bbc8d32ae477720f7d41"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Documents/Pages/EditDocument.php",
+    "bytes": 644,
+    "sha256": "1d37f70fd758370ceb3be977cc2faa4c13f85be427f58fd3d51de0619f092f9a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Documents/Pages/ListDocuments.php",
+    "bytes": 750,
+    "sha256": "599b824f584a4ec948face46298570b71793d81f5380663c81446028c1f8f456"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Documents/Schemas/DocumentForm.php",
+    "bytes": 3769,
+    "sha256": "c8f080417aedca38129bcc791152fc70f040759caf624c34e32b2539b288d4e0"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Documents/Tables/DocumentsTable.php",
+    "bytes": 5660,
+    "sha256": "f496506062689106ef418fe57b69a8f228f06d5ee0eb438e903c7d413b7b3519"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Documents/DocumentResource.php",
+    "bytes": 3122,
+    "sha256": "0ba15bc8afc31f053d825a30fb50ffe9204470941f6e1178eae41df408768d7d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/PunchItems/Pages/ListPunchItems.php",
+    "bytes": 451,
+    "sha256": "f34c2f906a5788f69896ea6e7d9c0d7e46a5eb015853d3c6333b94be6c922aed"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/PunchItems/Tables/PunchItemsTable.php",
+    "bytes": 5823,
+    "sha256": "9aae05ef13e6bb007fae7c9de1e1ff30895efdaed98a0993a870d31936486714"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/PunchItems/PunchItemResource.php",
+    "bytes": 2628,
+    "sha256": "fb5da42fbc88276038dbacc90612236c8885cd57ac9a461e96c69fe5412fc47e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Subsystems/Pages/ListSubsystems.php",
+    "bytes": 456,
+    "sha256": "a416e6c73c6d0bb277205f7c9342cd64e3986b2e24629bc0c54b085c8e3d99a5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Subsystems/Tables/SubsystemsTable.php",
+    "bytes": 11086,
+    "sha256": "ace8fc4ce4a010ee78c55df13521ebfd21ab2a4edd466556d7fdc0ded9677206"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Subsystems/SubsystemResource.php",
+    "bytes": 3278,
+    "sha256": "50f9bf697791bf60f5f5ca43ed54f67ad24a52455ff47e4926d7c543ba0d2480"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Transmittals/Pages/ListTransmittals.php",
+    "bytes": 449,
+    "sha256": "0f93606362177b455700db15ebabce1d14f958458a6de42104022b2085f61f34"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Transmittals/Tables/TransmittalsTable.php",
+    "bytes": 6096,
+    "sha256": "c68a3820ea4dbb8665ab1b20485c59c2ff585d8850d8ac79a8997853551a1d96"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Transmittals/TransmittalResource.php",
+    "bytes": 3128,
+    "sha256": "c73d3439cc9252633eec11a7dfaace6018b2099e6b873b4dabd7101e97a9b678"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Users/Pages/ListUsers.php",
+    "bytes": 633,
+    "sha256": "033a643aac66e1367f91a9d93798a680545b992a28c3e04dabcd6e0757f4b224"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Users/Tables/UsersTable.php",
+    "bytes": 5699,
+    "sha256": "8fbc5355c664fd3f915b7d53c4fc6e4481cf94a89b45f26678343269e44f6b8c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Filament/Resources/Users/UserResource.php",
+    "bytes": 3825,
+    "sha256": "bd8f9e75af37b16a6162634f2987e88f0c6bb02827ed3e5fb3ed980fe4d541e0"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/BaselineController.php",
+    "bytes": 9164,
+    "sha256": "e09b6822be79690933269454d995b25fe4d679e7e5459340f0c62dc34dc858ef"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/AuthController.php",
+    "bytes": 2600,
+    "sha256": "b3155a55e9215ae2691898d42cba7c75c478d77b18be262a2b50485976ed49d1"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/CertificateController.php",
+    "bytes": 10185,
+    "sha256": "44631c1a68a91f12eb891193204ab71442a5a20facc84f45fd3befebd68dbe73"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/ComponentController.php",
+    "bytes": 10277,
+    "sha256": "51109b2b0c4560c1d17f37b7c76ea0c6ea99ad6aecde850893c5f2d4bcacb1c9"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/DocumentController.php",
+    "bytes": 18460,
+    "sha256": "75ae2e0608a03bf8b77aae39692e5cd3203f48f69cc76c2d65362b8bd0fe0052"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/ItpController.php",
+    "bytes": 10795,
+    "sha256": "8d1e1d11fb0a361211728eabd534e5b65173ec566718e74beae39c69ac9a0fb4"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/GateDemoController.php",
+    "bytes": 2905,
+    "sha256": "529ae70ffc34e62b30683ae2b7b3ff7d2dd9778cd8de99bd54c22079ebc9d5c7"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/Controller.php",
+    "bytes": 77,
+    "sha256": "25d1c1ef8e6cc8a376553faacfba2b07d9dfaee9bdbb84f14f77517580e9deb1"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/MaterialsController.php",
+    "bytes": 11926,
+    "sha256": "4955c80ae5c02fc44505dfb4170419e36220863b5eb5131d0905f1455ea6ad46"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/ModelImportController.php",
+    "bytes": 6680,
+    "sha256": "ea3d92e256e89ecb4279e5c9fecc24644578c2aa2d2a15a77525b79fe448773b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/PipingConfigController.php",
+    "bytes": 6576,
+    "sha256": "ef2ca039a5f186d089d1dc9a126daede39707393f8eb03f7752b8a92462ac9b5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/PipingLineController.php",
+    "bytes": 15334,
+    "sha256": "bfde21a4783713b837e8ea6075a8f6911597d8c9fa51fd56e729626df7b3bf9d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/ProjectSetupController.php",
+    "bytes": 15959,
+    "sha256": "01ac78213cbe4727d1a83db07df5e953bf3925acb59758dad9fe6de5a747fdc7"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/TransmittalController.php",
+    "bytes": 15683,
+    "sha256": "59554588b1031d1dfa574f0bbbe17bb7f1bcd2bd7d8dfe435fc0edcf7f1e9bbd"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/PunchController.php",
+    "bytes": 13160,
+    "sha256": "6b11fc4a03366e9f88f9428c6cf1e502baa9c500ad2493244f7fba3dc2518bed"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Controllers/StandardsController.php",
+    "bytes": 6875,
+    "sha256": "dafed9aac318c98e3f14ea26e8e9bbc0c07006714553e54f5d903464dda7d020"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Middleware/BindTenant.php",
+    "bytes": 1929,
+    "sha256": "cfe1225fd9b3b94c23b78372e9f6d0fd211fa9db1d168af427d2dfbbf7dc2f1c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Middleware/ConfigureForPreviewProxy.php",
+    "bytes": 6184,
+    "sha256": "2b7ea911957d1702819e98d312ce323b22bc5568e5e4cb4f06f0773c318d86b7"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Middleware/PreviewSessionFallback.php",
+    "bytes": 5577,
+    "sha256": "68d59f8379ce17ea2fee875ff70e90f2a10f46e7aec2b12cc8f94ee781ec661e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Middleware/SetUserLocale.php",
+    "bytes": 1623,
+    "sha256": "2c3248dd045246ebc0b60b93374fab6f01ffc5e2640967705da194695201693c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Http/Middleware/PreviewUrlRewriter.php",
+    "bytes": 8396,
+    "sha256": "b5e991296ad1efea839e61e864a8ed6350e643ce95f0dff09e7ac3fdda083d62"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Concerns/HasUuid.php",
+    "bytes": 801,
+    "sha256": "49169b0acc42d1da4ad616f88f466999ce976b28d2949230d4e23a5057ea8539"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Area.php",
+    "bytes": 1890,
+    "sha256": "2057c8681b98f1ad4dad228e729ff3d9446e4a2fe9f6187a72a7d95ca5566ae3"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/AuthorizationDenial.php",
+    "bytes": 417,
+    "sha256": "856c1e09d8d7ddea9a82cd3b0fde595994a7048e67a1d7bb2a83f9ccc8cee7d6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/BaselineBatch.php",
+    "bytes": 2688,
+    "sha256": "ea223b8d7ab93552c73053fd8434ca594b91536e7278583b9929a4368852465e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/BaselineDiscrepancy.php",
+    "bytes": 2471,
+    "sha256": "65807a3ae7123547803aa9a22f3e68dba96e8802dec40bc2232b06504300147a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Company.php",
+    "bytes": 752,
+    "sha256": "ee4e485a93b52d23b762fb536009df086058b657ad6b63d5adbf133c53518339"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/DocumentRevision.php",
+    "bytes": 1702,
+    "sha256": "f44d9f31e027f9752123202c3292b50e086277708bfa2064efb8382615b6ab00"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Document.php",
+    "bytes": 1496,
+    "sha256": "3487392315f3e5e72849774d26f6d7d0b156f964ba6e2169450b4117655b8f85"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Component.php",
+    "bytes": 3708,
+    "sha256": "dc219f7aabeb70ff0be60f98feb7b24ef075ae991fb97344d5128620d2d36980"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/DocumentFile.php",
+    "bytes": 1797,
+    "sha256": "a23c4b417af98eca16ea0b5309e31b6417607e6fda4dba041661482b44f37e0b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/EquipmentNozzle.php",
+    "bytes": 2431,
+    "sha256": "0773f152e39fd9a35d6efd7fbd11337a98cc971dc19c4a310065c3aed4589c0a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/EngineeringItem.php",
+    "bytes": 2608,
+    "sha256": "c033b533f4c52e7d4d118cb82ae2e4a71e8d57619c358cfe54cec72fad536d56"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Equipment.php",
+    "bytes": 5593,
+    "sha256": "614feaf40d4c22a5ac915dbc5e5d0aa60b9b6b2d317bc133e41c3b2013caa7e2"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Facility.php",
+    "bytes": 2624,
+    "sha256": "06114668ed179fff3b1c0af7f43c63a9aedc04c9e3a01016afdfc83c9d1c332f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/ItpAnnex.php",
+    "bytes": 2166,
+    "sha256": "f0a09fbd8d5db04b5df36dc7d396077b14048410e3196a6512606375979a8ceb"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Itp.php",
+    "bytes": 3653,
+    "sha256": "2815c98ddf2027a14e219e1651574215a3c9dd1f3190df27ccac766c1acb0357"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/ItpStage.php",
+    "bytes": 4870,
+    "sha256": "187b2e922b47a5b922c000877c7b4794a9fbf2df28a8878fb6da91b51c66691e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/ItpRecord.php",
+    "bytes": 1806,
+    "sha256": "d0cb6f20df9772de4da8e8cd34736d9fd14f6cc8df6bea84aaf936053c6c4cdf"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/ItpStageDocument.php",
+    "bytes": 2906,
+    "sha256": "a5c38f15626f0ef0ba84f8b7232d04bc3f07692cf5809cb112f5f0a1ed303c9f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/ItpStageParty.php",
+    "bytes": 1156,
+    "sha256": "de7bffbd51b8137ba131b9ae20129623056cad9ffeaa8d5f909b9ff165518664"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/ItpTemplate.php",
+    "bytes": 972,
+    "sha256": "dfab1ce67594cf453f46e9ad3c42eb8cfa38a7be37290c89d42bbca881843268"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Joint.php",
+    "bytes": 3620,
+    "sha256": "3b21033bbd43244ae2654c27d1be082255e869c205f51f036196ebbd9bddff29"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/LineDocument.php",
+    "bytes": 2018,
+    "sha256": "70df7116899b1298b7caca4a3f357e18fd685c7cce699e7734362624ff0e374e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/MaterialInspection.php",
+    "bytes": 1739,
+    "sha256": "eaa316f9fc94cb9955b026036f1ba84b61fb1496656d9e2db6f1e23a57357282"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/MaterialLot.php",
+    "bytes": 4030,
+    "sha256": "de1c910ea7aa3fddb7e9086cf1739c308868ccfcf02ddb7298e16177eabd2156"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/MaterialMovement.php",
+    "bytes": 2032,
+    "sha256": "5d8a1d9086e662928f751f2229173a189ce45849ce48a09488e1a28150c21423"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/MaterialRequisition.php",
+    "bytes": 2244,
+    "sha256": "c7e38a353f187be09073c0c437273542651ed424174f99a9aefc4e4e04e6c27b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/McCertificate.php",
+    "bytes": 3328,
+    "sha256": "6d36128035b6852e29753cf5eff64738e8df86ce81f0b586acc70ad589cc985c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/ModelImportDiff.php",
+    "bytes": 1614,
+    "sha256": "19f24c6e2b23344c4a10895ea7ebfab9fbac9f7a8af0b63bd490e6136d9e261a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/MaterialRequisitionItem.php",
+    "bytes": 1013,
+    "sha256": "7874ccbd821d0d69eb973cbae90c8b998e4198ae61c83e363959088d674774dd"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/ModelImport.php",
+    "bytes": 2089,
+    "sha256": "7a6f08e47c58f65c6d233c8d17806f3cc5bafa90e32d91d70dd5c8ebda6c4c06"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/PaymentCertificate.php",
+    "bytes": 2012,
+    "sha256": "e0185ed28febd96099e8b652c02ec1ee9a99732ca4032f5a04fac04dfabf382b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/PipingClassBranchRule.php",
+    "bytes": 1676,
+    "sha256": "587989def709176bf93e021df60bfdcabca2ce5319bdad2448b932f39b69c870"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/PipingClass.php",
+    "bytes": 3963,
+    "sha256": "9603db8866e13590882d92bb20d34a522c75cfd9c26a1fde14916102530fb0f7"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/PipingClassNote.php",
+    "bytes": 1106,
+    "sha256": "429a518cb814db4b857b2b2019adea1491dccaf5e9d0b07a6e19cd33de78bf8c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/PipingClassItem.php",
+    "bytes": 2203,
+    "sha256": "52b104c2786575beba4cf15ecf0c4e275b63df6a82a96e0540fa02a0f93b9dea"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/PipingClassRule.php",
+    "bytes": 1828,
+    "sha256": "ff69847fcf93b9544b50f2c1c727032d0d356f317245dc5b08f06ea5507878ca"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/PipingLine.php",
+    "bytes": 4641,
+    "sha256": "ec02555ab47150fad2d097977c35722e2461a7dfcef5f39ce745286ffe9368d1"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/PipingClassValveSpec.php",
+    "bytes": 2250,
+    "sha256": "cd331a319f04ba23f112e159c39bbeb549614d7d4b04a57c9a6bda72086bf59c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Plan.php",
+    "bytes": 1000,
+    "sha256": "3ddd23b7d27262f7cdb4798940050e2c3300e925ad75f334cb350dd7a4d920b4"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Port.php",
+    "bytes": 2430,
+    "sha256": "8e91a273b48f9135642d84ca318bac5017343ff4417b54c77e2aa730e382672e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Project.php",
+    "bytes": 1573,
+    "sha256": "eb4263a01bc0a32d1416c30a8e94e7a69dc07203f6ffb741a78c73d79cf69bfd"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/ProjectStandard.php",
+    "bytes": 2575,
+    "sha256": "455d92b20640913b7c858454e024e8009fa3b5e2597cb0fd38298029d80f774b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/PunchItem.php",
+    "bytes": 2467,
+    "sha256": "ca1ce79b580d3b8cfdcc9e5c00f5455d4549f4c8407b02e7e0d6a5b09e2da3bb"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/ProjectMembership.php",
+    "bytes": 850,
+    "sha256": "6c13bd03014282bf70f81b8917ed155b0f90ba68fd3a04a727e76595e8d673de"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/ProjectPipingConfig.php",
+    "bytes": 2799,
+    "sha256": "6a15c67f77d54045bda4be1e12f7b42bd3d30ee5ae9764dd56d38b108ae1fbb9"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/PurchaseOrder.php",
+    "bytes": 2729,
+    "sha256": "79b0d550666e1cf41c5a9239a2e341a12e41146b3e779c61db69a52c100f9783"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/PurchaseOrderItem.php",
+    "bytes": 1313,
+    "sha256": "b284a216e22e3d1fa367f3632f6a342cedccf4df53376483fb2131758624059b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/ReviewComment.php",
+    "bytes": 2204,
+    "sha256": "8069ae583175391fcd266483ae3fae805842028711935949b56aa56a9807ed97"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Role.php",
+    "bytes": 993,
+    "sha256": "be584710ad4532eee17259f39f259b2fab7e87542bf565474eab4e9f7c50ebe6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/SpecialtyItem.php",
+    "bytes": 2135,
+    "sha256": "240d620fcc396697eaac4daff8c0a2bbaa735664beacab3534df8d62edf8dba1"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Subsystem.php",
+    "bytes": 4216,
+    "sha256": "513b413154b8ab0541adb7b40d48e0c3b96d05b233fc8fca5e23710a7ab4d8d1"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Standard.php",
+    "bytes": 3497,
+    "sha256": "2af4efff4107c1aca0029a3f254653e05d301b60c54a1fe246d4ada26e826b50"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/StandardCitation.php",
+    "bytes": 2226,
+    "sha256": "abb4f4d6ef928f201a75c82710dc33867118e95a3ecde55dd11fa7c4ba1e25df"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/System.php",
+    "bytes": 2804,
+    "sha256": "167b958845d5e66e836c41dd0b7117a99f2c5933c50a2daa6dd68b6ced919ddc"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/Transmittal.php",
+    "bytes": 3924,
+    "sha256": "a0c74b195053fbd01a0dc2cbe145a50c56161176099d0eba55a76cb7154efea6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/TransmittalItem.php",
+    "bytes": 1550,
+    "sha256": "ad353ab0a47f6db9a1043dbb03874cf182122aa4e70c411f548576dd9d6eaf70"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/User.php",
+    "bytes": 2578,
+    "sha256": "5647a9d2d8ff72acd0d3a6cde5671944a8b9fa7dcb6aaab493bca47410f98d15"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Models/TransmittalRecipient.php",
+    "bytes": 1240,
+    "sha256": "08e1b380698b0708b4656b508c67559179ce0afb149d96496395b237a9b3b16d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Providers/Filament/AdminPanelProvider.php",
+    "bytes": 5753,
+    "sha256": "7ca924ca9f059aaacb009b112ab07f11c1faebb2203153d8086b39f20492af3d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Providers/AppServiceProvider.php",
+    "bytes": 2619,
+    "sha256": "3007cbff81c72ce403728fb8e865e7517561e1dbbf240f7d6f890415e1848846"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Providers/EpccServiceProvider.php",
+    "bytes": 7558,
+    "sha256": "70d05d1bf20a2bc5ec6c64cda7d693b4a3523463a18a1f8f456915695b694417"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Providers/ViewServiceProvider.php",
+    "bytes": 4667,
+    "sha256": "e03a7fdc27faddb7bfa56a705b9b1f8aa207181edb1390dd4535951d93605a48"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/BaselineService.php",
+    "bytes": 30586,
+    "sha256": "7acef201ba317872a9c15ee81d8fdc36d0aa3e6056339e6922605ad6c01d5d0c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/ComponentService.php",
+    "bytes": 17541,
+    "sha256": "d5f2c33bb2a9b61d7414b20505c514a4aae8d21562e181fb05c884934dd417c0"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/DocumentFileStore.php",
+    "bytes": 10244,
+    "sha256": "7e5a37e5eee971e5e5fd3d2b42085d33648a7144a23309d10f385dbb34d862ff"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/DocumentRegister.php",
+    "bytes": 9191,
+    "sha256": "b522444020a1974a8d82cd5f414c450cfa2082c0b94f6aff401206d8b8abf90f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/GateService.php",
+    "bytes": 2607,
+    "sha256": "15158c2811f461f632aa85ade7726d7ba9e5c2f9155bf105830d8d62721e9f17"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/EquipmentService.php",
+    "bytes": 21492,
+    "sha256": "4d5362b067d62f52bbd2f520a9476619ab7a1dc905ec63dee860b0cb2e8f885e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/JointService.php",
+    "bytes": 19747,
+    "sha256": "91422167892690fd8e0d9bdfe456093dfcfe724c4e36fcabfcf73067ca208c2e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/McCertificateService.php",
+    "bytes": 7782,
+    "sha256": "ff4ce06ce6ad05803d001e9b42340fd35a1cebafb5d63b17daef53c4e9fa627f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/ItpService.php",
+    "bytes": 32589,
+    "sha256": "642c325ac48f8eaaed24279d993b898551b6715a30352b419d827bf8e3049252"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/ManualValves.php",
+    "bytes": 44766,
+    "sha256": "eea92c403d4ebd28125a79631ce15705d2126febc6e4e367dc661cafcdc71133"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/PdfRenderer.php",
+    "bytes": 6438,
+    "sha256": "9fbf38b899ed606b2808c0c83d4747b11c35005eb2001ff6eb9f5eda7f9749cf"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/ModelImportService.php",
+    "bytes": 27114,
+    "sha256": "e0960b8b196442f841946468970e60b053a5922bf74b620334bf56cc7f07f39e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/PipingClassBody.php",
+    "bytes": 12774,
+    "sha256": "03e5177a109ecc9c320e887636899d8854b38b0605891a762104864e2fdc3359"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/PipingClassHeader.php",
+    "bytes": 12650,
+    "sha256": "cc825a55e75da49737ee80256ac866141ed57ec00396a0513b28eed9b50dda10"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/PipingClassComplianceService.php",
+    "bytes": 7552,
+    "sha256": "a72b486399167a7f6cb36b5d1404e4cf6c53df628353a60bafc89adcb9c619f6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/PipingConfigService.php",
+    "bytes": 10637,
+    "sha256": "b2cada7b9489b774601755d91647da32dac1a7e940293bd3d5e93ecc027816e8"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/PipingClassRuleService.php",
+    "bytes": 15007,
+    "sha256": "61f730c082cc2cd361b28ad2468fbce90beb0f50a897e1541122c6c07a19804d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/ProcurementService.php",
+    "bytes": 18631,
+    "sha256": "58a9186511774b16382f3f83c0e0220cffc1323a25fd392e151343b1da2e07b5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/PipingLineService.php",
+    "bytes": 28636,
+    "sha256": "838553e113ba36cd37af4cf354e0abeade10bce307d7f10f04e55115c1f32d20"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/ProjectArchiveService.php",
+    "bytes": 7185,
+    "sha256": "2a030df03ffb900a28b0dd3069ec526964ac5c6dc1c9f886ec04fb7567f63e30"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/ReviewCycle.php",
+    "bytes": 10411,
+    "sha256": "aaf2dec8a8d8e51594cdf3442d392d78b0c8710ca2155fae8ed2c4017828be38"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/StandardsLibrary.php",
+    "bytes": 12842,
+    "sha256": "95fa2dae7d54506595c45808751ce2d7c067c7f28f953b4909ab994889751632"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/StandardsPackRepository.php",
+    "bytes": 1457,
+    "sha256": "4913d735ce0120013aab80553bede6a5b27cc9a0c0327391c6caf74ff2de803b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/PunchListService.php",
+    "bytes": 10400,
+    "sha256": "67a539e66063ab1548915485d98dbadbbafc555d4ba22233bd278b366dabdd7b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/TransmittalService.php",
+    "bytes": 18184,
+    "sha256": "c09256ca80a3798642d5ac73cc119723b5037f4b1dcf0f5c214b6e5eb9b16e23"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/TransmittalPackager.php",
+    "bytes": 8930,
+    "sha256": "1e1ee269621cb31999cf10a6b5c3993695b365e09e23497d9e5848e42d14c110"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/WarehouseService.php",
+    "bytes": 25428,
+    "sha256": "25a4b38a7dbe4ae53c80606666d0505e58db34d35973e586cd76f16e7e1717a1"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Services/UnitPreferenceService.php",
+    "bytes": 7937,
+    "sha256": "15a90074c1ea6a4ba8cc2917cb05ff38cda820d3add80c8e9d98296358224f44"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Itp/InterventionCode.php",
+    "bytes": 5479,
+    "sha256": "a5b4da61decf06fe435329bab3cd8970e8a8a3a7a2d56932c8f3b054e00b816b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Itp/StageResult.php",
+    "bytes": 3843,
+    "sha256": "0c9ea19e571f2591579a1add58e47dd645f778e58f3f08fc4e3c9494cf861e91"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Numbering/Exceptions/AmbiguousPatternException.php",
+    "bytes": 168,
+    "sha256": "7ee0db7949f3ee02b2741bb47160111ceea3da4f4c2706f970d08fa2ca7c8981"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Numbering/Exceptions/InvalidPatternException.php",
+    "bytes": 166,
+    "sha256": "100f63537316993da3a7d5b849015d26431bd5f37546e0914dc4288362f0c889"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Numbering/Exceptions/UnknownTokenValueException.php",
+    "bytes": 169,
+    "sha256": "46d543dbdc938d2f994a699eab9d053137070d582e01f1bb87509c90797cb0a9"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Numbering/Exceptions/UnparsableNumberException.php",
+    "bytes": 168,
+    "sha256": "e8f0e1f4bda5c815d88608a3a8dfe719756f3a3b38baa55415df66023ea7aa00"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Numbering/EquipmentTagPattern.php",
+    "bytes": 2683,
+    "sha256": "49c2d484658be340294780fa6f3d2b934c1627f2baf63d99d1f171a7fb4383c4"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Numbering/NumberEngine.php",
+    "bytes": 12191,
+    "sha256": "76bc0cf64447ed69ba4a35e3136c3651bb6a4059059232468e3c6a4367d23a41"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Numbering/NumberPattern.php",
+    "bytes": 8824,
+    "sha256": "78f7f05abece96593358b68c845780b2bca3d320546b288fcb28915e3617f16b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Numbering/ParsedNumber.php",
+    "bytes": 5364,
+    "sha256": "1552ccbd0c82dbc3d9cc231e3eb5d5a2d20b30893268aa500d68024f99dcc276"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Numbering/PatternToken.php",
+    "bytes": 5108,
+    "sha256": "e1c0a2130bd7e014166cd4fe506a7a52eeafa61dc3ad6cccd5f7cc36af1edcab"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Numbering/TokenKind.php",
+    "bytes": 1922,
+    "sha256": "874003e6305c200a600d61f6d9546da0f159cdafedc3675ded8748b9c3ecedee"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Piping/Exceptions/BranchLargerThanHeaderException.php",
+    "bytes": 1073,
+    "sha256": "f900bd43e132f4b514b207005f6d9e0d4375ec7c6addec21ea7c84bcd2a36a9a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Piping/Exceptions/NoRuleForSizeException.php",
+    "bytes": 863,
+    "sha256": "8c74b343e5275336e5a02a26cee47694c53fbc6b12b7280cdd7202f39c47b227"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Piping/Pcf/PcfComponent.php",
+    "bytes": 1843,
+    "sha256": "06c158e5d0787c5221ad114490787e315d5cb5afed927123ebdbb972c73fa78b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Piping/Pcf/PcfFile.php",
+    "bytes": 2347,
+    "sha256": "3286d1ffa7d342050473ca9ca9b501b332bad86189f33325191a1a1a89e9a82d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Piping/Pcf/PcfKeypoint.php",
+    "bytes": 1520,
+    "sha256": "777a9503db62afee848e59ddd125101399759e0fa742fb7335621d6b9b89f5f6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Piping/Pcf/PcfParser.php",
+    "bytes": 9376,
+    "sha256": "cc3e20ca14e66fbfa224441b86146fb0bee15622215fadf99d910c5761b05e8c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Piping/Pcf/PcfVocabulary.php",
+    "bytes": 5035,
+    "sha256": "f0455c79108544b6df66af2fcecabaed493fcff8f7f9118615c3e4fbf25cf27b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Piping/Pcf/PcfWarning.php",
+    "bytes": 326,
+    "sha256": "9707a8c3e138dffc8c2bbcba971c4962445aabca96e1445f6985496a795a581c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Piping/DnRange.php",
+    "bytes": 2934,
+    "sha256": "0a2e0ed65aff5544ec19ae0cfd267b03681021ecf01721619903b196cb5e6d11"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Piping/PipingRuleKind.php",
+    "bytes": 3277,
+    "sha256": "14c4623506d3a41526c8850fc3d9cd54bbbf4cf898e0f1907b5000c1056029bc"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Piping/Verdict.php",
+    "bytes": 2541,
+    "sha256": "87e1f8bbe0851aeb73d108abdae9287ddb73a422a2db2adbb37e567bcf597cd6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Piping/PortCompatibility.php",
+    "bytes": 14281,
+    "sha256": "0076378c4a2fab3980d3c76704b9911f315db9fbe045839aef62e5ce31fc4220"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/Exceptions/UnknownScheduleException.php",
+    "bytes": 958,
+    "sha256": "54607808c566371adb67022aebfa1eecb32410d365cd3cda0957b4da7fea482b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/Exceptions/UnknownSizeException.php",
+    "bytes": 724,
+    "sha256": "6873e23f333121ca763f89c72890fc4480736e413c13a297b9e24fa7769aa3a6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/AllowableStress.php",
+    "bytes": 6226,
+    "sha256": "b0cc726f298adf8d9971e75ad3632400e6a06ae7242a4e2f6910c733ec23584e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/FluidService.php",
+    "bytes": 7464,
+    "sha256": "fd6c6c778af244345ceb6f2445eaeb57384b159f1a95fc73a6fa7ff439f8d1ad"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/FlangePtRatings.php",
+    "bytes": 14589,
+    "sha256": "02c931e3c34ab5f7e79b7b32e44bed785f3122721bbbc44e5f1d104255b7d12a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/FlangeBolting.php",
+    "bytes": 23863,
+    "sha256": "f4e2143570e927e2014aaa2a79ee5bbf6bab2161c2f5f9639ccbd7374c244aaa"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/MaterialLibrary.php",
+    "bytes": 28334,
+    "sha256": "a03e560fb8cb1bf22e04de476550dce58fc61a8952edb34f61480d90e20b1d54"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/PipeReference.php",
+    "bytes": 11993,
+    "sha256": "53e462b23800f6c828b6fcf285fd8d6f9dd926bf496c21821d12af5ad7733380"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/PipeSize.php",
+    "bytes": 1767,
+    "sha256": "86148c5a0a16808aa2231d0c7b352503998742093948cc48e1436d775318965d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/ValveFaceToFace.php",
+    "bytes": 13129,
+    "sha256": "e7631f29d0509f28ed0d55a1d163088a221a9b0394f1bd411dd95721d1681bf7"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/ValveTesting.php",
+    "bytes": 16453,
+    "sha256": "641afc682b62854926e3a7a4f30e27646a2a6fd814decc77961a22e383a03965"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/ValveActuators.php",
+    "bytes": 10857,
+    "sha256": "f77ce497f36cff7c51a032286709178971871e110aede86f85f977e1dc1f1874"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/ValveConstruction.php",
+    "bytes": 11428,
+    "sha256": "78854ae48ee5494a8b5160724408ffe1a63c8e10f81e4655b03d79506054f333"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/ValvePtRatings.php",
+    "bytes": 20939,
+    "sha256": "e738e6f9e4c9d034db102806d1c09ef5ba77984752e759bac341141aaa5acb5c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Reference/WallThickness.php",
+    "bytes": 8769,
+    "sha256": "5499fe780e3d0ad2051ac9a43334e5738963187e5e219f9695365b9e942a30ae"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Tabular/SpreadsheetReader.php",
+    "bytes": 7051,
+    "sha256": "371fe598919cc9c97a64bfc6f6565f16d7aa5578d82b8cdce35aca42b4ed6439"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Units/Exceptions/IncompatibleUnitException.php",
+    "bytes": 568,
+    "sha256": "8f151f7a511a49bcd083aeafaf516092a594e60a2bccec5064ccac8c0ff67616"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Units/Exceptions/UnknownUnitException.php",
+    "bytes": 470,
+    "sha256": "1f3cc7679a7e66ddbca6d01b3cbee83df71fab908eeb84846026143ce274329b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Units/Measurement.php",
+    "bytes": 2609,
+    "sha256": "27a020d3f95cdb5c592c2c8197d08244fe5e0be8fdc0609d34e3d392276e7733"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Units/Quantity.php",
+    "bytes": 1916,
+    "sha256": "751b49f0ff97d9f81176bd597a77ad622f19668ac008dd1d47a2f06b656f0ab9"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Units/UnitRegistry.php",
+    "bytes": 14715,
+    "sha256": "d180b54b40e8432a491286fff42d496eb5a454abc638f40a5e6969b1f9353390"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/CdeState.php",
+    "bytes": 5952,
+    "sha256": "092d76f5dcc79d06a5da7e0690478ce2e7e41e31c3d55fd8bbff89a84183d121"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/CommentDisposition.php",
+    "bytes": 1739,
+    "sha256": "19681961bab0b020bbd3a1630c8a73fd39495f6fc5b1ed1bd2009862ef79d282"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/AuthorizationPipeline.php",
+    "bytes": 7890,
+    "sha256": "9eb07dc98166dafaed846d2c3b18eac5e595c1e495dfa05bb33a9d2b073a269e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/CommentCategory.php",
+    "bytes": 4005,
+    "sha256": "c784f61e90179b2b3c7d43dd32c9b76d98194f3c5bec598d54a3ba72147f3f64"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Denial.php",
+    "bytes": 3144,
+    "sha256": "96f498ef7a3b870175265e98c6f1a09b2622234084dddbeab7a7f6b81eea8976"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/FileType.php",
+    "bytes": 5360,
+    "sha256": "8a41d0264a44f3cd5ffa05f1e42f2ed4075329fb222a1836b29f91ce50a8b5c4"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/JalaliDate.php",
+    "bytes": 2124,
+    "sha256": "bfc57c03e081168e7d0930a21944e194d3c3dafe6817f5a17e59d4e67c4a84a3"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/FacilityKind.php",
+    "bytes": 5532,
+    "sha256": "466a190b2e55451bbb630336c13b2e782802eb42aaf49eb4a6e523e53f325281"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/LocalAvatarProvider.php",
+    "bytes": 3867,
+    "sha256": "5b9f644d99a603c7c3db7888da68066156284902af97aed32ba69f430f7720e5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/LineReleaseState.php",
+    "bytes": 8034,
+    "sha256": "235c29d619b65310832b783fc3cde9cfb0ea48eb9bcf47e6bd37463aa22a982f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/MovementType.php",
+    "bytes": 3634,
+    "sha256": "7d317ad58878392e00ac33a295a130a38ac459097a6d01e0204ed410a800174a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/LocalisedNumberTranslator.php",
+    "bytes": 2279,
+    "sha256": "b0593663a829a7b412ddedb652f71821278fb353024a4a3ef12527038541e015"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/Navigation.php",
+    "bytes": 11297,
+    "sha256": "f6758fbcbcb38bcaaa83d523b90a92787e677b7e9c82e70f3540cd6e9133759a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/ProcurementState.php",
+    "bytes": 7589,
+    "sha256": "caf896d0568027f882420b58b6541cc5ae38c68f26d4d688a3e3d35f50b0d138"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/ProjectState.php",
+    "bytes": 3146,
+    "sha256": "d8c969f0d014e3cc9c2d572a9841ea8043856dc92e5496759116c078d66db5eb"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/PunchCategory.php",
+    "bytes": 3432,
+    "sha256": "70b6020e320c280baa73d491aa1a1f090bdc90babedd78d1609644c2685d2549"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/PunchState.php",
+    "bytes": 3750,
+    "sha256": "06ee5e602d64f349189271cc0aaa61c5659dc02796a5deb985a6860f4ea92694"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/TenantAwareUserProvider.php",
+    "bytes": 2792,
+    "sha256": "b575c98fd15aae94472f92df2d0c0c2a60449c2750eba2c58821d83ebb485cb3"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/TenantContext.php",
+    "bytes": 8035,
+    "sha256": "1b040e4e8ec781606491365d236a8b4d7d85495e7fadb0d3192a2a0d480ed8cf"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/TransmittalPurpose.php",
+    "bytes": 2111,
+    "sha256": "b10db67448fdc18781a888cd80c241dec646dfde7e6854366ef0ee00bb275fcf"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/app/Support/TenantType.php",
+    "bytes": 5570,
+    "sha256": "83ef617fdc99ff6f2d80802d0fb96743861dae1cbec22a15855786c464efd1ad"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/bootstrap/cache/.gitignore",
+    "bytes": 14,
+    "sha256": "240a3e0d37d2e86b614063f5347eb02d4f99ca6c254de6b82871ff8d95532a7d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/bootstrap/cache/services.php",
+    "bytes": 24637,
+    "sha256": "d0676e96b356ba12b9bbbaccab074181fa2ab543839b24b0b8ec831f04592c6c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/bootstrap/cache/packages.php",
+    "bytes": 3616,
+    "sha256": "ecce680402efa9083d335240365c880a77e5973239989096ead51fd74d7f2458"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/bootstrap/app.php",
+    "bytes": 6975,
+    "sha256": "bae18fde3c08ece4db3b8d3d925ab6364b948e054aa1f393595759bbfb0c97a6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/bootstrap/providers.php",
+    "bytes": 210,
+    "sha256": "32cb132fd3b6ef63a9289d3dc5ec6b98ab3550474f983cc5355670b08d04934e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/config/database.php",
+    "bytes": 8673,
+    "sha256": "9ac47f12d4e0cdf76a42c5861fbd9cad63dbffa33a88903965d3a81cdbf3ddb3"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/config/octane.php",
+    "bytes": 7586,
+    "sha256": "a837fff5629f7411c98e088012070512f0e2012e4f2f2422f8a972a04eb438e4"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/config/epcc.php",
+    "bytes": 763,
+    "sha256": "fcf60ceef7628e8fdf9d4e36d67cb11aaa9b870dbc09939c23f97a70bc608b86"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/factories/UserFactory.php",
+    "bytes": 1044,
+    "sha256": "50bdc543f1b09d1a57260be55ad0e1a68aee4b34f63e1109dc94d9bcd3080526"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/0001_01_01_000000_create_users_table.php",
+    "bytes": 1473,
+    "sha256": "10d79883bc08ce46510f9ad8b1830b4d06d586dc56ae2c8bac3b3e491f69a90f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/0001_01_01_000001_create_cache_table.php",
+    "bytes": 873,
+    "sha256": "fbb4665e5a977e71df4e74ec75b3c06ca4f17ad0de7138fe9786639189978e77"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/0001_01_01_000002_create_jobs_table.php",
+    "bytes": 1883,
+    "sha256": "df4910687180313a14a3f96a8bddd808ae145ed1b107cd772caf865c0dc2b746"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_09_100100_enable_row_level_security.php",
+    "bytes": 3382,
+    "sha256": "010f663f037a86f330d9126be469fe5d5012de13096321c4b27562a963fb2163"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_09_100000_create_epcc_core_tables.php",
+    "bytes": 6522,
+    "sha256": "82f66dd5f17d33a9e06bf24d8c6d04f3858afef30c5152362d1c9fb5930aab11"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_09_110000_multi_project_support.php",
+    "bytes": 6571,
+    "sha256": "cea8a6fdfa13f481fa44683618d46b6058050084f2a2d86fd0f3ca8bfb082801"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_09_100300_fix_gate_evaluations_actor.php",
+    "bytes": 3665,
+    "sha256": "d38d99533b086463fe8ae76a9c0166c031ef1eecc8092005cd1b507c311c2af0"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_09_120000_authentication_and_authorization.php",
+    "bytes": 8798,
+    "sha256": "4f427e2ea299f3be485bfb122f19651d30b3cfee462a06af3368ddc0f2a6c24a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_09_100200_fix_rls_empty_guc.php",
+    "bytes": 3143,
+    "sha256": "84be87a51b50e10a7e5d158d5a416ea0be3de2cb90c82203f48af691f0fbc156"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_10_100000_create_document_register.php",
+    "bytes": 9029,
+    "sha256": "a0d839fa0633e50bd9b72ec2633b39825a51e734686501d481fe57a5d9cae7ea"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_10_130000_share_documents_with_participants.php",
+    "bytes": 10234,
+    "sha256": "49ad77d6a3021e1f7ca2bf297d81919469e3bbc3579a661879becb6628b3267d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_10_140000_create_review_comments.php",
+    "bytes": 5981,
+    "sha256": "fa51de4a72bcae494b68515dca2c91112c6bef78bfe2c159d298f86fd5296a8b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_10_120000_create_document_files.php",
+    "bytes": 5678,
+    "sha256": "efb96beb664a3f8a0be7a5fe1d53a937041ffd5a43be6b79cc7a15dc9e561d18"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_10_160000_create_punch_list.php",
+    "bytes": 12259,
+    "sha256": "ab4141a2dc407c8ed45cdb1b005e28b7f9a021d11f9da6775c43e7f2c18cb527"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_11_120000_add_vendor_transmittals.php",
+    "bytes": 5823,
+    "sha256": "78a6169b259f79e96c49844c7c867cd0cd6476d857e14c4c88dc6d9757f91afb"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_10_150000_create_transmittals.php",
+    "bytes": 16391,
+    "sha256": "3a4ab3762c9d4c5862f48d88054d2e04c9f41b11551b959d471d4dc221f9f476"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_11_130000_scope_employer_visibility_to_contractor_letters.php",
+    "bytes": 5925,
+    "sha256": "3d21307aecea3e2e5f45ec448af30351eb2e0b2fb4268830cb1754446da3bc88"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_11_140000_constrain_tenant_type.php",
+    "bytes": 1674,
+    "sha256": "c2816bd554452099c8040a4747c4fdd9747e76c8e10623b971168c39b82de330"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_12_100000_secure_identity_tables.php",
+    "bytes": 9799,
+    "sha256": "f39d145b26fb5902a63d821396672c6c64692b97513c6d3bba5ce453784de0a8"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_12_160000_snapshot_certificate_punch_summary.php",
+    "bytes": 2015,
+    "sha256": "c6767f882021af73a9f2bc8db4330f4d311d357dc00753535529aca726b91e53"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_15_120000_add_project_archive_state.php",
+    "bytes": 7714,
+    "sha256": "23ec788e6180f72982eee79bc09fcc0fc941a855e33b88c1a499095b18a66195"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_14_090000_create_facilities_and_areas.php",
+    "bytes": 14937,
+    "sha256": "153bcd2605fd1e8c352a6f5de2d9d0c1e1c456c481a3e744c4df8d1f76e81129"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_13_100000_create_procurement_and_materials.php",
+    "bytes": 26769,
+    "sha256": "6edd0c36cf90a6b7f191ddd9516d3686f0ec488866b8461412906380caac1abb"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_15_160000_add_unit_preferences_and_canonical_values.php",
+    "bytes": 6193,
+    "sha256": "7a63e17586fc326b2b9585f28b5b207f46dcbd82165c85642a43e5541ee8161c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_15_140000_create_piping_lines.php",
+    "bytes": 14886,
+    "sha256": "10ea7ad760c4fa3415c58055e88592176b4f2c318dde52c7b4699e30c4209f5e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_17_120000_create_components_and_ports.php",
+    "bytes": 11568,
+    "sha256": "33e6bb3fc0e39efbcf91b727891585c9292f87cb635075aabb789488685d79e8"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_18_090000_create_joints.php",
+    "bytes": 12522,
+    "sha256": "66809f3ded6e7df4de2e86d7d3fcab2ffd2220c829b568bf8f9073081f3585b9"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_18_140000_create_systems_tier.php",
+    "bytes": 12452,
+    "sha256": "250ff8b672b50b31d637c94a0e5011d36648388f20d1030518a42d6b7806719b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_18_200000_add_deleted_state_to_tagged_entities.php",
+    "bytes": 9117,
+    "sha256": "386141cbe6500f39230a6d03e7f93dcdd7f4fe9d2fe92875fa0f0dc8013cb327"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_18_180000_add_equipment_tag_start.php",
+    "bytes": 1462,
+    "sha256": "b2b31cf330923a69e2c8a07c9d3d9f76badfc560b444424689681fb930b21c92"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_18_184000_withdraw_auto_line_numbering.php",
+    "bytes": 2025,
+    "sha256": "c66705c223af927c117479fa85cc929924a85ed16038375c04f843cd6d6e65a3"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_19_150000_create_itp.php",
+    "bytes": 14826,
+    "sha256": "a3ef4153743db2083d956132dc6a62228445c6ee0263b54647969154dd1d1e0c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_18_170000_create_equipment_and_nozzles.php",
+    "bytes": 14016,
+    "sha256": "a09bda2bf8473331d8f487049c8ed18812defc5cf93f45d8fe2a7ddaa56bfa2f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_18_173000_add_rating_to_ports.php",
+    "bytes": 1227,
+    "sha256": "b4e00b337c9c1400ba480f106cc96a3d69e0f94a3f03e21fded63819468d17c2"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_18_220000_create_model_imports.php",
+    "bytes": 11767,
+    "sha256": "2d2047dd011ba3c272eb6cb3558878580d011687e3f600bd98b10271f48c67a9"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_19_090000_create_engineering_baseline.php",
+    "bytes": 13969,
+    "sha256": "6f696f6fa1233f88ee9c73f293e624b617c8163f9547838b1aaafbc5b0e78126"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_19_190000_add_itp_stage_references.php",
+    "bytes": 7151,
+    "sha256": "d7bbc77de1228d4317a9f767c2e2df385122e45ff6236e2715cfa04a984fad61"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_19_210000_register_itp_as_a_document.php",
+    "bytes": 6537,
+    "sha256": "4b94e969b3728ae2d0c0decfa816ca0587e33e429e3960c4172a3824069cad8e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_20_100000_create_standards_library.php",
+    "bytes": 10793,
+    "sha256": "0fcffbe738a2704aab4a2223e54deef0aac98fcd08c4a328ec964ac1f305be8f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_23_120000_piping_class_rules_per_size.php",
+    "bytes": 5045,
+    "sha256": "202c2c0571a32986f5de0e7ded784aa921b527d318247de723512b37e00264c8"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_20_140000_fix_itp_tenant_policies.php",
+    "bytes": 6695,
+    "sha256": "6774a3d356d7af05e1a172c2c4b4820a4bd2e2390af5e0fa9cf970eca04632e9"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_23_100000_create_piping_class_rules.php",
+    "bytes": 10716,
+    "sha256": "665e1b96d14bbc8daef405d84d5f21dac76e8338d6b7b15062f0ff2e77aa98ad"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_24_140000_create_piping_class_items.php",
+    "bytes": 7421,
+    "sha256": "2f0d249b8b5dab3bfc63e7dbf21e46047e04302da67f6b95578c864805a18a13"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_24_180000_specials_leave_the_pms_body.php",
+    "bytes": 4018,
+    "sha256": "69959d63161acdc91f7f0206794712e9dad75c8d9067bb61c8b56de00ab5feda"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_24_120000_enrich_piping_class_header.php",
+    "bytes": 11881,
+    "sha256": "fdb44f16906cdf3ea593379d689779898ff3cca544955e21bb26a68d24bcbf45"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_25_090000_create_piping_class_valve_specs.php",
+    "bytes": 7545,
+    "sha256": "e12289bbc878fde1d8e58ed048bc86f535066f8390f38294e4571438be53fcca"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_24_160000_create_specialty_items.php",
+    "bytes": 9096,
+    "sha256": "80a13fccdeb52bcb35cd3cd2b4f9260d2cb772166bb15b4d712cff2ade86a9ab"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/migrations/2026_09_25_190000_severe_cyclic_is_a_condition_not_a_service.php",
+    "bytes": 4246,
+    "sha256": "2d6197c1bfadbc636a2c5c47ed381aa057e9a535cda627bc31a9cbe8348e1d05"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/seeders/AuthSeeder.php",
+    "bytes": 41051,
+    "sha256": "53a736aaa4c59110570f95fc35d12eabe89d2ef224a0ba72066408cafb2d5d64"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/seeders/EpccDemoSeeder.php",
+    "bytes": 10159,
+    "sha256": "7244a878553cb9ba84946bf329d5f53106984a77f92a70b303c4d047d821eb4f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/seeders/DatabaseSeeder.php",
+    "bytes": 1126,
+    "sha256": "f36b6c11aed6ca4d6580ad1feca6c45728990d23bf43e8f8344dd7e25b18e441"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/seeders/ItpTemplateSeeder.php",
+    "bytes": 17171,
+    "sha256": "94487a53fd3905fa521421aaa18c8688d50c7b21faa117e636ce48bf62183271"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/seeders/ProcurementSeeder.php",
+    "bytes": 15097,
+    "sha256": "410fbf0aaaf4b80f5bdc52086381c31901fbcf03061a313d76b543b10222831f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/database/seeders/StandardsLibrarySeeder.php",
+    "bytes": 12127,
+    "sha256": "d743a8391408fac703f4c753bb7a89ab6ed52c613085e91d5b2bd9cf42993637"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/lang/en/epcc.php",
+    "bytes": 22721,
+    "sha256": "e64743287a8845e1a1ba5d5e172ede1c9188ef10637fbd01505d048a9c2f189f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/lang/fa/epcc.php",
+    "bytes": 30532,
+    "sha256": "156e466cba4df3fb1fb9b944fef00fea3d97a35f55fc0262cfe79d7029e1af5d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/css/filament/filament/app.css",
+    "bytes": 621596,
+    "sha256": "c754b8ad5ba9d4a2e67bb0583bcae6d2937702f28c584c454dae8db43732f574"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/fonts/filament/filament/inter/index.css",
+    "bytes": 2001,
+    "sha256": "a1844126529a6698ea00885e62f8e6a9f5402945cdf281adfe4f5a506ab2609d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/fonts/filament/filament/inter/inter-cyrillic-ext-wght-normal-SP7Z6XGK.woff2",
+    "bytes": 25668,
+    "sha256": "72ef5fb91eb7060a703770d85801c1686a21fa5a73b132923e05b59773e91a7c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/fonts/filament/filament/inter/inter-cyrillic-wght-normal-DR6K5BQD.woff2",
+    "bytes": 18860,
+    "sha256": "e3d19eea5d41f003696b212ec6721788c0993bc6be869a1a46a4b5fd81f10414"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/fonts/filament/filament/inter/inter-greek-ext-wght-normal-A2J6H3EX.woff2",
+    "bytes": 11180,
+    "sha256": "607a497e27bba457cb7489593019b13e23228a73d4bbc4fc85d7ca3b48e8651e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/fonts/filament/filament/inter/inter-greek-wght-normal-ZABHMKQG.woff2",
+    "bytes": 18688,
+    "sha256": "59e001476c4a50e62474740c72beafcfdb4124c1d7d4b8b0d65942e7bda45d23"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/fonts/filament/filament/inter/inter-vietnamese-wght-normal-VWEHJHBA.woff2",
+    "bytes": 11376,
+    "sha256": "55b684c729874120ce313190bbe520f5fb1bd9efb65fa39a9c45e682e560c351"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/fonts/filament/filament/inter/inter-latin-ext-wght-normal-ZIT2UBIY.woff2",
+    "bytes": 89876,
+    "sha256": "198833bad46168b8a48c453cf5a7ca11a6ccafd26d336eea35d8178f961cae53"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/fonts/filament/filament/inter/inter-latin-wght-normal-DIHYUR35.woff2",
+    "bytes": 68332,
+    "sha256": "63a867b874311b9d2d7b392e61f398bd1373a8e1076a1abdae011e2f788bf2dc"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/actions/actions.js",
+    "bytes": 3288,
+    "sha256": "1af35be6c78304867afed82765ff7b0b7cedac25f91c5c71375574696571eda4"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/filament/echo.js",
+    "bytes": 91939,
+    "sha256": "febc1fedb869be7e37150dbf2fe862b4a150e5fbc62c1ca23d5cd9be9635c059"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/filament/app.js",
+    "bytes": 11812,
+    "sha256": "fa29ab1b089ae2a8d29635dac517600174b9f10f9680726be81d68ff3cc1764b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/forms/components/checkbox-list.js",
+    "bytes": 1788,
+    "sha256": "297730040fbbbca74b05519e990854a4fafdbe704e9944b73d7c95e96d6cacf6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/forms/components/code-editor.js",
+    "bytes": 985486,
+    "sha256": "5e937ed1f418e8ea29a66dd82dfa1720536fe030d95e3c9fd004ea5058ef9598"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/forms/components/color-picker.js",
+    "bytes": 9870,
+    "sha256": "301289e30a64e1b00a0681a286293e5a24cade6bc0704811c4e8a8adb96e85f2"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/forms/components/markdown-editor.js",
+    "bytes": 523264,
+    "sha256": "6945cc27b2cf8eca7bb8d515701ff5cd12be96b971cbcc29710b68fafbe217d6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/forms/components/date-time-picker.js",
+    "bytes": 125143,
+    "sha256": "76ac9a4b201d1c600680496c99ac6c123aa7e5688c083cb3533721a912a20ecd"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/forms/components/file-upload.js",
+    "bytes": 373641,
+    "sha256": "85c79bff4e6ee3fe03e4f8021c007ec28d6842538daf96664738a380eb34a99d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/forms/components/key-value.js",
+    "bytes": 1023,
+    "sha256": "6c7b7f7fb9da0f8f30b07c2aca89b7d3b5b8ecefcec30fac39c7ecb2382aff0d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/forms/components/rich-editor.js",
+    "bytes": 540333,
+    "sha256": "1cfe759b9c06bc5880eec467267c0ab63a7a94b88d3ccca12d90c6f535710c2b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/forms/components/select.js",
+    "bytes": 86246,
+    "sha256": "9ea23a18947aeb46d89a87b88b404452263ac72e0205c64dad1e2295da007b75"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/forms/components/slider.js",
+    "bytes": 29055,
+    "sha256": "b6cc01a2b5eff71162f2e10b471dfe971b5746dcd3e7b06ef0513d3b50f611c1"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/forms/components/textarea.js",
+    "bytes": 769,
+    "sha256": "250b192d68082d5276f8edd8ba64f3152a7ddcf0c749c71af108383c2b49e4ee"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/forms/components/tags-input.js",
+    "bytes": 1210,
+    "sha256": "63af88c5a45a83658ec5047941d74c959118b1a8495e69248da9fe2eb7410074"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/notifications/notifications.js",
+    "bytes": 6124,
+    "sha256": "ef9506574e654251705599c9b83c20764c03408d58ed9c0b8ab445902d82a4fe"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/schemas/components/actions.js",
+    "bytes": 876,
+    "sha256": "bf492e090d800749691cca4b5df3424a144ea48b784f50ce2acb355f8dbf5e91"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/schemas/components/tabs.js",
+    "bytes": 4109,
+    "sha256": "bb7e866f1c7201fcc76e82911b2b727d52c66c6b1d0a08c86169888324127ddd"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/schemas/components/wizard.js",
+    "bytes": 2134,
+    "sha256": "db711f32898b0a44cdfaed2481024d7dedac5d340f2c16829d8d97d16033398a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/schemas/schemas.js",
+    "bytes": 3769,
+    "sha256": "31c84366a43cbede4b29639d08e1b4c2dfbf490f3e9018b0a8a516ce4ad53289"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/support/support.js",
+    "bytes": 144939,
+    "sha256": "34e6d224f190a90aabd5f3389ced0aafc23f667406b32845152ee36b71a3d5c8"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/tables/components/columns/checkbox.js",
+    "bytes": 944,
+    "sha256": "1c0e1b8c6684961fe792001b7cde1ce0d61ab4391c115162ff50f37705b6c3a2"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/tables/components/columns/select.js",
+    "bytes": 86896,
+    "sha256": "f82f9bb315a567239681e6491bd5b3ec0ee65c2f914724ba87f10c42445491f6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/tables/components/columns/toggle.js",
+    "bytes": 944,
+    "sha256": "1c0e1b8c6684961fe792001b7cde1ce0d61ab4391c115162ff50f37705b6c3a2"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/tables/components/columns/text-input.js",
+    "bytes": 1105,
+    "sha256": "0d7cc75d914dff0352cb284e37861e16f311e721471a6dcee0cb046bf89cd4f9"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/tables/tables.js",
+    "bytes": 22874,
+    "sha256": "5b03b014ae1763a29c9e6ada6dc25f6a1c822969cd6f24f5f313b20579d950c8"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/widgets/components/stats-overview/stat/chart.js",
+    "bytes": 148657,
+    "sha256": "ece68e1e30812b78cef9dcaa0e8dc7318b92798f05345ccdfbf1e67e12d2a957"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/js/filament/widgets/components/chart.js",
+    "bytes": 286206,
+    "sha256": "05e6cf4655f5d5e8db40d8bd316fe3ba45cc6b6d0e3a45c65311d74d345c4ee2"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/.htaccess",
+    "bytes": 740,
+    "sha256": "b7e379c77639fd56144947dbae84c84eb466d9c686ea81f2f013ae85421da923"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/favicon.ico",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/frankenphp-worker.php",
+    "bytes": 361,
+    "sha256": "a7a313ae9e778758dba4f1fa5fab9b99db8e166ae5ff2877c404882e0835d4b0"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/index.php",
+    "bytes": 543,
+    "sha256": "eba77cba39695b6bd091fe5211d481f7ebb2ce2d8d26230b5a609465d0a4aff9"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/public/robots.txt",
+    "bytes": 24,
+    "sha256": "e5c4b84484ee4216e9373be99380320c25dd94805f99f0a805846f087636553f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/css/app.css",
+    "bytes": 339,
+    "sha256": "02db84e827e06d8349293e9797eb8d81465e109e91976775964c4bf873b6fab5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/js/app.js",
+    "bytes": 3,
+    "sha256": "101ead936a2281d53dcc064b7e2a2ab0d53b92ef3ef7b34b668673007895c860"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/auth/login.blade.php",
+    "bytes": 5215,
+    "sha256": "66dc1c337d938b26f1c199367a30423f589bd8352ef7994589a483bb202cb063"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/documents/index.blade.php",
+    "bytes": 17193,
+    "sha256": "ce2fdbe8594d0597bdf9eb82cdae14fec63ccc1bfdd113792ba964467dcabac1"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/documents/review.blade.php",
+    "bytes": 13903,
+    "sha256": "bdd6243e33d7da383f27bdf2261158d4abad669a3c55adf537bfa5950a66406e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/itp/index.blade.php",
+    "bytes": 6547,
+    "sha256": "9fdf1ece9317751052e601966551da36ebf648624efbcc299f60041fe706e597"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/itp/show.blade.php",
+    "bytes": 11266,
+    "sha256": "ad6049afe3ce2f8e6011e454981aaff7f7d6d0a7f4232e2c5a2d466a76195a82"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/itp/lot.blade.php",
+    "bytes": 11004,
+    "sha256": "377dfee90c498a8814501440d18acc01ec80501386d203cf53435ef12b922bee"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/materials/procurement.blade.php",
+    "bytes": 13626,
+    "sha256": "630dbb5086f697e5a011ac8b8cf3a7ee93503470386f2b39c0fdca7fdba427a5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/materials/warehouse.blade.php",
+    "bytes": 14550,
+    "sha256": "1edacc9589df8202d4166af7922f16ddfef222d5bf185a04ddecc849fc9c2371"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/partials/shell.blade.php",
+    "bytes": 18236,
+    "sha256": "7abdbbd95f80a5b29b5d5ed3deb2ae311e5b89e59b2055d62d1e8fd4d892596b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/partials/sidebar.blade.php",
+    "bytes": 6550,
+    "sha256": "f949daac80d4211bcde89699673eb42ec74482882cf2420d28dc76def4e2dedb"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/partials/tabletools.blade.php",
+    "bytes": 16520,
+    "sha256": "078944e47ac4a1e9e1f6b02fdbdc5cef41b84f4843d34da22aa594098739103f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/partials/topbar.blade.php",
+    "bytes": 786,
+    "sha256": "38ec53336ce5fa95857a39e80e9fe986eb4db2fe965a3db3114c0281aaea7455"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/piping/baseline.blade.php",
+    "bytes": 18434,
+    "sha256": "760b3d4eae12630eceed9349bc0de64c80eaa8a54a615da320814e1cdb5c81b7"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/piping/config.blade.php",
+    "bytes": 10444,
+    "sha256": "fdd3c12d761a62a34eaced03829f74f6dfe132cddf6c5af1de9c1bacba85d0a9"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/piping/index.blade.php",
+    "bytes": 23538,
+    "sha256": "6bcf3cbfc1c7edc9abbe273c696cbf3b371c965411506f8ba02d5c74af5044ff"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/piping/model.blade.php",
+    "bytes": 20297,
+    "sha256": "117bb6ec99cf7946c2027062b0cf1162035732af42382e5db3e659a5ee6365de"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/piping/model-import.blade.php",
+    "bytes": 14790,
+    "sha256": "9effcbc485e13545eb8e46e62096899fb4b89f8ab7d58b386fd976d553035aaa"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/print/layout.blade.php",
+    "bytes": 3862,
+    "sha256": "7a4654a82eac2048d181c862326885531799492ced0c0db20fc267a086608034"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/print/mc-certificate.blade.php",
+    "bytes": 7811,
+    "sha256": "f3a9caf0aad437fc4f5854d2360e67d6a9463fb68f09de01a6bdbeeaff2f6869"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/print/transmittal.blade.php",
+    "bytes": 7050,
+    "sha256": "7acf61d44b2669a89622cb7251ec2660f163e90c909a1e59bd1d6ee78eef1539"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/projects/create.blade.php",
+    "bytes": 8737,
+    "sha256": "3dc0972c582a403d2e77ccbd63d183ac5c4eb187e118dd064306e6af27bca872"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/projects/team.blade.php",
+    "bytes": 8661,
+    "sha256": "9d437a3fb1877b308e738bf676976d02c387deeea7c02f13c6c0f5fc41153177"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/punch/index.blade.php",
+    "bytes": 19573,
+    "sha256": "43dfce56c3c8f5d57fea8e0933d305517bbdb289b08c3127eae3edd4920de101"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/standards/index.blade.php",
+    "bytes": 8699,
+    "sha256": "69e9a0463118de87311199ee6230756c71158a24ac0e042c2a6453ae3e141fbc"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/standards/usage.blade.php",
+    "bytes": 5084,
+    "sha256": "436a070571aafb87b34db43afb350e80667a9f148abb5fe6de680eb662fd77d6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/transmittals/index.blade.php",
+    "bytes": 20858,
+    "sha256": "77519e6d2756b2b80318aad6dff90cb0fb2570c35afd2e7f69bf5e4da05c1af9"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/certificates.blade.php",
+    "bytes": 8870,
+    "sha256": "028870ea84799e0c7629cb4e216fb534a72194403fb49c9eb6f23273a1f5c54c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/gate-demo.blade.php",
+    "bytes": 8233,
+    "sha256": "766e6f16cd12bb903084c98d0da61adc24f9d44f311966e083de4159641e50bb"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/resources/views/portfolio.blade.php",
+    "bytes": 5529,
+    "sha256": "1073bea628cabff06e647a8d482eb541e35a30c520648668daba1c32d372f4ce"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/routes/console.php",
+    "bytes": 210,
+    "sha256": "9adccc33e7dd400683e434774077c7fdb2f299c5712cedf16a43fdf56f2850fa"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/routes/web.php",
+    "bytes": 13214,
+    "sha256": "d8c4e2fcc2d969291cc7de17e10cd2e1b6143b637d6d2fd0a4479d6b84ca82e8"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/app/private/.gitignore",
+    "bytes": 14,
+    "sha256": "240a3e0d37d2e86b614063f5347eb02d4f99ca6c254de6b82871ff8d95532a7d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/app/public/.gitignore",
+    "bytes": 14,
+    "sha256": "240a3e0d37d2e86b614063f5347eb02d4f99ca6c254de6b82871ff8d95532a7d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/app/.gitignore",
+    "bytes": 33,
+    "sha256": "993b9e3709d7b5189da331725d1169d79e561a509db2490b722b525073d2d976"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/cache/data/.gitignore",
+    "bytes": 14,
+    "sha256": "240a3e0d37d2e86b614063f5347eb02d4f99ca6c254de6b82871ff8d95532a7d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/cache/.gitignore",
+    "bytes": 21,
+    "sha256": "32f79194633ddb34f013c6ee8819d112104ff822357adf308ec385b46a7f42f6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/cache/facade-1e06026dbe325cba543b2306bd7e55d66d31e4c1.php",
+    "bytes": 447,
+    "sha256": "d0b62a34e498062b518fe61321313ad9a98ddcfd902df5d8f343c9243405a53b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/sessions/.gitignore",
+    "bytes": 14,
+    "sha256": "240a3e0d37d2e86b614063f5347eb02d4f99ca6c254de6b82871ff8d95532a7d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/views/.gitignore",
+    "bytes": 14,
+    "sha256": "240a3e0d37d2e86b614063f5347eb02d4f99ca6c254de6b82871ff8d95532a7d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/views/1ad05880d51b9b35d7952eb10d070f7a.php",
+    "bytes": 17959,
+    "sha256": "f4bd1d6e44a7bb1f3ab99d2298cdac1f2a860db7f3c86ddfeb8d2cbb4be3ec1a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/views/082bd62ff87500647a2543cd01a88b04.php",
+    "bytes": 844,
+    "sha256": "1731412ced74ab44a6ee12e4fe3cca2351705118ebe3b71ac1eedb1e1466fa38"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/views/c7323f38a1d1efba239ad6b1c7096570.php",
+    "bytes": 14951,
+    "sha256": "3e257958bc605dee4ea3e45da3d43b15e08a9764bbaa34cd0ec406c9a30a5d21"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/views/22ac8402c8face5a0ba6fc0700fb9be3.php",
+    "bytes": 6836,
+    "sha256": "1706b55444712a35c3fe4c63a246aa6aeb3fd5c52b8f29c4d3d05cc32ebdd182"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/views/641d2c9d9b440f70091dc615c81fd290.php",
+    "bytes": 419,
+    "sha256": "002899db5fbe67ef97d36d652d6f14a472347ce6685b8bf62764fa3ccbf03be0"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/views/325e36324c0101f59cdf1a55db3681fe.php",
+    "bytes": 7576,
+    "sha256": "72d7832f33862c1a0683d7699dcd01b35ffc3984481dc997d6f68c31d5011c1e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/views/a5157a674d0bf47135a772c8a71c614b.php",
+    "bytes": 39298,
+    "sha256": "03fb74695c09283fb8ec8766de00348741925266fc502a6dafe4150d3e1eb5f5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/views/d3d951819d61ef4bb372b83876950652.php",
+    "bytes": 18202,
+    "sha256": "067768e753969374b0c8f6be3d29c171cfb6f3f26a6eefd2d4464ef27ddcd93c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/views/d0d86c6019724a455a4c69c0e0146422.php",
+    "bytes": 10063,
+    "sha256": "f12dd2f51d9de3f75e40e44d1db296b0d89afd79fba9141db3fd11159b25b948"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/views/e728279aa0428ae4d652ec6b18105136.php",
+    "bytes": 17725,
+    "sha256": "c5a2fed20f0f1a17117881fa1ef8da0732875fe1682576280160b06d94280b2c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/framework/.gitignore",
+    "bytes": 129,
+    "sha256": "37bc9570de232e9db87ce530b3e4e2d5fa8d75f3bd587069fd26e2fb4ef1ffa5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/logs/.gitignore",
+    "bytes": 14,
+    "sha256": "240a3e0d37d2e86b614063f5347eb02d4f99ca6c254de6b82871ff8d95532a7d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/logs/laravel.log",
+    "bytes": 937702,
+    "sha256": "258583f29f4a35babe785a4d27e6c0cc324dd608d0b19944337886227937dae8"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/storage/logs/octane-server-state.json",
+    "bytes": 11570,
+    "sha256": "152ac41aa2a35578eaa8eaec4564763830bfa03a9b35fdce6704e79f7cce0d4b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Browser/sidebar-animation.test.cjs",
+    "bytes": 5188,
+    "sha256": "56509a70dba38032fcee70172d7c34899bf81939d9e09dd1e9811d14ebfd355c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Browser/sidebar-toggle.test.cjs",
+    "bytes": 4947,
+    "sha256": "5e24e25d16a0418e2fd1388514b107e2d5c4b5dc5d252c280729fc2d5f44ee43"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Browser/table-tools.test.cjs",
+    "bytes": 18568,
+    "sha256": "6cbb958663161b10c3a81961a7491545b415c85b074c2f0d9e84c337aebcdf66"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/AllowableStressTest.php",
+    "bytes": 8835,
+    "sha256": "d449f45a6a068f560fbe86865d81b4d578f5f4f8e74516af1aef7143045199ac"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/AirgapVerificationTest.php",
+    "bytes": 10425,
+    "sha256": "9602135308c603cb2d01c073215bfdc6e61d2557a3361171b5b5eb471e5434a7"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/AuthenticationTest.php",
+    "bytes": 5689,
+    "sha256": "74b47650c18c1cb641e02c3a31bc9066a005f62dbbee801a13a65f0f14a68c09"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/BindTenantMiddlewareTest.php",
+    "bytes": 3147,
+    "sha256": "ed8400854d989f47559a864fc9b1405da4c70e28fbcd99aad2fc6e8628ddda4a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/BaselineReconciliationTest.php",
+    "bytes": 36591,
+    "sha256": "b5f99ee5b1f34ac333066c32432580798f63a31437b57f190bcce8a4e9142826"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/BreakdownTest.php",
+    "bytes": 18288,
+    "sha256": "0c0c2fe77d311cdf2efeba792f2e02f48d9b0d67b27a9bb5a4e8dedd83a0718e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/AuthorizationPipelineTest.php",
+    "bytes": 10664,
+    "sha256": "74c6a714c1d8ba201e29bbd58ef6bec0272508261c8df8348e17392e4b435cb7"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/BlobIntegrityTest.php",
+    "bytes": 1032,
+    "sha256": "17c79b82306bd8f64d33fffaec21c86650f00cf48af03224deff5c9366da0a8a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/CertificateScreenTest.php",
+    "bytes": 4065,
+    "sha256": "d29152b4a12e133f21eaa59e20f091ba449789454c3ad020ce687e26eb844586"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ComponentModellingTest.php",
+    "bytes": 25154,
+    "sha256": "d7167c94df8337c0a46c199d7938643b648ee398948536fc2ade9551a4dd5a44"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ConnectionReuseTest.php",
+    "bytes": 4482,
+    "sha256": "6ff571eea92316cd9807c5bb4311a904ce3e50f43058f27b85f8f0a48c82f29b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/DeletedStateTest.php",
+    "bytes": 15926,
+    "sha256": "ab13881f06b07846385465925ee572c288c3e045c4f3d3a2e054b0f5cef0fbb5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/CookielessPreviewTest.php",
+    "bytes": 8627,
+    "sha256": "8509b428d645cfac6b2d45d3109e16d5d8601b58479f1621673f4b8c856efe4d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/DateFormattingTest.php",
+    "bytes": 4317,
+    "sha256": "8698ba20e032c2635967f3766ff1a8a977564c56402f64a9750bb760b302c7c3"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/DocumentRegisterTest.php",
+    "bytes": 20785,
+    "sha256": "a823e9e87645fdb482e428feffe6ba7eaa234e20b67a484adbef79d43d3e01ec"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/DocumentFileTest.php",
+    "bytes": 17456,
+    "sha256": "c0476c8c3e701cd16068e12b336a294c75fc6416d17af15301eac18b5a746568"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/EquipmentTest.php",
+    "bytes": 21320,
+    "sha256": "8ae78d57930f88dec5eadc7312c5e5c2a2340b403082116378e27a9b66f222d6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/FilamentPanelTest.php",
+    "bytes": 33285,
+    "sha256": "7371b64b4f4dbe0dbe4e67a6f0ff546260dd8f6ce2cf31243047c421d58d52f4"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/FlangeBoltingTest.php",
+    "bytes": 24646,
+    "sha256": "2a18e13ed2b076e7964c3928818b723b28d9f8f94ea96bdedd3970ef257592f7"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/FlangePtRatingsTest.php",
+    "bytes": 12482,
+    "sha256": "401867be928f18562bbb684f5f8a476a92655dca7e7cd3f823eb4b67e81ea4cd"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/FluidServiceTest.php",
+    "bytes": 7791,
+    "sha256": "c3496abe1d7aba8aa84deeb37c5bb8ed8ce7ed051ca38eb08e0753302c4426c5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/GateScreenTest.php",
+    "bytes": 1564,
+    "sha256": "7693bc79e74f8feb87b6f458facc7691567461cc79582985e4f9dc6c41db6a7c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/LoginCsrfFailureTest.php",
+    "bytes": 5272,
+    "sha256": "7fd2fdb555d15ff5e7cc1d87c7a0ab9655bc1bc0ed928f8121ad0370be6f1951"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ItpTest.php",
+    "bytes": 60681,
+    "sha256": "603488543e5bddb9b59ca21a27dbdaeb7cdb526a08cf141e44f6d4ecec2f5334"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/IdentityIsolationTest.php",
+    "bytes": 12795,
+    "sha256": "f07bcece16c1eb736605762523a13a484fce7cdbf799a64b10812d93af798fc3"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/JointTest.php",
+    "bytes": 35627,
+    "sha256": "f38a82409e5fb401d428d6ac2fe66d81fbf3449338d7c8593831607bec580f4a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/LineNumberingTest.php",
+    "bytes": 15105,
+    "sha256": "e9460309f759b38942232889cb4633c9cda6581efc93e14873c0695364d16cb5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/MaterialLibraryTest.php",
+    "bytes": 80821,
+    "sha256": "c08caca0e4b2a070e09a70fb7991838f1f3fae1724e6e5fdc45c7f911fbe0fe6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ManualValveTest.php",
+    "bytes": 70979,
+    "sha256": "31598e2590b325a1b3f14e537a47666cfb5267c481877d97f7f73037a72ea64c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/MultiProjectTest.php",
+    "bytes": 9049,
+    "sha256": "a1af04dac10a3551e7c048ae2f9620f524120e3e1d242d83a9dcb2337448b71b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PdfExportTest.php",
+    "bytes": 30798,
+    "sha256": "eddeb2d63f77dc324eeffdcca270cc688533d7b698b644048cb7d13624ba0e13"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PcfParserTest.php",
+    "bytes": 7653,
+    "sha256": "dfb0253bbbfbcc2ebebe3294e41d1b22db7d9e137690781a5ccfcab554eefabf"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ModelImportTest.php",
+    "bytes": 21172,
+    "sha256": "97c13fdc2339a019f068576e27cc2633c2493c9c56203855ce7c1406601c95c9"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PipeReferenceTest.php",
+    "bytes": 23092,
+    "sha256": "5e8e98e5cb8044a03b02371c531d9a89332ddcb7648965e002bd9b2852ad6178"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PipingClassBodyTest.php",
+    "bytes": 16024,
+    "sha256": "3a6a6defce2350c40662cb3fd5d213500067580109a94a97966d21a26565d6f4"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PipingClassComplianceTest.php",
+    "bytes": 12059,
+    "sha256": "953ab64d3cdd3bffe612df47bb45355dd6fd367c7fd4e5634488854af2aa5a35"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PipingClassRuleTest.php",
+    "bytes": 21390,
+    "sha256": "9cc6fcf0eac29059a26916c3d3e1f752065458c166aa614521071eb739979f37"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PipingClassHeaderTest.php",
+    "bytes": 16836,
+    "sha256": "061b117e37f836ec93af472f8404f0365a73f65f9260e4cce2d6052ad33e1942"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PipingLineHttpTest.php",
+    "bytes": 17832,
+    "sha256": "934df788c3f3793adec1a1a8513fb1a2ed6c2e9478103efb299b5e72e70fa7bf"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PipingConfigTest.php",
+    "bytes": 15458,
+    "sha256": "c4864f03259224dc15b95c7560f30635d934bc4c2ad82adb9065aa6851bce2af"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PoolerCompatibilityTest.php",
+    "bytes": 5668,
+    "sha256": "17ac8d0a28c6c43d2538dc9257fda1e73bce4890c3d2c73c5661c2b4b7566443"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ProcurementTest.php",
+    "bytes": 18712,
+    "sha256": "397d7165a9cf4238049ca8f8b9ed14fedb2edf743172cadfe6a82602d4105052"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PipingLineTest.php",
+    "bytes": 27261,
+    "sha256": "42da24e91661afb0b82bf6c2019dc46f76a448298aa7e6e4f9482392f13507a0"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PreviewProxyTest.php",
+    "bytes": 7880,
+    "sha256": "2ea9c652431bee4f1bd05873d25ab2b48dc73b9dc5b1dbb57748d177952375fa"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ProjectArchiveTest.php",
+    "bytes": 23678,
+    "sha256": "ea778b5f7e3490d1071192698e2f0df3abc66e034c4bae683fd02bc3e27e2f08"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ProjectSetupTest.php",
+    "bytes": 17419,
+    "sha256": "e2851a10fc4156e7741558340be3bd403efb664a47312f234674827e1762c4b6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PunchTableTest.php",
+    "bytes": 5305,
+    "sha256": "09444b5fb6021845e1ecf875503049bdd6d69a389fb7268ae790bb3564aa61ef"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ReviewCycleTest.php",
+    "bytes": 18817,
+    "sha256": "a7b8c73b031a4378c12dba297ff3780ac993f347ce237cf90452722a4f447591"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ReleaseGateTest.php",
+    "bytes": 3828,
+    "sha256": "9be10d5b50110872b4f3c1a303096a53189258004e2d715e4251ff41c08c8d0e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/PunchListTest.php",
+    "bytes": 31959,
+    "sha256": "37bc08a895e6f8708e1ae8cea56e1a5d810dd81eed69a8ca7dc1530959d7b2b8"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/RowLevelSecurityTest.php",
+    "bytes": 6093,
+    "sha256": "f7288ab455e136cc6d3be905f28522bf436e9a2426e9bbc31cc1c955e8044e5a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/SeedPathTest.php",
+    "bytes": 2894,
+    "sha256": "5d0061659bfdb3063694b69508cc89b7e0a38d32485642f11ea33d67e8569569"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ShellStructureTest.php",
+    "bytes": 11101,
+    "sha256": "eee2b22cf673673aade093a25d2c810f6310f52594479d95b558c43989fcaa69"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/StandardsLibraryTest.php",
+    "bytes": 23870,
+    "sha256": "7cc16062198550530a4df5f497b3fb68b98318cc82337e57f2af01c9b53b07e2"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/SpecialtyItemTest.php",
+    "bytes": 6670,
+    "sha256": "3824eb2e6362966d8a6f101a01f5a3d5891368351c296608e4612b72e56ad2c1"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/SidebarNavigationTest.php",
+    "bytes": 13781,
+    "sha256": "949933d6e09aedd5cbde7a20ee96f3b0d3ce6fc9d4170e4c579f4e3ba3239fee"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/SystemTierTest.php",
+    "bytes": 13335,
+    "sha256": "fa3dd4c8a8a12218049bf34fcc268d73da2ba39040fb9ecdb2b2b7fefa7cc66c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/TenantTypeTest.php",
+    "bytes": 6177,
+    "sha256": "387fb180fcb9609661a6bc6169419fef7a59a7fc637f97f8a32417d390fdb951"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/UnitRegistryTest.php",
+    "bytes": 16342,
+    "sha256": "5b12e0e7ef306b1ebc284478fe0721ba522ebbb14f3bd5e5d310668a41e468fe"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/TableToolsTest.php",
+    "bytes": 8943,
+    "sha256": "8eeb24a7c5f4f1d4be8b012137659ab468dca6093d801249e0837ece62cc0f8a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/UnitPreferenceTest.php",
+    "bytes": 27484,
+    "sha256": "89c4dc2c5f2a7b4bfe311dfa34df2355fa59bcfbbdb61efb708edf7cca69a08d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/TransmittalTest.php",
+    "bytes": 23218,
+    "sha256": "6c17cfc2dd941d3023e14506fe99b4417fe1e64bc37ce3b92b884684909e2768"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ValveActuatorTest.php",
+    "bytes": 9461,
+    "sha256": "a96740bebffb5aecce8352c73bd9a1b223dc8f17ec6d92097cf234f952621b5b"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ValveFaceToFaceTest.php",
+    "bytes": 11758,
+    "sha256": "0b09aaf4c0f60194d94fc6ba00f8c76746d39d1d41e10303024460ce82f4f749"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ValvePtRatingsTest.php",
+    "bytes": 17506,
+    "sha256": "11b27333b27eeeeae7421be57a4ae3494019f06ef228f6fc3dd4b30347240a24"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/ValveTestingTest.php",
+    "bytes": 12087,
+    "sha256": "7226e5ce833f192f083795c5f557fba34d95cccdb44ecdcb516aa51c9b23f55f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/WarehouseTest.php",
+    "bytes": 22602,
+    "sha256": "d345fe5d95fc5ee2bfa4651d8ce250a9ba8abee7ebdb29a24a746373aff45d69"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/WallThicknessTest.php",
+    "bytes": 8440,
+    "sha256": "cab88fd8c355c847200605e329dd38b76cf0687dc5a6a8dfe41ee08f4ac0263d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Feature/VendorTransmittalTest.php",
+    "bytes": 26899,
+    "sha256": "bce79e91a1acc0c5ac7d93ba5f5283f32efdc3b84ef42c3d8152e9ddbad5512a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Fixtures/pcf/line-6-P.pcf",
+    "bytes": 1795,
+    "sha256": "5edeaf196d0e5ed65b2ab73534d1023098848af8757a473a658489e609ca68c5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/Unit/ExampleTest.php",
+    "bytes": 243,
+    "sha256": "ffacae5c1a2a44c809420af5b3b404910da1b12167d58764dac6d10b8ba8cfaf"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/TestCase.php",
+    "bytes": 3261,
+    "sha256": "8aff2fd955a895f65acb777a49a6e96839a657b72aeb59df02cc24989d3ee875"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/tests/bootstrap.php",
+    "bytes": 2187,
+    "sha256": "1273651a95285566e342326e1adf04bbf7261998c37d05e2fbbea65c932e3f31"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/.env",
+    "bytes": 1387,
+    "sha256": "35b681effa738a03855aa1c8be735653ebbe5db04a8ba7e6bf8f3ec35c0badb1"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/.editorconfig",
+    "bytes": 275,
+    "sha256": "fe39e0ad06edea8e256e44f1fc4f319a8acfa785a7470af5cf6b9ed12dc34406"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/.env.example",
+    "bytes": 1091,
+    "sha256": "cc816d67d5b55939f8f282b56d46445c148fc96262eb6eb19ff8ae9d437676da"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/.gitignore.epcc",
+    "bytes": 126,
+    "sha256": "851c45c9764610614b5e0ad17c1abb35dd7a74538dc245b1da28a13f58d8ba27"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/.gitattributes",
+    "bytes": 186,
+    "sha256": "a40eb27ee0b545ca5b5542daaf99fec51f84f23b3766a6353864ef2a115bc51c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/.gitignore",
+    "bytes": 460,
+    "sha256": "639ac2c1060669680de7a2c9b09568c281db3093832e75146423563d7c888e75"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/AGENTS.md",
+    "bytes": 1446,
+    "sha256": "fc7f68b818002266982ebc3e423826ce67988c1edb4532bb1b086a17744cd890"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/.npmrc",
+    "bytes": 31,
+    "sha256": "e968d1d336604e9986ea31306a4d9e1442f4312fca262f444384baf928d6560e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/.phpunit.result.cache",
+    "bytes": 262553,
+    "sha256": "6b59cfa96585fe14635653f6b5b845bf72af5cd24f70a5c561959c0bb01b55a7"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/README.md",
+    "bytes": 3700,
+    "sha256": "1ed7f729d514ddbddaac5944a07298c3c896099ae3cab8667030145cf8ff0e47"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/CLAUDE.md",
+    "bytes": 1446,
+    "sha256": "fc7f68b818002266982ebc3e423826ce67988c1edb4532bb1b086a17744cd890"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/artisan",
+    "bytes": 425,
+    "sha256": "f91a517c0c5d3a904c3f390933964a5e08ec1fc68146882730daac4aca4ffcec"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/composer.json",
+    "bytes": 3069,
+    "sha256": "6bbe4ad61720a6d05d0fe8abdc4eb988221c261294debefbc3f5f712b65822a3"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/composer.lock",
+    "bytes": 405248,
+    "sha256": "f364c7e0bd13785737610fa7b2b8d85372e11c0f0754677319aec4668d3ee977"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/package.json",
+    "bytes": 461,
+    "sha256": "023d511d768e05b69e8127e18ae0e3d4a2e91702e8dd82917c655e53e5908de5"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/phpunit.xml",
+    "bytes": 1322,
+    "sha256": "ddf4f7921918caf3361c3b3bc8440cab2b4c9c46ca893a391bdb914b5074557e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/app/vite.config.js",
+    "bytes": 632,
+    "sha256": "f413e14379e2db8b200c63a6326b925f6d47cc0df458c77bfe188cfc23e8081f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_deleted.sh",
+    "bytes": 2116,
+    "sha256": "66b78299a1b18fb3e2b74ab08f6652eb6cadd27eaf7b5ae88207c3adbe8fd4f8"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_rls_fix.sh",
+    "bytes": 2172,
+    "sha256": "3e204a02ef4f97ac61aaa2433f1244d40421cf48f3c4462b568f9636686b3801"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_itp_doc.sh",
+    "bytes": 2172,
+    "sha256": "28f2edc60bdc8f04d0fdea7cf6f38a3399896bfe92a6e0c4bcff3cee225acebb"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_pcf.sh",
+    "bytes": 2111,
+    "sha256": "19d2e6e30d49fdfe510151624dc9107370bb6c2693ed9c2fdc8b084b227c5aff"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_materials3.sh",
+    "bytes": 2190,
+    "sha256": "afa960a8df5fa59d6edceb52c412e13915d9d12b02fb5db3503896434dd653e9"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_standards.sh",
+    "bytes": 2189,
+    "sha256": "743ee365d2c5d5b2c8006f7b2c9b5819eab40643bda4e75c99ae6fb27c11aaea"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_materials.txt",
+    "bytes": 1167,
+    "sha256": "4c786bed8e928e56671c2e7f0de6c180f0153b270c0a689b6454cb80fa4207d4"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_bolting.txt",
+    "bytes": 2688,
+    "sha256": "638db318537855364f6015e3d6181bff43c05ff73bed9b1f936b9cc0097dc3dd"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_equipment.txt",
+    "bytes": 3538,
+    "sha256": "aa0201c532f9a1fb444a67bf10531ff4be0559fc9c21aa1acd0b48fe4cc6a29e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_systems.txt",
+    "bytes": 1447,
+    "sha256": "39a6c0df2f6f7a13180048deb964c7882542230fd62720adb76cce1c5f49fc89"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/REBUILD.md",
+    "bytes": 14974,
+    "sha256": "87286fc1dceb7065d4abd9a744e703fe031f520cdcc7ba40c8f804716603ed13"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_deleted.txt",
+    "bytes": 720,
+    "sha256": "753e58b32da4edac2f23be2b4853f6a844c4a662e363c5ffbf1ea8953f53c702"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_materials.sh",
+    "bytes": 2188,
+    "sha256": "92144d8ccadead1ab74f6e895565e0066eae841304f7328fdcfb39d542f60be3"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_standards.txt",
+    "bytes": 1143,
+    "sha256": "427ce3f98ec37862f271d9e12030963ad909d3cd823948efb486a3e85cb91767"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/packages/standards-engine/conformance/README.md",
+    "bytes": 3627,
+    "sha256": "f0d28094257ac658015ba9c91ff09fe4b8a38479ef3e33b369791c081596c4c8"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/packages/standards-engine/conformance/cases.json",
+    "bytes": 19145,
+    "sha256": "27b3c1d46e2f6c500dbccded92865cdf6f9cd2f5ec245e8684434bc1e1b74ceb"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/packages/standards-engine/conformance/run.php",
+    "bytes": 4975,
+    "sha256": "2dc394844bb975514222cf4a61449e086fe372cb96d83b400ffc2cbf4b18ad8f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/packages/standards-engine/src/Failure.php",
+    "bytes": 602,
+    "sha256": "faa51ba29d4ce3f3a13e4a0be84951cc1ac3e4bf748fc63c881afec61606bb7c"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/packages/standards-engine/src/Predicates.php",
+    "bytes": 5892,
+    "sha256": "00054b0d8a2c97ddd88ded5ca7f8caf6a6edb36aa40d348ecc0174fe3c0a3087"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/packages/standards-engine/src/ReleaseGateEvaluator.php",
+    "bytes": 4303,
+    "sha256": "ed342fc01e21c8331c5c940e28ef611dd7907f08e5e8055c6c8887f6b86d52ae"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/packages/standards-engine/src/Verdict.php",
+    "bytes": 2657,
+    "sha256": "8b8797b6b06c28ac48c619da3ba61181b28b8780fc944ea74418bd6a994a4089"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/packages/standards-engine/composer.json",
+    "bytes": 386,
+    "sha256": "682a485e927bff7ac121248220f29d18f60f87b00c6bba4a739074d009eed978"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_itp.txt",
+    "bytes": 1033,
+    "sha256": "da992e5e21ccb0d34eba8e567179daf461c3dcae9349087d14f1206b1f9b75e6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/package.json",
+    "bytes": 51,
+    "sha256": "41bde54ad50c90b59fb5b8a6bc7769a6c92f23cefc7fe604b8abb5e09c595467"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_bolting.sh",
+    "bytes": 2185,
+    "sha256": "aa489f9c2b08363af64ab29b3b5940a31ac496e209851196d771a256b3baf43f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_systems.sh",
+    "bytes": 2098,
+    "sha256": "b147f56ddb0393116704a7ba30b473bff5e91d6c4c98d1236016ee18aa9c6b71"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/package-lock.json",
+    "bytes": 18668,
+    "sha256": "f21da498de76a019641bc4e6166beec100f2641d8c63087931806f88e5ca98c3"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_itp_doc.txt",
+    "bytes": 860,
+    "sha256": "ea552bb8ac258976de23eb7f6c861d2a2ddb285a95f09158171fa70fe1d3c62d"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_materials2.txt",
+    "bytes": 655,
+    "sha256": "468b785b2c69a5ac0b6b23ecda9385ccbf29abfd3b8e83dc43bd95ffcb4adbee"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_itp_refs.txt",
+    "bytes": 1124,
+    "sha256": "be830f4250e308aa227c19e51f819c92a8bc72ff07261b0b3566cbfa2bdaa926"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_materials2.sh",
+    "bytes": 2190,
+    "sha256": "8a20c12a835c6a5fdf39241e01e9337eeb77e2a06d4e725eb5ce5092e7995a93"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_baseline.txt",
+    "bytes": 1090,
+    "sha256": "14b210f1b2689e6d77b0f125f79ddd82a92056db203b7645a25f543bf13763d0"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_pcf.txt",
+    "bytes": 1020,
+    "sha256": "db0f0047fb3cd3ab33eb2994c08d195fe0869228ca1849e9b89050a02df1025f"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_rls_fix.txt",
+    "bytes": 1244,
+    "sha256": "4e45ff63b1379983c7f3b1a5525b7b347ab42545d8d2b0ea16e2677c47832f63"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_baseline.sh",
+    "bytes": 2113,
+    "sha256": "d95bf11cab3aaf6d552930a642104c473ce1b7ef0db039c593a78bb1a0a2e188"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/HANDOFF.md",
+    "bytes": 447473,
+    "sha256": "0aeb4bec8ca58a38dcccf306a187266b0148fe38a6085b45c536f5653b185134"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/README.md",
+    "bytes": 9343,
+    "sha256": "23840ae0d70fb6920b0de0c1e6f82f389bc80a384868ece75cc4ca3a894e6bf2"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_itp_refs.sh",
+    "bytes": 2174,
+    "sha256": "d15481c236b2c9813a195afc752f4f9638a15fb7c99ac17066e044cbd387ab96"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate.sh",
+    "bytes": 6744,
+    "sha256": "68878843c311b097dc759c40d1fb913d9d7db254466bebcc71b34f8d6c47496e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutate_itp.sh",
+    "bytes": 2089,
+    "sha256": "1a5700edd65a872a3fdf908d324331a65bc58f77f97a6e138e853e1c4c4685b6"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/prototype/test/render.test.js",
+    "bytes": 2443,
+    "sha256": "63ae9267bfb6b4cb337cf7826bfb799a145adb7a6a2fd8a95beba3d7ac055f80"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/prototype/test/run-all.sh",
+    "bytes": 1119,
+    "sha256": "c6b189d8bd9f15a22548e96aa31ec77d0a1e5b27801b6b3e7053f0008027ed40"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/prototype/test/sidebar.test.js",
+    "bytes": 3396,
+    "sha256": "00bc1180354d84ee86fbf3ea6d44901d67a496e1ebd7908e9d5a3016a1017e3a"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/prototype/index.html",
+    "bytes": 82998,
+    "sha256": "58909f08a535decec628e011676976f9ef102ae61ae766660a619e23dd0e587e"
+  },
+  {
+    "archive": "epcc-platform.txt",
+    "path": "epcc-platform/mutants_materials3.txt",
+    "bytes": 313,
+    "sha256": "2921d40d83412d9b2e59b6bd1902dab8c3a7d7f540e3fdefe6f8bc617f6d2337"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-001-AWP-Packaging.md",
+    "bytes": 8748,
+    "sha256": "f96cd166b065436f692da3f79f2be3e87c2e8c611c2a3e24093a3b7c28dd2b78"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-002-Defer-AWP.md",
+    "bytes": 9591,
+    "sha256": "634cee0bf19a3811362dcb42dc578c0b833b2a4d8940c9c2b4fdc639a4375b32"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-003-Annex-A-Laravel-Evaluation.md",
+    "bytes": 18518,
+    "sha256": "1ed1f189b89eeeee66336fd56c4ad122b6fd7675a14f999325562bc9932a360d"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-003-Technology-Stack.md",
+    "bytes": 10860,
+    "sha256": "381c97aaffc46992f4728cefe520c1825df7e420d67a8456e706fe2ff1647bb7"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-006-Piping-Line-Component-Joint-Model.md",
+    "bytes": 37437,
+    "sha256": "684e020c70ca34c890f09a62d8eb0409f4f0e39bf05a476dbc50856c206f4404"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-004-Physical-Breakdown-Plant-Pipeline-Subsystem.md",
+    "bytes": 23171,
+    "sha256": "52b3ea9fe3f8daaf8fddb34a93004b3581308c9964b3054b6b814793f8ba602b"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-005-Engineering-Data-Ingestion.md",
+    "bytes": 25540,
+    "sha256": "1826b6b0c390580d4774e3069c3ef2590595e63b0e6922c4e54dafb178e8cc18"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-009-Manual-Modelling-and-Component-Templates.md",
+    "bytes": 15154,
+    "sha256": "03f06a06fb9d032b038913f75e1f9415b47beb35205cc17c321036bebb33c0c0"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-007-Reference-Data-Engineering-Standards.md",
+    "bytes": 19885,
+    "sha256": "6aedf8bcf210d54c9784e7f7916e7a32f9dc65c120adaf115c5048d28d877fd7"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-008-PMS-Piping-Class-Rules.md",
+    "bytes": 155151,
+    "sha256": "df9859d3e821aacdab11cb97d9c458a2f9da74af82ec32da511f31c2ae919e74"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-010-Equipment-Nozzles-and-Dia-Inch.md",
+    "bytes": 17321,
+    "sha256": "ae198a89df511abfe3fb2ba6143ae052a90f45044367263e28d10a9a76e62762"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-011-Database-Per-Project.md",
+    "bytes": 8450,
+    "sha256": "136723aee53036fca1a93d02c937d22ae82d4f5dae8f2bd1c16a6e3a8b293bef"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-010-Equipment-Register.md",
+    "bytes": 2004,
+    "sha256": "7254fcc6c4c2b674c5abe4c501411272514ccfc6bc758908574d3fe155033fa6"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-012-Scaling-Projects-and-the-RLS-Escape-Hatch.md",
+    "bytes": 8715,
+    "sha256": "500e7ade36828a7fb39540acfa954d90301b94f0ba82be4637233d71998ffb4b"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-013-Project-Backup-Export-and-Deletion.md",
+    "bytes": 12083,
+    "sha256": "32f9e1158ad2c70f8f78c95e64285f5252b0b01fc8c31ec0daa801526a359e61"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-015-Inspection-and-Test-Plans.md",
+    "bytes": 14480,
+    "sha256": "c6216964a768bc666238339e99f7ab05be2cbde969908f8a218a1e6b39d39e31"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-016-Standards-Library.md",
+    "bytes": 9787,
+    "sha256": "53e651452b82ac3dcab6e91b022a8c3bd26368935b5a8cc288e2056c887eac18"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/ADR-014-Units-of-Measure.md",
+    "bytes": 10200,
+    "sha256": "a726a1d269392eaeaa294ec8ccc35c375dbdf871c8ab172d2cad1a5a4f246167"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/DEFECT-001-Baseline-RLS-Binds-To-The-Outer-Table.md",
+    "bytes": 4564,
+    "sha256": "6187347722e4bc84db369f8ede4257cb59f39ac9e48542558444a3b09f65f6aa"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/Architecture-and-Data-Model.md",
+    "bytes": 29933,
+    "sha256": "9b5ebcf191263efce5e499a8548944787e54fa9c99a56a197de0843417dd55d3"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/Infra-Cost-Model-Iran.md",
+    "bytes": 14294,
+    "sha256": "137accda4648049931b4d1cef4d6774184041fcb5eb82e93e508b8c36aec2fed"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/Iran-First-Market-Addendum.md",
+    "bytes": 21430,
+    "sha256": "258d46db54e6fb97f5f9ebf18334641b4d75f0d1c03e607ce4c57ece3fcc53a2"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/Prototype-Coverage-Map.md",
+    "bytes": 21655,
+    "sha256": "f99069e83fee375c82778418fcca8a31f85707966b655b0c2271069f730c4871"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/SRS-EPCC-Platform.md",
+    "bytes": 60706,
+    "sha256": "b697fe6d84bb094dd88295e47ddff4eac8e4d7807e83b4caf90515749f07730a"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/TODO.md",
+    "bytes": 38337,
+    "sha256": "988d1592db0034f7e6614395f92e588aaee4bde6269566e646f363965c460538"
+  },
+  {
+    "archive": "docs.txt",
+    "path": "epcc-platform/docs/Spike-RLS-Results.md",
+    "bytes": 15092,
+    "sha256": "64253f9ce75fb234c146b37259f41e07ca227dee8462ab14468e6ea8a336d5f7"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/actuators.schema.json",
+    "bytes": 4331,
+    "sha256": "20cc35908533648a3a6045cd60a11333ed388b5cbec9c292daea078eae0a5613"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/allowable-stress.schema.json",
+    "bytes": 2433,
+    "sha256": "8fa473a1aa2d99240a51cb51aa58fd292cb96b0f319f04fc05f27467bff3114b"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/component-templates.schema.json",
+    "bytes": 4060,
+    "sha256": "17bc850d4e6517521f8b63f88ad828849c5245dcd955bc3bc53b739374c395cc"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/end-types.schema.json",
+    "bytes": 1300,
+    "sha256": "41fbf027c2fee002ece686d4477301c149387a879dd66ac58151a036fd5510d7"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/fitting-dimensions.schema.json",
+    "bytes": 1845,
+    "sha256": "04bf92ab7dd8e9603d0677e9b551a9c55d753eb4a0007066312984af901ee4b8"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/fluid-service.schema.json",
+    "bytes": 5938,
+    "sha256": "9e9a13d94826e0f8dd8cfa8246370c8d0b83c195e9b40b76571ad851bc103ab1"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/flange-pt-ratings.schema.json",
+    "bytes": 7151,
+    "sha256": "284619723066561bbcb1f8178476d4d9d151fa9f5cc2f115f04035b354b9c524"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/flange-bolting.schema.json",
+    "bytes": 4379,
+    "sha256": "68b2b5795880549fca434cba3e6967439e7c0135b26328fa4bb5a6354afebe2a"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/materials.schema.json",
+    "bytes": 7131,
+    "sha256": "92136ec4cb03f10315b8061e6813f2ba5caabff84cfcf3cd273c9e66f457757e"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/pipe-schedules.schema.json",
+    "bytes": 935,
+    "sha256": "16e1e34ca65be8e3147c1e9bf873acef123e7b72675630f27288801e0197e502"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/pipe-sizes.schema.json",
+    "bytes": 1061,
+    "sha256": "341a86c38cd14926901b7fa9cd5754e910db1abc775da7d4c78056479a1815cd"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/units.schema.json",
+    "bytes": 5181,
+    "sha256": "859fde6cfcae641c8bb7aeedd763d515d3773e79a9b3a54de264dac8bacbb668"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/valve-construction.schema.json",
+    "bytes": 6811,
+    "sha256": "83368434cf26524a5b963e7e0c000399c03c018663bc42b668b0be0a044f3e61"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/valve-face-to-face.schema.json",
+    "bytes": 5298,
+    "sha256": "01a23161ba9986694a38620dadb0562467434f0545ae1d8990028d78268130ff"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/valve-testing.schema.json",
+    "bytes": 5390,
+    "sha256": "b98a72439a41fadfc8d2f287ecce41ec3fd34c8f5e470cbc6999dd1d7b99f60f"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/schema/valve-pt-ratings.schema.json",
+    "bytes": 7600,
+    "sha256": "550fb735c9ee5eeb3c430c8765b932d5d184a79f1d4fcf69d72634c2ca34f192"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/actuators.ref.json",
+    "bytes": 9963,
+    "sha256": "f0991a7d75fa802faee73e6cdfda9ec302bfee5b8f9ea0a2ad11b3b7d499af11"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/allowable-stress.ref.json",
+    "bytes": 1139272,
+    "sha256": "d7e8b24daa9eb6de3b44ef588274389e24b88258e7da0dd5158f85ce893e3152"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/component-templates.ref.json",
+    "bytes": 16457,
+    "sha256": "739032d452c146211e94fdf57030d6fa78a8b26b5144a5ed08a73c6d4df83e4b"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/end-types.ref.json",
+    "bytes": 6483,
+    "sha256": "8f6c3b0f843d66a6dd91cd807ff81185f567e8d307bf1a12288c4781038d07de"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/fitting-dimensions.ref.json",
+    "bytes": 16744,
+    "sha256": "bead83a2e5c15639cd3d316fb075951a5a143a6fe55e95a98e794f52ad1eb6d5"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/flange-pt-ratings.ref.json",
+    "bytes": 258963,
+    "sha256": "1c0586d8df78540318d7027ed593f5aa0302efec69628dc1a495f6bb14f5327b"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/fluid-service.ref.json",
+    "bytes": 14683,
+    "sha256": "d1a9532041630b65d88324f76ec584c96a2f33817f95f71a011a8a403c38b596"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/flange-bolting.ref.json",
+    "bytes": 105531,
+    "sha256": "aab664ffb40e1c6d0cb2b643d4c4fe19efe9c243cd4f3d0ea8e1b9e10212484e"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/materials.ref.json",
+    "bytes": 465838,
+    "sha256": "9e08e816e34fa69cf7af3131ad5acacc6762a3f7a783bec027f1566c54a9e0ec"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/pipe-sizes.ref.json",
+    "bytes": 3539,
+    "sha256": "63ae478492c6a7ae6009f0d42405492937e9f39589748152d8a75a07d52a4212"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/pipe-schedules.ref.json",
+    "bytes": 8143,
+    "sha256": "de69cae9918057b06215fb2889a5e98da3d05fa3fd8b54c569a9dcc587561ec4"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/units.ref.json",
+    "bytes": 10868,
+    "sha256": "bb376259bf8c7a8d7c2dd9d82c10252a6082bc2bd8f324b87418312f76997542"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/valve-face-to-face.ref.json",
+    "bytes": 652402,
+    "sha256": "705155447094e83ca3a935abd4b1ead3ca2363d03046e54860c79c584ed0f64b"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/valve-construction.ref.json",
+    "bytes": 52193,
+    "sha256": "47c3be0fcf411bd4ee49a42a2f9edd84b1fc8b587b03ece47cdfa57ee2438402"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/valve-pt-ratings.ref.json",
+    "bytes": 552563,
+    "sha256": "6e279aafe9676ce5c3d23fe12c3c21123de5a25a0db9aa9467bcff8cff7a38d1"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/reference/valve-testing.ref.json",
+    "bytes": 36974,
+    "sha256": "776aebce1a95c564f838a53e62ce07d8963dd232ee7d8a28a1c6b5c63275b490"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/schema/standards-pack.schema.json",
+    "bytes": 16150,
+    "sha256": "bebd272d390593d87a8a0e33461ac5ba97e8c343de16685ab3849b1e08b11075"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/awp.pack.json",
+    "bytes": 39052,
+    "sha256": "46018908dbc78a36c68433f0644c48ba490678b7a0540e0d57a2cc71cff0946b"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/ips-iran.pack.json",
+    "bytes": 43983,
+    "sha256": "197f503aca9232d1cf0f6eb91cabcf7bd249f504e60dd1b28383d8de14ed4b24"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/iso.pack.json",
+    "bytes": 34242,
+    "sha256": "b96b855b585667d2333262fb76eb4b91d4d06a111756dbec508fa862b879be94"
+  },
+  {
+    "archive": "standards-packs.txt",
+    "path": "epcc-platform/standards-packs/validate_packs.py",
+    "bytes": 142463,
+    "sha256": "a714b4ea1be0e5ae033bc6cfdb66218e4526b7cc93a9445195e6c0603d01bad2"
+  },
+  {
+    "archive": "workspace.txt",
+    "path": "workspace-support/package.json",
+    "bytes": 51,
+    "sha256": "41bde54ad50c90b59fb5b8a6bc7769a6c92f23cefc7fe604b8abb5e09c595467"
+  },
+  {
+    "archive": "workspace.txt",
+    "path": "workspace-support/authproxy.cjs",
+    "bytes": 1856,
+    "sha256": "df4b4c6a5555550aa57fb55011681e104cdd2b330f1c49dbcd1de5ec73c298b7"
+  },
+  {
+    "archive": "workspace.txt",
+    "path": "workspace-support/package-lock.json",
+    "bytes": 18659,
+    "sha256": "f079f760428edcf2c4e96404625a98b3e44e8c9feda920f5600b93757ff104b7"
+  },
+  {
+    "archive": "workspace.txt",
+    "path": "workspace-support/arena-rtl.user.js",
+    "bytes": 2803,
+    "sha256": "535a0db11f7ecaf6ef4d16a01591e2037321fe2d916cd05d4dadf5492ddc484c"
+  }
+]

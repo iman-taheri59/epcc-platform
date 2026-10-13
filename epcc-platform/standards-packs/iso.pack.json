@@ -1,0 +1,338 @@
+{
+  "packId": "iso",
+  "version": "1.0.0",
+  "kind": "iso",
+  "name": {
+    "en": "ISO Framework Pack",
+    "fa": "بسته چارچوب ایزو"
+  },
+  "description": {
+    "en": "Project governance based on ISO 21500/21502 with ISO 19650 information management, ISO 9001 quality, ISO 31000 risk and ISO 15926/CFIHOS handover data.",
+    "fa": "راهبری پروژه بر پایه ایزو ۲۱۵۰۰/۲۱۵۰۲ همراه با مدیریت اطلاعات ایزو ۱۹۶۵۰، کیفیت ایزو ۹۰۰۱، ریسک ایزو ۳۱۰۰۰ و داده تحویل ایزو ۱۵۹۲۶."
+  },
+  "standardsReferences": [
+    { "code": "ISO 21502:2020", "title": { "en": "Project management guidance", "fa": "راهنمای مدیریت پروژه" }, "scope": "Governance, gates, PM plan" },
+    { "code": "ISO 19650-2:2018", "title": { "en": "Information management - delivery phase", "fa": "مدیریت اطلاعات - فاز تحویل" }, "scope": "CDE states, suitability codes, naming" },
+    { "code": "ISO 9001:2015", "title": { "en": "Quality management systems", "fa": "سیستم مدیریت کیفیت" }, "scope": "ITP, NCR, CAPA, audit" },
+    { "code": "ISO 31000:2018", "title": { "en": "Risk management", "fa": "مدیریت ریسک" }, "scope": "Risk register and response" },
+    { "code": "ISO 15926 / CFIHOS 1.5", "title": { "en": "Plant lifecycle data", "fa": "داده چرخه عمر واحد صنعتی" }, "scope": "Tag class library, handover" },
+    { "code": "ISO 45001:2018", "title": { "en": "Occupational health and safety", "fa": "ایمنی و بهداشت شغلی" }, "scope": "Permit, incident, competence" }
+  ],
+
+  "terminology": {
+    "workPackage": { "en": "Work Package", "fa": "بسته کاری" },
+    "deliverable": { "en": "Deliverable", "fa": "قلم تحویلی" },
+    "deliverableRegister": { "en": "Master Deliverable Register (MDR)", "fa": "فهرست اصلی مدارک" },
+    "informationContainer": { "en": "Information Container", "fa": "ظرف اطلاعاتی" },
+    "breakdownPrimary": { "en": "Work Breakdown Structure", "fa": "ساختار شکست کار" },
+    "areaUnit": { "en": "Plant Area / Unit", "fa": "ناحیه / واحد" },
+    "gate": { "en": "Stage Gate Review", "fa": "بازنگری دروازه مرحله‌ای" },
+    "progressBasis": { "en": "Physical Progress", "fa": "پیشرفت فیزیکی" }
+  },
+
+  "breakdownStructures": [
+    { "code": "WBS", "name": { "en": "Work Breakdown Structure", "fa": "ساختار شکست کار" }, "enabled": true, "mandatory": true, "maxDepth": 8, "parentOf": ["ACTIVITY"], "codingRule": "num.wbs" },
+    { "code": "CBS", "name": { "en": "Cost Breakdown Structure", "fa": "ساختار شکست هزینه" }, "enabled": true, "mandatory": true, "maxDepth": 6 },
+    { "code": "OBS", "name": { "en": "Organizational Breakdown Structure", "fa": "ساختار شکست سازمانی" }, "enabled": true, "maxDepth": 5 },
+    { "code": "PBS", "name": { "en": "Product Breakdown Structure", "fa": "ساختار شکست محصول" }, "enabled": true, "maxDepth": 6 },
+    { "code": "SBS", "name": { "en": "System Breakdown Structure", "fa": "ساختار شکست سیستم" }, "enabled": true, "mandatory": true, "maxDepth": 3, "parentOf": ["TAG"] },
+    { "code": "AREA", "name": { "en": "Plant / Area / Unit", "fa": "واحد / ناحیه" }, "enabled": true, "maxDepth": 4 },
+    { "code": "CWA", "name": { "en": "Construction Work Area", "fa": "محدوده کاری اجرا" }, "enabled": false },
+    { "code": "CWP", "name": { "en": "Construction Work Package", "fa": "بسته کاری اجرا" }, "enabled": false },
+    { "code": "EWP", "name": { "en": "Engineering Work Package", "fa": "بسته کاری مهندسی" }, "enabled": false },
+    { "code": "PWP", "name": { "en": "Procurement Work Package", "fa": "بسته کاری تأمین" }, "enabled": false },
+    { "code": "IWP", "name": { "en": "Installation Work Package", "fa": "بسته کاری نصب" }, "enabled": false },
+    { "code": "TWP", "name": { "en": "Turnover Work Package", "fa": "بسته کاری تحویل" }, "enabled": true, "maxDepth": 2 }
+  ],
+
+  "objectTypes": [
+    {
+      "type": "deliverable",
+      "enabled": true,
+      "lifecycle": "lc.iso19650.document",
+      "numbering": "num.iso19650.doc",
+      "requiredAttributes": [
+        { "field": "discipline_code", "requiredFromState": "WIP", "message": { "en": "Discipline is mandatory.", "fa": "دیسیپلین الزامی است." } },
+        { "field": "suitability", "requiredFromState": "SHARED", "message": { "en": "Suitability code required before sharing.", "fa": "کد تناسب پیش از اشتراک‌گذاری الزامی است." } },
+        { "field": "reviewer_company_id", "requiredFromState": "SHARED", "message": { "en": "Assign a reviewing company.", "fa": "شرکت بازنگر را تعیین کنید." } },
+        { "field": "system_id", "requiredFromState": "PUBLISHED", "message": { "en": "Link to a system before publishing.", "fa": "پیش از انتشار به یک سیستم متصل کنید." } }
+      ]
+    },
+    { "type": "tag", "enabled": true, "numbering": "num.tag" },
+    { "type": "ncr", "enabled": true, "lifecycle": "lc.ncr", "numbering": "num.ncr" },
+    { "type": "risk", "enabled": true, "numbering": "num.risk" },
+    { "type": "tq", "enabled": true, "numbering": "num.tq" },
+    { "type": "punchItem", "enabled": true, "lifecycle": "lc.punch" },
+    { "type": "certificate", "enabled": true },
+    { "type": "iwp", "enabled": false }
+  ],
+
+  "lifecycles": [
+    {
+      "id": "lc.iso19650.document",
+      "appliesTo": ["deliverable", "vendorDocument"],
+      "states": [
+        { "code": "WIP", "name": { "en": "Work in Progress", "fa": "در حال انجام" }, "category": "draft", "suitabilityCode": "S0", "colour": "#94A3B8" },
+        { "code": "SHARED_IFR", "name": { "en": "Shared - Issued for Review", "fa": "اشتراکی - صادر برای بازنگری" }, "category": "inReview", "suitabilityCode": "S1", "colour": "#F59E0B" },
+        { "code": "SHARED_IFA", "name": { "en": "Shared - Issued for Approval", "fa": "اشتراکی - صادر برای تأیید" }, "category": "inReview", "suitabilityCode": "S3", "colour": "#F97316" },
+        { "code": "APPROVED", "name": { "en": "Approved (A1)", "fa": "تأیید شده" }, "category": "approved", "suitabilityCode": "A1", "colour": "#22C55E" },
+        { "code": "PUBLISHED_IFC", "name": { "en": "Published - Issued for Construction", "fa": "منتشر شده - صادر برای اجرا" }, "category": "issued", "suitabilityCode": "A1", "colour": "#16A34A" },
+        { "code": "AS_BUILT", "name": { "en": "As-Built", "fa": "چون‌ساخت" }, "category": "closed", "suitabilityCode": "A5", "colour": "#0EA5E9" },
+        { "code": "ARCHIVED", "name": { "en": "Archived", "fa": "بایگانی شده" }, "category": "closed", "colour": "#64748B", "isTerminal": true },
+        { "code": "SUPERSEDED", "name": { "en": "Superseded", "fa": "منسوخ شده" }, "category": "cancelled", "colour": "#EF4444", "isTerminal": true }
+      ],
+      "transitions": [
+        { "from": "WIP", "to": "SHARED_IFR", "capability": "document.share", "allowedCompanyTypes": ["EPC", "SUB", "VEN"], "guards": [{ "check": "interDisciplineCheckComplete", "message": { "en": "Inter-discipline check (IDC) must be signed off.", "fa": "کنترل بین‌دیسیپلینی باید تأیید شده باشد." } }], "slaHours": 24, "emitsEvent": "document.shared.v1" },
+        { "from": "SHARED_IFR", "to": "WIP", "capability": "document.recall", "allowedCompanyTypes": ["EPC", "SUB", "VEN"] },
+        { "from": "SHARED_IFR", "to": "SHARED_IFA", "capability": "document.submit.approval", "allowedCompanyTypes": ["EPC"], "guards": [{ "check": "reviewCommentsDispositioned", "message": { "en": "All review comments must be dispositioned.", "fa": "همه نظرات بازنگری باید تعیین‌تکلیف شوند." } }], "slaHours": 240 },
+        { "from": "SHARED_IFA", "to": "APPROVED", "capability": "document.approve", "allowedCompanyTypes": ["OWN", "PMC"], "slaHours": 336, "escalateAfterHours": 240, "signatureRequired": "advanced", "emitsEvent": "document.approved.v1" },
+        { "from": "SHARED_IFA", "to": "WIP", "capability": "document.reject", "allowedCompanyTypes": ["OWN", "PMC"], "emitsEvent": "document.rejected.v1" },
+        { "from": "APPROVED", "to": "PUBLISHED_IFC", "capability": "document.publish", "allowedCompanyTypes": ["EPC"], "signatureRequired": "advanced", "emitsEvent": "document.published.v1" },
+        { "from": "PUBLISHED_IFC", "to": "AS_BUILT", "capability": "document.asbuilt", "allowedCompanyTypes": ["EPC"], "guards": [{ "check": "redlinesConsolidated", "message": { "en": "Field red-lines must be consolidated.", "fa": "اصلاحات کارگاهی باید تجمیع شوند." } }] },
+        { "from": "PUBLISHED_IFC", "to": "SUPERSEDED", "capability": "document.supersede", "allowedCompanyTypes": ["EPC"] },
+        { "from": "AS_BUILT", "to": "ARCHIVED", "capability": "document.archive", "allowedCompanyTypes": ["OWN", "EPC"] }
+      ]
+    },
+    {
+      "id": "lc.ncr",
+      "appliesTo": ["ncr"],
+      "states": [
+        { "code": "RAISED", "name": { "en": "Raised", "fa": "صادر شده" }, "category": "draft", "colour": "#EF4444" },
+        { "code": "ACKNOWLEDGED", "name": { "en": "Acknowledged", "fa": "دریافت تأیید شد" }, "category": "inReview", "colour": "#F59E0B" },
+        { "code": "DISPOSITION", "name": { "en": "Disposition Proposed", "fa": "تعیین تکلیف پیشنهادی" }, "category": "inReview", "colour": "#F97316" },
+        { "code": "DISPOSITION_APPROVED", "name": { "en": "Disposition Approved", "fa": "تعیین تکلیف تأیید شد" }, "category": "approved", "colour": "#84CC16" },
+        { "code": "ACTION_COMPLETE", "name": { "en": "Corrective Action Complete", "fa": "اقدام اصلاحی انجام شد" }, "category": "approved", "colour": "#22C55E" },
+        { "code": "VERIFIED_CLOSED", "name": { "en": "Verified and Closed", "fa": "راستی‌آزمایی و بسته شد" }, "category": "closed", "colour": "#16A34A", "isTerminal": true },
+        { "code": "VOID", "name": { "en": "Void", "fa": "ابطال شده" }, "category": "cancelled", "colour": "#64748B", "isTerminal": true }
+      ],
+      "transitions": [
+        { "from": "RAISED", "to": "ACKNOWLEDGED", "capability": "ncr.acknowledge", "allowedCompanyTypes": ["EPC", "SUB", "VEN"], "slaHours": 48, "escalateAfterHours": 72 },
+        { "from": "ACKNOWLEDGED", "to": "DISPOSITION", "capability": "ncr.disposition.propose", "allowedCompanyTypes": ["EPC", "SUB", "VEN"], "guards": [{ "check": "rootCauseRecorded", "message": { "en": "Root cause analysis is required.", "fa": "تحلیل ریشه‌ای الزامی است." } }], "slaHours": 120 },
+        { "from": "DISPOSITION", "to": "DISPOSITION_APPROVED", "capability": "ncr.disposition.approve", "allowedCompanyTypes": ["PMC", "OWN", "TPI"], "signatureRequired": "advanced" },
+        { "from": "DISPOSITION_APPROVED", "to": "ACTION_COMPLETE", "capability": "ncr.action.complete", "allowedCompanyTypes": ["EPC", "SUB", "VEN"] },
+        { "from": "ACTION_COMPLETE", "to": "VERIFIED_CLOSED", "capability": "ncr.verify", "allowedCompanyTypes": ["PMC", "OWN", "TPI"], "signatureRequired": "advanced", "emitsEvent": "ncr.closed.v1" },
+        { "from": "RAISED", "to": "VOID", "capability": "ncr.void", "allowedCompanyTypes": ["PMC", "OWN"] }
+      ]
+    },
+    {
+      "id": "lc.punch",
+      "appliesTo": ["punchItem"],
+      "states": [
+        { "code": "OPEN", "name": { "en": "Open", "fa": "باز" }, "category": "draft", "colour": "#EF4444" },
+        { "code": "IN_PROGRESS", "name": { "en": "In Progress", "fa": "در حال رفع" }, "category": "inReview", "colour": "#F59E0B" },
+        { "code": "READY_FOR_CHECK", "name": { "en": "Ready for Verification", "fa": "آماده راستی‌آزمایی" }, "category": "inReview", "colour": "#3B82F6" },
+        { "code": "CLOSED", "name": { "en": "Closed", "fa": "بسته شده" }, "category": "closed", "colour": "#22C55E", "isTerminal": true },
+        { "code": "REJECTED", "name": { "en": "Rejected - Reopened", "fa": "رد شده - بازگشایی" }, "category": "draft", "colour": "#DC2626" }
+      ],
+      "transitions": [
+        { "from": "OPEN", "to": "IN_PROGRESS", "capability": "punch.assign", "allowedCompanyTypes": ["EPC", "SUB"] },
+        { "from": "IN_PROGRESS", "to": "READY_FOR_CHECK", "capability": "punch.submit", "allowedCompanyTypes": ["EPC", "SUB"], "guards": [{ "check": "evidencePhotoAttached", "message": { "en": "Attach evidence photo before submitting.", "fa": "پیش از ارسال، عکس مستند پیوست کنید." } }] },
+        { "from": "READY_FOR_CHECK", "to": "CLOSED", "capability": "punch.close", "allowedCompanyTypes": ["OWN", "PMC", "MC", "TPI"], "signatureRequired": "simple", "emitsEvent": "punch.closed.v1" },
+        { "from": "READY_FOR_CHECK", "to": "REJECTED", "capability": "punch.reject", "allowedCompanyTypes": ["OWN", "PMC", "MC", "TPI"] },
+        { "from": "REJECTED", "to": "IN_PROGRESS", "capability": "punch.assign", "allowedCompanyTypes": ["EPC", "SUB"] }
+      ]
+    }
+  ],
+
+  "gates": [
+    {
+      "code": "G1",
+      "name": { "en": "Gate 1 - Project Setup Approved", "fa": "دروازه ۱ - تأیید راه‌اندازی پروژه" },
+      "phase": "initiation",
+      "approverCompanyType": "OWN",
+      "exitCriteria": [
+        { "id": "G1-01", "text": { "en": "Project management plan approved", "fa": "برنامه مدیریت پروژه تأیید شده" }, "evidenceObjectType": "deliverable", "automatable": true },
+        { "id": "G1-02", "text": { "en": "WBS, CBS and OBS baselined", "fa": "ساختارهای شکست کار، هزینه و سازمان مبنا شده" }, "automatable": true },
+        { "id": "G1-03", "text": { "en": "Risk register initiated with top 10 risks", "fa": "ثبت ریسک با ۱۰ ریسک اصلی آغاز شده" }, "evidenceObjectType": "risk", "automatable": true, "guard": { "check": "minimumRecordCount", "params": { "objectType": "risk", "count": 10 } } },
+        { "id": "G1-04", "text": { "en": "Interface register established with all parties", "fa": "ثبت واسط‌ها با همه طرف‌ها ایجاد شده" } }
+      ]
+    },
+    {
+      "code": "G2",
+      "name": { "en": "Gate 2 - Design Basis Frozen", "fa": "دروازه ۲ - انجماد مبانی طراحی" },
+      "phase": "engineering",
+      "approverCompanyType": "OWN",
+      "exitCriteria": [
+        { "id": "G2-01", "text": { "en": "All P&IDs at IFD or better", "fa": "همه نقشه‌های P&ID در وضعیت IFD یا بالاتر" }, "automatable": true, "guard": { "check": "linkedDrawingsAtStatus:IFD", "params": { "documentType": "PID" } } },
+        { "id": "G2-02", "text": { "en": "HAZOP closed with all actions dispositioned", "fa": "هزاپ بسته شده و همه اقدامات تعیین تکلیف شده" } },
+        { "id": "G2-03", "text": { "en": "Tag register populated for all main equipment", "fa": "ثبت تگ برای همه تجهیزات اصلی تکمیل شده" }, "evidenceObjectType": "tag", "automatable": true }
+      ]
+    },
+    {
+      "code": "G3",
+      "name": { "en": "Gate 3 - Ready for Construction", "fa": "دروازه ۳ - آمادگی اجرا" },
+      "phase": "construction",
+      "approverCompanyType": "OWN",
+      "exitCriteria": [
+        { "id": "G3-01", "text": { "en": "IFC drawings issued for the first construction area", "fa": "نقشه‌های IFC برای اولین ناحیه اجرایی صادر شده" }, "automatable": true },
+        { "id": "G3-02", "text": { "en": "HSE plan and permit system operational", "fa": "برنامه ایمنی و سامانه مجوز کار عملیاتی است" } },
+        { "id": "G3-03", "text": { "en": "ITPs approved for all construction disciplines", "fa": "برنامه‌های بازرسی و آزمون همه دیسیپلین‌های اجرا تأیید شده" }, "evidenceObjectType": "itp", "automatable": true }
+      ]
+    },
+    {
+      "code": "G4",
+      "name": { "en": "Gate 4 - Ready for Start-Up", "fa": "دروازه ۴ - آمادگی راه‌اندازی" },
+      "phase": "commissioning",
+      "approverCompanyType": "OWN",
+      "exitCriteria": [
+        { "id": "G4-01", "text": { "en": "Mechanical completion certificates issued for all subsystems", "fa": "گواهی تکمیل مکانیکی برای همه زیرسیستم‌ها صادر شده" }, "automatable": true },
+        { "id": "G4-02", "text": { "en": "No open category A punch items", "fa": "هیچ نقص دسته الف بازی وجود ندارد" }, "automatable": true, "guard": { "check": "noOpenPunchOfCategory:A" } },
+        { "id": "G4-03", "text": { "en": "Turnover dossier accepted by owner", "fa": "داشیه تحویل توسط کارفرما پذیرفته شده" } }
+      ]
+    }
+  ],
+
+  "constraintTypes": [
+    { "code": "ENG", "name": { "en": "Engineering Deliverable", "fa": "قلم تحویلی مهندسی" }, "severity": "hard", "defaultOwnerRole": "disciplineLead", "autoCheck": { "source": "engineering.deliverable", "clearWhenEvent": "document.published.v1", "condition": "status == 'PUBLISHED_IFC'" }, "waiverAllowed": true, "waiverApproverCapability": "project.waiver.approve" },
+    { "code": "MAT", "name": { "en": "Material Availability", "fa": "موجودی مصالح" }, "severity": "hard", "defaultOwnerRole": "materialsManager", "autoCheck": { "source": "procurement.material", "clearWhenEvent": "material.reserved.v1", "condition": "availabilityPercent >= 100" }, "waiverAllowed": true, "waiverApproverCapability": "project.waiver.approve" },
+    { "code": "PERMIT", "name": { "en": "Permit / Approval", "fa": "مجوز" }, "severity": "hard", "defaultOwnerRole": "hseManager", "autoCheck": { "source": "hse.permit", "clearWhenEvent": "permit.issued.v1" }, "waiverAllowed": false },
+    { "code": "QC", "name": { "en": "Quality Hold Point", "fa": "نقطه توقف کیفی" }, "severity": "hard", "defaultOwnerRole": "qcManager", "waiverAllowed": false },
+    { "code": "ACCESS", "name": { "en": "Work Front Access", "fa": "دسترسی جبهه کاری" }, "severity": "soft", "defaultOwnerRole": "constructionManager", "waiverAllowed": true }
+  ],
+
+  "releaseGates": [
+    {
+      "objectType": "certificate.mechanicalCompletion",
+      "hardBlock": true,
+      "rules": [
+        { "check": "noOpenPunchOfCategory:A", "message": { "en": "All category A punch items must be closed before mechanical completion.", "fa": "همه نقص‌های دسته الف باید پیش از تکمیل مکانیکی بسته شوند." } },
+        { "check": "allItrsSigned", "params": { "itrTypes": ["A", "B"] }, "message": { "en": "All A and B inspection test records must be signed.", "fa": "همه گزارش‌های بازرسی نوع الف و ب باید امضا شده باشند." } },
+        { "check": "allNcrsClosedForSystem", "message": { "en": "Open NCRs exist on this subsystem.", "fa": "بر روی این زیرسیستم عدم انطباق باز وجود دارد." } }
+      ],
+      "waiver": { "allowed": true, "approverCapability": "certificate.exception.approve", "justificationRequired": true }
+    },
+    {
+      "objectType": "invoice",
+      "hardBlock": true,
+      "rules": [
+        { "check": "progressVerifiedByConsultant", "message": { "en": "Progress must be verified by the consultant before invoicing.", "fa": "پیشرفت باید پیش از صورت‌وضعیت توسط مشاور تأیید شود." } },
+        { "check": "budgetWithinAuthority", "message": { "en": "Amount exceeds the delegated authority for this approver.", "fa": "مبلغ از حدود اختیارات این تأییدکننده فراتر است." } }
+      ],
+      "waiver": { "allowed": false }
+    }
+  ],
+
+  "numberingRules": [
+    {
+      "id": "num.iso19650.doc",
+      "appliesTo": ["deliverable"],
+      "pattern": "{PROJECT}-{ORIGINATOR}-{VOLUME}-{LEVEL}-{TYPE}-{DISCIPLINE}-{SEQ:4}",
+      "separator": "-",
+      "case": "upper",
+      "reservable": true,
+      "revisionScheme": {
+        "preIssue": ["A", "B", "C", "D"],
+        "postIssue": ["0", "1", "2", "3"],
+        "statusCodes": ["IFR", "IFA", "IFD", "IFC", "AB"]
+      }
+    },
+    { "id": "num.wbs", "appliesTo": ["wbsNode"], "pattern": "{PARENT}.{SEQ:2}", "separator": ".", "reservable": false },
+    { "id": "num.tag", "appliesTo": ["tag"], "pattern": "{AREA}-{CLASS}-{SEQ:4}{SUFFIX}", "case": "upper" },
+    { "id": "num.ncr", "appliesTo": ["ncr"], "pattern": "{PROJECT}-NCR-{DISCIPLINE}-{SEQ:4}", "case": "upper" },
+    { "id": "num.tq", "appliesTo": ["tq"], "pattern": "{PROJECT}-TQ-{DISCIPLINE}-{SEQ:4}", "case": "upper" },
+    { "id": "num.risk", "appliesTo": ["risk"], "pattern": "{PROJECT}-RSK-{SEQ:3}", "case": "upper" }
+  ],
+
+  "progressRules": [
+    {
+      "id": "roc.engineering.drawing",
+      "appliesTo": ["deliverable"],
+      "discipline": "*",
+      "method": "ruleOfCredit",
+      "steps": [
+        { "code": "START", "name": { "en": "Started", "fa": "شروع شده" }, "weight": 10 },
+        { "code": "IDC", "name": { "en": "Inter-discipline check complete", "fa": "کنترل بین‌دیسیپلینی انجام شد" }, "weight": 20 },
+        { "code": "IFR", "name": { "en": "Issued for review", "fa": "صادر برای بازنگری" }, "weight": 25, "evidenceRequired": true },
+        { "code": "IFA", "name": { "en": "Issued for approval", "fa": "صادر برای تأیید" }, "weight": 15, "evidenceRequired": true },
+        { "code": "IFC", "name": { "en": "Issued for construction", "fa": "صادر برای اجرا" }, "weight": 25, "evidenceRequired": true, "verifierCompanyType": "PMC" },
+        { "code": "AB", "name": { "en": "As-built issued", "fa": "چون‌ساخت صادر شد" }, "weight": 5, "evidenceRequired": true }
+      ]
+    },
+    {
+      "id": "qty.civil.concrete",
+      "appliesTo": ["activity", "fieldProgress"],
+      "discipline": "CIV",
+      "method": "quantityBased",
+      "unitOfMeasure": "m3",
+      "steps": [
+        { "code": "EXC", "name": { "en": "Excavation", "fa": "خاکبرداری" }, "weight": 15 },
+        { "code": "BLIND", "name": { "en": "Blinding", "fa": "بتن مگر" }, "weight": 5 },
+        { "code": "REBAR", "name": { "en": "Rebar fixing", "fa": "آرماتوربندی" }, "weight": 25, "evidenceRequired": true, "verifierCompanyType": "PMC" },
+        { "code": "FORM", "name": { "en": "Formwork", "fa": "قالب‌بندی" }, "weight": 20 },
+        { "code": "POUR", "name": { "en": "Concrete pour", "fa": "بتن‌ریزی" }, "weight": 25, "evidenceRequired": true, "verifierCompanyType": "PMC" },
+        { "code": "CURE", "name": { "en": "Curing and strip", "fa": "عمل‌آوری و قالب‌برداری" }, "weight": 10 }
+      ]
+    },
+    {
+      "id": "qty.piping.spool",
+      "appliesTo": ["activity", "fieldProgress"],
+      "discipline": "PIP",
+      "method": "quantityBased",
+      "unitOfMeasure": "dia-inch",
+      "steps": [
+        { "code": "FAB", "name": { "en": "Shop fabrication", "fa": "ساخت کارگاهی" }, "weight": 30 },
+        { "code": "ERECT", "name": { "en": "Erection", "fa": "نصب" }, "weight": 30 },
+        { "code": "FIELDWELD", "name": { "en": "Field welding", "fa": "جوشکاری در محل" }, "weight": 20, "evidenceRequired": true },
+        { "code": "NDT", "name": { "en": "NDT accepted", "fa": "آزمون غیرمخرب پذیرفته شد" }, "weight": 10, "evidenceRequired": true, "verifierCompanyType": "TPI" },
+        { "code": "HYDRO", "name": { "en": "Hydrotest complete", "fa": "تست هیدرواستاتیک انجام شد" }, "weight": 10, "evidenceRequired": true, "verifierCompanyType": "PMC" }
+      ]
+    }
+  ],
+
+  "kpis": [
+    { "code": "SPI", "name": { "en": "Schedule Performance Index", "fa": "شاخص عملکرد زمانی" }, "definition": { "en": "Earned value divided by planned value.", "fa": "ارزش کسب‌شده تقسیم بر ارزش برنامه‌ای." }, "formula": "sum(BCWP) / sum(BCWS)", "unit": "ratio", "target": 1.0, "direction": "higherIsBetter", "thresholds": { "green": 0.95, "amber": 0.9, "red": 0.85 }, "ownerRole": "planner", "dashboards": ["executive", "pm"] },
+    { "code": "CPI", "name": { "en": "Cost Performance Index", "fa": "شاخص عملکرد هزینه" }, "definition": { "en": "Earned value divided by actual cost.", "fa": "ارزش کسب‌شده تقسیم بر هزینه واقعی." }, "formula": "sum(BCWP) / sum(ACWP)", "unit": "ratio", "target": 1.0, "direction": "higherIsBetter", "thresholds": { "green": 0.98, "amber": 0.93, "red": 0.88 }, "ownerRole": "costController", "dashboards": ["executive", "pm"] },
+    { "code": "DOC_TAT", "name": { "en": "Document Turnaround Time", "fa": "زمان چرخه بازنگری مدارک" }, "definition": { "en": "Average calendar days from IFR submission to approval.", "fa": "میانگین روزهای تقویمی از ارسال IFR تا تأیید." }, "formula": "avg(days(approved_at - shared_at))", "unit": "days", "target": 14, "direction": "lowerIsBetter", "thresholds": { "green": 14, "amber": 21, "red": 30 }, "ownerRole": "documentController", "dashboards": ["engineering", "pm"] },
+    { "code": "DOC_FTR", "name": { "en": "Document First-Time Approval Rate", "fa": "نرخ تأیید مدارک در نوبت اول" }, "formula": "count(deliverable where approvedAtRevision <= 1) / count(deliverable approved) * 100", "unit": "%", "target": 70, "direction": "higherIsBetter", "thresholds": { "green": 70, "amber": 55, "red": 40 }, "ownerRole": "engineeringManager", "dashboards": ["engineering"] },
+    { "code": "NCR_AGE", "name": { "en": "Average Open NCR Age", "fa": "میانگین سن عدم انطباق‌های باز" }, "formula": "avg(days(now - raised_at)) where status not in terminal", "unit": "days", "target": 21, "direction": "lowerIsBetter", "thresholds": { "green": 21, "amber": 45, "red": 60 }, "ownerRole": "qaManager", "dashboards": ["quality", "pm"] },
+    { "code": "FTR_QUALITY", "name": { "en": "First Time Right (Inspection)", "fa": "درستی در نوبت اول (بازرسی)" }, "formula": "count(itr where rejections == 0) / count(itr) * 100", "unit": "%", "target": 92, "direction": "higherIsBetter", "thresholds": { "green": 92, "amber": 85, "red": 75 }, "ownerRole": "qcManager", "dashboards": ["quality"] },
+    { "code": "TRIR", "name": { "en": "Total Recordable Incident Rate", "fa": "نرخ کل حوادث ثبت‌شدنی" }, "formula": "count(recordableIncident) * 200000 / sum(manHours)", "unit": "ratio", "target": 0.5, "direction": "lowerIsBetter", "thresholds": { "green": 0.5, "amber": 1.0, "red": 2.0 }, "ownerRole": "hseManager", "dashboards": ["executive", "hse"] },
+    { "code": "RISK_EXPOSURE", "name": { "en": "Residual Risk Exposure", "fa": "مواجهه ریسک باقیمانده" }, "formula": "sum(probability * costImpact) where status == 'open'", "unit": "currency", "direction": "lowerIsBetter", "ownerRole": "riskManager", "dashboards": ["executive", "pm"] },
+    { "code": "GATE_CONFORMANCE", "name": { "en": "Gate Criteria Conformance", "fa": "انطباق معیارهای دروازه" }, "formula": "count(criterion where satisfied) / count(criterion) * 100", "unit": "%", "target": 100, "direction": "higherIsBetter", "thresholds": { "green": 100, "amber": 90, "red": 75 }, "ownerRole": "projectManager", "dashboards": ["executive"] }
+  ],
+
+  "visibilityMatrix": [
+    { "objectType": "deliverable", "grants": { "OWN": "approve", "EPC": "own", "PMC": "review", "SUB": "read", "VEN": "read", "MC": "read", "TPI": "read", "CB": "read" } },
+    { "objectType": "cost.forecast", "grants": { "OWN": "hidden", "EPC": "own", "PMC": "hidden", "SUB": "hidden", "VEN": "hidden", "MC": "hidden", "TPI": "hidden", "CB": "hidden" } },
+    { "objectType": "cost.budget.owner", "grants": { "OWN": "own", "EPC": "hidden", "PMC": "metadata", "SUB": "hidden", "VEN": "hidden", "MC": "hidden", "TPI": "hidden", "CB": "hidden" } },
+    { "objectType": "risk.internal", "grants": { "OWN": "hidden", "EPC": "own", "PMC": "hidden", "SUB": "hidden", "VEN": "hidden", "MC": "hidden", "TPI": "hidden", "CB": "hidden" } },
+    { "objectType": "ncr", "grants": { "OWN": "read", "EPC": "own", "PMC": "review", "SUB": "comment", "VEN": "comment", "MC": "read", "TPI": "review", "CB": "read" } },
+    { "objectType": "itr", "grants": { "OWN": "read", "EPC": "own", "PMC": "review", "SUB": "edit", "VEN": "metadata", "MC": "review", "TPI": "approve", "CB": "read" } },
+    { "objectType": "punchItem", "grants": { "OWN": "approve", "EPC": "own", "PMC": "review", "SUB": "edit", "VEN": "metadata", "MC": "approve", "TPI": "review", "CB": "metadata" } },
+    { "objectType": "changeOrder", "grants": { "OWN": "approve", "EPC": "own", "PMC": "review", "SUB": "hidden", "VEN": "hidden", "MC": "hidden", "TPI": "hidden", "CB": "hidden" } },
+    { "objectType": "invoice", "grants": { "OWN": "approve", "EPC": "own", "PMC": "review", "SUB": "hidden", "VEN": "hidden", "MC": "hidden", "TPI": "hidden", "CB": "hidden" } },
+    { "objectType": "incident", "grants": { "OWN": "read", "EPC": "own", "PMC": "read", "SUB": "comment", "VEN": "metadata", "MC": "metadata", "TPI": "metadata", "CB": "read" } },
+    { "objectType": "certificate", "grants": { "OWN": "approve", "EPC": "edit", "PMC": "review", "SUB": "read", "VEN": "metadata", "MC": "own", "TPI": "review", "CB": "read" } }
+  ],
+
+  "documentTemplates": [
+    { "id": "tpl.transmittal.iso", "name": { "en": "Transmittal Sheet", "fa": "برگ ارسال مدارک" }, "appliesTo": "transmittal", "layout": "bilingual-side-by-side", "path": "templates/iso/transmittal.hbs" },
+    { "id": "tpl.mom.iso", "name": { "en": "Minutes of Meeting", "fa": "صورتجلسه" }, "appliesTo": "minutesOfMeeting", "layout": "bilingual-stacked", "path": "templates/iso/mom.hbs" },
+    { "id": "tpl.ncr.iso", "name": { "en": "Non-Conformance Report", "fa": "گزارش عدم انطباق" }, "appliesTo": "ncr", "layout": "bilingual-side-by-side", "path": "templates/iso/ncr.hbs" },
+    { "id": "tpl.mcc.iso", "name": { "en": "Mechanical Completion Certificate", "fa": "گواهی تکمیل مکانیکی" }, "appliesTo": "mcCertificate", "layout": "bilingual-side-by-side", "path": "templates/iso/mcc.hbs" }
+  ],
+
+  "complianceChecklist": [
+    { "id": "ISO-19650-01", "standardRef": "ISO 19650-2 cl.5.1", "requirement": { "en": "Common Data Environment states are enforced for all information containers.", "fa": "وضعیت‌های محیط داده مشترک برای همه ظرف‌های اطلاعاتی اعمال می‌شود." }, "evidence": { "objectType": "deliverable", "condition": "lifecycle == 'lc.iso19650.document'" }, "severity": "mandatory" },
+    { "id": "ISO-19650-02", "standardRef": "ISO 19650-2 cl.5.4", "requirement": { "en": "Every deliverable carries a suitability code before sharing.", "fa": "هر قلم تحویلی پیش از اشتراک‌گذاری کد تناسب دارد." }, "evidence": { "objectType": "deliverable", "condition": "state >= 'SHARED_IFR' and suitability != null" }, "severity": "mandatory" },
+    { "id": "ISO-9001-01", "standardRef": "ISO 9001 cl.8.7", "requirement": { "en": "All non-conformities have a recorded disposition and verification.", "fa": "همه عدم انطباق‌ها دارای تعیین تکلیف و راستی‌آزمایی ثبت‌شده هستند." }, "evidence": { "objectType": "ncr", "condition": "state == 'VERIFIED_CLOSED' or state not in terminal" }, "severity": "mandatory" },
+    { "id": "ISO-9001-02", "standardRef": "ISO 9001 cl.9.2", "requirement": { "en": "Internal audit programme executed per plan.", "fa": "برنامه ممیزی داخلی طبق برنامه اجرا شده است." }, "evidence": { "objectType": "audit", "minimumCount": 2 }, "severity": "mandatory" },
+    { "id": "ISO-31000-01", "standardRef": "ISO 31000 cl.6.4", "requirement": { "en": "Risk register reviewed at least monthly with owners assigned.", "fa": "ثبت ریسک حداقل ماهانه با مالکان مشخص بازنگری می‌شود." }, "evidence": { "objectType": "risk", "condition": "lastReviewedWithinDays(31) and owner != null" }, "severity": "mandatory" },
+    { "id": "ISO-45001-01", "standardRef": "ISO 45001 cl.8.1.2", "requirement": { "en": "Permit to work issued for all high-risk activities.", "fa": "مجوز کار برای همه فعالیت‌های پرخطر صادر می‌شود." }, "evidence": { "objectType": "permit", "condition": "coversAllHighRiskActivities" }, "severity": "mandatory" },
+    { "id": "ISO-21502-01", "standardRef": "ISO 21502 cl.7.2", "requirement": { "en": "Stage gates approved by the governing body before phase transition.", "fa": "دروازه‌های مرحله‌ای پیش از گذار فاز توسط رکن راهبری تأیید می‌شوند." }, "evidence": { "objectType": "gate", "condition": "approvedBy.companyType == 'OWN'" }, "severity": "mandatory" },
+    { "id": "ISO-15926-01", "standardRef": "CFIHOS 1.5", "requirement": { "en": "Tag register attributes conform to the class library for handover.", "fa": "ویژگی‌های ثبت تگ برای تحویل با کتابخانه کلاس منطبق است." }, "evidence": { "objectType": "tag", "condition": "classLibraryValidated == true" }, "severity": "recommended" }
+  ],
+
+  "settings": {
+    "documentReviewCycleDays": 14,
+    "requireInterDisciplineCheck": true,
+    "riskMatrixSize": "5x5",
+    "progressVerificationRequired": true,
+    "defaultCalendar": "gregorian",
+    "secondaryCalendar": "jalali",
+    "workingWeek": ["saturday", "sunday", "monday", "tuesday", "wednesday"],
+    "punchCategories": ["A", "B", "C"],
+    "itrTypes": ["A", "B", "C"],
+    "retentionYearsAfterHandover": 10
+  }
+}

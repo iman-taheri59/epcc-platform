@@ -1,0 +1,13 @@
+# Mutants for the ITP row-reference work (standards / project specs / forms).
+#
+# id|file|old|new|description
+#
+# Single-line patterns only: the harness reads pipe-delimited records, so an
+# embedded newline would split the record.
+
+M410|$SVC|if (! ItpStageDocument::usageIsValid($usage)) {|if (false) {|unknown usage accepted
+M411|$SVC|$document = Document::where('project_id', $stage->project_id)|$document = Document::where('id', '!=', null)|document id from another project accepted
+M412|$SVC|} elseif (! empty($citation['document_number'])) {|} elseif (false) {|a template citing by number is no longer resolved at all
+M413|$SVC|$pinned = $document->revisions()->find($citation['pinned_revision_id']);|$pinned = \App\Models\DocumentRevision::find($citation['pinned_revision_id']);|pinned revision not checked against its own document
+M414|$MODEL|return $this->pinned_revision_id|return null ??|a pinned revision is ignored; the citation silently follows the register
+M415|$STAGE|$registered = $this->documentsFor(ItpStageDocument::FORM)->first();|$registered = null;|registered form ignored, printed number always wins

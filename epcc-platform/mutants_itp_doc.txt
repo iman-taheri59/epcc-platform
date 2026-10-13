@@ -1,0 +1,6 @@
+M420|app/Services/ItpService.php|if ($itp->document_id !== null) {|if (false) {|registering twice must not mint a second register number
+M421|app/Services/ItpService.php|if ($document->project_id !== $itp->project_id) {|if (false) {|an annex from another project must be refused
+M422|app/Services/ItpService.php|if ($itp->document_id !== null && $document->id === $itp->document_id) {|if (false) {|the plan must not be bindable as its own annex
+M423|app/Services/ItpService.php|if ($existing !== null) {|if (false) {|syncing annexes twice must not duplicate them
+M424|app/Services/ItpService.php|$seen[$doc->id] = true;|$seen = [];|a form cited by two rows must become ONE annex, labelled once
+M425|app/Models/Itp.php|return $this->document?->number ?? (string) $this->number;|return (string) $this->number;|the register number must win over the working label

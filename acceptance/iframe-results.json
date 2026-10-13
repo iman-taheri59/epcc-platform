@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "cookieHeadersStripped": 4,
+  "flow": [
+    "HTTPS cross-site iframe",
+    "login without sending cookies",
+    "open project",
+    "open document register"
+  ],
+  "notes": "Local TLS/host simulation, not a direct authenticated request through the Arena traffic gateway."
+}

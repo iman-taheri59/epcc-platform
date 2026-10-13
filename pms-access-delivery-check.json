@@ -1,0 +1,44 @@
+{
+  "accepted_choices": [
+    "project_configurable",
+    "own_company_only"
+  ],
+  "implemented": "PMS author-policy prerequisite/current entry paths and notes archive backstop",
+  "pms_document_revision_hierarchy_implemented": false,
+  "afc_pms_pins_implemented": false,
+  "default_author_grants": false,
+  "tests": {
+    "pms-access-final": {
+      "tests": "47",
+      "assertions": "343",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "133.342646"
+    },
+    "pms-access-related": {
+      "tests": "44",
+      "assertions": "149",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "126.583974"
+    }
+  },
+  "changed_existing_code_test_files": [
+    "app/app/Services/PmsEntryService.php",
+    "app/app/Http/Controllers/PmsController.php",
+    "app/resources/views/piping/pms.blade.php",
+    "app/routes/web.php",
+    "app/lang/en/pms.php",
+    "app/lang/fa/pms.php",
+    "app/tests/Feature/PmsEntryTest.php"
+  ],
+  "reference_pack_changes": [],
+  "reference_pack_files_checked": 38,
+  "missing_local_links": [],
+  "full_product_test": false,
+  "visual_browser_qa": false,
+  "backup_restore_experiment": false,
+  "sql_user_authorization_scope": "Policy/event guards, not a blanket user-RBAC barrier on arbitrary content DML"
+}

@@ -1,0 +1,27 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+F                                                                   1 / 1 (100%)
+
+Time: 00:03.544, Memory: 85.00 MB
+
+There was 1 failure:
+
+1) Tests\Feature\MaterialsPresentationTest::test_materials_headers_use_the_shared_localized_date_formatter
+Failed asserting that [jalaliDate] matches the expected value.
+Failed asserting that two strings are equal.
+--- Expected
++++ Actual
+@@ @@
+-'۱۴۰۵/۰۷/۰۶'
++'1405/07/06'
+
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:46
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:1365
+/home/user/epcc-platform/app/tests/Feature/MaterialsPresentationTest.php:26
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+FAILURES!
+Tests: 1, Assertions: 2, Failures: 1.

@@ -1,0 +1,220 @@
+
+324 renders (3 packs x 2 languages x 6 roles x 9 pages), 0 problems
+  ok   desktop: starts expanded (no .rail)
+  ok   desktop: click collapses to rail
+  ok   desktop: aria-expanded=false when collapsed
+  ok   desktop: icon stays ☰ (not ✕)
+  ok   desktop: click again expands
+  ok   desktop: no drawer class ever set
+  ok   mobile: starts closed (no .drawer)
+  ok   mobile: click opens drawer
+  ok   mobile: icon becomes ✕
+  ok   mobile: aria-expanded=true when open
+  ok   mobile: scrim click closes drawer
+  ok   mobile: reopened
+  ok   mobile: nav click closes drawer
+  ok   mobile: nav click changed page
+  ok   mobile: Escape closes drawer
+  ok   boots RTL (Persian default)
+  ok   lang toggle -> ltr
+  ok   drawer works after lang switch
+  ok   wide tables wrapped for horizontal scroll
+
+19 passed, 0 failed
+=== fa app/tests/Browser/sidebar-animation.test.cjs ===
+== expanded ==
+  OK   sidebar has a width transition
+  OK   labels animate via max-width
+  OK   label visible when expanded
+  OK   language switch is not inline (max-width would be ignored)
+  OK   nav label is not inline (max-width would be ignored)
+  OK   brand text is not inline (max-width would be ignored)
+  OK   user text is not inline (max-width would be ignored)
+  OK   language switch is visible when expanded
+  OK   language switch has its label
+== collapsed ==
+  OK   rail class applied
+  OK   sidebar target width is 60px
+  OK   labels NOT display:none (unanimatable)
+  OK   labels collapsed to max-width:0
+  OK   labels faded out
+  OK   labels not clickable when collapsed
+  OK   section headers collapse by height
+  OK   section header not display:none
+  OK   panel clips overflow-x
+  OK   language switch collapses in the rail
+
+19 passed, 0 failed
+=== fa app/tests/Browser/sidebar-toggle.test.cjs ===
+== desktop (1200px) ==
+  OK   starts expanded (no .rail)
+  OK   aria-expanded=true
+  OK   click collapses to rail
+  OK   aria-expanded=false when collapsed
+  OK   html mirrors the rail class
+  OK   preference persisted
+  OK   click again expands
+  OK   no drawer class ever set on desktop
+  OK   preference cleared
+== mobile (600px) ==
+  OK   starts closed (no .drawer)
+  OK   click opens drawer
+  OK   burger becomes a close glyph
+  OK   no rail class on mobile
+  OK   scrim click closes drawer
+  OK   reopened
+  OK   nav click closes drawer
+  OK   Escape closes drawer
+
+17 passed, 0 failed
+=== fa app/tests/Browser/table-tools.test.cjs ===
+
+table-tools
+
+  [32m✓[0m the register table opted in with data-tt
+  [32m✓[0m a toolbar was injected before the table
+  [32m✓[0m the toolbar sits above the table it controls
+  [32m✓[0m a search box exists
+  [32m✓[0m the search box is labelled for screen readers
+  [32m✓[0m the fixture has enough rows to be worth testing (8)
+  [32m✓[0m the page declares sortable columns (7)
+  [32m✓[0m every declared sortable header was wired (7)
+  [32m✓[0m every sortable header is a real <button>, so it works from the keyboard
+  [32m✓[0m headers start with aria-sort="none"
+  [32m✓[0m the action column is not sortable
+  [32m✓[0m first click sorts ascending
+  [32m✓[0m ascending order really is sorted, by the reader's alphabet
+  [32m✓[0m second click sorts descending
+  [32m✓[0m descending is the reverse of ascending
+  [32m✓[0m third click clears the sort
+  [32m✓[0m clearing the sort restores the original server order
+  [32m✓[0m at least one column is both sortable and faceted
+  [32m✓[0m every cell in a keyed column carries a numeric sort key (8/8)
+  [32m✓[0m sorting a keyed column follows the key, not the rendered label
+  [32m✓[0m the fixture has a value unique to one row
+  [32m✓[0m searching a unique value ("PH-14-CIVIL-DWG-0001") narrows to one row
+  [32m✓[0m clearing the box restores every row
+  [32m✓[0m the Persian page renders app-formatted numbers in Persian digits
+  [32m✓[0m ASCII "83" matches Persian "۸۳"
+  [32m✓[0m Persian "۸۳" matches itself
+  [32m✓[0m an impossible search hides every row
+  [32m✓[0m an explicit "nothing matches" row is shown
+  [32m✓[0m the empty-state row spans the full table width
+  [32m✓[0m the empty-state row hides again
+  [32m✓[0m the page declares faceted columns (2)
+  [32m✓[0m every declared facet became a dropdown (2)
+  [32m✓[0m the facet lists the values actually present
+  [32m✓[0m the first facet option is the "all" reset
+  [32m✓[0m selecting "ارسال برای بررسی" narrows the table
+  [32m✓[0m every remaining row really has the selected value
+  [32m✓[0m the reset button appears once a filter is active
+  [32m✓[0m reset restores every row
+  [32m✓[0m reset clears the facet dropdown
+  [32m✓[0m reset clears the search box
+  [32m✓[0m the reset button hides again when nothing is filtered
+  [32m✓[0m the row count is announced politely
+  [32m✓[0m the count uses Persian digits on a Persian page
+  [32m✓[0m the count has no latin digits on a Persian page
+  [32m✓[0m the count is highlighted while filtered
+  [32m✓[0m the highlight clears with the filter
+  [32m✓[0m filtered-out rows use the hidden attribute, not just a class
+
+47 passed, 0 failed
+
+=== en app/tests/Browser/sidebar-animation.test.cjs ===
+== expanded ==
+  OK   sidebar has a width transition
+  OK   labels animate via max-width
+  OK   label visible when expanded
+  OK   language switch is not inline (max-width would be ignored)
+  OK   nav label is not inline (max-width would be ignored)
+  OK   brand text is not inline (max-width would be ignored)
+  OK   user text is not inline (max-width would be ignored)
+  OK   language switch is visible when expanded
+  OK   language switch has its label
+== collapsed ==
+  OK   rail class applied
+  OK   sidebar target width is 60px
+  OK   labels NOT display:none (unanimatable)
+  OK   labels collapsed to max-width:0
+  OK   labels faded out
+  OK   labels not clickable when collapsed
+  OK   section headers collapse by height
+  OK   section header not display:none
+  OK   panel clips overflow-x
+  OK   language switch collapses in the rail
+
+19 passed, 0 failed
+=== en app/tests/Browser/sidebar-toggle.test.cjs ===
+== desktop (1200px) ==
+  OK   starts expanded (no .rail)
+  OK   aria-expanded=true
+  OK   click collapses to rail
+  OK   aria-expanded=false when collapsed
+  OK   html mirrors the rail class
+  OK   preference persisted
+  OK   click again expands
+  OK   no drawer class ever set on desktop
+  OK   preference cleared
+== mobile (600px) ==
+  OK   starts closed (no .drawer)
+  OK   click opens drawer
+  OK   burger becomes a close glyph
+  OK   no rail class on mobile
+  OK   scrim click closes drawer
+  OK   reopened
+  OK   nav click closes drawer
+  OK   Escape closes drawer
+
+17 passed, 0 failed
+=== en app/tests/Browser/table-tools.test.cjs ===
+
+table-tools
+
+  [32m✓[0m the register table opted in with data-tt
+  [32m✓[0m a toolbar was injected before the table
+  [32m✓[0m the toolbar sits above the table it controls
+  [32m✓[0m a search box exists
+  [32m✓[0m the search box is labelled for screen readers
+  [32m✓[0m the fixture has enough rows to be worth testing (8)
+  [32m✓[0m the page declares sortable columns (7)
+  [32m✓[0m every declared sortable header was wired (7)
+  [32m✓[0m every sortable header is a real <button>, so it works from the keyboard
+  [32m✓[0m headers start with aria-sort="none"
+  [32m✓[0m the action column is not sortable
+  [32m✓[0m first click sorts ascending
+  [32m✓[0m ascending order really is sorted, by the reader's alphabet
+  [32m✓[0m second click sorts descending
+  [32m✓[0m descending is the reverse of ascending
+  [32m✓[0m third click clears the sort
+  [32m✓[0m clearing the sort restores the original server order
+  [32m✓[0m at least one column is both sortable and faceted
+  [32m✓[0m every cell in a keyed column carries a numeric sort key (8/8)
+  [32m✓[0m sorting a keyed column follows the key, not the rendered label
+  [32m✓[0m the fixture has a value unique to one row
+  [32m✓[0m searching a unique value ("PH-14-CIVIL-DWG-0001") narrows to one row
+  [32m✓[0m clearing the box restores every row
+  [32m✓[0m the English page renders latin digits
+  [32m✓[0m latin "14" matches on the English page
+  [32m✓[0m an impossible search hides every row
+  [32m✓[0m an explicit "nothing matches" row is shown
+  [32m✓[0m the empty-state row spans the full table width
+  [32m✓[0m the empty-state row hides again
+  [32m✓[0m the page declares faceted columns (2)
+  [32m✓[0m every declared facet became a dropdown (2)
+  [32m✓[0m the facet lists the values actually present
+  [32m✓[0m the first facet option is the "all" reset
+  [32m✓[0m selecting "Archived" narrows the table
+  [32m✓[0m every remaining row really has the selected value
+  [32m✓[0m the reset button appears once a filter is active
+  [32m✓[0m reset restores every row
+  [32m✓[0m reset clears the facet dropdown
+  [32m✓[0m reset clears the search box
+  [32m✓[0m the reset button hides again when nothing is filtered
+  [32m✓[0m the row count is announced politely
+  [32m✓[0m the count is highlighted while filtered
+  [32m✓[0m the highlight clears with the filter
+  [32m✓[0m filtered-out rows use the hidden attribute, not just a class
+
+44 passed, 0 failed
+

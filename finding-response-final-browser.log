@@ -1,0 +1,222 @@
+{
+  "steps": [
+    "NA_REQUEST posted through the scoped payload without changing screening or review state",
+    "REVIEW_NOTE posted through the scoped payload without changing screening or review state"
+  ],
+  "pages": [
+    {
+      "family": "FITTING",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FITTING",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "FITTING",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FITTING",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    }
+  ],
+  "activeForms": [
+    {
+      "actor": "author",
+      "lang": "fa",
+      "width": 430,
+      "kinds": [
+        "EXPLANATION",
+        "NA_REQUEST"
+      ],
+      "unobstructed": true,
+      "overflow": false
+    },
+    {
+      "actor": "author",
+      "lang": "en",
+      "width": 430,
+      "kinds": [
+        "EXPLANATION",
+        "NA_REQUEST"
+      ],
+      "unobstructed": true,
+      "overflow": false
+    },
+    {
+      "actor": "reviewer",
+      "lang": "fa",
+      "width": 430,
+      "kinds": [
+        "REVIEW_NOTE"
+      ],
+      "unobstructed": true,
+      "overflow": false
+    },
+    {
+      "actor": "reviewer",
+      "lang": "en",
+      "width": 430,
+      "kinds": [
+        "REVIEW_NOTE"
+      ],
+      "unobstructed": true,
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "ok": true
+}

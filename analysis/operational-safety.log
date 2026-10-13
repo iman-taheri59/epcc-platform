@@ -1,0 +1,13 @@
+test_confirmed_local_check_only_is_non_destructive (test_operational_safety.OperationalSafetyTest.test_confirmed_local_check_only_is_non_destructive) ... ok
+test_missing_jsonschema_is_failure_not_success (test_operational_safety.OperationalSafetyTest.test_missing_jsonschema_is_failure_not_success) ... ok
+test_reset_refuses_mismatched_database_even_in_check_mode (test_operational_safety.OperationalSafetyTest.test_reset_refuses_mismatched_database_even_in_check_mode) ... ok
+test_reset_refuses_no_confirmation (test_operational_safety.OperationalSafetyTest.test_reset_refuses_no_confirmation) ... ok
+test_reset_refuses_production (test_operational_safety.OperationalSafetyTest.test_reset_refuses_production) ... ok
+test_restore_help_exits_before_runtime_work (test_operational_safety.OperationalSafetyTest.test_restore_help_exits_before_runtime_work) ... ok
+test_restore_requires_both_reset_flags (test_operational_safety.OperationalSafetyTest.test_restore_requires_both_reset_flags) ... ok
+test_shards_reject_non_test_or_duplicate_database_names (test_operational_safety.OperationalSafetyTest.test_shards_reject_non_test_or_duplicate_database_names) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 3.928s
+
+OK

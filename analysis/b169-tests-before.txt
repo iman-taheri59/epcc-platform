@@ -1,0 +1,108 @@
+test_duplicate_key (test_fitting_dimensions.FittingDimensionsTest.test_duplicate_key) ... FAIL
+test_missing_pipe_reference (test_fitting_dimensions.FittingDimensionsTest.test_missing_pipe_reference) ... FAIL
+test_od_mismatch (test_fitting_dimensions.FittingDimensionsTest.test_od_mismatch) ... ok
+test_original_is_accepted (test_fitting_dimensions.FittingDimensionsTest.test_original_is_accepted) ... ok
+test_oversized_elbow_is_not_a_floor (test_fitting_dimensions.FittingDimensionsTest.test_oversized_elbow_is_not_a_floor) ... FAIL
+test_small_size_exception_is_bounded (test_fitting_dimensions.FittingDimensionsTest.test_small_size_exception_is_bounded) ... FAIL
+test_table_manifest_mismatch (test_fitting_dimensions.FittingDimensionsTest.test_table_manifest_mismatch) ... FAIL
+test_unknown_nps (test_fitting_dimensions.FittingDimensionsTest.test_unknown_nps) ... ok
+test_unknown_qualifier (test_fitting_dimensions.FittingDimensionsTest.test_unknown_qualifier) ... FAIL
+test_wrong_dimension (test_fitting_dimensions.FittingDimensionsTest.test_wrong_dimension) ... FAIL
+test_wrong_dn (test_fitting_dimensions.FittingDimensionsTest.test_wrong_dn) ... FAIL
+test_wrong_symbol (test_fitting_dimensions.FittingDimensionsTest.test_wrong_symbol) ... FAIL
+test_wrong_table (test_fitting_dimensions.FittingDimensionsTest.test_wrong_table) ... FAIL
+
+======================================================================
+FAIL: test_duplicate_key (test_fitting_dimensions.FittingDimensionsTest.test_duplicate_key)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/epcc-platform/standards-packs/tests/test_fitting_dimensions.py", line 43, in test_duplicate_key
+    self.assertIn('DUPLICATE', self.check())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'DUPLICATE' not found in ''
+
+======================================================================
+FAIL: test_missing_pipe_reference (test_fitting_dimensions.FittingDimensionsTest.test_missing_pipe_reference)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/epcc-platform/standards-packs/tests/test_fitting_dimensions.py", line 79, in test_missing_pipe_reference
+    self.assertIn('PIPE_REFERENCE', self.check())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'PIPE_REFERENCE' not found in ''
+
+======================================================================
+FAIL: test_oversized_elbow_is_not_a_floor (test_fitting_dimensions.FittingDimensionsTest.test_oversized_elbow_is_not_a_floor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/epcc-platform/standards-packs/tests/test_fitting_dimensions.py", line 32, in test_oversized_elbow_is_not_a_floor
+    self.assertIn('GEOMETRY', self.check())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'GEOMETRY' not found in ''
+
+======================================================================
+FAIL: test_small_size_exception_is_bounded (test_fitting_dimensions.FittingDimensionsTest.test_small_size_exception_is_bounded)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/epcc-platform/standards-packs/tests/test_fitting_dimensions.py", line 37, in test_small_size_exception_is_bounded
+    self.assertIn('GEOMETRY', self.check())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'GEOMETRY' not found in ''
+
+======================================================================
+FAIL: test_table_manifest_mismatch (test_fitting_dimensions.FittingDimensionsTest.test_table_manifest_mismatch)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/epcc-platform/standards-packs/tests/test_fitting_dimensions.py", line 67, in test_table_manifest_mismatch
+    self.assertIn('SOURCE_TABLES', self.check())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'SOURCE_TABLES' not found in ''
+
+======================================================================
+FAIL: test_unknown_qualifier (test_fitting_dimensions.FittingDimensionsTest.test_unknown_qualifier)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/epcc-platform/standards-packs/tests/test_fitting_dimensions.py", line 51, in test_unknown_qualifier
+    self.assertIn('ROW_KIND', self.check())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'ROW_KIND' not found in ''
+
+======================================================================
+FAIL: test_wrong_dimension (test_fitting_dimensions.FittingDimensionsTest.test_wrong_dimension)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/epcc-platform/standards-packs/tests/test_fitting_dimensions.py", line 59, in test_wrong_dimension
+    self.assertIn('ROW_KIND', self.check())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'ROW_KIND' not found in ''
+
+======================================================================
+FAIL: test_wrong_dn (test_fitting_dimensions.FittingDimensionsTest.test_wrong_dn)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/epcc-platform/standards-packs/tests/test_fitting_dimensions.py", line 47, in test_wrong_dn
+    self.assertIn('DN_MISMATCH', self.check())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'DN_MISMATCH' not found in ''
+
+======================================================================
+FAIL: test_wrong_symbol (test_fitting_dimensions.FittingDimensionsTest.test_wrong_symbol)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/epcc-platform/standards-packs/tests/test_fitting_dimensions.py", line 55, in test_wrong_symbol
+    self.assertIn('ROW_KIND', self.check())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'ROW_KIND' not found in ''
+
+======================================================================
+FAIL: test_wrong_table (test_fitting_dimensions.FittingDimensionsTest.test_wrong_table)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/epcc-platform/standards-packs/tests/test_fitting_dimensions.py", line 63, in test_wrong_table
+    self.assertIn('ROW_KIND', self.check())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'ROW_KIND' not found in ''
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.007s
+
+FAILED (failures=10)

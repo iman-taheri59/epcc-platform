@@ -1,0 +1,40 @@
+{
+  "steps": [
+    "Owner configures two ordered steps: consultant role, named owner",
+    "Author submits; no self-approval control",
+    "Assigned consultant returns for correction with a recorded comment",
+    "Correction appends a linked version, keeps Spec A, starts fresh review",
+    "Policy v2 saved; owner still cannot bypass consultant step of the submitted v1 run",
+    "Independent owner completes the second step; both signatures and original return remain visible"
+  ],
+  "pages": [
+    {
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "original": "27d5587b-2708-498a-864b-e240516af4b0",
+  "corrected": "6a50119c-a1b6-4784-a4bf-4048f2445ff4",
+  "ok": true
+}

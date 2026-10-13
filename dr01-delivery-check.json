@@ -1,0 +1,45 @@
+{
+  "scope": "CDE/ITP standard-reference basis; not complete PMS or ITP versioning",
+  "reference_pack_files_checked": 38,
+  "reference_pack_changes": [],
+  "missing_local_links": [],
+  "tests": {
+    "dr01-focused": {
+      "tests": "15",
+      "assertions": "81",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "39.418887"
+    },
+    "dr01-regression-final": {
+      "tests": "128",
+      "assertions": "317",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "370.834271"
+    }
+  },
+  "live_http_smoke": [
+    {
+      "lang": "fa",
+      "status": 200,
+      "direction": "rtl",
+      "page": "document standard-reference basis",
+      "scope": "HTTP smoke only; no business-data writes; no browser visual QA"
+    },
+    {
+      "lang": "en",
+      "status": 200,
+      "direction": "ltr",
+      "page": "document standard-reference basis",
+      "scope": "HTTP smoke only; no business-data writes; no browser visual QA"
+    }
+  ],
+  "visual_browser_qa": false,
+  "full_product_suite": false,
+  "backup_restore_test": false,
+  "deferred_decision": "DR-02 adoption authority",
+  "migration": "2026_09_29_235500_freeze_document_standard_references.php"
+}

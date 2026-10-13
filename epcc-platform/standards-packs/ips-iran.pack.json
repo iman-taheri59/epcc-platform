@@ -1,0 +1,372 @@
+{
+  "packId": "ips.iran",
+  "version": "1.0.0",
+  "kind": "custom",
+  "extends": { "packId": "iso", "version": "1.0.0" },
+  "name": {
+    "en": "IPS / Iranian Framework Pack",
+    "fa": "بسته چارچوب ایران / استانداردهای IPS"
+  },
+  "description": {
+    "en": "Iranian regulatory and contractual framework: IPS technical standards, General Conditions of Contract (Publication 4311), unit-rate schedules, price adjustment, HSE-MS, and NOC document coding. Extends the ISO pack and overlays the Iranian execution and payment model.",
+    "fa": "چارچوب قانونی و قراردادی ایران: استانداردهای فنی IPS، شرایط عمومی پیمان نشریه ۴۳۱۱، فهرست‌بهای واحد پایه، تعدیل، نظام HSE-MS و کدگذاری مدارک شرکت‌های تابعه نفت. این بسته بر پایه بسته ایزو ساخته شده و مدل اجرا و پرداخت ایرانی را بر آن می‌افزاید."
+  },
+  "standardsReferences": [
+    { "code": "IPS", "title": { "en": "Iranian Petroleum Standards", "fa": "استانداردهای نفت ایران" }, "scope": "Discipline engineering standards, document classes, review codes" },
+    { "code": "نشریه ۴۳۱۱", "title": { "en": "General Conditions of Contract", "fa": "شرایط عمومی پیمان" }, "scope": "Contract lifecycle, payment, acceptance, warranty" },
+    { "code": "فهرست‌بهای واحد پایه", "title": { "en": "Base Unit Price Schedules", "fa": "فهرست‌بهای واحد پایه" }, "scope": "Measurement and pricing basis" },
+    { "code": "نظام فنی و اجرایی کشور", "title": { "en": "National Technical and Executive System", "fa": "نظام فنی و اجرایی کشور" }, "scope": "Gate model for state-funded projects" },
+    { "code": "HSE-MS", "title": { "en": "Ministry of Petroleum HSE Management System", "fa": "نظام مدیریت بهداشت، ایمنی و محیط زیست وزارت نفت" }, "scope": "HSE structure and reporting" },
+    { "code": "ISO 19650-2:2018", "title": { "en": "Information management", "fa": "مدیریت اطلاعات" }, "scope": "Inherited document control" }
+  ],
+
+  "terminology": {
+    "workPackage": { "en": "Work Package", "fa": "بسته کاری" },
+    "deliverable": { "en": "Deliverable Document", "fa": "مدرک تحویلی" },
+    "deliverableRegister": { "en": "Master Document Register", "fa": "فهرست اصلی مدارک" },
+    "breakdownPrimary": { "en": "Work Breakdown Structure", "fa": "ساختار شکست کار" },
+    "areaUnit": { "en": "Unit / Area", "fa": "واحد / ناحیه" },
+    "gate": { "en": "Stage Approval", "fa": "تصویب مرحله‌ای" },
+    "progressBasis": { "en": "Physical Progress", "fa": "پیشرفت فیزیکی" },
+    "owner": { "en": "Employer", "fa": "کارفرما" },
+    "consultant": { "en": "Consulting Engineer", "fa": "مهندس مشاور" },
+    "contractor": { "en": "Contractor", "fa": "پیمانکار" },
+    "residentEngineer": { "en": "Resident Engineer", "fa": "ناظر مقیم" },
+    "interimPayment": { "en": "Interim Payment Certificate", "fa": "صورت‌وضعیت موقت" },
+    "finalPayment": { "en": "Final Payment Certificate", "fa": "صورت‌وضعیت قطعی" },
+    "priceAdjustment": { "en": "Price Adjustment", "fa": "تعدیل" },
+    "retention": { "en": "Retention / Performance Deduction", "fa": "حسن انجام کار" },
+    "advancePayment": { "en": "Advance Payment", "fa": "پیش‌پرداخت" },
+    "provisionalAcceptance": { "en": "Provisional Acceptance", "fa": "تحویل موقت" },
+    "finalAcceptance": { "en": "Final Acceptance", "fa": "تحویل قطعی" },
+    "warrantyPeriod": { "en": "Warranty Period", "fa": "دوره تضمین" },
+    "siteMinutes": { "en": "Site Minutes", "fa": "صورتجلسه کارگاهی" },
+    "unitRateSchedule": { "en": "Base Unit Price Schedule", "fa": "فهرست‌بهای واحد پایه" }
+  },
+
+  "breakdownStructures": [
+    { "code": "WBS", "name": { "en": "Work Breakdown Structure", "fa": "ساختار شکست کار" }, "enabled": true, "mandatory": true, "maxDepth": 8, "codingRule": "num.wbs" },
+    { "code": "CBS", "name": { "en": "Cost Breakdown Structure", "fa": "ساختار شکست هزینه" }, "enabled": true, "mandatory": true, "maxDepth": 6 },
+    { "code": "OBS", "name": { "en": "Organizational Breakdown Structure", "fa": "ساختار شکست سازمانی" }, "enabled": true, "maxDepth": 5 },
+    { "code": "SBS", "name": { "en": "System Breakdown Structure", "fa": "ساختار شکست سیستم" }, "enabled": true, "mandatory": true, "maxDepth": 3, "parentOf": ["TAG"] },
+    { "code": "AREA", "name": { "en": "Unit / Area", "fa": "واحد / ناحیه" }, "enabled": true, "mandatory": true, "maxDepth": 4 },
+    { "code": "PBS", "name": { "en": "Product Breakdown Structure", "fa": "ساختار شکست محصول" }, "enabled": true, "maxDepth": 6 },
+    { "code": "TWP", "name": { "en": "Turnover Package", "fa": "بسته تحویل" }, "enabled": true, "maxDepth": 2 },
+    { "code": "CWA", "name": { "en": "Construction Work Area", "fa": "محدوده کاری اجرا" }, "enabled": false },
+    { "code": "CWP", "name": { "en": "Construction Work Package", "fa": "بسته کاری اجرا" }, "enabled": false },
+    { "code": "IWP", "name": { "en": "Installation Work Package", "fa": "بسته کاری نصب" }, "enabled": false }
+  ],
+
+  "objectTypes": [
+    {
+      "type": "deliverable",
+      "enabled": true,
+      "lifecycle": "lc.ips.document",
+      "numbering": "num.nioc.doc",
+      "requiredAttributes": [
+        { "field": "discipline_code", "requiredFromState": "WIP", "message": { "en": "Discipline is mandatory.", "fa": "دیسیپلین الزامی است." } },
+        { "field": "ips_reference", "requiredFromState": "IFR", "message": { "en": "Applicable IPS standard reference is required.", "fa": "ارجاع به استاندارد IPS مربوطه الزامی است." } },
+        { "field": "consultant_reviewer_id", "requiredFromState": "IFR", "message": { "en": "Assign the consulting engineer as reviewer.", "fa": "مهندس مشاور را به عنوان بازنگر تعیین کنید." } }
+      ]
+    },
+    { "type": "interimPaymentCertificate", "enabled": true, "lifecycle": "lc.sooratvaziat", "numbering": "num.sooratvaziat" },
+    { "type": "siteMinutes", "enabled": true, "numbering": "num.soorat.jalase" },
+    { "type": "priceAdjustment", "enabled": true, "numbering": "num.tadil" },
+    { "type": "tag", "enabled": true, "numbering": "num.tag" },
+    { "type": "ncr", "enabled": true, "lifecycle": "lc.ncr", "numbering": "num.ncr" },
+    { "type": "punchItem", "enabled": true, "lifecycle": "lc.punch" },
+    { "type": "certificate", "enabled": true },
+    { "type": "iwp", "enabled": false }
+  ],
+
+  "lifecycles": [
+    {
+      "id": "lc.ips.document",
+      "appliesTo": ["deliverable", "vendorDocument"],
+      "states": [
+        { "code": "WIP", "name": { "en": "Work in Progress", "fa": "در حال تهیه" }, "category": "draft", "colour": "#94A3B8" },
+        { "code": "IFR", "name": { "en": "Issued for Review (Consultant)", "fa": "ارسال برای بررسی مشاور" }, "category": "inReview", "colour": "#F59E0B" },
+        { "code": "CODE2", "name": { "en": "Approved with Comments (Code 2)", "fa": "تأیید با اعمال نظرات (کد ۲)" }, "category": "inReview", "colour": "#FBBF24" },
+        { "code": "CODE3", "name": { "en": "Revise and Resubmit (Code 3)", "fa": "اصلاح و ارسال مجدد (کد ۳)" }, "category": "draft", "colour": "#EF4444" },
+        { "code": "IFA", "name": { "en": "Issued for Employer Approval", "fa": "ارسال برای تصویب کارفرما" }, "category": "inReview", "colour": "#F97316" },
+        { "code": "CODE1", "name": { "en": "Approved (Code 1)", "fa": "تأیید شده (کد ۱)" }, "category": "approved", "colour": "#22C55E" },
+        { "code": "IFC", "name": { "en": "Issued for Construction", "fa": "ابلاغ برای اجرا" }, "category": "issued", "colour": "#16A34A" },
+        { "code": "AS_BUILT", "name": { "en": "As-Built", "fa": "چون‌ساخت" }, "category": "closed", "colour": "#0EA5E9" },
+        { "code": "ARCHIVED", "name": { "en": "Archived", "fa": "بایگانی شده" }, "category": "closed", "colour": "#64748B", "isTerminal": true },
+        { "code": "SUPERSEDED", "name": { "en": "Superseded", "fa": "منسوخ شده" }, "category": "cancelled", "colour": "#DC2626", "isTerminal": true }
+      ],
+      "transitions": [
+        { "from": "WIP", "to": "IFR", "capability": "document.share", "allowedCompanyTypes": ["EPC", "SUB", "VEN"], "guards": [{ "check": "interDisciplineCheckComplete", "message": { "en": "Inter-discipline check must be signed off.", "fa": "کنترل بین‌دیسیپلینی باید تأیید شده باشد." } }, { "check": "ipsReferenceProvided", "message": { "en": "Applicable IPS standard must be referenced.", "fa": "استاندارد IPS مربوطه باید ارجاع داده شود." } }], "slaHours": 24, "emitsEvent": "document.shared.v1" },
+        { "from": "IFR", "to": "CODE2", "capability": "document.review.code", "allowedCompanyTypes": ["PMC"], "slaHours": 336, "escalateAfterHours": 240 },
+        { "from": "IFR", "to": "CODE3", "capability": "document.review.code", "allowedCompanyTypes": ["PMC"], "slaHours": 336, "emitsEvent": "document.rejected.v1" },
+        { "from": "IFR", "to": "IFA", "capability": "document.submit.approval", "allowedCompanyTypes": ["PMC"], "slaHours": 336 },
+        { "from": "CODE3", "to": "IFR", "capability": "document.share", "allowedCompanyTypes": ["EPC", "SUB", "VEN"] },
+        { "from": "CODE2", "to": "IFA", "capability": "document.submit.approval", "allowedCompanyTypes": ["EPC", "PMC"], "guards": [{ "check": "reviewCommentsDispositioned", "message": { "en": "All consultant comments must be applied and dispositioned.", "fa": "همه نظرات مشاور باید اعمال و تعیین تکلیف شوند." } }] },
+        { "from": "IFA", "to": "CODE1", "capability": "document.approve", "allowedCompanyTypes": ["OWN"], "slaHours": 504, "escalateAfterHours": 336, "signatureRequired": "advanced", "emitsEvent": "document.approved.v1" },
+        { "from": "IFA", "to": "CODE3", "capability": "document.reject", "allowedCompanyTypes": ["OWN"], "emitsEvent": "document.rejected.v1" },
+        { "from": "CODE1", "to": "IFC", "capability": "document.publish", "allowedCompanyTypes": ["OWN", "PMC"], "signatureRequired": "advanced", "emitsEvent": "document.published.v1" },
+        { "from": "IFC", "to": "AS_BUILT", "capability": "document.asbuilt", "allowedCompanyTypes": ["EPC"], "guards": [{ "check": "redlinesConsolidated", "message": { "en": "Field red-lines must be consolidated.", "fa": "اصلاحات کارگاهی باید تجمیع شوند." } }] },
+        { "from": "IFC", "to": "SUPERSEDED", "capability": "document.supersede", "allowedCompanyTypes": ["EPC", "PMC"] },
+        { "from": "AS_BUILT", "to": "ARCHIVED", "capability": "document.archive", "allowedCompanyTypes": ["OWN"] }
+      ]
+    },
+    {
+      "id": "lc.sooratvaziat",
+      "appliesTo": ["interimPaymentCertificate"],
+      "states": [
+        { "code": "DRAFT", "name": { "en": "Draft by Contractor", "fa": "تنظیم توسط پیمانکار" }, "category": "draft", "colour": "#94A3B8" },
+        { "code": "SUBMITTED", "name": { "en": "Submitted to Consultant", "fa": "ارسال به مشاور" }, "category": "inReview", "colour": "#F59E0B" },
+        { "code": "CONSULTANT_VERIFIED", "name": { "en": "Verified by Consultant", "fa": "تأیید مشاور" }, "category": "inReview", "colour": "#FBBF24" },
+        { "code": "EMPLOYER_APPROVED", "name": { "en": "Approved by Employer", "fa": "تصویب کارفرما" }, "category": "approved", "colour": "#22C55E" },
+        { "code": "PAID", "name": { "en": "Paid", "fa": "پرداخت شده" }, "category": "closed", "colour": "#16A34A", "isTerminal": true },
+        { "code": "RETURNED", "name": { "en": "Returned for Correction", "fa": "عودت برای اصلاح" }, "category": "draft", "colour": "#EF4444" },
+        { "code": "DISPUTED", "name": { "en": "Disputed", "fa": "مورد اختلاف" }, "category": "inReview", "colour": "#DC2626" }
+      ],
+      "transitions": [
+        { "from": "DRAFT", "to": "SUBMITTED", "capability": "invoice.submit", "allowedCompanyTypes": ["EPC", "SUB"], "guards": [{ "check": "measurementSheetsAttached", "message": { "en": "Measurement sheets (metre-based quantities) must be attached.", "fa": "برگه‌های متره باید پیوست شوند." } }, { "check": "siteMinutesAttached", "message": { "en": "Supporting site minutes must be attached.", "fa": "صورتجلسه‌های پشتیبان باید پیوست شوند." } }], "emitsEvent": "invoice.submitted.v1" },
+        { "from": "SUBMITTED", "to": "CONSULTANT_VERIFIED", "capability": "invoice.verify", "allowedCompanyTypes": ["PMC"], "guards": [{ "check": "progressVerifiedByConsultant", "message": { "en": "Physical progress must be verified before certification.", "fa": "پیشرفت فیزیکی باید پیش از گواهی، راستی‌آزمایی شود." } }], "slaHours": 240, "escalateAfterHours": 168, "signatureRequired": "advanced" },
+        { "from": "SUBMITTED", "to": "RETURNED", "capability": "invoice.return", "allowedCompanyTypes": ["PMC"] },
+        { "from": "RETURNED", "to": "SUBMITTED", "capability": "invoice.submit", "allowedCompanyTypes": ["EPC", "SUB"] },
+        { "from": "CONSULTANT_VERIFIED", "to": "EMPLOYER_APPROVED", "capability": "invoice.approve", "allowedCompanyTypes": ["OWN"], "guards": [{ "check": "budgetWithinAuthority", "message": { "en": "Amount exceeds the delegated authority of this approver.", "fa": "مبلغ از حدود اختیارات این تأییدکننده فراتر است." } }, { "check": "deductionsCalculated", "message": { "en": "Retention, advance recovery and tax deductions must be computed.", "fa": "کسورات حسن انجام کار، بازپرداخت پیش‌پرداخت و مالیات باید محاسبه شوند." } }], "slaHours": 336, "signatureRequired": "qualified", "emitsEvent": "invoice.approved.v1" },
+        { "from": "CONSULTANT_VERIFIED", "to": "DISPUTED", "capability": "invoice.dispute", "allowedCompanyTypes": ["OWN", "EPC"] },
+        { "from": "DISPUTED", "to": "CONSULTANT_VERIFIED", "capability": "invoice.verify", "allowedCompanyTypes": ["PMC"] },
+        { "from": "EMPLOYER_APPROVED", "to": "PAID", "capability": "invoice.recordPayment", "allowedCompanyTypes": ["OWN"], "emitsEvent": "invoice.paid.v1" }
+      ]
+    },
+    {
+      "id": "lc.tahvil",
+      "appliesTo": ["certificate"],
+      "states": [
+        { "code": "REQUESTED", "name": { "en": "Acceptance Requested", "fa": "درخواست تحویل" }, "category": "draft", "colour": "#94A3B8" },
+        { "code": "COMMITTEE_FORMED", "name": { "en": "Acceptance Committee Formed", "fa": "تشکیل هیئت تحویل" }, "category": "inReview", "colour": "#F59E0B" },
+        { "code": "WALKDOWN_DONE", "name": { "en": "Walkdown Complete, Punch Issued", "fa": "بازدید انجام و نواقص صادر شد" }, "category": "inReview", "colour": "#FBBF24" },
+        { "code": "PROVISIONAL", "name": { "en": "Provisional Acceptance Issued", "fa": "تحویل موقت صادر شد" }, "category": "approved", "colour": "#22C55E" },
+        { "code": "WARRANTY", "name": { "en": "In Warranty Period", "fa": "در دوره تضمین" }, "category": "issued", "colour": "#0EA5E9" },
+        { "code": "FINAL", "name": { "en": "Final Acceptance Issued", "fa": "تحویل قطعی صادر شد" }, "category": "closed", "colour": "#16A34A", "isTerminal": true }
+      ],
+      "transitions": [
+        { "from": "REQUESTED", "to": "COMMITTEE_FORMED", "capability": "certificate.committee.form", "allowedCompanyTypes": ["OWN"], "slaHours": 480 },
+        { "from": "COMMITTEE_FORMED", "to": "WALKDOWN_DONE", "capability": "certificate.walkdown", "allowedCompanyTypes": ["OWN", "PMC", "MC"] },
+        { "from": "WALKDOWN_DONE", "to": "PROVISIONAL", "capability": "certificate.issue.provisional", "allowedCompanyTypes": ["OWN"], "guards": [{ "check": "noOpenPunchOfCategory:A", "message": { "en": "All essential defects must be rectified before provisional acceptance.", "fa": "همه نواقص اساسی باید پیش از تحویل موقت رفع شوند." } }, { "check": "asBuiltSubmitted", "message": { "en": "As-built documents must be submitted.", "fa": "مدارک چون‌ساخت باید ارائه شوند." } }], "signatureRequired": "qualified", "emitsEvent": "certificate.issued.v1" },
+        { "from": "PROVISIONAL", "to": "WARRANTY", "capability": "system.auto", "allowedCompanyTypes": ["OWN"] },
+        { "from": "WARRANTY", "to": "FINAL", "capability": "certificate.issue.final", "allowedCompanyTypes": ["OWN"], "guards": [{ "check": "warrantyPeriodElapsed", "message": { "en": "The warranty period must have elapsed.", "fa": "دوره تضمین باید سپری شده باشد." } }, { "check": "allWarrantyDefectsClosed", "message": { "en": "All defects raised during warranty must be closed.", "fa": "همه نواقص دوره تضمین باید رفع شده باشند." } }], "signatureRequired": "qualified", "emitsEvent": "certificate.final.v1" }
+      ]
+    }
+  ],
+
+  "gates": [
+    {
+      "code": "IR-G1",
+      "name": { "en": "Contract Effectiveness and Site Handover", "fa": "نافذ شدن پیمان و تحویل زمین" },
+      "phase": "initiation",
+      "approverCompanyType": "OWN",
+      "exitCriteria": [
+        { "id": "IR-G1-01", "text": { "en": "Performance bond and insurance policies lodged", "fa": "ضمانت‌نامه انجام تعهدات و بیمه‌نامه‌ها ارائه شده" } },
+        { "id": "IR-G1-02", "text": { "en": "Advance payment guarantee issued and advance paid", "fa": "ضمانت‌نامه پیش‌پرداخت صادر و پیش‌پرداخت انجام شده" } },
+        { "id": "IR-G1-03", "text": { "en": "Site handover minutes signed by all parties", "fa": "صورتجلسه تحویل زمین به امضای همه طرف‌ها رسیده" }, "evidenceObjectType": "siteMinutes", "automatable": true },
+        { "id": "IR-G1-04", "text": { "en": "Resident engineer appointed by the consultant", "fa": "ناظر مقیم از سوی مشاور معرفی شده" } },
+        { "id": "IR-G1-05", "text": { "en": "Baseline schedule approved by employer", "fa": "برنامه زمان‌بندی مبنا به تصویب کارفرما رسیده" } }
+      ]
+    },
+    {
+      "code": "IR-G2",
+      "name": { "en": "Basic Design Approval", "fa": "تصویب طراحی پایه" },
+      "phase": "engineering",
+      "approverCompanyType": "OWN",
+      "exitCriteria": [
+        { "id": "IR-G2-01", "text": { "en": "Basic design documents at Code 1", "fa": "مدارک طراحی پایه در وضعیت کد ۱" }, "automatable": true },
+        { "id": "IR-G2-02", "text": { "en": "Compliance with applicable IPS standards demonstrated", "fa": "انطباق با استانداردهای IPS مربوطه اثبات شده" } },
+        { "id": "IR-G2-03", "text": { "en": "HAZOP conducted and actions dispositioned", "fa": "مطالعه هزاپ انجام و اقدامات تعیین تکلیف شده" } }
+      ]
+    },
+    {
+      "code": "IR-G3",
+      "name": { "en": "Provisional Acceptance", "fa": "تحویل موقت" },
+      "phase": "handover",
+      "approverCompanyType": "OWN",
+      "exitCriteria": [
+        { "id": "IR-G3-01", "text": { "en": "Acceptance committee walkdown completed", "fa": "بازدید هیئت تحویل انجام شده" } },
+        { "id": "IR-G3-02", "text": { "en": "No open essential defects", "fa": "هیچ نقص اساسی باز وجود ندارد" }, "automatable": true, "guard": { "check": "noOpenPunchOfCategory:A" } },
+        { "id": "IR-G3-03", "text": { "en": "As-built documents and turnover dossier submitted", "fa": "مدارک چون‌ساخت و داشیه تحویل ارائه شده" }, "automatable": true },
+        { "id": "IR-G3-04", "text": { "en": "Performance test results accepted", "fa": "نتایج تست عملکرد پذیرفته شده" } }
+      ]
+    },
+    {
+      "code": "IR-G4",
+      "name": { "en": "Final Acceptance and Contract Close-Out", "fa": "تحویل قطعی و اختتام پیمان" },
+      "phase": "closeout",
+      "approverCompanyType": "OWN",
+      "exitCriteria": [
+        { "id": "IR-G4-01", "text": { "en": "Warranty period elapsed", "fa": "دوره تضمین سپری شده" }, "automatable": true, "guard": { "check": "warrantyPeriodElapsed" } },
+        { "id": "IR-G4-02", "text": { "en": "All warranty-period defects rectified", "fa": "همه نواقص دوره تضمین رفع شده" }, "automatable": true },
+        { "id": "IR-G4-03", "text": { "en": "Final payment certificate settled", "fa": "صورت‌وضعیت قطعی تسویه شده" }, "automatable": true },
+        { "id": "IR-G4-04", "text": { "en": "Retention released and guarantees returned", "fa": "حسن انجام کار آزاد و ضمانت‌نامه‌ها مسترد شده" } }
+      ]
+    }
+  ],
+
+  "constraintTypes": [
+    { "code": "ENG", "name": { "en": "Approved Drawings (Code 1)", "fa": "نقشه‌های تأییدشده (کد ۱)" }, "severity": "hard", "defaultOwnerRole": "disciplineLead", "autoCheck": { "source": "engineering.deliverable", "clearWhenEvent": "document.published.v1", "condition": "status == 'IFC'" }, "waiverAllowed": true, "waiverApproverCapability": "project.waiver.approve" },
+    { "code": "MAT", "name": { "en": "Material Availability", "fa": "موجودی مصالح" }, "severity": "hard", "defaultOwnerRole": "materialsManager", "autoCheck": { "source": "procurement.material", "clearWhenEvent": "material.reserved.v1", "condition": "availabilityPercent >= 100" }, "waiverAllowed": true, "waiverApproverCapability": "project.waiver.approve" },
+    { "code": "PERMIT", "name": { "en": "Work Permit", "fa": "مجوز کار" }, "severity": "hard", "defaultOwnerRole": "hseManager", "autoCheck": { "source": "hse.permit", "clearWhenEvent": "permit.issued.v1" }, "waiverAllowed": false },
+    { "code": "QC", "name": { "en": "Quality Hold Point", "fa": "نقطه توقف کیفی" }, "severity": "hard", "defaultOwnerRole": "qcManager", "waiverAllowed": false },
+    { "code": "NAZER", "name": { "en": "Resident Engineer Approval", "fa": "تأیید ناظر مقیم" }, "severity": "hard", "defaultOwnerRole": "residentEngineer", "waiverAllowed": false },
+    { "code": "SITE", "name": { "en": "Site Access / Land Handover", "fa": "دسترسی به کارگاه / تحویل زمین" }, "severity": "hard", "defaultOwnerRole": "projectManager", "waiverAllowed": true, "waiverApproverCapability": "project.waiver.approve" }
+  ],
+
+  "releaseGates": [
+    {
+      "objectType": "interimPaymentCertificate",
+      "hardBlock": true,
+      "rules": [
+        { "check": "measurementSheetsAttached", "message": { "en": "Measurement sheets must be attached to the payment certificate.", "fa": "برگه‌های متره باید به صورت‌وضعیت پیوست شود." } },
+        { "check": "progressVerifiedByConsultant", "message": { "en": "Physical progress must be verified by the consulting engineer.", "fa": "پیشرفت فیزیکی باید توسط مهندس مشاور تأیید شود." } },
+        { "check": "deductionsCalculated", "message": { "en": "Retention, advance recovery, price adjustment and tax must all be computed.", "fa": "حسن انجام کار، بازپرداخت پیش‌پرداخت، تعدیل و مالیات باید محاسبه شوند." } },
+        { "check": "budgetWithinAuthority", "message": { "en": "Amount exceeds the approver's delegated authority.", "fa": "مبلغ از حدود اختیارات تأییدکننده فراتر است." } }
+      ],
+      "waiver": { "allowed": false }
+    },
+    {
+      "objectType": "certificate.provisionalAcceptance",
+      "hardBlock": true,
+      "rules": [
+        { "check": "noOpenPunchOfCategory:A", "message": { "en": "Essential defects must be rectified before provisional acceptance.", "fa": "نواقص اساسی باید پیش از تحویل موقت رفع شوند." } },
+        { "check": "asBuiltSubmitted", "message": { "en": "As-built documentation must be submitted and accepted.", "fa": "مدارک چون‌ساخت باید ارائه و پذیرفته شود." } },
+        { "check": "allItrsSigned", "params": { "itrTypes": ["A", "B"] }, "message": { "en": "All A and B inspection records must be signed.", "fa": "همه گزارش‌های بازرسی نوع الف و ب باید امضا شده باشند." } }
+      ],
+      "waiver": { "allowed": true, "approverCapability": "certificate.exception.approve", "justificationRequired": true }
+    }
+  ],
+
+  "numberingRules": [
+    { "id": "num.nioc.doc", "appliesTo": ["deliverable"], "pattern": "{PROJECT}-{CONTRACTOR}-{UNIT}-{DISCIPLINE}-{DOCTYPE}-{SEQ:4}", "separator": "-", "case": "upper", "reservable": true, "revisionScheme": { "preIssue": ["A", "B", "C", "D"], "postIssue": ["0", "1", "2", "3"], "statusCodes": ["IFR", "IFA", "IFC", "AB"] } },
+    { "id": "num.nigc.doc", "appliesTo": ["deliverable"], "pattern": "{PROJECT}-{PHASE}-{AREA}-{DISCIPLINE}-{DOCTYPE}-{SEQ:4}", "case": "upper", "revisionScheme": { "preIssue": ["A", "B", "C"], "postIssue": ["0", "1", "2"], "statusCodes": ["IFR", "IFA", "IFC", "AB"] } },
+    { "id": "num.sooratvaziat", "appliesTo": ["interimPaymentCertificate"], "pattern": "{PROJECT}-SV-{SEQ:3}", "case": "upper", "reservable": false },
+    { "id": "num.soorat.jalase", "appliesTo": ["siteMinutes"], "pattern": "{PROJECT}-SJ-{SEQ:4}", "case": "upper" },
+    { "id": "num.tadil", "appliesTo": ["priceAdjustment"], "pattern": "{PROJECT}-TD-{PERIOD}-{SEQ:2}", "case": "upper" },
+    { "id": "num.wbs", "appliesTo": ["wbsNode"], "pattern": "{PARENT}.{SEQ:2}", "separator": ".", "reservable": false },
+    { "id": "num.tag", "appliesTo": ["tag"], "pattern": "{UNIT}-{CLASS}-{SEQ:4}{SUFFIX}", "case": "upper" },
+    { "id": "num.ncr", "appliesTo": ["ncr"], "pattern": "{PROJECT}-NCR-{DISCIPLINE}-{SEQ:4}", "case": "upper" }
+  ],
+
+  "progressRules": [
+    {
+      "id": "roc.ips.engineering",
+      "appliesTo": ["deliverable"],
+      "discipline": "*",
+      "method": "ruleOfCredit",
+      "steps": [
+        { "code": "START", "name": { "en": "Started", "fa": "شروع شده" }, "weight": 10 },
+        { "code": "IDC", "name": { "en": "Internal check complete", "fa": "کنترل داخلی انجام شد" }, "weight": 15 },
+        { "code": "IFR", "name": { "en": "Submitted to consultant", "fa": "ارسال به مشاور" }, "weight": 25, "evidenceRequired": true },
+        { "code": "CODE2", "name": { "en": "Consultant code 1 or 2 received", "fa": "دریافت کد ۱ یا ۲ از مشاور" }, "weight": 20, "evidenceRequired": true, "verifierCompanyType": "PMC" },
+        { "code": "CODE1", "name": { "en": "Employer approval (code 1)", "fa": "تصویب کارفرما (کد ۱)" }, "weight": 25, "evidenceRequired": true, "verifierCompanyType": "OWN" },
+        { "code": "AB", "name": { "en": "As-built issued", "fa": "چون‌ساخت صادر شد" }, "weight": 5, "evidenceRequired": true }
+      ]
+    },
+    {
+      "id": "qty.ips.civil",
+      "appliesTo": ["activity", "fieldProgress"],
+      "discipline": "CIV",
+      "method": "quantityBased",
+      "unitOfMeasure": "m3",
+      "steps": [
+        { "code": "EXC", "name": { "en": "Excavation", "fa": "خاکبرداری" }, "weight": 15, "evidenceRequired": true, "verifierCompanyType": "PMC" },
+        { "code": "BLIND", "name": { "en": "Blinding concrete", "fa": "بتن مگر" }, "weight": 5 },
+        { "code": "REBAR", "name": { "en": "Rebar fixing", "fa": "آرماتوربندی" }, "weight": 25, "evidenceRequired": true, "verifierCompanyType": "PMC" },
+        { "code": "FORM", "name": { "en": "Formwork", "fa": "قالب‌بندی" }, "weight": 20 },
+        { "code": "POUR", "name": { "en": "Concrete pour", "fa": "بتن‌ریزی" }, "weight": 25, "evidenceRequired": true, "verifierCompanyType": "PMC" },
+        { "code": "CURE", "name": { "en": "Curing and stripping", "fa": "عمل‌آوری و قالب‌برداری" }, "weight": 10 }
+      ]
+    },
+    {
+      "id": "qty.ips.piping",
+      "appliesTo": ["activity", "fieldProgress"],
+      "discipline": "PIP",
+      "method": "quantityBased",
+      "unitOfMeasure": "dia-inch",
+      "steps": [
+        { "code": "FAB", "name": { "en": "Shop fabrication", "fa": "ساخت کارگاهی" }, "weight": 30 },
+        { "code": "ERECT", "name": { "en": "Erection", "fa": "نصب" }, "weight": 30 },
+        { "code": "WELD", "name": { "en": "Field welding", "fa": "جوشکاری در محل" }, "weight": 20, "evidenceRequired": true },
+        { "code": "NDT", "name": { "en": "NDT accepted", "fa": "آزمون غیرمخرب پذیرفته شد" }, "weight": 10, "evidenceRequired": true, "verifierCompanyType": "TPI" },
+        { "code": "HYDRO", "name": { "en": "Hydrotest accepted", "fa": "تست هیدرواستاتیک پذیرفته شد" }, "weight": 10, "evidenceRequired": true, "verifierCompanyType": "PMC" }
+      ]
+    }
+  ],
+
+  "kpis": [
+    { "code": "PHYS_PROGRESS", "name": { "en": "Physical Progress vs Plan", "fa": "پیشرفت فیزیکی در برابر برنامه" }, "definition": { "en": "Weighted actual physical progress against the approved baseline.", "fa": "پیشرفت فیزیکی وزنی واقعی در برابر برنامه مبنای مصوب." }, "formula": "sum(actualWeightedProgress) / sum(plannedWeightedProgress) * 100", "unit": "%", "target": 100, "direction": "higherIsBetter", "thresholds": { "green": 95, "amber": 85, "red": 75 }, "ownerRole": "planner", "dashboards": ["executive", "pm"] },
+    { "code": "SV_CYCLE", "name": { "en": "Payment Certificate Cycle Time", "fa": "زمان چرخه صورت‌وضعیت" }, "definition": { "en": "Calendar days from contractor submission to employer approval.", "fa": "روزهای تقویمی از ارسال پیمانکار تا تصویب کارفرما." }, "formula": "avg(days(approved_at - submitted_at))", "unit": "days", "target": 30, "direction": "lowerIsBetter", "thresholds": { "green": 30, "amber": 45, "red": 60 }, "ownerRole": "costController", "dashboards": ["executive", "commercial"] },
+    { "code": "SV_DEDUCTION_RATE", "name": { "en": "Payment Certificate Deduction Rate", "fa": "نرخ کسورات صورت‌وضعیت" }, "definition": { "en": "Share of claimed value deducted by consultant or employer.", "fa": "سهم مبلغ درخواستی که توسط مشاور یا کارفرما کسر شده است." }, "formula": "sum(claimedAmount - approvedAmount) / sum(claimedAmount) * 100", "unit": "%", "target": 3, "direction": "lowerIsBetter", "thresholds": { "green": 3, "amber": 8, "red": 15 }, "ownerRole": "costController", "dashboards": ["commercial"] },
+    { "code": "RECEIVABLE_AGE", "name": { "en": "Receivable Aging", "fa": "سن مطالبات" }, "definition": { "en": "Average days approved payment certificates remain unpaid.", "fa": "میانگین روزهایی که صورت‌وضعیت‌های مصوب پرداخت نشده باقی می‌مانند." }, "formula": "avg(days(now - approved_at)) where state == 'EMPLOYER_APPROVED'", "unit": "days", "target": 45, "direction": "lowerIsBetter", "thresholds": { "green": 45, "amber": 90, "red": 150 }, "ownerRole": "financeManager", "dashboards": ["executive", "commercial"] },
+    { "code": "TADIL_EXPOSURE", "name": { "en": "Unclaimed Price Adjustment", "fa": "تعدیل مطالبه‌نشده" }, "definition": { "en": "Value of price adjustment earned but not yet submitted.", "fa": "ارزش تعدیل تحقق‌یافته که هنوز مطالبه نشده است." }, "formula": "sum(earnedAdjustment) - sum(submittedAdjustment)", "unit": "currency", "direction": "lowerIsBetter", "ownerRole": "costController", "dashboards": ["commercial"] },
+    { "code": "DOC_CODE1_RATE", "name": { "en": "First-Pass Code 1 Rate", "fa": "نرخ دریافت کد ۱ در نوبت اول" }, "definition": { "en": "Documents reaching code 1 without a code 3 rejection.", "fa": "مدارکی که بدون دریافت کد ۳ به کد ۱ رسیده‌اند." }, "formula": "count(deliverable where code3Count == 0 and state >= 'CODE1') / count(deliverable at CODE1) * 100", "unit": "%", "target": 65, "direction": "higherIsBetter", "thresholds": { "green": 65, "amber": 50, "red": 35 }, "ownerRole": "engineeringManager", "dashboards": ["engineering"] },
+    { "code": "DOC_TAT", "name": { "en": "Consultant Review Turnaround", "fa": "زمان بررسی مشاور" }, "formula": "avg(days(reviewed_at - submitted_at))", "unit": "days", "target": 14, "direction": "lowerIsBetter", "thresholds": { "green": 14, "amber": 21, "red": 30 }, "ownerRole": "documentController", "dashboards": ["engineering", "pm"] },
+    { "code": "PUNCH_TAHVIL", "name": { "en": "Defects Blocking Provisional Acceptance", "fa": "نواقص مانع تحویل موقت" }, "formula": "count(punchItem where category == 'A' and state not in terminal)", "unit": "count", "target": 0, "direction": "lowerIsBetter", "thresholds": { "green": 0, "amber": 5, "red": 15 }, "ownerRole": "constructionManager", "dashboards": ["executive", "commissioning"] },
+    { "code": "HSE_MS_COMPLIANCE", "name": { "en": "HSE-MS Compliance Score", "fa": "امتیاز انطباق HSE-MS" }, "formula": "count(hseRequirement where satisfied) / count(hseRequirement) * 100", "unit": "%", "target": 95, "direction": "higherIsBetter", "thresholds": { "green": 95, "amber": 85, "red": 70 }, "ownerRole": "hseManager", "dashboards": ["executive", "hse"] },
+    { "code": "SPI", "name": { "en": "Schedule Performance Index", "fa": "شاخص عملکرد زمانی" }, "formula": "sum(BCWP) / sum(BCWS)", "unit": "ratio", "target": 1.0, "direction": "higherIsBetter", "thresholds": { "green": 0.95, "amber": 0.9, "red": 0.85 }, "ownerRole": "planner", "dashboards": ["executive", "pm"] },
+    { "code": "CPI", "name": { "en": "Cost Performance Index", "fa": "شاخص عملکرد هزینه" }, "formula": "sum(BCWP) / sum(ACWP)", "unit": "ratio", "target": 1.0, "direction": "higherIsBetter", "thresholds": { "green": 0.98, "amber": 0.93, "red": 0.88 }, "ownerRole": "costController", "dashboards": ["executive", "pm"] }
+  ],
+
+  "visibilityMatrix": [
+    { "objectType": "deliverable", "grants": { "OWN": "approve", "EPC": "own", "PMC": "review", "SUB": "read", "VEN": "read", "MC": "read", "TPI": "read", "CB": "read" } },
+    { "objectType": "interimPaymentCertificate", "grants": { "OWN": "approve", "EPC": "own", "PMC": "review", "SUB": "hidden", "VEN": "hidden", "MC": "hidden", "TPI": "hidden", "CB": "hidden" } },
+    { "objectType": "priceAdjustment", "grants": { "OWN": "approve", "EPC": "own", "PMC": "review", "SUB": "hidden", "VEN": "hidden", "MC": "hidden", "TPI": "hidden", "CB": "hidden" } },
+    { "objectType": "siteMinutes", "grants": { "OWN": "approve", "EPC": "edit", "PMC": "edit", "SUB": "comment", "VEN": "hidden", "MC": "read", "TPI": "read", "CB": "hidden" } },
+    { "objectType": "cost.forecast", "grants": { "OWN": "hidden", "EPC": "own", "PMC": "hidden", "SUB": "hidden", "VEN": "hidden", "MC": "hidden", "TPI": "hidden", "CB": "hidden" } },
+    { "objectType": "measurementSheet", "grants": { "OWN": "review", "EPC": "own", "PMC": "approve", "SUB": "edit", "VEN": "hidden", "MC": "hidden", "TPI": "hidden", "CB": "hidden" } },
+    { "objectType": "ncr", "grants": { "OWN": "read", "EPC": "own", "PMC": "review", "SUB": "comment", "VEN": "comment", "MC": "read", "TPI": "review", "CB": "read" } },
+    { "objectType": "itr", "grants": { "OWN": "read", "EPC": "own", "PMC": "approve", "SUB": "edit", "VEN": "metadata", "MC": "review", "TPI": "approve", "CB": "read" } },
+    { "objectType": "punchItem", "grants": { "OWN": "approve", "EPC": "own", "PMC": "approve", "SUB": "edit", "VEN": "metadata", "MC": "approve", "TPI": "review", "CB": "metadata" } },
+    { "objectType": "certificate", "grants": { "OWN": "own", "EPC": "edit", "PMC": "review", "SUB": "read", "VEN": "metadata", "MC": "review", "TPI": "review", "CB": "read" } }
+  ],
+
+  "documentTemplates": [
+    { "id": "tpl.sooratvaziat", "name": { "en": "Interim Payment Certificate", "fa": "صورت‌وضعیت موقت" }, "appliesTo": "interimPaymentCertificate", "layout": "fa", "path": "templates/ips/soorat-vaziat.hbs" },
+    { "id": "tpl.soorat.jalase", "name": { "en": "Site Minutes", "fa": "صورتجلسه کارگاهی" }, "appliesTo": "siteMinutes", "layout": "fa", "path": "templates/ips/soorat-jalase.hbs" },
+    { "id": "tpl.tahvil.movaghat", "name": { "en": "Provisional Acceptance Certificate", "fa": "گواهی تحویل موقت" }, "appliesTo": "provisionalAcceptance", "layout": "bilingual-side-by-side", "path": "templates/ips/tahvil-movaghat.hbs" },
+    { "id": "tpl.tahvil.ghatee", "name": { "en": "Final Acceptance Certificate", "fa": "گواهی تحویل قطعی" }, "appliesTo": "finalAcceptance", "layout": "bilingual-side-by-side", "path": "templates/ips/tahvil-ghatee.hbs" },
+    { "id": "tpl.tadil", "name": { "en": "Price Adjustment Calculation", "fa": "محاسبات تعدیل" }, "appliesTo": "priceAdjustment", "layout": "fa", "path": "templates/ips/tadil.hbs" },
+    { "id": "tpl.nameh", "name": { "en": "Formal Letter", "fa": "نامه رسمی" }, "appliesTo": "correspondence", "layout": "fa", "path": "templates/ips/nameh.hbs" },
+    { "id": "tpl.transmittal.ips", "name": { "en": "Document Transmittal", "fa": "برگ ارسال مدارک" }, "appliesTo": "transmittal", "layout": "bilingual-side-by-side", "path": "templates/ips/transmittal.hbs" }
+  ],
+
+  "complianceChecklist": [
+    { "id": "IPS-01", "standardRef": "IPS General", "requirement": { "en": "Every engineering deliverable references the applicable IPS standard.", "fa": "هر مدرک مهندسی به استاندارد IPS مربوطه ارجاع دارد." }, "evidence": { "objectType": "deliverable", "condition": "ips_reference != null" }, "severity": "mandatory" },
+    { "id": "GCC-01", "standardRef": "نشریه ۴۳۱۱ ماده ۳۷", "requirement": { "en": "Interim payment certificates are verified by the consulting engineer before employer approval.", "fa": "صورت‌وضعیت‌های موقت پیش از تصویب کارفرما توسط مهندس مشاور تأیید می‌شوند." }, "evidence": { "objectType": "interimPaymentCertificate", "condition": "state >= 'EMPLOYER_APPROVED' implies consultantVerified == true" }, "severity": "mandatory" },
+    { "id": "GCC-02", "standardRef": "نشریه ۴۳۱۱ ماده ۳۵", "requirement": { "en": "Retention is withheld from every interim payment at the contractual rate.", "fa": "حسن انجام کار طبق نرخ قراردادی از هر پرداخت موقت کسر می‌شود." }, "evidence": { "objectType": "interimPaymentCertificate", "condition": "retentionApplied == true" }, "severity": "mandatory" },
+    { "id": "GCC-03", "standardRef": "نشریه ۴۳۱۱ ماده ۳۶", "requirement": { "en": "Advance payment is recovered progressively against interim certificates.", "fa": "پیش‌پرداخت به تدریج از صورت‌وضعیت‌های موقت بازپرداخت می‌شود." }, "evidence": { "objectType": "interimPaymentCertificate", "condition": "advanceRecoveryApplied == true" }, "severity": "mandatory" },
+    { "id": "GCC-04", "standardRef": "نشریه ۴۳۱۱ ماده ۳۹", "requirement": { "en": "Provisional acceptance is granted only after essential defects are rectified.", "fa": "تحویل موقت تنها پس از رفع نواقص اساسی صادر می‌شود." }, "evidence": { "objectType": "certificate", "condition": "type == 'provisional' implies openCategoryAPunch == 0" }, "severity": "mandatory" },
+    { "id": "GCC-05", "standardRef": "نشریه ۴۳۱۱ ماده ۴۲", "requirement": { "en": "Final acceptance follows the elapsed warranty period with all defects closed.", "fa": "تحویل قطعی پس از سپری شدن دوره تضمین و رفع همه نواقص انجام می‌شود." }, "evidence": { "objectType": "certificate", "condition": "type == 'final' implies warrantyElapsed and openDefects == 0" }, "severity": "mandatory" },
+    { "id": "GCC-06", "standardRef": "نشریه ۴۳۱۱", "requirement": { "en": "Site minutes are signed by employer, consultant and contractor representatives.", "fa": "صورتجلسه‌های کارگاهی به امضای نمایندگان کارفرما، مشاور و پیمانکار می‌رسد." }, "evidence": { "objectType": "siteMinutes", "condition": "signatureCount >= 3" }, "severity": "mandatory" },
+    { "id": "TADIL-01", "standardRef": "دستورالعمل تعدیل", "requirement": { "en": "Price adjustment is computed per period using the published index coefficients.", "fa": "تعدیل در هر دوره با استفاده از شاخص‌های ابلاغی محاسبه می‌شود." }, "evidence": { "objectType": "priceAdjustment", "condition": "indexCoefficientApplied == true" }, "severity": "mandatory" },
+    { "id": "HSEMS-01", "standardRef": "HSE-MS", "requirement": { "en": "Work permits are issued for all high-risk activities per HSE-MS.", "fa": "مجوز کار برای همه فعالیت‌های پرخطر طبق HSE-MS صادر می‌شود." }, "evidence": { "objectType": "permit", "condition": "coversAllHighRiskActivities" }, "severity": "mandatory" },
+    { "id": "HSEMS-02", "standardRef": "HSE-MS", "requirement": { "en": "Monthly HSE performance report submitted to the employer.", "fa": "گزارش عملکرد ماهانه HSE به کارفرما ارائه می‌شود." }, "evidence": { "objectType": "hseReport", "minimumCount": 1 }, "severity": "mandatory" },
+    { "id": "NEZAM-01", "standardRef": "نظام فنی و اجرایی کشور", "requirement": { "en": "Stage approvals are recorded by the employer before phase transition.", "fa": "تصویب مرحله‌ای پیش از گذار فاز توسط کارفرما ثبت می‌شود." }, "evidence": { "objectType": "gate", "condition": "approvedBy.companyType == 'OWN'" }, "severity": "mandatory" }
+  ],
+
+  "settings": {
+    "defaultCalendar": "jalali",
+    "secondaryCalendar": "gregorian",
+    "defaultLocale": "fa",
+    "workingWeek": ["saturday", "sunday", "monday", "tuesday", "wednesday"],
+    "thursdayMode": "half",
+    "nowruzShutdown": { "enabled": true, "startJalali": "01-01", "endJalali": "01-13", "note": { "en": "Exact dates confirmed annually by the project calendar administrator.", "fa": "تاریخ‌های دقیق سالانه توسط مدیر تقویم پروژه تأیید می‌شود." } },
+    "currency": "IRR",
+    "currencyDisplay": "toman",
+    "retentionPercent": 10,
+    "advancePaymentPercent": 20,
+    "warrantyPeriodMonths": 12,
+    "priceAdjustmentEnabled": true,
+    "priceAdjustmentPeriod": "quarterly",
+    "unitRateScheduleEnabled": true,
+    "documentReviewCycleDays": 14,
+    "employerApprovalCycleDays": 21,
+    "reviewCodes": ["1", "2", "3", "4"],
+    "punchCategories": ["A", "B", "C"],
+    "itrTypes": ["A", "B", "C"],
+    "digitDisplay": "persian",
+    "retentionYearsAfterHandover": 10
+  }
+}

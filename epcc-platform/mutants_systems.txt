@@ -1,0 +1,10 @@
+M79|$M|subsystems_system_required CHECK (\n                facility_id IS NULL OR system_id IS NOT NULL\n            )|subsystems_system_required CHECK (true)|a subsystem may exist with no system
+M80|$M|FOREIGN KEY (system_id, facility_id)\n            REFERENCES systems (id, facility_id)|FOREIGN KEY (system_id)\n            REFERENCES systems (id)|system FK drops the facility, allowing a cross-facility subsystem
+M81|$M|$t->unique(['facility_id', 'code']);\n        });\n\n        // ---|$t->unique(['project_id', 'code']);\n        });\n\n        // ---|system code scoped per project, not per facility
+M82|$M|ON DELETE RESTRICT|ON DELETE CASCADE|deleting a system silently takes its subsystems
+M83|$M|ALTER TABLE areas ALTER COLUMN unit_code SET NOT NULL|SELECT 1|unit_code stays nullable
+M84|$M|CREATE UNIQUE INDEX areas_facility_unit_code_unique|CREATE INDEX areas_facility_unit_code_unique|two areas in one facility may share a unit code
+M85|$M|areas_unit_code_not_blank CHECK (btrim(unit_code) <> '')|areas_unit_code_not_blank CHECK (true)|a blank unit code passes
+M86|$MOD|orderByRaw('commissioning_sequence NULLS LAST')|orderByRaw('commissioning_sequence')|unplanned systems sort FIRST
+M87|$MOD|return $facility === null ? $this->code : $facility->code.'-'.$this->code;|return $this->code;|fullCode drops the facility prefix
+M88|$M|DB::unprepared('ALTER TABLE systems FORCE ROW LEVEL SECURITY');||RLS enabled but not FORCEd on systems

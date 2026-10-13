@@ -1,0 +1,8 @@
+M430|app/Services/StandardsLibrary.php|if ($existing !== null) {|if (false) {|four spellings of B31.3 must stay one catalogue entry
+M431|app/Models/Standard.php|return (string) preg_replace('/[^A-Z0-9]/', '', mb_strtoupper($raw));|return $raw;|normalisation must strip case, spaces, dots and dashes
+M432|app/Models/ProjectStandard.php|return $this->edition ?: $this->standard?->edition;|return $this->standard?->edition;|a project pinned to an old edition must not follow the catalogue
+M433|app/Services/StandardsLibrary.php|$carriedBody = $standard->body;|$carriedBody = null;|the issuing body must carry across a list
+M434|app/Services/StandardsLibrary.php|if (! $standard->is_active) {|if (false) {|a withdrawn standard must not be adoptable
+M435|app/Services/StandardsLibrary.php|$this->adopt($project, $standard);|$x = 1;|citing a standard must also adopt it for the project
+M436|app/Services/ItpService.php|if ($parsed['matched'] === []) {|if (true) {|template references must be structured into citations
+M437|app/Services/ItpService.php|: implode(' · ', $parsed['unmatched']),|: null,|an unmatched reference must survive as free text

@@ -1,0 +1,11 @@
+{
+  "missing_report_local_links": [],
+  "changed_application_reference_files": [],
+  "scope": "ADR decision critique and documentation annotations only",
+  "application_tests_run": false,
+  "database_restore_experiment_run": false,
+  "independent_checks": [
+    "Decimal arithmetic of ADR-014 example",
+    "Official PostgreSQL 17/18 documentation excerpts saved"
+  ]
+}

@@ -1,0 +1,60 @@
+
+>>> blobs verified ok=4 broken=0
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\BlobIntegrityTest[39m
+  [32;1m✓[39;22m[90m [39m[90mevery stored blob is present and matches its hash[39m[90m                   [39m [90m2.42s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\PipeReferenceTest[39m
+  [32;1m✓[39;22m[90m [39m[90mit loads the full ladder from half inch to forty eight[39m[90m              [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90msizes are ordered ascending by dn[39m[90m                                   [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mit returns the anchor rows from asme b36 10m[39m[90m                        [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mod is not derived from nps[39m[90m                                          [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mnps 14 and above have od equal to nps[39m[90m                               [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mdn lookup works the european way in[39m[90m                                 [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90munknown size throws rather than returning null[39m[90m                      [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90munknown dn throws[39m[90m                                                   [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mnps decimal is the only summable column[39m[90m                             [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mdecimal ordering differs from label ordering[39m[90m                        [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mstd is not an alias of schedule 40 above ten inch[39m[90m                   [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mxs is not an alias of schedule 80 above eight inch[39m[90m                  [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mstd and xs are pinned above the divergence point[39m[90m                    [39m [90m0.06s[39m  
+  [32;1m✓[39;22m[90m [39m[90mit returns anchor wall thicknesses[39m[90m                                  [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mabsence is data and a missing combination throws[39m[90m                    [39m [90m0.05s[39m  
+  [32;1m✓[39;22m[90m [39m[90mit never falls back between std and a numbered schedule[39m[90m             [39m [90m0.04s[39m  
+  [32;1m✓[39;22m[90m [39m[90mit never falls back between xs and schedule 80[39m[90m                      [39m [90m0.05s[39m  
+  [32;1m✓[39;22m[90m [39m[90mthe exception names what is available[39m[90m                               [39m [90m0.04s[39m  
+  [32;1m✓[39;22m[90m [39m[90mschedules for a size lists only what exists[39m[90m                         [39m [90m0.04s[39m  
+  [32;1m✓[39;22m[90m [39m[90minside diameter is od minus two walls[39m[90m                               [39m [90m0.04s[39m  
+  [32;1m✓[39;22m[90m [39m[90mnumbered schedules never get thinner as they climb[39m[90m                  [39m [90m0.04s[39m  
+  [32;1m✓[39;22m[90m [39m[90mno wall thickness closes the bore[39m[90m                                   [39m [90m0.04s[39m  
+  [32;1m✓[39;22m[90m [39m[90mit folds the ways engineers write a size[39m[90m                            [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mit accepts persian digits[39m[90m                                           [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mresolve label accepts the decimal form[39m[90m                              [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mresolve label returns null instead of throwing[39m[90m                      [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mschedule lookup is case insensitive[39m[90m                                 [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mit resolves a pcf bore in each declared unit[39m[90m                        [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mmisreading the bore unit would corrupt the size[39m[90m                     [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90man unsupported bore unit throws[39m[90m                                     [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mend types cover the pcf vocabulary[39m[90m                                  [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90ma flanged connection is not a weld and is never numbered[39m[90m            [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mevery numbered end type is weldable[39m[90m                                 [39m [90m0.06s[39m  
+  [32;1m✓[39;22m[90m [39m[90msocket weld requires gender but butt weld does not[39m[90m                  [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mthe pcf wildcard exists but is inert[39m[90m                                [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90ma tee has three ports without anyone typing three[39m[90m                   [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mtee ports carry run run branch roles[39m[90m                                [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mequal and reducing tees are one component not two[39m[90m                   [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90ma reducer is the only two port fitting with unequal ends[39m[90m            [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90ma valve is directional[39m[90m                                              [39m [90m0.04s[39m  
+  [32;1m✓[39;22m[90m [39m[90ma nozzle is a port owner not a line component[39m[90m                       [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mterminating components have exactly one port[39m[90m                        [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mevery template default end is a known end type[39m[90m                      [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mevery template is bilingual[39m[90m                                         [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90munknown template throws[39m[90m                                             [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mevery pack states its edition[39m[90m                                       [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mthe repository is a singleton[39m[90m                                       [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90ma pack is decoded once and then served from memory[39m[90m                  [39m [90m0.03s[39m  
+  [32;1m✓[39;22m[90m [39m[90mit touches no database[39m[90m                                              [39m [90m0.03s[39m  
+
+  [90mTests:[39m    [32;1m50 passed[39;22m[90m (781 assertions)[39m
+  [90mDuration:[39m [39m4.29s[39m
+

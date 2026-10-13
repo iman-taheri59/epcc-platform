@@ -1,0 +1,10 @@
+M400|app/Support/Itp/InterventionCode.php|return $code === self::HOLD;|return true;
+M401|app/Support/Itp/StageResult.php|self::PASSED, self::CONDITIONAL, self::WAIVED, self::NOT_APPLICABLE,|self::PASSED, self::CONDITIONAL, self::WAIVED, self::NOT_APPLICABLE, self::FAILED,
+M402|app/Services/ItpService.php|if ($party->blocks()) {|if (false) {
+M403|app/Services/ItpService.php|if ($record->notified_at === null || $record->notice_reference === null) {|if (false) {
+M404|app/Services/ItpService.php|if ($party === null) {|if (false) {
+M405|app/Services/ItpService.php|if (StageResult::requiresReason($result) && trim((string) $findingsEn) === '' && trim((string) $findingsFa) === '') {|if (false) {
+M406|app/Services/ItpService.php|if ($stage === null || ! $stage->isHoldPoint()) {|if ($stage === null) {
+M407|app/Services/ItpService.php|if ($record->satisfied()) {|if (false) {
+M408|app/Services/ItpService.php|if (! $record->isOpen()) {|if (false) {
+M409|app/Services/ItpService.php|if ($itp->stages()->count() === 0) {|if (false) {

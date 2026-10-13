@@ -1,0 +1,22 @@
+# M89, M94 and M95 are EQUIVALENT: NumberEngine::parse() re-checks the same
+# three things, so removing the field-specific guard changes no behaviour.
+# NOTE: this file is pipe-delimited, so a mutation pattern must not contain
+# a literal '|'. M100 originally did (inside a regex alternation) and the
+# record split silently, reporting SURVIVED for a pattern never applied.
+# They are kept here, commented, as a record rather than a running test.
+#M89|app/Services/EquipmentService.php|if ($tag === '') {\n            throw ValidationException::withMessages([\n                'tag_number' => __('epcc.equipment.tag_required'),|if (false) {\n            throw ValidationException::withMessages([\n                'tag_number' => __('epcc.equipment.tag_required'),|a missing tag is accepted
+M90|app/Services/EquipmentService.php|if (! $parsed->isValid()) {|if (false) {|a malformed tag is accepted
+M91|app/Services/EquipmentService.php|if ($tagUnit !== null && $tagUnit !== $unitCode) {|if (false) {|a tag whose unit contradicts the form is accepted
+M92|app/Services/EquipmentService.php|if ($tagType !== null && $tagType !== $type) {|if (false) {|a tag whose type contradicts the form is accepted
+M93|app/Services/EquipmentService.php|if ($duplicate) {\n                // The unique index would catch this too|if (false) {\n                // The unique index would catch this too|a duplicate tag passes the service check
+#M94|app/Services/EquipmentService.php|if (! in_array($type, $allowed, true)) {|if (false) {|an unregistered equipment type is accepted
+#M95|app/Services/EquipmentService.php|if ($unit === '') {|if (false) {|a blank unit code is accepted
+M96|app/Services/EquipmentService.php|return [$area, (string) $area->unit_code];|return [$area, trim((string) ($attributes['unit_code'] ?? ''))];|the area stops being authoritative for the unit
+M97|app/Services/EquipmentService.php|// Rating and facing are copied onto the PORT, not left on the\n                // nozzle alone: PortCompatibility reads ports, and a rating\n                // that lives only on the nozzle would never be checked - the\n                // 150#-against-300# error would sail through.\n                'rating' => $attributes['rating'] ?? null,\n                'facing' => $attributes['facing'] ?? null,|'rating' => null,\n                'facing' => null,|the nozzle PORT loses its rating, so mismatches go unchecked
+M98|app/Support/Piping/PortCompatibility.php|&& self::normaliseRating($a->rating) !== self::normaliseRating($b->rating)) {|&& false) {|a pressure class mismatch is allowed
+M99|app/Support/Piping/PortCompatibility.php|$fatal = true;\n        }\n\n        // Facing is a warning|$fatal = false;\n        }\n\n        // Facing is a warning|a rating mismatch downgrades to a warning
+M100|app/Support/Piping/PortCompatibility.php|return rtrim($r, '# ');|return $rating;|rating spellings stop being normalised (150# vs CL150 refused)
+M101|app/Services/JointService.php|if ($componentA === null && $componentB === null) {|if (false) {|two nozzles may be joined with no spool between them
+M102|app/Services/JointService.php|return 'FIELD';|return 'SHOP';|a joint to a vessel nozzle is called a shop weld
+M103|app/Services/PipingLineService.php|if (! $this->autoNumberingEnabled($project)) {|if (false) {|the withdrawn auto-numbering path reopens
+M104|app/Services/EquipmentService.php|->where('tag', $tag)\n                ->exists();|->where('tag', 'ZZZ-NEVER')\n                ->exists();|two nozzles on one vessel may share a tag

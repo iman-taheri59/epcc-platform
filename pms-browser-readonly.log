@@ -1,0 +1,37 @@
+{
+  "steps": [],
+  "pages": [
+    {
+      "lang": "fa",
+      "width": 1440,
+      "dir": "rtl",
+      "overflow": false,
+      "submitUnobstructed": true
+    },
+    {
+      "lang": "en",
+      "width": 1440,
+      "dir": "ltr",
+      "overflow": false,
+      "submitUnobstructed": true
+    },
+    {
+      "lang": "fa",
+      "width": 430,
+      "dir": "rtl",
+      "overflow": false,
+      "submitUnobstructed": true
+    },
+    {
+      "lang": "en",
+      "width": 430,
+      "dir": "ltr",
+      "overflow": false,
+      "submitUnobstructed": true
+    }
+  ],
+  "errors": [],
+  "pipeId": "0f00cabd-55b8-47b1-98b6-8bdc8d37d192",
+  "classId": "e89fbece-7f60-4392-856c-c5f8c3f04cdb",
+  "ok": true
+}

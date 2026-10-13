@@ -1,0 +1,61 @@
+{
+  "final_selected_tests": {
+    "tests": 48,
+    "assertions": 379,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "dedicated_bulk_included_not_additive": {
+    "tests": 16,
+    "assertions": 117
+  },
+  "engine_corpus": "25/25",
+  "changed_existing_code_files": [
+    "app/app/Services/PmsEntryService.php",
+    "app/app/Http/Controllers/PmsController.php",
+    "app/resources/views/piping/pms.blade.php",
+    "app/lang/en/pms.php",
+    "app/lang/fa/pms.php",
+    "app/routes/web.php"
+  ],
+  "new_code_files": [
+    "app/app/Services/PmsBulkEntryService.php",
+    "app/resources/views/piping/pms-bulk-preview.blade.php",
+    "app/tests/Feature/PmsBulkEntryTest.php"
+  ],
+  "checked_reference_files": 32,
+  "reference_changes": [],
+  "broken_checked_local_links": [],
+  "scope": "operational explicit-size bulk entry only; revision design reviews paused; no schema changes",
+  "live_http": [
+    {
+      "role": "owner",
+      "lang": "fa",
+      "status": 200,
+      "correct_direction": true,
+      "content_editor_present": false
+    },
+    {
+      "role": "owner",
+      "lang": "en",
+      "status": 200,
+      "correct_direction": true,
+      "content_editor_present": false
+    },
+    {
+      "role": "writer",
+      "lang": "fa",
+      "status": 200,
+      "correct_direction": true,
+      "content_editor_present": false
+    },
+    {
+      "role": "writer",
+      "lang": "en",
+      "status": 200,
+      "correct_direction": true,
+      "content_editor_present": false
+    }
+  ]
+}

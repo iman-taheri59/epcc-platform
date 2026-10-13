@@ -1,0 +1,38 @@
+{
+  "baseline_files": 491,
+  "changed_existing_source_files": [
+    "app/app/Models/PipingClass.php",
+    "app/app/Services/PmsEntryService.php",
+    "app/app/Http/Controllers/PmsController.php",
+    "app/bootstrap/app.php",
+    "app/resources/views/piping/pms.blade.php",
+    "app/lang/en/pms.php",
+    "app/lang/fa/pms.php",
+    "app/routes/web.php"
+  ],
+  "new_source_files": [
+    "app/app/Models/PipingClassNdtRequirement.php",
+    "app/resources/views/piping/pms-ndt.blade.php",
+    "app/tests/Feature/PmsNdtEntryTest.php",
+    "app/database/migrations/2026_09_29_235950_create_piping_class_ndt_requirements.php"
+  ],
+  "missing_baseline_files": [],
+  "reference_file_count": 32,
+  "reference_changes": [],
+  "final_tests": {
+    "name": "CLI Arguments",
+    "tests": "157",
+    "assertions": "959",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "time": "394.971432"
+  },
+  "checked_broken_links": [],
+  "migration": "2026_09_29_235950_create_piping_class_ndt_requirements.php",
+  "legacy_data_backfill": false,
+  "live_login_http": 200,
+  "visual_browser_qa": false,
+  "full_product_qa": false,
+  "restore_qa": false
+}

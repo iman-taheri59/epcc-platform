@@ -1,0 +1,188 @@
+{
+  "steps": [
+    "Owner configures two ordered steps: consultant role, named owner",
+    "Author submits; no self-approval control",
+    "Assigned consultant returns for correction with a recorded comment",
+    "Correction appends a linked version, keeps Spec A, starts fresh review",
+    "Policy v2 saved; owner still cannot bypass consultant step of the submitted v1 run",
+    "Independent owner completes the second step; both signatures and original return remain visible",
+    "FLANGE: source and family-specific attributes saved, no inherited workflow or submission",
+    "VALVE: source and family-specific attributes saved, no inherited workflow or submission",
+    "GASKET: source and family-specific attributes saved, no inherited workflow or submission",
+    "BOLTING: source and family-specific attributes saved, no inherited workflow or submission"
+  ],
+  "pages": [
+    {
+      "family": "FITTING",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FITTING",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "FITTING",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FITTING",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "original": "4dfe55ee-07e8-438c-82d8-a0594f6a0d21",
+  "corrected": "422adff0-d8a4-493a-b1ec-2d615f631133",
+  "ok": true
+}

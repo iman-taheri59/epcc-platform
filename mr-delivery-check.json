@@ -1,0 +1,123 @@
+{
+  "baseline_files": 487,
+  "changed": [
+    "app/app/Services/ProcurementService.php",
+    "app/app/Http/Controllers/MaterialsController.php",
+    "app/bootstrap/app.php",
+    "app/resources/views/materials/procurement.blade.php",
+    "app/routes/web.php"
+  ],
+  "new": [
+    "app/app/Services/MaterialRequisitionAccessService.php",
+    "app/app/Services/MaterialRequisitionEntryService.php",
+    "app/resources/views/materials/mr-entry.blade.php",
+    "app/tests/Feature/MaterialRequisitionEntryTest.php",
+    "app/tests/Feature/MaterialRequisitionMigrationTest.php",
+    "app/lang/en/mr.php",
+    "app/lang/fa/mr.php",
+    "app/database/migrations/2026_09_30_042713_add_material_requisition_authoring.php"
+  ],
+  "missing": [],
+  "reference_files_checked": 32,
+  "reference_unchanged": true,
+  "tests": {
+    "tests": 193,
+    "assertions": 774,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0
+  },
+  "test_suites": [
+    {
+      "name": "Tests\\Feature\\ItpTest",
+      "file": "/home/user/epcc-platform/app/tests/Feature/ItpTest.php",
+      "tests": "72",
+      "assertions": "173",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "199.796893"
+    },
+    {
+      "name": "Tests\\Feature\\MaterialRequisitionEntryTest",
+      "file": "/home/user/epcc-platform/app/tests/Feature/MaterialRequisitionEntryTest.php",
+      "tests": "24",
+      "assertions": "252",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "71.330839"
+    },
+    {
+      "name": "Tests\\Feature\\MaterialRequisitionMigrationTest",
+      "file": "/home/user/epcc-platform/app/tests/Feature/MaterialRequisitionMigrationTest.php",
+      "tests": "1",
+      "assertions": "57",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "3.696788"
+    },
+    {
+      "name": "Tests\\Feature\\MaterialsPresentationTest",
+      "file": "/home/user/epcc-platform/app/tests/Feature/MaterialsPresentationTest.php",
+      "tests": "1",
+      "assertions": "12",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "5.080645"
+    },
+    {
+      "name": "Tests\\Feature\\PmsAccessTest",
+      "file": "/home/user/epcc-platform/app/tests/Feature/PmsAccessTest.php",
+      "tests": "14",
+      "assertions": "111",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "55.938674"
+    },
+    {
+      "name": "Tests\\Feature\\ProcurementTest",
+      "file": "/home/user/epcc-platform/app/tests/Feature/ProcurementTest.php",
+      "tests": "22",
+      "assertions": "31",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "77.187216"
+    },
+    {
+      "name": "Tests\\Feature\\ProjectArchiveTest",
+      "file": "/home/user/epcc-platform/app/tests/Feature/ProjectArchiveTest.php",
+      "tests": "30",
+      "assertions": "73",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "125.988912"
+    },
+    {
+      "name": "Tests\\Feature\\WarehouseTest",
+      "file": "/home/user/epcc-platform/app/tests/Feature/WarehouseTest.php",
+      "tests": "29",
+      "assertions": "65",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "time": "94.847763"
+    }
+  ],
+  "documentation_files": [
+    "README.md",
+    "HANDOFF.md",
+    "docs/TODO.md",
+    "docs/ADR-INDEX.md",
+    "docs/ADR-018-Material-Management-Operational-Completion.md",
+    "docs/ADR-013-Project-Backup-Export-and-Deletion.md",
+    "docs/ADR-RECONCILIATION-2026-09-29.md",
+    "docs/MATERIAL-REQUISITION-ENTRY-2026-09-30.md"
+  ],
+  "broken_local_links": []
+}

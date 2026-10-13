@@ -1,0 +1,192 @@
+{
+  "steps": [
+    "Owner configures two ordered steps: consultant role, named owner",
+    "Author submits; no self-approval control",
+    "Author N/A proposal requires quote; clarification and current consultant note are appended without changing finding or approval",
+    "Assigned consultant returns for correction with a recorded comment",
+    "Correction appends a linked version, keeps Spec A, starts fresh review",
+    "Policy v2 saved; owner still cannot bypass consultant step of the submitted v1 run",
+    "Independent owner completes the second step; both signatures and original return remain visible",
+    "Original submission evidence remains identical; correction has a distinct captured review run",
+    "FLANGE: source and family-specific attributes saved, no inherited workflow or submission",
+    "VALVE: source and family-specific attributes saved, no inherited workflow or submission",
+    "GASKET: source and family-specific attributes saved, no inherited workflow or submission",
+    "BOLTING: source and family-specific attributes saved, no inherited workflow or submission"
+  ],
+  "pages": [
+    {
+      "family": "FITTING",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FITTING",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "FITTING",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FITTING",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "PIPE",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "FLANGE",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "VALVE",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "GASKET",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 1440,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 1440,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 430,
+      "lang": "fa",
+      "dir": "rtl",
+      "overflow": false
+    },
+    {
+      "family": "BOLTING",
+      "width": 430,
+      "lang": "en",
+      "dir": "ltr",
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "original": "e24bcf26-a50d-4b8e-ba2c-c8de4e31aaa5",
+  "originalRun": "3a6cd64b-d467-44ae-b623-b443755f6f5a",
+  "corrected": "e8eda2ba-ff29-47cc-87dc-90db47c4ab2c",
+  "correctedRun": "f074a6bc-3b81-49bf-8727-ab19fdaa6347",
+  "ok": true
+}

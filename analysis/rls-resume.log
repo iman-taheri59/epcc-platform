@@ -1,0 +1,25 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+....F..                                                             7 / 7 (100%)
+
+Time: 00:12.908, Memory: 87.00 MB
+
+There was 1 failure:
+
+1) Tests\Feature\BaselineIsolationTest::test_creator_can_update_active_rows_and_archive_preserves_read_but_blocks_writes
+baseline_batches
+Failed asserting that 1 is identical to 0.
+
+/home/user/epcc-platform/app/tests/Feature/BaselineIsolationTest.php:106
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/.cache/epcc-vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/BaselineIsolationTest.php:53
+/home/user/epcc-platform/app/tests/Feature/BaselineIsolationTest.php:103
+/home/user/.cache/epcc-vendor/phpunit/phpunit/phpunit:104
+
+FAILURES!
+Tests: 7, Assertions: 58, Failures: 1.
