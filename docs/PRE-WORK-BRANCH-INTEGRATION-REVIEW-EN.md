@@ -38,3 +38,11 @@ addition does not expose a web route, approve a material or grant PMS access.
 CI run 38368929870 reached a successful **standards** job (including the
 recovered standalone test and CLI JSON/HTML smoke). The full Laravel job was
 still in progress when checked; this does not establish full-suite success.
+
+### Integration result
+
+CI run 38386417769 (commit `d62b848`) passed all six jobs after the
+read-only material screening CLI was recovered and the related branch
+integration failures were resolved. The run covers the current branch's
+material/fitting workflow and RLS; it does not validate or import parallel
+PMS events, NDT, baseline or ITP features from `pre-work`.

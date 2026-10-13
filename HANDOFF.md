@@ -3932,3 +3932,18 @@ paper over the count. The previous PH-14/KISH-1 employer scope leak and the
 new HTTP nonparticipant mirror did **not** recur in this run. CI recheck of
 the revised assertions is pending. PMS author-policy nomination still does
 not gate `PipingClassService` writes; full authoring protection remains open.
+
+## 2026-10-13 CI baseline after selective integration
+
+**Run 38386417769 for commit `d62b848`: ALL SIX CI JOBS PASSED.**
+Laravel suite (PostgreSQL + RLS), standards packs/rule engine (including the
+recovered material-screening CLI), pure PCF, HTML prototype, development
+image and compose stack succeeded. The two sargability probe-count assertions
+were the final failures in the preceding run; now they pass without weakening
+RLS. Exact PHPUnit test/assertion counts were not available: `gh run view
+--log` failed to fetch the hosted log (EOF), so no count is invented. The
+successful CI run verifies only the committed scope: the independent PMS
+nomination policy still does **not** gate PipingClassService writes, and the
+partial stale-object state re-read is not an atomic publication lock. Next
+step is a dedicated ADR/tested design for full PMS write-path enforcement and
+concurrency protection; do not declare authoring protection shipped.
