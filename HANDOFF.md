@@ -3595,6 +3595,17 @@ from this sandbox's network, so the CI migration step now emits a readable
 GitHub error annotation on failure. Next: rerun CI, inspect bootstrap
 annotation, fix root cause and then run the actual Laravel suite.
 
+### 2026-10-12 (cont.) — GitHub CI exposed step-2+3 schema collision
+
+PR #7 second run 38343518174: standards/rule-engine and prototype green;
+Laravel+compose blocked during migration at `2026_09_29_180000` with SQLSTATE
+42703 (`project_fitting_definitions.size_designation` absent). The ported
+screening snapshot migration expects the parallel general-material definition
+columns; our fitting table only has CAP/ELBOW dimensions. ADR-025 stops blind
+port and requests owner choice (new material declaration host vs defer general
+screening). Added independent pure-PCF CI job so parser tests can run even
+while database migration is blocked. Full Laravel suite was NOT executed.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,

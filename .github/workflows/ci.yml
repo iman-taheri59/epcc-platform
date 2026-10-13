@@ -108,6 +108,27 @@ jobs:
       - name: Sidebar, piping workspace and MTO acceptance previews
         run: npm run test:prototype
 
+  # Pure PCF tests run independently of migrations so a schema integration
+  # failure cannot conceal parser/admission/classification regressions.
+  pcf:
+    name: Pure PCF parser and classification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+          tools: composer:v2
+      - name: Install Composer dependencies
+        working-directory: app
+        run: composer install --no-scripts --no-interaction --no-progress --prefer-dist
+      - name: Run pure PCF tests (no database)
+        working-directory: app
+        run: vendor/bin/phpunit --colors=never --filter 'Pcf(Parser|Admission|BranchClassification)Test'
+
   # -------------------------------------------------------------------------
   # The real suite: PostgreSQL 17, RLS, and the PDF toolchain.
   # -------------------------------------------------------------------------

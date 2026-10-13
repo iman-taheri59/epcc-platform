@@ -112,3 +112,5 @@ instead of a forced merge.
 - **Provenance:** every ported file keeps its behaviour and tests; the
   export remains on the remote `workspace` branch as the archive of
   record for anything not yet ported.
+
+**CI correction (PR #7):** step 2+3 is NOT verified as portable: ADR-025 documents the general-material vs dimensional-fitting schema collision in screening evidence migration. Full Laravel migration and compose bootstrap are blocked; no false green claim.
