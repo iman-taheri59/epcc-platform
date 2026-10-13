@@ -54,3 +54,22 @@ authoring policy enforcement is claimed by this slice. CI verification pending.
 CI verification: run 38443239928 for `186707a` passed all six jobs, including
 the PostgreSQL DocumentRegisterTest. This confirms the document registration
 slice only, not the class/revision mapping or line/adoption gates.
+
+## Second implementation slice: one governing document identity (2026-10-13)
+
+A nullable `piping_classes.pms_document_id` binds a class identity to **one**
+existing CDE PMS document. The database refuses non-PMS, non-PIPING, wrong-
+project and non-WIP documents at first binding; a non-null binding cannot be
+changed or cleared. `PmsClassDocumentService::attach` accepts only an
+unassigned DRAFT class owned by the nominated authoring company, an owned WIP
+PMS in the same project and the latest unsuspended author policy; it shares
+the policy replacement's project advisory transaction lock and locks the
+class row. Tests cover default denial, two classes in one document, immutable
+reparenting (including direct SQL), wrong document type and suspension.
+
+This is **identity membership only**, not class-specification revision
+membership. The column remains nullable for legacy classes and prior fixtures.
+The class rule set is still not snapshotted into `document_revisions`, approved
+PMS revisions still do not authorize line registration and direct SQL can
+still attach a *valid* unassigned class without the nomination service. Do
+not call this a complete PMS authoring gate; CI verification pending.

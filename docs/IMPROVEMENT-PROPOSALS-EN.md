@@ -686,3 +686,14 @@ revisioned CDE document with a distinct PMS type, preserving its audit and
 approval state machine. The service rejects a non-PIPING PMS regardless of
 HTTP validation. This does not replace the needed class-to-revision mapping
 or authorize any line; see ADR-028.
+
+### 2026-10-13: stage PMS identity binding before revision snapshots (PARTIAL)
+
+The current class identity is already referenced by line/MTO foreign keys.
+Attaching it to one typed CDE PMS document avoids a duplicate class register
+while preserving multiple classes per spec. A migration trigger backstops
+document type/project/state and immutability; the service uses the existing
+versioned nomination lock. **Better final form remains** an immutable
+class-specification snapshot linked to each issued PMS revision, then a line
+pin to that snapshot. This slice alone is insufficient for line eligibility
+or direct-SQL writer enforcement; see ADR-028 and ADR-027.

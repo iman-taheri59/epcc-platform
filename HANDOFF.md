@@ -4031,3 +4031,16 @@ version-pinning or line admissibility gate; CI pending.
   only typed PMS document registration/WIP state. No classes are yet linked to
   PMS revisions, no line eligibility based on document approval is enforced,
   and PMS author nomination still does not protect write paths.
+
+## 2026-10-13 first class-to-PMS identity binding
+
+Added migration `2026_10_13_100000_link_piping_classes_to_pms_documents.php`
+and `PmsClassDocumentService`: a DRAFT class may be attached to one owned WIP
+PIPING/PMS document in the same project under a current explicit author
+nomination, serialized with policy replacement. PostgreSQL trigger forbids
+wrong document type/project/state and reassignment. New
+`PmsClassDocumentTest` checks two classes per document, default denial,
+suspension, direct reparenting and non-PMS refusal. This is intentionally
+**not** a class-to-issued-revision snapshot or a full direct-SQL author gate;
+prior classes remain unbound. Do not enforce the line prerequisite on this
+identity alone. CI pending.
