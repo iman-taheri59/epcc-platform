@@ -4080,3 +4080,8 @@ eligibility, class writer SQL protection or CDE nomination gate. CI pending.
   external redirects/EOF; available check-run annotations show no PMS error.
   Added a direct forged-snapshot INSERT regression test for the trigger and
   scheduled another full run. Do not describe this run as green.
+
+- CI run 38460152236 on `1af325a` **passed all six jobs**, including the
+  PostgreSQL/RLS Laravel suite, approved PMS revision snapshot test and direct
+  JSONB-forgery rejection regression. Earlier PDF timeout on 38456241655 did
+  not reproduce; do not extrapolate line eligibility or full writer security.

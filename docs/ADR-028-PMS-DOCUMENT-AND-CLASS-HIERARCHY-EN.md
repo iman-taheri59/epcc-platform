@@ -113,3 +113,7 @@ failed on an annotated Chromium PDF-render 30-second timeout (zero assertion
 failures; nested JUnit reported three errors). The snapshot migration collision
 was resolved. The JSONB-forgery guard now has an explicit direct-INSERT test.
 Await a clean full rerun before claiming this slice green.
+
+CI run 38460152236 on `1af325a` passed all six jobs after the migration
+repeatability correction and forged-content regression. This verifies
+revision-specific snapshots at A-family publication, not line admission.
