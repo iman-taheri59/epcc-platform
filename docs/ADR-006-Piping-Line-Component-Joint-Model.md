@@ -658,3 +658,10 @@ nullable `piping_class_id` and legacy-import behavior predate this correction;
 the published-versus-draft selection threshold and treatment of historical
 unmapped lines remain open questions in ADR-027. Do not claim the current
 line-create API or database constraint already enforces this requirement.
+
+**Decision update, 2026-10-13:** the owner requires a PUBLISHED same-project
+PMS class before either manually created or imported lines enter the register.
+Unmapped legacy lines are rejected until mapped; do not invent a class or
+interpret an unparseable line number as an exemption. This requirement is
+accepted but NOT yet enforced in code/DB. See ADR-027 for rollout and
+existing-row preflight.

@@ -55,3 +55,33 @@ Nor has an exception for historical line imports lacking class mapping been
 approved. Resolve those two details before adding a NOT NULL constraint or
 rejecting existing-line imports. Author nomination is still not an enforced
 PMS write gate.
+
+## Owner decision: line register precondition (2026-10-13)
+
+The owner selected BOTH strict options:
+
+- A class is eligible for a new line only after its PMS is **PUBLISHED**. Mere
+  creation/registration or a DRAFT PMS does not qualify. Its class identity
+  must belong to the **same project** as the line. There is no implicit class
+  creation in line entry.
+- A historical/imported line with no mapped eligible class is **rejected from
+  the line register** until the class is established and published. A legacy
+  tag may still retain its original number when admitted; number parsing is
+  not permission to bypass the class gate. No placeholder class and no
+  quarantine row inside `piping_lines`.
+
+This resolves the published-vs-draft and import-exception questions above.
+The shared class identity (option C vs B) has NOT been explicitly selected by
+this answer; implement the precondition against the current shared table
+without treating it as approval of a complete authoring/provenance design.
+
+Implementation acceptance: `PipingLineService::create()` and `register()`
+require `piping_class_id` and verify same-project + PUBLISHED inside the write
+transaction; HTTP entry validates the field and only offers eligible choices;
+DB backstop rejects direct INSERT/UPDATE of a line without an eligible class
+(including cross-project FK references and a later class-state change that
+would invalidate existing lines). An explicit migration policy is needed for
+existing null-class rows: the project currently has no important production
+data, but the migration must fail loudly rather than silently deleting or
+fabricating mappings. Update old tests that constructed DRAFT classes solely
+as fixture shortcuts. Preserve the AFC evidence gate and import-tag fidelity.

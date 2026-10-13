@@ -3975,3 +3975,18 @@ silently register its own class. Sandbox restored a base Git HEAD while keeping
 worktree files; fetched the remote branch and realigned HEAD to remote tip
 `38c8b8b` with `git reset --mixed FETCH_HEAD` (no worktree changes), then
 continued on the same tracked branch.
+
+## 2026-10-13 class-before-line decisions
+
+Owner answered both open workflow questions: line entry requires an existing
+**PUBLISHED same-project** class; historical/imported lines with no eligible
+mapping are rejected from the line register (original tags can be preserved
+after mapping). ADR-006 and ADR-027 updated. This does not select a separate
+versus shared PMS aggregate architecture, nor authorize an incomplete
+service-only author gate. Current code still allows nullable class IDs and
+DRAFT classes. Audit found fixture shortcuts in PipingLineTest,
+PipingConfigTest, ComponentModellingTest, JointTest, UnitPreferenceTest and
+PipingLineHttpTest; flipping the runtime guard alone would leave CI red. Next
+implementation slice: migration preflight/backstop + service/HTTP validation
+and published-class fixtures, with PostgreSQL positive/negative tests. No
+runtime change was made in this decision-recording step.
