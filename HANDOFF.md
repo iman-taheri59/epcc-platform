@@ -3789,3 +3789,16 @@ Append one row per session. Keep it terse.
   legacy classes have no fabricated DN coverage and cannot publish without it.
   This correction is **not yet CI verified**. The author policy still does not
   gate PipingClassService writes. Recheck the next CI run before declaring success.
+
+## 2026-10-13 `pre-work` branch audit
+
+The owner requested a full review and selective transfer. Inspected remote tip
+`878d34f`, its two upload commits, 1,881 tracked paths, four source archives,
+and the 1,047-path nested repository against the present branch. Detailed
+inventory and decisions: `docs/PRE-WORK-BRANCH-INTEGRATION-REVIEW-EN.md`.
+No source was copied: the material/fitting core already has a newer integrated
+version; the unique response/disposition, PMS history/NDT, baseline and ITP
+features depend on a different schema, while logs, backups and screenshots are
+not deployable source. Never bulk-merge this branch. Next possible safe slice:
+adapt its read-only material-screening CLI with a synthetic fixture and run a
+PHP regression, after resolving the current CI PMS migration failures.

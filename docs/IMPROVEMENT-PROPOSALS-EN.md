@@ -595,3 +595,12 @@ one carries the B16.47 curves and Class 800 derivation.
   the commit/section.
 - Every session must touch this file or state in the session log that nothing
   new was found (rule 5: silence is a defect).
+
+### 2026-10-13: selectively recover `pre-work` sources (OPEN)
+
+The `pre-work` upload branch includes a nested parallel application and four
+source archives. A bulk merge would overwrite current schema and security
+changes. Better alternative: import only a cohesive tested slice, starting
+with the read-only material-screening CLI/fixture, then separately decide on
+finding disposition and PMS authoring/history. See
+`docs/PRE-WORK-BRANCH-INTEGRATION-REVIEW-EN.md` for inventory and blockers.
