@@ -54,14 +54,15 @@ class MaterialReferenceTest extends TestCase
         $ref = $this->ref();
 
         // Table A-1 publishes ISO names: X42 = L290, X60 = L415.
-        $this->assertSame('L290', $ref->find('API5L', 'X42')->typeGrade);
-        $this->assertSame('L415', $ref->find('API5L', 'X60')->typeGrade);
-        $this->assertSame(138.0, $ref->allowableStress('API5L', 'X42', 200.0));
+        // Both have PSL1 and PSL2 entries: never choose a PSL implicitly.
+        $this->assertSame('L290', $ref->find('API5L', 'X42', 'PSL1')->typeGrade);
+        $this->assertSame('L415', $ref->find('API5L', 'X60', 'PSL1')->typeGrade);
+        $this->assertSame(138.0, $ref->allowableStress('API5L', 'X42', 200.0, 'PSL1'));
 
         // Explicit PSL picks the PSL row; ISO name and alias both work.
         $this->assertSame('PSL2', $ref->find('API5L', 'X42', 'PSL2')->psl);
         $this->assertSame('PSL2', $ref->find('API5L', 'L290', 'PSL2')->psl);
-        $this->assertSame(132.0, $ref->allowableStress('API5L', 'L290', 300.0, 'PSL2'));
+        $this->assertSame(138.0, $ref->allowableStress('API5L', 'L290', 250.0, 'PSL2')); // max use is 260 C
     }
 
     public function test_austenitic_ladder_uses_32_columns(): void
@@ -71,9 +72,9 @@ class MaterialReferenceTest extends TestCase
         // TP304: 138 flat to 150 deg C, then falling - raw A-1 row, p234.
         $this->assertSame(138.0, $ref->allowableStress('A312', 'TP304', 150.0));
         $this->assertSame(129.0, $ref->allowableStress('A312', 'TP304', 200.0));
-        $this->assertSame(9.65, $ref->allowableStress('A312', 'TP304', 825.0));
+        $this->assertSame(11.2, $ref->allowableStress('A312', 'TP304', 800.0));
         // Interpolation near the top of the ladder.
-        $this->assertEqualsWithDelta(9.96, $ref->allowableStress('A312', 'TP304', 820.0), 1e-9);
+        $this->assertEqualsWithDelta(10.58, $ref->allowableStress('A312', 'TP304', 810.0), 1e-9);
     }
 
     public function test_temperature_above_max_use_throws(): void
@@ -85,7 +86,7 @@ class MaterialReferenceTest extends TestCase
     public function test_temperature_above_last_column_throws(): void
     {
         $this->expectException(UnknownMaterialException::class);
-        $this->ref()->allowableStress('A312', 'TP304', 830.0); // last column 825
+        $this->ref()->allowableStress('A312', 'TP304', 817.0); // max use 816, last column 825
     }
 
     public function test_temperature_past_publication_range_throws(): void
@@ -187,11 +188,11 @@ class MaterialReferenceTest extends TestCase
         // Carbon steel: W = 1 through 593 deg C, below-range rule is 1.0.
         $this->assertSame(1.0, $ref->wFactor('carbon_steel', 200.0));
         $this->assertSame(1.0, $ref->wFactor('carbon_steel', 593.0));
-        // CrMo interpolation between 510 (0.95) and 538 (0.91).
-        $this->assertEqualsWithDelta(0.93, $ref->wFactor('cr_mo', 524.0), 1e-9);
+        // CrMo interpolation between 510 (0.86) and 538 (0.82).
+        $this->assertEqualsWithDelta(0.84, $ref->wFactor('cr_mo', 524.0), 1e-9);
         // CSEF N+T starts at 510; below that, General Note (a) gives 1.0.
         $this->assertSame(1.0, $ref->wFactor('csef_normalised_and_tempered', 450.0));
-        $this->assertSame(0.95, $ref->wFactor('csef_normalised_and_tempered', 510.0));
+        $this->assertSame(1.0, $ref->wFactor('csef_normalised_and_tempered', 510.0));
         // Filled austenitic runs to 816 with 0.5 at the end.
         $this->assertSame(0.5, $ref->wFactor('filled_austenitic', 816.0));
     }

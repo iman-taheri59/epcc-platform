@@ -3837,3 +3837,12 @@ See `docs/PRE-WORK-BRANCH-INTEGRATION-REVIEW-EN.md` for boundaries.
   also fail against pack semantics (PSL ambiguity, 816 deg C max use, W
   coefficient), and must be resolved against reference data, not by relaxing
   safety rules to match old test literals.
+
+- MaterialReference PHPUnit failures were stale test expectations, not a
+  reason to loosen material guards. Cross-checked the committed A-1 and
+  302.3.5 reference-pack rows: API5L L290 has both PSL1/PSL2 (explicit PSL
+  required; max use 260 C), TP304 max use 816 C even though a stress column
+  exists at 825 C, CrMo W at 524 C is 0.84, and CSEF N+T W at 510 C is 1.0.
+  Corrected only the test cases to exercise valid temperatures and explicit
+  PSL selection; CI verification pending. Never infer approval from an
+  out-of-range column or silently select a PSL.

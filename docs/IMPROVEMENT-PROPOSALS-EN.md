@@ -604,3 +604,12 @@ changes. Better alternative: import only a cohesive tested slice, starting
 with the read-only material-screening CLI/fixture, then separately decide on
 finding disposition and PMS authoring/history. See
 `docs/PRE-WORK-BRANCH-INTEGRATION-REVIEW-EN.md` for inventory and blockers.
+
+### 2026-10-13: keep reference tests pinned to pack applicability (BUILT)
+
+Old tests asserted stress values past the material's max-use temperature and
+implicitly selected PSL for multi-PSL API5L grades. The safer alternative is
+to retain the runtime guards and exercise the published table only within its
+applicable range; tests now specify PSL and use <=816 C for TP304. W examples
+were corrected to the committed 302.3.5 pack row rather than changing pack
+values to satisfy stale literals. CI revalidation is pending.
