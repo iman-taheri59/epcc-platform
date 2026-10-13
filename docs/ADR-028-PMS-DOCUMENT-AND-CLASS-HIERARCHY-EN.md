@@ -79,3 +79,24 @@ PostgreSQL/RLS binding tests. The next slice must attach an immutable class
 rules snapshot to a specific PMS `document_revision_id`, then pin admitted
 lines to that approved class snapshot. Do not use `pms_document_id` alone as
 revision evidence.
+
+## Third implementation slice: atomic approved-revision snapshot (2026-10-13)
+
+On CDE publication of a `PIPING/PMS` revision with A-family suitability,
+`DocumentRegister::transition` now captures an append-only JSONB specification
+row per attached, published class in the **same transaction** as publication.
+At least one class, with rules, is required; any attached draft refuses A
+publication. The snapshot contains the class header, its size-band rules and
+branch rules, with an explicit FK to `document_revision_id`. It is never
+refreshed by later edits to live tables or by issuing another PMS revision.
+Class attachment and approval both lock the same document before class rows;
+the database checks the revision's approved state and rejects snapshot
+UPDATE/DELETE. PostgreSQL RLS scopes snapshot access by participant/project.
+B-family publication does not create approved-class snapshots.
+
+Limitations: direct SQL may still forge snapshot JSON or mutate source rule
+rows; `PipingClassService` publication and CDE PMS writing are not yet fully
+nomination-gated. Existing lines are not pinned and new lines still have no
+snapshot eligibility gate. A snapshot created for a prior revision must not
+be mistaken for current approval without checking the exact revision state.
+CI pending.

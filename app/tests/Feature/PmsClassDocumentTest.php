@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\PipingClass;
+use App\Support\CdeState;
+use Illuminate\Support\Str;
 use App\Models\Project;
 use App\Services\DocumentRegister;
 use App\Services\PmsAccessService;
@@ -25,6 +27,66 @@ final class PmsClassDocumentTest extends TestCase
         $this->artisan('migrate:fresh', ['--force' => true])->assertExitCode(0);
         $this->seed(EpccDemoSeeder::class);
         $this->seed(AuthSeeder::class);
+    }
+
+    public function test_approved_revision_captures_immutable_class_rules_and_rejects_drafts(): void
+    {
+        $project = Project::where('code', 'PH-14')->firstOrFail();
+        $owner = $this->userByEmail('karimi@nioc.example');
+        $author = $this->userByEmail('rezaei@pars.example');
+        $tenant = app(TenantContext::class);
+        $register = app(DocumentRegister::class);
+        $doc = $tenant->runAs($author->company_id, fn () => $register->register($project, $author, [
+            'discipline' => 'PIPING', 'doc_type' => 'PMS',
+            'title_en' => 'Versioned PMS', 'title_fa' => 'مدرک نسخه دار',
+        ]), $project->id);
+        $class = $tenant->runAs($author->company_id, fn () => PipingClass::create([
+            'project_id' => $project->id, 'company_id' => $author->company_id,
+            'code' => 'SNAP-CS', 'name_en' => 'CS', 'name_fa' => 'کربن استیل',
+            'dn_span' => '[15,600)',
+        ]), $project->id);
+        app(PmsAccessService::class)->configure($project, $owner, [
+            'version' => 0, 'suspend' => false, 'selectors' => ['user:'.$author->id],
+            'reason' => 'Snapshot test',
+        ]);
+        app(PmsClassDocumentService::class)->attach($project, $author, $class->id, $doc->id);
+        $tenant->runAs($author->company_id, fn () => $register->transition($doc, $author, CdeState::SHARED, 'S2'), $project->id);
+        try {
+            $tenant->runAs($author->company_id, fn () => $register->transition($doc->refresh(), $author, CdeState::PUBLISHED, 'A1'), $project->id);
+            $this->fail('A draft class cannot be in an approved PMS revision.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('pms', $e->errors());
+        }
+
+        $tenant->runAs($author->company_id, function () use ($class, $project, $author): void {
+            $class->update(['state' => 'PUBLISHED']); // Synthetic fixture: real publish gate has separate tests.
+            DB::table('piping_class_rules')->insert([
+                'id' => (string) Str::uuid(), 'project_id' => $project->id,
+                'company_id' => $author->company_id, 'piping_class_id' => $class->id,
+                'rule_kind' => 'PIPE_SCHEDULE', 'dn_range' => '[15,600)',
+                'value' => json_encode(['schedule' => '80'], JSON_THROW_ON_ERROR),
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }, $project->id);
+        $tenant->runAs($author->company_id, function () use ($register, $doc, $author, $project, $class): void {
+            $revision = $register->transition($doc->refresh(), $author, CdeState::PUBLISHED, 'A1');
+            $row = DB::table('pms_class_revision_snapshots')->where('document_revision_id', $revision->id)->first();
+            $this->assertNotNull($row);
+            $this->assertSame($class->id, $row->piping_class_id);
+            $spec = json_decode($row->specification, true, 512, JSON_THROW_ON_ERROR);
+            $this->assertSame('80', $spec['rules'][0]['value']['schedule']);
+            DB::table('piping_class_rules')->where('piping_class_id', $class->id)
+                ->update(['value' => json_encode(['schedule' => '40'], JSON_THROW_ON_ERROR)]);
+            $unchanged = json_decode(DB::table('pms_class_revision_snapshots')->where('id', $row->id)->value('specification'), true, 512, JSON_THROW_ON_ERROR);
+            $this->assertSame('80', $unchanged['rules'][0]['value']['schedule']);
+        }, $project->id);
+        try {
+            $tenant->runAs($author->company_id, fn () => DB::table('pms_class_revision_snapshots')
+                ->where('piping_class_id', $class->id)->update(['specification' => '{}']), $project->id);
+            $this->fail('Issued snapshots must be append-only.');
+        } catch (QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
     }
 
     public function test_database_refuses_a_non_pms_document_on_direct_class_insert(): void

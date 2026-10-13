@@ -21,7 +21,7 @@ use Illuminate\Validation\ValidationException;
  */
 final class DocumentRegister
 {
-    public function __construct(private readonly ReviewCycle $review)
+    public function __construct(private readonly ReviewCycle $review, private readonly PmsRevisionSnapshotService $pmsSnapshots)
     {
     }
 
@@ -76,7 +76,6 @@ final class DocumentRegister
                     'discipline' => 'A PMS document belongs to the PIPING discipline.',
                 ]);
             }
-
 
             $document = Document::create([
                 'project_id' => $project->id,
@@ -174,15 +173,28 @@ final class DocumentRegister
             $this->review->assertPublishable($revision, $lang);
         }
 
-        return DB::transaction(function () use ($revision, $to, $suitability, $user): DocumentRevision {
-            $revision->update([
+        return DB::transaction(function () use ($document, $revision, $to, $suitability, $user): DocumentRevision {
+            // Serialize approval with class attachment; a class must not be
+            // added between the membership scan and snapshot publication.
+            if ($document->doc_type === 'PMS' && CdeState::isApproved($to, $suitability)) {
+                Document::whereKey($document->id)->lockForUpdate()->firstOrFail();
+            }
+            $fresh = DocumentRevision::whereKey($revision->id)->lockForUpdate()->firstOrFail();
+            if ($fresh->cde_state !== $revision->cde_state) {
+                throw ValidationException::withMessages(['state' => 'Revision state changed concurrently; please retry.']);
+            }
+            $fresh->update([
                 'cde_state' => $to,
                 'suitability' => $suitability,
                 'issued_by' => $user->id,
                 'issued_at' => now(),
             ]);
 
-            return $revision->refresh();
+            if ($document->doc_type === 'PMS' && CdeState::isApproved($to, $suitability)) {
+                $this->pmsSnapshots->capture($document, $fresh);
+            }
+
+            return $fresh->refresh();
         });
     }
 

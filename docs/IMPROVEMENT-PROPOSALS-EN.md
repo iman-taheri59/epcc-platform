@@ -697,3 +697,12 @@ versioned nomination lock. **Better final form remains** an immutable
 class-specification snapshot linked to each issued PMS revision, then a line
 pin to that snapshot. This slice alone is insufficient for line eligibility
 or direct-SQL writer enforcement; see ADR-028 and ADR-027.
+
+### 2026-10-13: snapshot specifications at approved CDE issuance (BUILT, incomplete security)
+
+A class ID alone cannot prove what was approved. Capture its header and rule
+arrays once under an approved PMS revision in the same transaction as CDE
+publication, rather than reconstructing history from mutable live rows. The
+remaining stronger alternative is to **prevent arbitrary SQL from forging
+snapshot content or editing published source rules** and gate all authoring
+entry points before allowing lines to consume these snapshots. See ADR-028.

@@ -34,10 +34,11 @@ final class PmsClassDocumentService
                 throw ValidationException::withMessages(['pms_access' => 'An active PMS author nomination is required.']);
             }
 
+            $document = Document::with('currentRevision')
+                ->where('project_id', $project->id)->whereKey($documentId)
+                ->lockForUpdate()->firstOrFail();
             $class = PipingClass::where('project_id', $project->id)->whereKey($classId)
                 ->lockForUpdate()->firstOrFail();
-            $document = Document::with('currentRevision')
-                ->where('project_id', $project->id)->whereKey($documentId)->firstOrFail();
             if ($class->company_id !== $actor->company_id || $document->company_id !== $actor->company_id) {
                 throw ValidationException::withMessages(['pms_document_id' => 'Class and PMS document must be owned by the authoring company.']);
             }

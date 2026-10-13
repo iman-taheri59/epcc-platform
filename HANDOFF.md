@@ -4051,3 +4051,15 @@ identity alone. CI pending.
   revisions or approved-document line admission. Direct SQL attaching an
   otherwise valid unassigned class still bypasses the service's nomination
   check; full authoring protection remains explicitly unbuilt.
+
+## 2026-10-13 PMS approved-revision snapshot slice
+
+New `pms_class_revision_snapshots` ties each published class header, rule
+bands and branch rules to its specific approved PMS document revision.
+`DocumentRegister::transition` creates these atomically on A-family PMS
+publication; zero classes, attached draft classes and classes without rules
+block that approval. Document locks serialize CDE approval with class
+attachment. Snapshot rows are RLS-scoped and database-immutable after insert.
+Feature test covers rejected draft, snapshot at A publication, unaffected
+stored values after live-rule edits and refused direct UPDATE. Not yet line
+eligibility, class writer SQL protection or CDE nomination gate. CI pending.
