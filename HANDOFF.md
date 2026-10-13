@@ -4085,3 +4085,14 @@ eligibility, class writer SQL protection or CDE nomination gate. CI pending.
   PostgreSQL/RLS Laravel suite, approved PMS revision snapshot test and direct
   JSONB-forgery rejection regression. Earlier PDF timeout on 38456241655 did
   not reproduce; do not extrapolate line eligibility or full writer security.
+
+## 2026-10-14 issue-time PMS line-pin foundation
+
+Added nullable `piping_lines.pms_class_snapshot_id`, a FK and a trigger that
+checks snapshot project/class, current A-family PMS approval for first pin and
+immutable issue-time lineage. Added `PmsLineEligibility` resolver and
+supersession regression in PmsClassDocumentTest. **Not wired into line
+create/register/import/HTTP**; current register still admits missing classes
+and null pins. Never present as strict line eligibility until every write
+path and DB non-null admission backstop are complete. No old line receives an
+invented assignment. CI pending.

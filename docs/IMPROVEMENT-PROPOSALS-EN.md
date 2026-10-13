@@ -706,3 +706,13 @@ publication, rather than reconstructing history from mutable live rows. The
 remaining stronger alternative is to **prevent arbitrary SQL from forging
 snapshot content or editing published source rules** and gate all authoring
 entry points before allowing lines to consume these snapshots. See ADR-028.
+
+### 2026-10-14: pin lines to snapshot IDs rather than mutable class IDs (PARTIAL)
+
+Keeping only `piping_class_id` loses which rules were approved when a line was
+issued. An explicit immutable FK to the revision's specification snapshot
+preserves that lineage, including after supersession. Better final form:
+require a non-null valid pin at all **new** line insert paths and in the DB
+while migrating historical unassigned records with explicit owner review.
+This step only adds the optional pin and its integrity checks; it does not yet
+fulfil the class-before-line rejection requirement (ADR-028).

@@ -117,3 +117,24 @@ Await a clean full rerun before claiming this slice green.
 CI run 38460152236 on `1af325a` passed all six jobs after the migration
 repeatability correction and forged-content regression. This verifies
 revision-specific snapshots at A-family publication, not line admission.
+
+## Fourth implementation slice: issue-time line pin foundation (2026-10-14)
+
+`piping_lines.pms_class_snapshot_id` can now identify the exact immutable
+class specification snapshot of an approved PMS document revision. Database
+FK/trigger enforce project/class agreement and immutable re-pinning. A first
+pin requires a current A-family PUBLISHED PMS revision and a PUBLISHED class;
+when the document issues a new WIP revision, existing lines retain their old
+snapshot and no new line may select the superseded one. `PmsLineEligibility`
+resolves a qualifying snapshot in the current tenant/project transaction and
+rejects absent or ineligible classes. The regression test exercises pin
+creation, supersession and retained historical lineage.
+
+**Not yet wired into `PipingLineService::create` / `register`**, HTTP pickers,
+or the other line writers. The column is nullable for legacy rows and current
+tests; direct SQL can still insert a line without a pin. Thus the owner rule
+"reject new/imported lines lacking an approved PMS class" is NOT implemented
+by this slice. The next slice must enforce the resolver across every write
+path, update legacy fixtures and backstop null-pin inserts at the DB layer.
+Never silently map an old line to a convenient class or revision.
+CI pending.

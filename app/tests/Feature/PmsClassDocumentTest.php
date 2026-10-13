@@ -8,9 +8,11 @@ use App\Models\PipingClass;
 use App\Support\CdeState;
 use Illuminate\Support\Str;
 use App\Models\Project;
+use App\Models\Subsystem;
 use App\Services\DocumentRegister;
 use App\Services\PmsAccessService;
 use App\Services\PmsClassDocumentService;
+use App\Services\PmsLineEligibility;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
@@ -79,6 +81,17 @@ final class PmsClassDocumentTest extends TestCase
                 ->update(['value' => json_encode(['schedule' => '40'], JSON_THROW_ON_ERROR)]);
             $unchanged = json_decode(DB::table('pms_class_revision_snapshots')->where('id', $row->id)->value('specification'), true, 512, JSON_THROW_ON_ERROR);
             $this->assertSame('80', $unchanged['rules'][0]['value']['schedule']);
+            $resolver = app(PmsLineEligibility::class);
+            $this->assertSame($row->id, $resolver->snapshotId($project->id, $class->id));
+            $subsystem = Subsystem::where('project_id', $project->id)->firstOrFail();
+            DB::table('piping_lines')->insert([
+                'id' => (string) Str::uuid(), 'project_id' => $project->id,
+                'company_id' => $author->company_id, 'subsystem_id' => $subsystem->id,
+                'line_number' => 'SNAPSHOT-TEST-1', 'piping_class_id' => $class->id,
+                'pms_class_snapshot_id' => $row->id, 'release_state' => 'DRAFT',
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+            $this->assertSame(1, DB::table('piping_lines')->where('pms_class_snapshot_id', $row->id)->count());
         }, $project->id);
         try {
             $tenant->runAs($author->company_id, function () use ($class, $project, $author): void {
@@ -103,6 +116,17 @@ final class PmsClassDocumentTest extends TestCase
         } catch (QueryException $e) {
             $this->assertSame('23514', $e->getCode());
         }
+        $tenant->runAs($author->company_id, function () use ($register, $doc, $author, $project, $class): void {
+            $register->issueRevision($doc->refresh(), $author, 'B');
+            try {
+                app(PmsLineEligibility::class)->snapshotId($project->id, $class->id);
+                $this->fail('An archived PMS revision cannot qualify a new line.');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('piping_class_id', $e->errors());
+            }
+            $this->assertSame(1, DB::table('piping_lines')->where('piping_class_id', $class->id)
+                ->whereNotNull('pms_class_snapshot_id')->count(), 'Prior line retains its issued revision.');
+        }, $project->id);
     }
 
     public function test_database_refuses_a_non_pms_document_on_direct_class_insert(): void
