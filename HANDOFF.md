@@ -3652,6 +3652,17 @@ those guards. ADR-025 records need for a separated policy design or
 deferral. Other CI jobs (standards, prototype, pure PCF, image) pass;
 Laravel suite still has not started.
 
+### 2026-10-12 (cont.) — PMS author nomination adapted to current schema
+
+Owner approved the suggested path. Adapted migration 235700 to create only
+`pms_author_policies` and its append-only/RLS/version/actor protections plus
+fail-closed lookup, without touching absent parallel `pms_entry_events` or
+`piping_class_notes`. Added `PmsAuthorPolicyTest` (default deny, explicit
+nomination, suspension, immutable history). ADR-026 explicitly notes that
+`PipingClassService` writes are NOT YET gated by this policy; no claim of a
+fully enforced PMS authoring permission. Next GitHub CI must migrate/test;
+subsequent write-path integration is a separate step.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,
