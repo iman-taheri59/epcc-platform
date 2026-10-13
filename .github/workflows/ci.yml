@@ -127,7 +127,15 @@ jobs:
         run: composer install --no-scripts --no-interaction --no-progress --prefer-dist
       - name: Run pure PCF tests (no database)
         working-directory: app
-        run: vendor/bin/phpunit --colors=never --filter 'Pcf(Parser|Admission|BranchClassification)Test'
+        run: |
+          set -euo pipefail
+          if ! output="$(vendor/bin/phpunit --colors=never --filter 'Pcf(Parser|Admission|BranchClassification)Test' 2>&1)"; then
+            printf '%s\n' "$output"
+            detail="$(printf '%s' "$output" | tail -c 3500 | tr '\n' ' ' | sed 's/%/%25/g; s/\r/%0D/g')"
+            echo "::error title=Pure PCF test failure::$detail"
+            exit 1
+          fi
+          printf '%s\n' "$output"
 
   # -------------------------------------------------------------------------
   # The real suite: PostgreSQL 17, RLS, and the PDF toolchain.
