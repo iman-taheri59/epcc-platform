@@ -66,6 +66,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install standards-pack schema validator
+        run: python3 -m pip install 'jsonschema>=4.20,<5'
+
       - name: Validate the standards packs
         run: python3 standards-packs/validate_packs.py
 
@@ -232,9 +235,22 @@ jobs:
         working-directory: app
         run: |
           set -euo pipefail
-          php artisan migrate:fresh --force --seed --no-interaction
-          php artisan db:seed --class=ProcurementSeeder --force --no-interaction
-          php artisan filament:assets --no-interaction
+          # GitHub annotations remain readable through the API even when the
+          # runner-log download host is unavailable in an air-gapped sandbox.
+          run_or_annotate() {
+            local output
+            if ! output="$("$@" 2>&1)"; then
+              printf '%s\n' "$output"
+              local last
+              last="$(printf '%s' "$output" | tail -c 3500 | tr '\n' ' ' | sed 's/%/%25/g; s/\r/%0D/g')"
+              echo "::error title=Database bootstrap failed::$last"
+              return 1
+            fi
+            printf '%s\n' "$output"
+          }
+          run_or_annotate php artisan migrate:fresh --force --seed --no-interaction
+          run_or_annotate php artisan db:seed --class=ProcurementSeeder --force --no-interaction
+          run_or_annotate php artisan filament:assets --no-interaction
 
       # ---- the suite ---------------------------------------------------------
       # PHPUnit directly rather than `artisan test`, for two reasons: it writes

@@ -3582,6 +3582,19 @@ existing FA counterpart kept in sync. No app code or runtime tests in this
 documentation step. Historical HANDOFF entries remain evidence of their
 original dates, not current feature status.
 
+### 2026-10-12 (cont.) — GitHub CI first real integration run
+
+Synchronized the session branch with its pushed HEAD without overwriting
+working files, committed subsequent changes as `d1e827c`, pushed and opened
+PR #7 as a CI-only review gate (do not merge yet). Run 38343223088:
+prototype + development-image jobs passed; standards job failed because
+CI did not install required `jsonschema` (reproduced locally without that
+package; passes with it); Laravel job failed during migrate/seed before
+PHPUnit; compose boot also failed. Runner log downloads are unavailable
+from this sandbox's network, so the CI migration step now emits a readable
+GitHub error annotation on failure. Next: rerun CI, inspect bootstrap
+annotation, fix root cause and then run the actual Laravel suite.
+
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
 Built the modelling layer: `components` + a single discriminated `ports` table, `ComponentService`,
