@@ -100,3 +100,10 @@ nomination-gated. Existing lines are not pinned and new lines still have no
 snapshot eligibility gate. A snapshot created for a prior revision must not
 be mistaken for current approval without checking the exact revision state.
 CI pending.
+
+CI correction: run 38453709184 failed because `migrate:fresh` retained the
+PostgreSQL function and the migration used `CREATE FUNCTION` instead of
+`CREATE OR REPLACE FUNCTION`. The migration now supports repeated fresh
+migrations and verifies inserted JSONB against the live source rows in its
+trigger. A user able to edit published source rows directly remains outside
+this protection; line admission remains unimplemented. Recheck in CI.

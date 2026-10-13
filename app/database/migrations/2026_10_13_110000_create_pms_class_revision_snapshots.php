@@ -30,7 +30,7 @@ return new class extends Migration
         });
 
         DB::unprepared(<<<'SQL'
-            CREATE FUNCTION epcc_check_pms_snapshot() RETURNS trigger LANGUAGE plpgsql AS $$
+            CREATE OR REPLACE FUNCTION epcc_check_pms_snapshot() RETURNS trigger LANGUAGE plpgsql AS $$
             BEGIN
                 IF TG_OP <> 'INSERT' THEN
                     RAISE EXCEPTION 'PMS_SNAPSHOT_IMMUTABLE' USING ERRCODE = '23514';
@@ -47,6 +47,17 @@ return new class extends Migration
                       AND r.cde_state = 'PUBLISHED' AND r.suitability LIKE 'A%'
                 ) THEN
                     RAISE EXCEPTION 'PMS_SNAPSHOT_SOURCE_INVALID' USING ERRCODE = '23514';
+                END IF;
+                IF NEW.specification IS DISTINCT FROM (
+                    SELECT jsonb_build_object(
+                        'class', to_jsonb(c),
+                        'rules', COALESCE((SELECT jsonb_agg(to_jsonb(rr) ORDER BY rr.id)
+                            FROM piping_class_rules rr WHERE rr.piping_class_id = c.id), '[]'::jsonb),
+                        'branch_rules', COALESCE((SELECT jsonb_agg(to_jsonb(br) ORDER BY br.id)
+                            FROM piping_class_branch_rules br WHERE br.piping_class_id = c.id), '[]'::jsonb)
+                    ) FROM piping_classes c WHERE c.id = NEW.piping_class_id
+                ) THEN
+                    RAISE EXCEPTION 'PMS_SNAPSHOT_CONTENT_MISMATCH' USING ERRCODE = '23514';
                 END IF;
                 RETURN NEW;
             END $$;

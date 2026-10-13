@@ -4063,3 +4063,11 @@ attachment. Snapshot rows are RLS-scoped and database-immutable after insert.
 Feature test covers rejected draft, snapshot at A publication, unaffected
 stored values after live-rule edits and refused direct UPDATE. Not yet line
 eligibility, class writer SQL protection or CDE nomination gate. CI pending.
+
+- CI run 38453709184 for `1f9a943` **failed in Laravel migration setup**:
+  PostgreSQL functions survive `migrate:fresh`, so `CREATE FUNCTION
+  epcc_check_pms_snapshot()` collided on the second test (2482 downstream
+  failures). Changed it to `CREATE OR REPLACE FUNCTION` for repeatability.
+  Also added DB verification of the inserted JSONB against the live class and
+  ordered rule arrays, so a direct INSERT cannot forge snapshot contents.
+  Awaiting a new CI run; the failed run does not verify the feature tests.
