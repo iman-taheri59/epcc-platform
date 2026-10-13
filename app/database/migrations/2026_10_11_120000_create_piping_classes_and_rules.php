@@ -89,7 +89,7 @@ return new class extends Migration
         // Older line-editor code still inserts description_en without PMS names.
         // Preserve its contract while keeping names mandatory for every row.
         DB::unprepared(<<<'SQL'
-            CREATE FUNCTION epcc_piping_class_fill_names() RETURNS trigger
+            CREATE OR REPLACE FUNCTION epcc_piping_class_fill_names() RETURNS trigger
             LANGUAGE plpgsql AS $$
             BEGIN
                 NEW.name_en := COALESCE(NULLIF(NEW.name_en, ''), NULLIF(NEW.description_en, ''), NEW.code);

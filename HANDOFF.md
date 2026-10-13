@@ -3827,3 +3827,13 @@ See `docs/PRE-WORK-BRANCH-INTEGRATION-REVIEW-EN.md` for boundaries.
   by the newer push before its Laravel job completed; run 38370108973 was
   in progress at last inspection. Do not report either cancelled run as a
   Laravel test result.
+
+- CI run 38370511965 completed: all jobs except Laravel green. PHPUnit
+  repeatedly failed because `migrate:fresh` drops tables but does not drop the
+  standalone `epcc_piping_class_fill_names()` PostgreSQL function: its second
+  CREATE FUNCTION raised SQLSTATE 42723. Changed P1 migration to CREATE OR
+  REPLACE FUNCTION, with the trigger still bound to each newly created table;
+  this fix is awaiting CI. Three independent `MaterialReferenceTest` cases
+  also fail against pack semantics (PSL ambiguity, 816 deg C max use, W
+  coefficient), and must be resolved against reference data, not by relaxing
+  safety rules to match old test literals.

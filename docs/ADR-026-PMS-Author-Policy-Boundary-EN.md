@@ -46,3 +46,9 @@ remain intact. This does **not** fabricate DN coverage or authorize publication.
 A regression test checks a legacy insert under tenant scope. CI verification
 pending. This is a compatibility adapter for the shared register, not a new
 PMS authoring path.
+
+Repeated `migrate:fresh` on one PostgreSQL database does not remove a
+standalone PL/pgSQL function when its trigger table is dropped. CI run
+38370511965 exposed duplicate-function errors on subsequent tests. The
+function definition is now replaced on re-migration; the trigger is recreated
+on the freshly created table. `down()` still drops the trigger and function.
