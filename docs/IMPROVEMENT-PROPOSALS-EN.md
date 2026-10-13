@@ -669,3 +669,12 @@ mutations in the database. A separate PMS aggregate (option B) is also valid
 if the owner wants strict domain separation, but requires mapping existing
 line/MTO foreign keys. This changes schema and workflow, so no partial
 security claim or silent implementation until the owner chooses.
+
+### 2026-10-13: reuse prior class-revision decision rather than re-ask (BUILT documentation)
+
+ADR-028 initially treated automatic versus pinned revision as an open owner
+question. ADR-008 §7 #4 and ADR-009 §4.4 already resolve it: lines keep their
+issued-against class revision. The better design uses an immutable class/PMS
+document revision link and an explicit deviation review instead of looking up
+`documents.current_revision_id` for old lines. ADR-028 corrected; no runtime
+revisioning is claimed.

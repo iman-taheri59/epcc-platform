@@ -4003,3 +4003,16 @@ CDE documents/revisions before implementing the line prerequisite or authoring
 policy. Recommendation: reuse CDE for document identity, pin class rule
 snapshots to issued revisions and lines to the selected revision; never mutate
 prior issue evidence. This is PROPOSED, not shipped.
+
+## 2026-10-13 PMS document decisions reconciled with prior ADRs
+
+Owner selected: only an APPROVED PMS document revision may govern a new line;
+one class identity has one governing PMS document at a time (a document may
+contain multiple classes). Existing `CdeState::isApproved` means PUBLISHED
+with A-family suitability, not a B-family partial sign-off. Owner noted the
+revision answer is already in project docs: ADR-008 §7 #4 and ADR-009 §4.4
+require lines to remain on the class revision they were issued against;
+revisions are immutable and impact/deviation reporting exposes old lines.
+ADR-028 corrected to remove the duplicate question and explicitly tie the
+pinned class revision to its immutable PMS document revision. Current code
+still lacks document-to-class/version links and gate; no claim of enforcement.

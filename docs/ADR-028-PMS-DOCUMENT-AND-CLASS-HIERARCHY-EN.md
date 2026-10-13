@@ -1,6 +1,6 @@
 # ADR-028 — PMS is an engineering specification document containing classes
 
-Status: **REQUIREMENT ACCEPTED; REVISION MODEL PROPOSED**  
+Status: **REQUIREMENTS ACCEPTED; DOCUMENT/CLASS REVISION SCHEMA PROPOSED**
 Date: 2026-10-13  
 Depends on: ADR-006 (line register), ADR-008 (class rules), ADR-027 (authoring and line preconditions), CDE document/revision model.
 
@@ -16,7 +16,7 @@ This is a domain requirement, not yet a description of the implemented schema. T
 
 1. One PMS document may specify **one or more** classes. Every line class selected for new line registration must trace to the relevant published/approved PMS document revision and to the exact class specification version used; a class code alone cannot prove engineering approval.
 2. Class codes remain project-scoped identities. No automatically created placeholder PMS or class and no implicit membership based on matching filenames, codes or text.
-3. A revision is immutable after issue: changes to a class or its rules must be associated with a new revision, not silently rewrite the evidence for existing lines. Define how existing lines remain pinned to the prior revision versus when they adopt a new revision.
+3. A revision is immutable after issue: changes to a class or its rules must be associated with a new revision, not silently rewrite the evidence for existing lines. Existing lines remain pinned to their issued-against class revision (ADR-008 §7 #4, ADR-009 §4.4); adoption of a later revision is explicit, never automatic.
 4. Reuse the existing CDE `documents` and `document_revisions` where possible for document number, file evidence, lifecycle and audit. Do not conflate CDE state (document issue/review) with the independent calculation/publish gate of a class; both must be satisfied for use on a line, if the owner confirms the CDE approval threshold.
 5. Preserve project/company RLS and archive freeze across the document-to-class links; prevent cross-project membership and ambiguous active specifications of the same class.
 6. The PMS author nomination currently exists only as policy data. Apply full write authorization and provenance at document/revision/class/rule boundaries before claiming protected authoring; see ADR-027.
@@ -26,11 +26,15 @@ This is a domain requirement, not yet a description of the implemented schema. T
 
 Use CDE `documents` with a dedicated PMS type and `document_revisions` for issued revisions; add explicit same-project links from a revision to class-specification snapshots. Keep the existing `piping_classes` row as the stable class identity already referenced by piping lines/MTO, but version its rule set under the PMS revision rather than mutating the only copy in place. The line should pin the selected revision/class snapshot to preserve design basis. This is preferable to putting `pms_document_id` alone on a mutable class row: such a link would lose which revision specified the line's material. Migration of the current P1 rules and legacy class rows must be explicit, with a preflight that refuses ambiguous or unmapped mappings rather than inventing ownership.
 
-## Open decisions for the owner
+## Resolved owner decisions and existing revision requirement (2026-10-13)
 
-- What CDE milestone makes a PMS revision usable for a **new line**: approved/accepted, issued-for-construction, or another suitability code? Does a class rule's own `PUBLISHED` gate remain a separate prerequisite? The owner previously selected PUBLISHED class before line, but the document-state threshold was not specified.
-- Can the same class identity be defined by multiple PMS documents on one project, or must one governing PMS document own each class at a given time?
-- On a new PMS revision, do existing lines stay pinned to their original revision until formally revalidated, or automatically adopt the latest approved class specification? Recommendation: pin and require explicit impact review.
+- A **new line** requires both a technically `PUBLISHED` class and an **approved** governing PMS document revision. Reuse the CDE predicate `CdeState::isApproved(state, suitability)` — `PUBLISHED` with an A-family suitability — rather than interpreting any published B-family/partial sign-off as approved. This is a design requirement; no document-to-class gate is implemented yet.
+- At a given time, each project class identity has **one governing PMS document**, not multiple competing active specifications. One PMS document can still govern multiple classes. Revisions of that document may change each class independently; explicit supersession must not mutate old issued specifications.
+- The user pointed out that revision behavior was **already decided**: ADR-008 §7 #4 and ADR-009 §4.4 require published classes to be locked, changes to create a **new class revision**, and lines to **keep pointing at the revision they were issued against**. Do not ask again whether to auto-migrate old lines; do not re-derive their material from the latest revision. The deviation report identifies lines on an older revision. The corresponding PMS document-revision link for each class revision must also remain immutable so this existing rule can be enforced end-to-end.
+
+## Remaining implementation question
+
+Choose a concrete class-specification revision key/link to `document_revisions` and migration path from the current mutable P1 draft row. The governing document is unique per project class identity, while its approved revision and each line's pinned class revision are explicit; do not reuse a changing `documents.current_revision_id` as historical evidence.
 
 ## Falsifiers / acceptance evidence
 
