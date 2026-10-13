@@ -650,3 +650,11 @@ operands. A safer future option is to build a SQL policy-body expression API
 with explicit grouping and verify bound-project behavior for every OR-based
 policy (not only certificates); existing RLS regression catches the observed
 case. See ADR-012 security correction.
+
+### 2026-10-13: count identifiable probes in RLS volume tests (BUILT)
+
+The RLS fixture previously asserted the total count of visible punch items,
+ignoring nine legitimate demo rows. Better: count probe rows by their unique
+`PI-` numbering while separately asserting foreign `KI-` rows remain hidden.
+This retains the positive isolation mirror and avoids resetting demo data or
+loosening a policy merely to satisfy a fixture. CI verification pending.

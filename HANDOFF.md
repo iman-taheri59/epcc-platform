@@ -3919,3 +3919,16 @@ This is not evidence of a successful full suite or of complete PMS authoring.
   a nonparticipant must receive 404 on GET, create and submit, while a
   participant retains a 200 read. This closes the gap where DB/service tests
   alone could pass while the HTTP route is accidentally exposed. CI pending.
+
+## 2026-10-13 run 38383865549: isolation passes; two fixture-count failures
+
+For commit `b0ccbf2`, standards/rule engine, PCF, prototype, development image,
+and compose all passed. Laravel ran to completion with exactly **two failures**,
+both in `RlsSargabilityTest`: tests counted all visible punch rows as if the
+demo seeder had none (10 instead of 1; 30009 instead of 30000). The tests now
+count their own `PI-SHAPE-1` / `PI-%` generated rows while still separately
+asserting no foreign `KI-%` rows leak; no RLS policy or seed was changed to
+paper over the count. The previous PH-14/KISH-1 employer scope leak and the
+new HTTP nonparticipant mirror did **not** recur in this run. CI recheck of
+the revised assertions is pending. PMS author-policy nomination still does
+not gate `PipingClassService` writes; full authoring protection remains open.

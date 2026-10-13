@@ -213,7 +213,7 @@ final class RlsSargabilityTest extends TestCase
                 );
             }
 
-            $this->assertSame(1, (int) DB::selectOne('SELECT count(*) AS c FROM punch_items')->c);
+            $this->assertSame(1, (int) DB::selectOne("SELECT count(*) AS c FROM punch_items WHERE number = 'PI-SHAPE-1'")->c);
         }, $ph14->id);
     }
 
@@ -269,18 +269,20 @@ final class RlsSargabilityTest extends TestCase
             SQL, [$kish->id, $filler->id, $arvand->id, $raiser->id]);
         }, $kish->id);
 
-        // Bound to PH-14: exactly pars's 30k rows; none of KISH-1's.
+        // Bound to PH-14: exactly the 30k generated PI rows; none of KISH-1's.
+        // The demo seeder also has unrelated punch rows; do not count those.
         $this->tenant->runAs($pars->id, function (): void {
-            $this->assertSame(30000, (int) DB::selectOne('SELECT count(*) AS c FROM punch_items')->c);
+            $this->assertSame(30000, (int) DB::selectOne("SELECT count(*) AS c FROM punch_items WHERE number LIKE 'PI-%'")->c);
             $this->assertSame(
                 0,
                 (int) DB::selectOne("SELECT count(*) AS c FROM punch_items WHERE number LIKE 'KI-%'")->c
             );
         }, $ph14->id);
 
-        // Unbound: still only PH-14's rows (pars has no BB-2 punch rows).
+        // Unbound: still exactly the generated PH-14 PI rows; other seeded
+        // punch rows may exist, but another company's KI rows stay hidden.
         $this->tenant->runAs($pars->id, function (): void {
-            $this->assertSame(30000, (int) DB::selectOne('SELECT count(*) AS c FROM punch_items')->c);
+            $this->assertSame(30000, (int) DB::selectOne("SELECT count(*) AS c FROM punch_items WHERE number LIKE 'PI-%'")->c);
         });
     }
 }
