@@ -543,3 +543,11 @@ This is not the full Laravel/RLS suite and does not prove pad engineering for
 a privileged SQL writer able to forge the complete draft and snapshots.
 GitHub Actions still does not schedule latest-head CI despite public
 visibility; account billing or Actions permissions need attention.
+
+CI correction: public-repo run 38585934338 actually started all jobs.
+Laravel failed while the other five succeeded. One expected SQL trigger
+exception inside an outer RLS transaction left PostgreSQL in aborted state
+for the next assertion; negative SQL writes now use savepoints. Pure
+validator PHPUnit tests now boot Laravel before creating framework
+ValidationExceptions. The artifact download failed with EOF; a fresh full
+CI run is required to identify any unannotated failures.

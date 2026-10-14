@@ -89,32 +89,32 @@ final class PmsClassDocumentTest extends TestCase
             $spec = json_decode($row->specification, true, 512, JSON_THROW_ON_ERROR);
             $this->assertSame('80', $spec['rules'][0]['value']['schedule']);
             try {
-                DB::table('piping_class_rules')->where('piping_class_id', $class->id)
-                    ->update(['value' => json_encode(['schedule' => '40'], JSON_THROW_ON_ERROR)]);
+                DB::transaction(fn () => DB::table('piping_class_rules')->where('piping_class_id', $class->id)
+                    ->update(['value' => json_encode(['schedule' => '40'], JSON_THROW_ON_ERROR)]));
                 $this->fail('A published PMS rule must be read-only even to raw SQL.');
             } catch (QueryException $e) {
                 $this->assertSame('23514', $e->getCode());
             }
             try {
-                DB::table('piping_classes')->where('id', $class->id)
-                    ->update(['design_pressure_mpa' => 99]);
+                DB::transaction(fn () => DB::table('piping_classes')->where('id', $class->id)
+                    ->update(['design_pressure_mpa' => 99]));
                 $this->fail('A published PMS class header must be read-only.');
             } catch (QueryException $e) {
                 $this->assertSame('23514', $e->getCode());
             }
             try {
-                DB::table('piping_class_branch_rules')->insert([
+                DB::transaction(fn () => DB::table('piping_class_branch_rules')->insert([
                     'id' => (string) Str::uuid(), 'project_id' => $project->id,
                     'company_id' => $author->company_id, 'piping_class_id' => $class->id,
                     'header_range' => '[100,150)', 'branch_range' => '[25,50)',
                     'component_type' => 'TEE', 'created_at' => now(), 'updated_at' => now(),
-                ]);
+                ]));
                 $this->fail('A published PMS cannot gain a new branch rule via SQL.');
             } catch (QueryException $e) {
                 $this->assertSame('23514', $e->getCode());
             }
             try {
-                DB::table('piping_class_rules')->where('piping_class_id', $class->id)->delete();
+                DB::transaction(fn () => DB::table('piping_class_rules')->where('piping_class_id', $class->id)->delete());
                 $this->fail('A published PMS rule cannot be deleted via SQL.');
             } catch (QueryException $e) {
                 $this->assertSame('23514', $e->getCode());
@@ -226,8 +226,8 @@ final class PmsClassDocumentTest extends TestCase
                 $this->assertArrayHasKey('revision', $e->errors());
             }
             try {
-                DB::table('pms_class_revision_drafts')->where('id', $draft->id)
-                    ->update(['specification' => $draft->specification]);
+                DB::transaction(fn () => DB::table('pms_class_revision_drafts')->where('id', $draft->id)
+                    ->update(['specification' => $draft->specification]));
                 $this->fail('A shared PMS revision draft cannot be silently edited.');
             } catch (QueryException $e) {
                 $this->assertSame('23514', $e->getCode());
@@ -269,14 +269,14 @@ final class PmsClassDocumentTest extends TestCase
                 ->where('id', $oldPin)->value('specification'), true, 512, JSON_THROW_ON_ERROR)['rules'][0]['value']['schedule']);
             $this->assertSame($newSnapshot->id, app(PmsLineEligibility::class)->snapshotId($project->id, $class->id));
             try {
-                DB::table('pms_class_revision_snapshots')->insert([
+                DB::transaction(fn () => DB::table('pms_class_revision_snapshots')->insert([
                     'id' => (string) Str::uuid(), 'project_id' => $project->id,
                     'company_id' => $author->company_id,
                     'pms_document_id' => $doc->id, 'document_revision_id' => $next->id,
                     'piping_class_id' => $class->id,
                     'specification' => json_encode($forged, JSON_THROW_ON_ERROR),
                     'created_at' => now(),
-                ]);
+                ]));
                 $this->fail('Raw SQL must not forge a different reviewed class snapshot.');
             } catch (QueryException $e) {
                 $this->assertSame('23514', $e->getCode());

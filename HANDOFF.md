@@ -4488,3 +4488,16 @@ CI is still NOT run**: Actions billing/permissions block persists even though
 repo is public. Forging both snapshots and document state using raw SQL could
 still evade the service-only reference-pack/pad check. Do not call this a
 universal engineering authorization gate.
+
+- **Actions resumed after public visibility:** run 38585934338 on `24c6676`
+  executed all jobs; five non-Laravel jobs passed, Laravel failed (3276 tests,
+  3 failures and 6 errors). Annotated causes include a PostgreSQL transaction
+  left aborted after an expected class-rule trigger refusal in
+  `PmsClassDocumentTest` (SQLSTATE 25P02 instead of 23514 on the next
+  assertion) and pure PHPUnit validator tests raising `ValidationException`
+  without a booted Laravel facade. Expected failing SQL writes in the PMS
+  feature test now use nested transactions/savepoints; the validator test
+  extends the Laravel test base. The artifact download returned EOF, so
+  remaining unannotated failures still need a fresh run/log. Run
+  38590891134 for `a5f45b1` was in progress when checked and predates this
+  fixture correction. Retest full PostgreSQL/RLS after push; no green claim.

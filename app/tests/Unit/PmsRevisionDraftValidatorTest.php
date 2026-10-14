@@ -6,7 +6,7 @@ namespace Tests\Unit;
 
 use App\Services\PmsRevisionDraftValidator;
 use Illuminate\Validation\ValidationException;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 final class PmsRevisionDraftValidatorTest extends TestCase
 {
