@@ -295,6 +295,28 @@ final class PmsClassDocumentTest extends TestCase
                 'The live published class is frozen; line rules must follow the issue-time pin.');
             $this->assertSame(2, DB::table('piping_lines')->where('pms_class_snapshot_id', $oldPin)->count());
             $this->assertSame(1, DB::table('piping_lines')->where('pms_class_snapshot_id', $newSnapshot->id)->count());
+
+            // A published B-suitability revision is legitimate CDE history,
+            // but cannot replace the last A-family engineering baseline.
+            $commentIssue = $register->issueRevision($doc->refresh(), $author, 'C');
+            $register->transition($doc->refresh(), $author, CdeState::SHARED, 'S2');
+            $register->transition($doc->refresh(), $author, CdeState::PUBLISHED, 'B1');
+            $this->assertSame(0, DB::table('pms_class_revision_snapshots')
+                ->where('document_revision_id', $commentIssue->id)->count());
+            $this->assertSame([], app(PmsLineEligibility::class)->eligibleClassIds($project->id));
+            $afterComments = $register->issueRevision($doc->refresh(), $author, 'D');
+            $carried = DB::table('pms_class_revision_drafts')
+                ->where('document_revision_id', $afterComments->id)
+                ->where('piping_class_id', $class->id)->first();
+            $this->assertNotNull($carried);
+            $this->assertSame('STD', json_decode($carried->specification, true, 512, JSON_THROW_ON_ERROR)['rules'][0]['value']['schedule']);
+            $register->transition($doc->refresh(), $author, CdeState::SHARED, 'S2');
+            $register->transition($doc->refresh(), $author, CdeState::PUBLISHED, 'A1');
+            $resumedPin = app(PmsLineEligibility::class)->snapshotId($project->id, $class->id);
+            $this->assertNotSame($newSnapshot->id, $resumedPin);
+            $this->assertSame('STD', json_decode(DB::table('pms_class_revision_snapshots')
+                ->where('id', $resumedPin)->value('specification'), true, 512, JSON_THROW_ON_ERROR)['rules'][0]['value']['schedule']);
+            $this->assertSame($newSnapshot->id, PipingLine::findOrFail($newLine->id)->pms_class_snapshot_id);
         }, $project->id);
     }
 

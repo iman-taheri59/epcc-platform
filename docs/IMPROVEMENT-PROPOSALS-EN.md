@@ -894,3 +894,11 @@ commit-time trigger closes the no-snapshot direct SQL approval path while
 preserving that transaction order. It cannot alone attest that pad and
 reference-pack checks ran for a privileged writer who also inserts a
 structurally valid snapshot. See ADR-028.
+
+### 2026-10-14: approved-revision baseline must skip B-coded issues (BUILT; CI PENDING)
+
+Treating the most recent document revision as the previous approved class
+specification would reset working copies after a published B-family issue,
+which has no engineering-approval snapshots. A shared baseline resolver and
+matching database guard now use the latest prior A-family issue, preserving
+class content without granting B-coded documents line eligibility.

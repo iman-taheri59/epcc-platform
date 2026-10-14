@@ -21,6 +21,7 @@ final class PmsRevisionDraftService
         private readonly PmsAccessService $authors,
         private readonly ProjectArchiveService $archives,
         private readonly PmsRevisionDraftValidator $validator,
+        private readonly PmsApprovedRevisionBaseline $baseline,
     ) {}
 
     /**
@@ -96,17 +97,12 @@ final class PmsRevisionDraftService
             }
             // Compare against the previous approved issue, not the mutable
             // live class. Only a schedule leaf may differ in this first slice.
-            $baseline = DB::table('pms_class_revision_snapshots as s')
-                ->join('document_revisions as r', 'r.id', '=', 's.document_revision_id')
-                ->where('s.pms_document_id', $document->id)
-                ->where('s.piping_class_id', $classId)
-                ->where('r.ordinal', '<', $revision->ordinal)
-                ->orderByDesc('r.ordinal')->value('s.specification');
+            $baseline = $this->baseline->before($document, $revision)->get($classId);
             if ($baseline === null) {
                 throw ValidationException::withMessages(['specification' => 'A prior approved PMS snapshot is required.']);
             }
             $this->validator->assertScheduleOnly(
-                json_decode($baseline, true, 512, JSON_THROW_ON_ERROR), $spec,
+                json_decode($baseline->specification, true, 512, JSON_THROW_ON_ERROR), $spec,
             );
             DB::table('pms_class_revision_drafts')->where('id', $draft->id)
                 ->update(['specification' => json_encode($spec, JSON_THROW_ON_ERROR), 'updated_at' => now()]);

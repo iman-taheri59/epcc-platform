@@ -4512,3 +4512,18 @@ universal engineering authorization gate.
   may be broken"). This is a billing/scheduling failure, NOT a Compose
   test failure. Owner must resolve GitHub billing/Actions limits, then
   re-run the missed Compose job. Do not claim all six jobs green.
+
+## Skip B-suitability revisions when selecting PMS class baseline
+
+`PmsApprovedRevisionBaseline` selects the latest earlier A-family issued
+snapshot set, not necessarily the immediately preceding document revision.
+`DocumentRegister::issueRevision`, PMS draft review and nominated-author
+schedule editing share it. Migration
+`2026_10_14_170000_use_latest_approved_pms_revision_baseline.php` updates
+the existing PostgreSQL snapshot trigger's prior-issue comparison while
+preserving its strict JSONB schedule-only delta and current approved source
+checks. PmsClassDocumentTest covers A80 -> A_STD -> B1(no snapshot) -> A_STD,
+including the old line's unchanged issue-time pin. PHP lint and diff checks
+passed; CI pending. The previous 283c4ee Laravel/PostgreSQL/RLS run was
+successful, but this slice has NOT yet been verified against PostgreSQL.
+Compose job remains subject to GitHub account billing/scheduling limits.

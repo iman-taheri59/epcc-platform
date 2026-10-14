@@ -558,3 +558,21 @@ failed check was Compose, which never started because of GitHub billing or
 spending-limit restrictions. A failed-job rerun request was refused by
 GitHub. The PMS revision and admission regressions therefore have a green
 real-database suite, but the overall six-job workflow is not green.
+
+### Twenty-second slice: B-suitability issue does not reset the approved class baseline
+
+A PMS revision published with a B-family suitability is legitimate CDE
+history, but is **not** approved for new line registration and has no A-family
+class snapshots. The initial versioned-draft implementation copied only the
+immediately preceding revision's snapshots; a subsequent A revision after
+such a B issue would have no working copy and might silently capture the
+older frozen live class instead of the most recently approved schedule.
+`PmsApprovedRevisionBaseline` now consistently resolves the latest earlier
+**A-family issued snapshot set** for new WIP draft seeding, WIP review and
+nominated-author schedule edits. A follow-up database migration updates the
+snapshot provenance trigger to compare a new draft with the latest prior
+approved revision rather than requiring consecutive ordinal numbers. The
+regression traverses A(SCH 80) -> A(STD) -> B1(no snapshot) -> A(STD): the
+intervening B never authorizes new lines; the following A carries forward
+STD; the line issued before B remains pinned to its own earlier A snapshot.
+PHP lint passed, real PostgreSQL/RLS CI pending on this new slice.

@@ -26,6 +26,7 @@ final class DocumentRegister
         private readonly ReviewCycle $review,
         private readonly PmsRevisionSnapshotService $pmsSnapshots,
         private readonly PmsRevisionDraftReview $pmsDraftReview,
+        private readonly PmsApprovedRevisionBaseline $pmsBaseline,
     )
     {
     }
@@ -269,8 +270,9 @@ final class DocumentRegister
             // the last issued snapshots. Never mutate the published class or
             // previous issue-time snapshot; draft publication is a later step.
             if ($document->doc_type === 'PMS' && $document->discipline === 'PIPING' && $current !== null) {
-                $snapshots = DB::table('pms_class_revision_snapshots')
-                    ->where('document_revision_id', $current->id)->get();
+                // A B-coded intervening revision has NO approved snapshots;
+                // seed from the latest A-family issue, not blindly from B.
+                $snapshots = $this->pmsBaseline->before($document, $next);
                 foreach ($snapshots as $snapshot) {
                     DB::table('pms_class_revision_drafts')->insert([
                         'id' => (string) Str::uuid(),
