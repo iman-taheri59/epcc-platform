@@ -4449,3 +4449,24 @@ built, route its class-rule reads through the pin. No current production
 caller uses `PipingClassService::ruleFor` for a line; do not claim universal
 revision-aware calculations yet. DB-only CDE approval/author integrity still
 needs a separate boundary audit.
+
+## 2026-10-14 repository public; CI recheck blocked
+
+`gh repo view` reports `isPrivate=false`. The most recent Actions run
+38583348269 on `17c77af` still has zero started steps and a GitHub billing
+annotation (recent account payments failed or spending limit needs increase).
+An attempted `gh run rerun` was refused; `gh workflow run CI --ref
+arena/782120e4-epcc-platform` returned HTTP 403 (`Resource not accessible
+by integration`). A harmless retry commit `d2b143a` was pushed after
+visibility changed, but as of this check GitHub Actions has not produced a
+run for that SHA and PR #7 still reports the previous head. Do not claim
+Laravel/PostgreSQL/RLS CI passed. Owner must check GitHub Billing & plans,
+Actions allowance and PR/workflow permissions; then retry latest-head CI.
+
+As a partial local fallback, PostgreSQL 16.2 from the `pgserver` PyPI wheel
+was started on port 55432. The actual SQL function definitions from migration
+`2026_10_14_150000_capture_validated_pms_revision_drafts.php` were loaded
+successfully; `epcc_pms_schedule_only_delta` returned true for a schedule
+change and false for DN-range, material, branch and whitespace mutations.
+This is **not** the full Laravel migration/RLS/engineering suite. The local
+PHP build lacks `pdo_pgsql`, so those tests still require CI or Laragon.

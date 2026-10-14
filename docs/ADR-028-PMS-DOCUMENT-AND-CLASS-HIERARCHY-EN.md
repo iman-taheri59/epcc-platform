@@ -513,3 +513,11 @@ future line-dependent modelling/MTO writers MUST use the pinned resolver,
 not `PipingClassService::ruleFor($class, ...)`, which reads live rows.
 This API is a first read path, not evidence of downstream-wide migration.
 PostgreSQL CI remains deferred while the repository is private.
+
+Local SQL smoke check after repository visibility was restored: PostgreSQL
+16.2 parsed both functions from the revision-capture migration. The
+schedule-only JSONB predicate accepted a changed schedule and rejected
+range/material/branch/whitespace changes. This does NOT validate the full
+snapshot trigger against real schema/RLS or run PHPUnit. GitHub Actions
+run 38583348269 was blocked at scheduling by account billing and no new CI
+run appeared after `d2b143a`; full PostgreSQL tests remain pending.
