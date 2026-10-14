@@ -297,3 +297,9 @@ IDs with unresolved historical provenance are not fabricated or overwritten.
 The database migration and end-to-end regression test are awaiting CI.
 Remaining distinct tasks: reporting unclassified historical lines as not
 ready, and enforcing authoring/lifecycle integrity of PMS documents.
+
+Validation caveat: after the repository was made private, GitHub Actions run
+38551878338 for `efd7b48` did not start its test jobs due to GitHub billing
+or spending-limit restrictions. This is not a test failure or test pass; the
+ninth slice currently has PHP syntax checks only and awaits real PostgreSQL
+CI or a locally provisioned PostgreSQL test environment.

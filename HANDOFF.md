@@ -4286,3 +4286,12 @@ rejection of bare class assignment and acceptance of an explicit joint
 class+approved snapshot mapping after the previous insert-gate migration.
 PHP lint and diff checks passed; CI pending. Reporting historical unresolved
 rows and PMS authoring/lifecycle protection are still separate follow-ups.
+
+- **CI blocked after repository became private:** run 38551878338 on
+  `efd7b48` did not start test jobs. GitHub says "The job was not started
+  because recent account payments have failed or your spending limit needs
+  to be increased." This is a GitHub Actions billing/limit gate, not a test
+  result. PHP lint and `git diff --check` passed locally; no PostgreSQL
+  runtime or phpunit installation is present locally. The historical class
+  amendment migration must be rerun once the owner's Actions billing/limits
+  permit private-repository jobs. Do not claim the new slice is CI-green.
