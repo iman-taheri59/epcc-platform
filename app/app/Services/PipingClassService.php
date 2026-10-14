@@ -487,18 +487,55 @@ final class PipingClassService
     // ------------------------------------------------------------------
 
     /**
+     * Revalidate a schedule-only PMS revision against the size reference pack
+     * and the SAME B31.3 branch-pad gate used at first class publication.
+     * The caller must first establish that no other draft field changed.
+     *
+     * @param array<string, mixed> $specification
+     */
+    public function assertRevisionScheduleSafe(PipingClass $class, array $specification): void
+    {
+        $overrides = [];
+        foreach ($specification['rules'] as $rule) {
+            if ($rule['rule_kind'] !== PipingRuleKind::PIPE_SCHEDULE) {
+                continue;
+            }
+            $schedule = $rule['value']['schedule'];
+            foreach ($this->dnsIn($rule['dn_range']) as $dn) {
+                $nps = $this->sizes->byDn($dn)->nps;
+                if (! $this->sizes->hasSchedule($nps, $schedule)) {
+                    throw ValidationException::withMessages([
+                        'specification' => "Schedule {$schedule} is not published for DN{$dn} ({$nps}).",
+                    ]);
+                }
+            }
+            $overrides[$rule['id']] = $schedule;
+        }
+        $violations = $this->validateBranchPads($class, $overrides);
+        if ($violations !== []) {
+            throw ValidationException::withMessages([
+                'specification' => 'Revised pipe schedules fail ASME B31.3 304.3.3 pad validation: '.implode('; ', $violations),
+            ]);
+        }
+    }
+
+    /**
      * Runs the para 304.3.3 gate over every branch rule of the class and
      * returns human-readable violations (empty = the table is sound).
      *
      * @return list<string>
      */
-    private function validateBranchPads(PipingClass $class): array
+    private function validateBranchPads(PipingClass $class, array $scheduleOverrides = []): array
     {
         $violations = [];
 
-        $scheduleFor = function (int $dn) use ($class): string {
+        $scheduleFor = function (int $dn) use ($class, $scheduleOverrides): string {
             try {
-                $value = $this->ruleFor($class, PipingRuleKind::PIPE_SCHEDULE, $dn)->value;
+                $rule = $this->ruleFor($class, PipingRuleKind::PIPE_SCHEDULE, $dn);
+                $value = $rule->value;
+                if (isset($scheduleOverrides[$rule->id])) {
+                    $value['schedule'] = $scheduleOverrides[$rule->id];
+                }
             } catch (NoRuleForSizeException) {
                 throw new PadGateRefusal("no PIPE_SCHEDULE rule covers DN{$dn}");
             }

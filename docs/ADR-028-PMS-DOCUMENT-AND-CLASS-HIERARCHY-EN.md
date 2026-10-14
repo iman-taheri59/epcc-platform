@@ -435,3 +435,20 @@ updates bypass this service; database review/publish integrity remains a
 separate requirement. Draft content is still **not used** for approval
 snapshot capture and does not authorize a new line. PostgreSQL CI remains
 deferred until the owner restores public visibility or private Actions runs.
+
+### Seventeenth slice: engineering checks for revised schedules at review
+
+Structural schedule-only validation was insufficient: changing SCH 80 to SCH
+40 can change pipe wall thickness, and thus invalidate a previously approved
+B31.3 §304.3.3 branch-pad result. At WIP-to-SHARED, each revised schedule
+must now exist in the published pipe-wall reference pack for **every DN**
+covered by its rule range. `PipingClassService` reuses its existing
+branch-pad gate with a per-rule schedule override from the WIP draft, leaving
+the published rules and prior snapshot untouched. Other inputs (design
+pressure/temperature, material, corrosion allowance, branch table and pad)
+remain the previously published class's unchanged values, as guaranteed by
+the full-delta validator. The regression checks that SCH 40 is rejected at
+DN550/NPS22 for a class spanning `[15,600)`, while the reference-backed STD
+schedule may pass this check; an unrelated branch-rule forgery still fails
+structural validation. Drafts still are not captured into approved snapshots
+and cannot authorize new lines. PostgreSQL CI is deferred as requested.

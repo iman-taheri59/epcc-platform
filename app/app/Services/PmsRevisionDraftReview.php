@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Document;
+use App\Models\PipingClass;
 use App\Models\DocumentRevision;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -12,7 +13,10 @@ use Illuminate\Validation\ValidationException;
 /** Refuse to send an unreviewed PMS working-copy delta into SHARED. */
 final class PmsRevisionDraftReview
 {
-    public function __construct(private readonly PmsRevisionDraftValidator $validator) {}
+    public function __construct(
+        private readonly PmsRevisionDraftValidator $validator,
+        private readonly PipingClassService $classes,
+    ) {}
 
     public function assertShareable(Document $document, DocumentRevision $revision): void
     {
@@ -35,10 +39,13 @@ final class PmsRevisionDraftReview
             ]);
         }
         foreach ($snapshots as $classId => $snapshot) {
+            $spec = json_decode($drafts[$classId]->specification, true, 512, JSON_THROW_ON_ERROR);
             $this->validator->assertScheduleOnly(
-                json_decode($snapshot->specification, true, 512, JSON_THROW_ON_ERROR),
-                json_decode($drafts[$classId]->specification, true, 512, JSON_THROW_ON_ERROR),
+                json_decode($snapshot->specification, true, 512, JSON_THROW_ON_ERROR), $spec,
             );
+            $class = PipingClass::where('project_id', $document->project_id)
+                ->whereKey($classId)->firstOrFail();
+            $this->classes->assertRevisionScheduleSafe($class, $spec);
         }
     }
 }

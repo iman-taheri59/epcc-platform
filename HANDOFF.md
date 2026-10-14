@@ -4393,3 +4393,15 @@ PostgreSQL CI still deferred by the owner's private-repository plan.
 **Remaining:** direct SQL CDE transitions are not protected by this
 service check; snapshot capture still ignores drafts. Do not claim revised
 schedules can authorize new lines.
+
+## Engineering review of schedule-only PMS revision drafts
+
+The WIP-to-SHARED gate now checks each proposed schedule against every DN in
+its range using PipeReference's published wall-thickness table. It reruns the
+existing B31.3 §304.3.3 pad gate using per-rule draft schedule overrides,
+without editing the frozen published class/rules. A regression proposes SCH
+40 over `[15,600)` and expects a DN550 rejection (NPS22 lacks SCH 40), then
+uses STD, which the reference pack lists for that band. PHP lint and diff
+checks passed; PostgreSQL CI remains deferred under private Actions billing.
+No new PMS snapshot captures the edited schedule yet. Do not treat a
+SHARED draft as approved or use it to authorize line registration.

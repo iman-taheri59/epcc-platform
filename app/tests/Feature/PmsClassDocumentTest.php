@@ -184,12 +184,24 @@ final class PmsClassDocumentTest extends TestCase
             DB::table('pms_class_revision_drafts')->where('id', $draft->id)
                 ->update(['specification' => $draft->specification]);
             $edited = app(PmsRevisionDraftService::class)->changePipeSchedule(
-                $project, $author, $doc->id, $class->id, $baseline['rules'][0]['id'], '40');
-            $this->assertSame('40', $edited['rules'][0]['value']['schedule']);
-            $this->assertSame('40', json_decode(DB::table('pms_class_revision_drafts')
+                $project, $author, $doc->id, $class->id, $baseline['rules'][0]['id'], 'STD');
+            $this->assertSame('STD', $edited['rules'][0]['value']['schedule']);
+            $this->assertSame('STD', json_decode(DB::table('pms_class_revision_drafts')
                 ->where('id', $draft->id)->value('specification'), true, 512, JSON_THROW_ON_ERROR)['rules'][0]['value']['schedule']);
             $this->assertSame('80', json_decode(DB::table('pms_class_revision_snapshots')
                 ->where('piping_class_id', $class->id)->value('specification'), true, 512, JSON_THROW_ON_ERROR)['rules'][0]['value']['schedule']);
+            // SCH 40 is unavailable at DN550 (NPS22) in the reference pack;
+            // this copy has a DN span up to 600, so review must reject it.
+            $badSchedule = $edited;
+            $badSchedule['rules'][0]['value']['schedule'] = '40';
+            DB::table('pms_class_revision_drafts')->where('id', $draft->id)
+                ->update(['specification' => json_encode($badSchedule, JSON_THROW_ON_ERROR)]);
+            try {
+                $register->transition($doc->refresh(), $author, CdeState::SHARED, 'S2');
+                $this->fail('A schedule missing from the size pack cannot be shared.');
+            } catch (ValidationException $e) {
+                $this->assertStringContainsString('DN550', implode(' ', $e->errors()['specification'] ?? []));
+            }
             $reviewTamper = $edited;
             $reviewTamper['branch_rules'][] = ['id' => 'invented-branch'];
             DB::table('pms_class_revision_drafts')->where('id', $draft->id)

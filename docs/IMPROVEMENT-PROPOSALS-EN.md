@@ -852,3 +852,11 @@ alter a JSON draft. The CDE transition now revalidates every working copy
 and membership against the previous approved snapshot in the same
 transaction before review. A later database guard is needed for raw SQL
 CDE state changes and a separate snapshot capture step is still required.
+
+### 2026-10-14: re-run pad engineering on schedule revisions (BUILT AT REVIEW GATE)
+
+A schema-only check cannot establish that a new schedule has a published
+wall thickness or that the old pad remains sufficient. Reusing the class
+publish pad gate with draft schedule overrides is safer than accepting any
+well-formed schedule string. The full revision publication path still needs
+an issue-time validation and immutable snapshot capture. See ADR-028.
