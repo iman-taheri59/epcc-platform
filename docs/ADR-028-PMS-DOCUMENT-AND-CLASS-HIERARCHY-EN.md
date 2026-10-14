@@ -320,3 +320,17 @@ workspace labels, and AFC refusal. Syntax checks passed; database and view
 tests await CI when private-repository Actions billing is available or the
 owner chooses to make the repository public again. Separate direct-SQL AFC
 state transition enforcement remains to be addressed.
+
+## Eleventh implementation slice: database gate on AFC/release transitions
+
+A direct SQL UPDATE could otherwise move a historical null-pin DRAFT line
+to AFC_CONFIRMED with actor/timestamp and evade the service gate. A narrow
+PostgreSQL trigger now refuses transitions *into* AFC_CONFIRMED or RELEASED
+without class and issue-time PMS snapshot. Unchanged historical AFC or
+RELEASED rows remain editable without a fake backfill; reversing a state to
+DRAFT remains possible. The existing class/snapshot guard validates any new
+pin. The historical migration regression now also attempts direct SQL AFC
+with complete actor/timestamp and expects SQLSTATE 23514. This is not a
+claim that database-only SQL validates every AFC evidence document: that
+separate preexisting service requirement still needs its own boundary audit.
+PostgreSQL test execution is deferred while private Actions jobs are blocked.

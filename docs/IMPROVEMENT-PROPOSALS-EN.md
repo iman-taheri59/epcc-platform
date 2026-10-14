@@ -800,3 +800,11 @@ other documents have been linked. The service now refuses AFC, and both the
 register and task-first workspace label unresolved PMS provenance and keep
 these rows out of their readiness totals. This does not silently reassign
 historical revisions. Direct SQL state changes still merit a database guard.
+
+### 2026-10-14: direct SQL AFC null-pin transition (BUILT)
+
+Service-only AFC validation left a direct UPDATE path with valid timestamp
+and actor but no historical PMS pin. A narrow database transition trigger
+closes that null-pin path while preserving unchanged historical records.
+Approved drawing/evidence verification for direct SQL is a separate audit,
+not implied by this change; see ADR-028.

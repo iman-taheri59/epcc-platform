@@ -4309,3 +4309,14 @@ billing is still blocked; do not claim database/HTTP test success. A direct
 SQL transition to AFC is not yet protected by this service-level change.
 The owner explicitly plans to make the repository public again **after
 several more steps** for database tests; do not change its visibility now.
+
+## Database transition guard for unmapped historical lines
+
+Migration `2026_10_14_120000_require_pms_pin_for_new_afc_transitions.php`
+rejects direct SQL changes into AFC_CONFIRMED or RELEASED when either class or
+PMS pin is null. It leaves unchanged issued historical rows untouched and
+allows reversal to DRAFT. Regression adds an SQL AFC transition with complete
+actor/timestamp to the historical-row migration test and expects SQLSTATE
+23514; PHP lint and diff checks passed. Database tests deferred per owner's
+plan to keep the repository private for several more steps. Full evidence
+validation on a direct SQL AFC transition is **not** provided by this trigger.

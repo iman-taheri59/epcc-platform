@@ -264,6 +264,17 @@ final class PipingLineTest extends TestCase
         } catch (ValidationException $e) {
             $this->assertStringContainsString('PMS', implode(' ', $e->errors()['release_state'] ?? []));
         }
+        try {
+            $this->asOwner(fn () => DB::table('piping_lines')->where('id', $id)->update([
+                'release_state' => LineReleaseState::AFC_CONFIRMED,
+                'afc_confirmed_at' => now(), 'afc_confirmed_by' => $actor->id,
+            ]));
+            $this->fail('Direct SQL must not certify an unpinned historical line.');
+        } catch (QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
+        $this->assertSame(LineReleaseState::DRAFT,
+            $this->asOwner(fn () => PipingLine::findOrFail($id)->release_state));
         $this->actingAs($actor)->get('/projects/PH-14/piping?lang=en')
             ->assertOk()->assertSee('Class/PMS revision review required');
         $this->actingAs($actor)->get('/projects/PH-14/piping/workspace?lang=en')
