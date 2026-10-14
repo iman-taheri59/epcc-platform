@@ -207,3 +207,9 @@ unassigned inserts to accommodate historical fixtures. No database-wide
 new-line exclusion can be claimed yet. Next slice should enforce class and
 pin on create, then review and migrate all SQL/import writers and historical
 data before a DB-level non-null insert constraint. PostgreSQL CI pending.
+
+CI correction: run 38525864378 exposed two fixture assumptions, not a
+service bypass. The Pars synthetic import must use an owner-created numbering
+config (RLS forbids Pars creating owner-owned config); the old HTTP test of a
+classless legacy number must now expect a form error and zero rows. Both
+fixtures were corrected for the next run.

@@ -39,6 +39,10 @@ final class PmsClassDocumentTest extends TestCase
         $author = $this->userByEmail('rezaei@pars.example');
         $tenant = app(TenantContext::class);
         $register = app(DocumentRegister::class);
+        // Numbering config is owner-authored; the contractor may consume it
+        // but cannot create it under the owner's company_id (RLS WITH CHECK).
+        $tenant->runAs($owner->company_id,
+            fn () => app(PipingLineService::class)->configFor($project), $project->id);
         $doc = $tenant->runAs($author->company_id, fn () => $register->register($project, $author, [
             'discipline' => 'PIPING', 'doc_type' => 'PMS',
             'title_en' => 'Versioned PMS', 'title_fa' => 'مدرک نسخه دار',

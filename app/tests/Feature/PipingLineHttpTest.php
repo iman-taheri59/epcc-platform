@@ -224,7 +224,7 @@ final class PipingLineHttpTest extends TestCase
         $this->assertSame(0, $count, 'a refused number must not leave a half-made line behind');
     }
 
-    public function test_an_external_number_is_registered_verbatim(): void
+    public function test_an_external_number_without_class_is_rejected(): void
     {
         $subsystem = $this->subsystem();
 
@@ -233,16 +233,15 @@ final class PipingLineHttpTest extends TestCase
                 'subsystem_id' => $subsystem->id,
                 'line_number' => 'LEGACY-XYZ-0042',
             ])
-            ->assertRedirect();
+            ->assertRedirect()
+            ->assertSessionHasErrors('piping_class_id');
 
-        $line = app(TenantContext::class)->runAs(
+        $count = app(TenantContext::class)->runAs(
             $this->owner()->company_id,
-            fn () => PipingLine::first(),
+            fn () => PipingLine::count(),
             $this->project()->id,
         );
-
-        $this->assertSame('LEGACY-XYZ-0042', $line->line_number);
-        $this->assertNull($line->sequence, 'an imported number must not feed our counter');
+        $this->assertSame(0, $count);
     }
 
     /** Create a published document at the given suitability. */

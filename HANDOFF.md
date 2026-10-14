@@ -4205,3 +4205,11 @@ class snapshot; HTTP direct POST missing class refusal and supersession pin
 tests added. `PipingLineService::create` and DB null-pin insertion remain open
 for legacy fixtures; not the complete class-before-line rule. PHP 8.4 syntax
 checks passed; CI pending.
+
+- CI run 38525864378 on `78be477`: five jobs passed; Laravel suite red
+  (3255 tests, zero assertion failures, two annotated errors counted three
+  times by nested JUnit): the contractor-owned snapshot test tried to create
+  owner-owned numbering config and was correctly refused by RLS; an old HTTP
+  test still expected a classless external number to be admitted. Corrected
+  the fixture to create config in the owner scope and updated the legacy
+  expectation to explicit refusal. CI recheck pending; do not claim green.
