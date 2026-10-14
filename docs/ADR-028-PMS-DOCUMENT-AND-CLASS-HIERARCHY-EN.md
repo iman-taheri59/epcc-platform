@@ -399,3 +399,22 @@ public HTTP writer yet, and draft content is **not used for publication**:
 validation of revision-specific specifications and capture from those
 validated drafts must be designed and delivered before line eligibility
 can reflect this change. PostgreSQL CI remains deferred by owner request.
+
+### Fifteenth slice: whitelist the first revision delta before persisting it
+
+`PmsRevisionDraftValidator` compares the complete working copy with the
+previous approved snapshot. The only allowed difference in this first
+iteration is the schedule string on an **existing PIPE_SCHEDULE rule**.
+Headers, class identity, rule count/identity/order/DN range, material rules,
+branch rules and any extra/missing values must remain identical. Comparison
+is type-strict with associative keys canonically sorted to tolerate JSONB
+object-key ordering without accepting `106` as `'106'`. The nominated-author
+schedule service validates the entire changed copy against the actual prior
+approved snapshot before storing it, preventing a direct SQL mutation of
+another field from hitchhiking on an authorized schedule edit. Existing rule
+value metadata is preserved rather than overwritten. Unit tests cover valid
+and forbidden deltas; a database regression covers a forged DN-range edit.
+This guard applies to **the service edit only**. Direct database edits to a
+WIP draft and publication from drafts still need a separate integrity and
+engineering validation gate. There is no approval or line authorization for
+a changed schedule yet. Database CI deferred while the repo stays private.

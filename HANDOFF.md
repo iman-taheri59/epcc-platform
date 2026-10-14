@@ -4365,3 +4365,17 @@ and diff checks passed. No HTTP editor yet; edited drafts **do not** become
 approved snapshots and cannot authorize new lines. PostgreSQL CI deferred
 while private Actions remains blocked by billing. Next: schema/engineering
 validation and issue-time capture from drafts, then an authorized UI.
+
+## Whitelisted PMS draft delta
+
+`PmsRevisionDraftValidator` permits only an existing PIPE_SCHEDULE rule's
+schedule value to differ from its prior approved snapshot. Strict structural
+comparison rejects changed class/header, DN range, material or branch rules,
+removed/added values and type substitutions. The nominated-author WIP edit
+service validates the entire draft against the actual previous approved
+snapshot before writing; tests cover pure deltas and an SQL-tampered DN
+range before a service edit. PHP syntax checks and diff check passed. No
+PostgreSQL CI while private Actions billing is blocked per owner's plan.
+**Do not** treat this as a database-wide draft gate or publication support:
+raw SQL WIP edits still bypass this service validation; approval capture
+still ignores draft content. Next protect review/publication transaction.

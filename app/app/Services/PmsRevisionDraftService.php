@@ -20,6 +20,7 @@ final class PmsRevisionDraftService
         private readonly TenantContext $tenant,
         private readonly PmsAccessService $authors,
         private readonly ProjectArchiveService $archives,
+        private readonly PmsRevisionDraftValidator $validator,
     ) {}
 
     /**
@@ -83,13 +84,30 @@ final class PmsRevisionDraftService
                 if ($found || ($rule['rule_kind'] ?? null) !== 'PIPE_SCHEDULE') {
                     throw ValidationException::withMessages(['rule_id' => 'Choose one existing PIPE_SCHEDULE rule.']);
                 }
-                $rule['value'] = ['schedule' => $schedule];
+                if (! is_array($rule['value'] ?? null) || ! is_string($rule['value']['schedule'] ?? null)) {
+                    throw ValidationException::withMessages(['rule_id' => 'The schedule rule has no schedule value.']);
+                }
+                $rule['value']['schedule'] = $schedule;
                 $found = true;
             }
             unset($rule);
             if (! $found) {
                 throw ValidationException::withMessages(['rule_id' => 'Choose one existing PIPE_SCHEDULE rule.']);
             }
+            // Compare against the previous approved issue, not the mutable
+            // live class. Only a schedule leaf may differ in this first slice.
+            $baseline = DB::table('pms_class_revision_snapshots as s')
+                ->join('document_revisions as r', 'r.id', '=', 's.document_revision_id')
+                ->where('s.pms_document_id', $document->id)
+                ->where('s.piping_class_id', $classId)
+                ->where('r.ordinal', '<', $revision->ordinal)
+                ->orderByDesc('r.ordinal')->value('s.specification');
+            if ($baseline === null) {
+                throw ValidationException::withMessages(['specification' => 'A prior approved PMS snapshot is required.']);
+            }
+            $this->validator->assertScheduleOnly(
+                json_decode($baseline, true, 512, JSON_THROW_ON_ERROR), $spec,
+            );
             DB::table('pms_class_revision_drafts')->where('id', $draft->id)
                 ->update(['specification' => json_encode($spec, JSON_THROW_ON_ERROR), 'updated_at' => now()]);
 

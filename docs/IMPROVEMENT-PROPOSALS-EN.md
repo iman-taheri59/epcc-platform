@@ -836,3 +836,11 @@ through HTTP or mutate published class rows. This limits the first editable
 path while publication semantics and engineering checks are designed.
 Broader rule/branch-table editing should reuse class publish validations,
 not bypass them. See ADR-028.
+
+### 2026-10-14: validate complete revision diff, not just edit input (BUILT FOR SERVICE)
+
+Validating only the new schedule string would let other unreviewed changes
+already present in a WIP JSON working copy pass through the service. A
+strict full-copy comparison against the last approved snapshot whitelists
+only schedule leaves before an authorized edit. The publication path and
+raw-SQL draft write boundary still need the same invariant; see ADR-028.

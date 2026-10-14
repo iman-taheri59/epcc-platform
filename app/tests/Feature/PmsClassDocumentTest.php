@@ -170,6 +170,19 @@ final class PmsClassDocumentTest extends TestCase
             } catch (ValidationException $e) {
                 $this->assertArrayHasKey('pms_access', $e->errors());
             }
+            $tampered = $baseline;
+            $tampered['rules'][0]['dn_range'] = '[15,800)';
+            DB::table('pms_class_revision_drafts')->where('id', $draft->id)
+                ->update(['specification' => json_encode($tampered, JSON_THROW_ON_ERROR)]);
+            try {
+                app(PmsRevisionDraftService::class)->changePipeSchedule(
+                    $project, $author, $doc->id, $class->id, $baseline['rules'][0]['id'], '40');
+                $this->fail('An unauthorized DN-range edit must not hitchhike on a schedule change.');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('specification', $e->errors());
+            }
+            DB::table('pms_class_revision_drafts')->where('id', $draft->id)
+                ->update(['specification' => $draft->specification]);
             $edited = app(PmsRevisionDraftService::class)->changePipeSchedule(
                 $project, $author, $doc->id, $class->id, $baseline['rules'][0]['id'], '40');
             $this->assertSame('40', $edited['rules'][0]['value']['schedule']);
