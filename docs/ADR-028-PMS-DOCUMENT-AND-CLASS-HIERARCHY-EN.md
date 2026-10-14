@@ -598,3 +598,7 @@ No existing production per-line component/MTO writer currently calls the
 live rule resolver, so this is a safe read API for future line-dependent
 engineering, not a claim that all downstream consumers are migrated.
 Real PostgreSQL CI is pending; GitHub Actions billing has been intermittent.
+
+Validation note: CI run 38640300534 for `9a000e3` did not start Laravel or
+any other test job due to GitHub Actions account billing/spending limits.
+Current branch changes after `283c4ee` still await a real PostgreSQL/RLS run.

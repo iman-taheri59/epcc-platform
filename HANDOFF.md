@@ -4547,3 +4547,9 @@ coverage for overlap/tie behaviour and a feature assertion for the
 revision-B schedule via generic rule lookup. PHP lint and diff checks passed;
 full CI pending given intermittent account billing failures. Raw-SQL CDE
 writers remain a separate security/engineering audit item.
+
+- CI 38640300534 for `9a000e3` did not start any test job: GitHub's Laravel
+  check says recent account payments failed or the Actions spending limit
+  needs increase. The pinned-branch resolver and B-baseline regression remain
+  PHP-linted but unverified by current PostgreSQL CI. Do not interpret this
+  scheduling failure as a test failure or a pass.
