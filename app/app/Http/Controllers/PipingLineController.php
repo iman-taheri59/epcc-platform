@@ -13,6 +13,7 @@ use App\Models\PipingTestPack;
 use App\Models\Project;
 use App\Models\Subsystem;
 use App\Services\PipingLineService;
+use App\Services\PmsLineEligibility;
 use App\Services\PipingTestPackService;
 use App\Support\AuthorizationPipeline;
 use App\Support\LineReleaseState;
@@ -40,6 +41,7 @@ final class PipingLineController extends Controller
 {
     public function __construct(
         private readonly PipingLineService $lines,
+        private readonly PmsLineEligibility $pmsEligibility,
         private readonly PipingTestPackService $testPacks,
         private readonly TenantContext $tenant,
         private readonly AuthorizationPipeline $authz,
@@ -71,7 +73,10 @@ final class PipingLineController extends Controller
                 return [
                     $lines,
                     Subsystem::orderBy('code')->get(),
-                    PipingClass::orderBy('code')->get(),
+                    // The picker reflects approved, current PMS revision
+                    // membership, not merely the existence of a class row.
+                    PipingClass::whereIn('id', $this->pmsEligibility->eligibleClassIds($project->id))
+                        ->orderBy('code')->get(),
                     $stats,
                 ];
             },

@@ -138,6 +138,18 @@ final class PipingLineHttpTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_class_picker_hides_unapproved_classes_and_explains_why_registration_is_unavailable(): void
+    {
+        $draft = $this->seedRegisters();
+
+        $this->actingAs($this->owner())
+            ->get('/projects/PH-14/piping?lang=en')
+            ->assertOk()
+            ->assertSee('No published class in a currently approved PMS revision.')
+            ->assertDontSee('<option value="'.$draft->id.'">', false)
+            ->assertSee('disabled', false);
+    }
+
     public function test_posting_a_line_allocates_the_next_number(): void
     {
         $class = $this->seedRegisters();

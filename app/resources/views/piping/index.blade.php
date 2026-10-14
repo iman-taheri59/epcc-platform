@@ -34,6 +34,8 @@
         'unlink'  => ['fa' => 'حذف پیوست', 'en' => 'Remove link'],
         'config'  => ['fa' => 'تنظیم شماره‌گذاری', 'en' => 'Numbering setup'],
         'model'   => ['fa' => 'مدل', 'en' => 'Model'],
+        'nopms'  => ['fa' => 'هیچ کلاس منتشرشده‌ای در بازنگری تأییدشدهٔ جاری مدرک PMS موجود نیست؛ ثبت خط جدید تا تأیید آن ممکن نیست.',
+                      'en' => 'No published class in a currently approved PMS revision. New lines require an approved PMS first.'],
         'noreg'   => ['fa' => 'این فهرست برای پروژه تعریف نشده است؛ تا تعریف نشود شماره‌گذاری خودکار ممکن نیست.',
                       'en' => 'Not set up for this project yet - automatic numbering needs it first.'],
         'dp'      => ['fa' => 'فشار طراحی', 'en' => 'Design pressure'],
@@ -309,21 +311,19 @@
       </label>
       @endif
 
-      @if($needs('class'))
       <label style="font-size:12px;color:var(--muted);">
         {{ $L('class') }}
         @if($classes->isEmpty())
           <div style="margin-top:4px;padding:6px;border-radius:6px;border:1px dashed #92400e;background:rgba(120,53,15,.25);color:#fcd34d;font-size:11px;line-height:1.6;">
-            {{ $L('noreg') }}
+            {{ $L('nopms') }}
           </div>
         @else
-          <select name="piping_class_id" style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+          <select name="piping_class_id" required style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
             <option value="">—</option>
             @foreach($classes as $c)<option value="{{ $c->id }}">{{ $c->code }}</option>@endforeach
           </select>
         @endif
       </label>
-      @endif
 
       @if($needs('coating'))
       <label style="font-size:12px;color:var(--muted);">
@@ -369,7 +369,7 @@
         <input type="text" name="line_number" placeholder="{{ $L('autonum') }}" style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
       </label>
 
-      <button type="submit" style="padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:inherit;font:inherit;cursor:pointer;">
+      <button type="submit" @disabled($classes->isEmpty()) style="padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:inherit;font:inherit;cursor:pointer;">
         {{ $L('add') }}
       </button>
     </form>

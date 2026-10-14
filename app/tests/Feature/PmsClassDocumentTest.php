@@ -52,6 +52,8 @@ final class PmsClassDocumentTest extends TestCase
             'reason' => 'Snapshot test',
         ]);
         app(PmsClassDocumentService::class)->attach($project, $author, $class->id, $doc->id);
+        $this->assertSame([], $tenant->runAs($author->company_id,
+            fn () => app(PmsLineEligibility::class)->eligibleClassIds($project->id), $project->id));
         $tenant->runAs($author->company_id, fn () => $register->transition($doc, $author, CdeState::SHARED, 'S2'), $project->id);
         try {
             $tenant->runAs($author->company_id, fn () => $register->transition($doc->refresh(), $author, CdeState::PUBLISHED, 'A1'), $project->id);
@@ -83,6 +85,7 @@ final class PmsClassDocumentTest extends TestCase
             $this->assertSame('80', $unchanged['rules'][0]['value']['schedule']);
             $resolver = app(PmsLineEligibility::class);
             $this->assertSame($row->id, $resolver->snapshotId($project->id, $class->id));
+            $this->assertSame([$class->id], $resolver->eligibleClassIds($project->id));
             $subsystem = Subsystem::where('project_id', $project->id)->firstOrFail();
             DB::table('piping_lines')->insert([
                 'id' => (string) Str::uuid(), 'project_id' => $project->id,
@@ -118,6 +121,7 @@ final class PmsClassDocumentTest extends TestCase
         }
         $tenant->runAs($author->company_id, function () use ($register, $doc, $author, $project, $class): void {
             $register->issueRevision($doc->refresh(), $author, 'B');
+            $this->assertSame([], app(PmsLineEligibility::class)->eligibleClassIds($project->id));
             try {
                 app(PmsLineEligibility::class)->snapshotId($project->id, $class->id);
                 $this->fail('An archived PMS revision cannot qualify a new line.');

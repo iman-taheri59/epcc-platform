@@ -4149,3 +4149,16 @@ Laravel vendor works for CLI metadata but DB routes remain blocked. Full PHP
 8.4 with pgsql/XML extensions (Laragon on Windows, or a trusted Linux build)
 is required; `docs/LOCAL-LARAVEL-EN.md` records verification commands.
 GitHub Actions is currently billing-blocked, so it cannot build a replacement.
+
+## 2026-10-14 PMS-approved class picker
+
+Manual line form now uses `PmsLineEligibility::eligibleClassIds` (same join as
+snapshot resolver) to list only published classes in current A-approved PMS
+revisions. Class selection is shown even when not a line-number token; if no
+class qualifies it shows a bilingual explanation and disables the form
+submit. Added HTTP regression for draft omission and expanded snapshot test
+for eligibility before approval, after approval and after supersession.
+**Not a service/DB write gate:** direct HTTP POST, service, import and SQL
+remain permissive; strict line creation is next. Local PHP 8.4 syntax check
+passed for changed PHP files, but no pdo_pgsql local and GitHub Actions is
+currently billing-blocked; PostgreSQL feature assertions not yet executed.

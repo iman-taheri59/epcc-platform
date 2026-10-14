@@ -745,3 +745,13 @@ XMLReader and XMLWriter is preferable to layering incompatible artifacts;
 verify the actual `artisan` interpreter reports the PDO `pgsql` driver before
 marking the local Laravel environment complete. Current network and Actions
 billing restrictions block provisioning that runtime in the sandbox.
+
+### 2026-10-14: single approved-snapshot predicate for picker and write gate (PARTIAL)
+
+Duplicating "approved PMS class" as a UI-only state check would diverge from
+the eventual write rule. The picker now calls the same revision-and-snapshot
+predicate that resolves a line's issue-time pin. This safely reduces operator
+mis-selection, but a hidden/disabled control is never authorization. The
+stronger next step is an atomic service plus DB insert rule for every newly
+created or imported line, preserving historical unassigned records without
+fabricating a class or revision (ADR-028).

@@ -138,3 +138,25 @@ by this slice. The next slice must enforce the resolver across every write
 path, update legacy fixtures and backstop null-pin inserts at the DB layer.
 Never silently map an old line to a convenient class or revision.
 CI pending.
+
+## Fifth implementation slice: eligible-class picker (2026-10-14)
+
+The manual line register now lists only class IDs that have a snapshot in the
+**current** A-family-approved PIPING/PMS document revision and are themselves
+PUBLISHED in the same project. The picker uses the exact same predicate as
+`PmsLineEligibility::snapshotId`, rather than approximating approval from
+class state alone. The class selector is displayed independently of whether
+the number format includes a class token, requires a choice, and explains why
+no class can be selected; the form submit is disabled when the list is empty.
+Tests assert no draft class appears, that a published approved class becomes
+eligible, and that superseding its PMS removes it from the picker without
+changing the old line's pin.
+
+**This is UI guidance, not a security gate.** `PipingLineService::create` and
+`register` still accept unqualified or missing classes, and the DB still
+permits inserting a new line with null snapshot. Direct POSTs/imports can
+bypass the picker. Do not claim the owner line-admission rule is satisfied;
+the next step is to enforce this shared resolver in every write path and add
+the DB insert backstop, with historical fixtures updated explicitly. PHP
+syntax checks succeeded; PostgreSQL tests are pending while GitHub Actions
+jobs are blocked by billing.
