@@ -627,3 +627,7 @@ non-superuser RLS role, `btree_gist` and dedicated `epcc_test` without
 modifying data by default. `--run` explicitly opts in to destructive test
 migrations and runs the PMS regression followed by the whole Laravel suite.
 Its successful run is not yet reported; the sandbox PHP lacks `pdo_pgsql`.
+
+CI 38647897238 on `2b03acd` did not start its Laravel job because of
+GitHub account billing/spending limits. The optional local preflight awaits
+an actual Laragon run; no full-database success is claimed for current HEAD.

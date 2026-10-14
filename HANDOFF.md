@@ -4588,3 +4588,8 @@ commands. PHP lint passed; the sandbox PHP correctly fails preflight at its
 missing `pdo_pgsql`, so success on Laragon is NOT claimed here. Owner can
 send sanitized test output without sharing .env/passwords. This verifier is
 not a replacement for the absent GitHub Compose job.
+
+- CI 38647897238 on `2b03acd` did not start the Laravel or other test jobs:
+  GitHub again reported account payment/spending-limit restrictions. The
+  Laragon preflight is PHP-linted and intentionally fails on the sandbox's
+  missing `pdo_pgsql`; it has not passed on a real Laragon/PgSQL workstation.
