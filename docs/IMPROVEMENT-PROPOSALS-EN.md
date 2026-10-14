@@ -819,3 +819,11 @@ snapshots, not direct edits to a live published class row. This is a schema
 and workflow decision, not a silent relaxation of the freeze. Until that
 design is approved, publish a new class identity for changed specifications
 and retain old line pins. See ADR-028.
+
+### 2026-10-14: versioned class authoring accepted; staged implementation (IN PROGRESS)
+
+The owner accepted retaining stable class identity with independent WIP
+revision working copies and immutable issue-time snapshots. The foundation
+is stored separately from published class rows; authoring, semantic checks
+and publication from drafts remain outstanding. This avoids weakening the
+published-class freeze merely to allow a revision. See ADR-028.

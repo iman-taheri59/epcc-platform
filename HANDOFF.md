@@ -4336,3 +4336,18 @@ visibility or provides private Actions billing. Do not claim tests pass.
 A future requirement to revise a published class's contents needs an
 explicit versioned authoring design; current service already treats
 published classes as read-only.
+
+## Same-identity PMS revision groundwork (owner accepted proposal)
+
+`2026_10_14_140000_create_pms_class_revision_drafts.php` creates an isolated
+per-revision/class JSONB working-copy table with project/company FKs, RLS,
+unique pair, immutable identity and WIP-only write trigger. `DocumentRegister`
+seeds new WIP revision drafts from the previous issued snapshots atomically
+on `issueRevision`. The PmsClassDocumentTest regression checks copy/edit in
+WIP, old snapshot unchanged, and rejection of edits after SHARED. PHP lint
+and diff checks passed. These drafts are **not** yet used to publish PMS or
+validate specification rules; no changed-content revision is usable for
+line admission. Next steps: validated author workflow and issue-time capture
+from the drafts, including range/material/branch checks, before claiming
+same-identity class revision support. Postgres tests are deferred until the
+owner returns the repo to public or enables private GitHub Actions billing.

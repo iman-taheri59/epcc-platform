@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Support\CdeState;
 use App\Services\ReviewCycle;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -253,6 +254,26 @@ final class DocumentRegister
             ]);
 
             $document->update(['current_revision_id' => $next->id]);
+
+            // Seed the NEXT revision's independent WIP working copies from
+            // the last issued snapshots. Never mutate the published class or
+            // previous issue-time snapshot; draft publication is a later step.
+            if ($document->doc_type === 'PMS' && $document->discipline === 'PIPING' && $current !== null) {
+                $snapshots = DB::table('pms_class_revision_snapshots')
+                    ->where('document_revision_id', $current->id)->get();
+                foreach ($snapshots as $snapshot) {
+                    DB::table('pms_class_revision_drafts')->insert([
+                        'id' => (string) Str::uuid(),
+                        'project_id' => $document->project_id,
+                        'company_id' => $document->company_id,
+                        'pms_document_id' => $document->id,
+                        'document_revision_id' => $next->id,
+                        'piping_class_id' => $snapshot->piping_class_id,
+                        'specification' => $snapshot->specification,
+                        'created_at' => now(), 'updated_at' => now(),
+                    ]);
+                }
+            }
 
             return $next;
         });

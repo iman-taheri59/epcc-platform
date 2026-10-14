@@ -353,3 +353,33 @@ per-revision class content. A future business need to revise an existing
 published class's specification requires a versioned authoring model and an
 explicit decision rather than weakening the freeze. PostgreSQL CI deferred
 while the repo stays private at the owner's request.
+
+## Decision: same class identity across PMS revisions (2026-10-14)
+
+The owner accepted the recommended versioned-authoring direction. A class
+identity and code remain stable, while specification changes belong to a
+WIP document-revision working copy, not the published class header/rules
+and never the prior issue-time snapshot. Published class contents remain
+frozen. This is being built in independently verifiable slices; the new
+draft storage **does not yet authorize changed specifications or affect line
+eligibility**.
+
+### Thirteenth slice: isolated WIP working-copy foundation
+
+`pms_class_revision_drafts` stores a JSONB working copy keyed by revision and
+class. It has FKs, one row per pair, tenant RLS, immutable identity and a
+database trigger requiring a PIPING/PMS document's current WIP revision and
+a same-project, same-company published class governed by that document. No
+deleting drafts; editing is possible only in WIP, not after SHARED/PUBLISHED.
+When a new PMS revision is issued, the document service seeds working copies
+from the prior approved snapshots in the **same transaction** as the new
+revision/current-pointer change. An unchanged prior snapshot stays immutable,
+and once the document moves to SHARED the draft cannot be silently edited.
+A regression covers these properties. This is a *foundation only*: no UI or
+nominated-author edit service yet; the PMS publication path still captures
+the unchanged published class contents and deliberately ignores draft JSON.
+A follow-up must validate versioned specification shape, coverage, material
+and branch/pad checks before publication and capture immutable snapshots
+from the validated drafts. Until then, changing draft JSON has NO effect on
+line admission. Do not advertise same-identity revisions as complete.
+PostgreSQL CI is deferred while private Actions jobs remain blocked.

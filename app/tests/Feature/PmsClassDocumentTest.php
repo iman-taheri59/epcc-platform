@@ -156,7 +156,25 @@ final class PmsClassDocumentTest extends TestCase
             $this->assertSame('23514', $e->getCode());
         }
         $tenant->runAs($author->company_id, function () use ($register, $doc, $author, $project, $class): void {
-            $register->issueRevision($doc->refresh(), $author, 'B');
+            $next = $register->issueRevision($doc->refresh(), $author, 'B');
+            $draft = DB::table('pms_class_revision_drafts')
+                ->where('document_revision_id', $next->id)->where('piping_class_id', $class->id)->first();
+            $this->assertNotNull($draft);
+            $baseline = json_decode($draft->specification, true, 512, JSON_THROW_ON_ERROR);
+            $this->assertSame('80', $baseline['rules'][0]['value']['schedule']);
+            $baseline['rules'][0]['value']['schedule'] = '40';
+            DB::table('pms_class_revision_drafts')->where('id', $draft->id)
+                ->update(['specification' => json_encode($baseline, JSON_THROW_ON_ERROR)]);
+            $this->assertSame('80', json_decode(DB::table('pms_class_revision_snapshots')
+                ->where('piping_class_id', $class->id)->value('specification'), true, 512, JSON_THROW_ON_ERROR)['rules'][0]['value']['schedule']);
+            $register->transition($doc->refresh(), $author, CdeState::SHARED, 'S2');
+            try {
+                DB::table('pms_class_revision_drafts')->where('id', $draft->id)
+                    ->update(['specification' => $draft->specification]);
+                $this->fail('A shared PMS revision draft cannot be silently edited.');
+            } catch (QueryException $e) {
+                $this->assertSame('23514', $e->getCode());
+            }
             $this->assertSame([], app(PmsLineEligibility::class)->eligibleClassIds($project->id));
             try {
                 app(PipingLineService::class)->register(
