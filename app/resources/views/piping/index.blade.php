@@ -34,6 +34,7 @@
         'unlink'  => ['fa' => 'حذف پیوست', 'en' => 'Remove link'],
         'config'  => ['fa' => 'تنظیم شماره‌گذاری', 'en' => 'Numbering setup'],
         'model'   => ['fa' => 'مدل', 'en' => 'Model'],
+        'unmapped'=> ['fa' => 'در انتظار بررسی کلاس و بازنگری PMS', 'en' => 'Class/PMS revision review required'],
         'nopms'  => ['fa' => 'هیچ کلاس منتشرشده‌ای در بازنگری تأییدشدهٔ جاری مدرک PMS موجود نیست؛ ثبت خط جدید تا تأیید آن ممکن نیست.',
                       'en' => 'No published class in a currently approved PMS revision. New lines require an approved PMS first.'],
         'noreg'   => ['fa' => 'این فهرست برای پروژه تعریف نشده است؛ تا تعریف نشود شماره‌گذاری خودکار ممکن نیست.',
@@ -117,6 +118,9 @@
     <span class="pill">{{ $L('draft') }}: {{ $num($stats['draft']) }}</span>
     <span class="pill" style="background:#78350f;color:#fde68a;border:1px solid #92400e;">{{ $L('afc') }}: {{ $num($stats['afc']) }}</span>
     <span class="pill ok">{{ $L('rel') }}: {{ $num($stats['released']) }}</span>
+    @if($stats['unmapped'] > 0)
+      <span class="pill" style="background:#7f1d1d;color:#fecaca;">{{ $L('unmapped') }}: {{ $num($stats['unmapped']) }}</span>
+    @endif
     @if($stats['external'] > 0)
       <span class="pill" style="opacity:.8;">{{ $L('ext') }}: {{ $num($stats['external']) }}</span>
     @endif
@@ -144,7 +148,8 @@
     @forelse($rows as $line)
       @php
         $b = $blockers[$line->id] ?? null;
-        $ready = $b !== null && $b['missing'] === [] && $b['unapproved'] === [];
+        $ready = $b !== null && $line->pms_class_snapshot_id !== null
+            && $b['missing'] === [] && $b['unapproved'] === [];
         $label = \App\Support\LineReleaseState::label((string) $line->release_state);
       @endphp
       <tr>
@@ -157,7 +162,11 @@
         </td>
         <td>{{ $line->subsystem?->code }}</td>
         <td>{{ $line->nominal_size ? $num($line->nominal_size).'"' : '—' }}</td>
-        <td>{{ $line->pipingClass?->code ?? '—' }}</td>
+        <td>{{ $line->pipingClass?->code ?? '—' }}
+          @if($line->pms_class_snapshot_id === null)
+            <div style="font-size:11px;color:#fca5a5;">{{ $L('unmapped') }}</div>
+          @endif
+        </td>
         <td class="mono" style="white-space:nowrap;">
           {!! $show($line->design_pressure, $line->design_pressure_unit, 'PRESSURE') !!}
         </td>

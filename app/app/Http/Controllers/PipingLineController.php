@@ -68,6 +68,7 @@ final class PipingLineController extends Controller
                     'afc' => $lines->where('release_state', LineReleaseState::AFC_CONFIRMED)->count(),
                     'released' => $lines->where('release_state', LineReleaseState::RELEASED)->count(),
                     'external' => $lines->whereNull('sequence')->count(),
+                    'unmapped' => $lines->whereNull('pms_class_snapshot_id')->count(),
                 ];
 
                 return [
@@ -223,7 +224,8 @@ final class PipingLineController extends Controller
         $rows = $lines->map(function (PipingLine $line) use ($blockers, $jointStats): array {
             $b = $blockers[$line->id] ?? ['missing' => [], 'unapproved' => []];
             $j = $jointStats[$line->id] ?? ['total' => 0, 'fitted' => 0, 'invalid' => 0, 'awaiting_number' => 0];
-            $evidenceReady = $b['missing'] === [] && $b['unapproved'] === [];
+            $evidenceReady = $line->pms_class_snapshot_id !== null
+                && $b['missing'] === [] && $b['unapproved'] === [];
             $fitPercent = $j['total'] === 0 ? 0 : (int) round(($j['fitted'] / $j['total']) * 100);
             $isBlocked = ! $evidenceReady || $j['invalid'] > 0 || $j['awaiting_number'] > 0 || $line->sequence === null;
 

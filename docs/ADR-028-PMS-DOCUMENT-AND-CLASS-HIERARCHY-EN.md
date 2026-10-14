@@ -303,3 +303,20 @@ Validation caveat: after the repository was made private, GitHub Actions run
 or spending-limit restrictions. This is not a test failure or test pass; the
 ninth slice currently has PHP syntax checks only and awaits real PostgreSQL
 CI or a locally provisioned PostgreSQL test environment.
+
+## Tenth implementation slice: historical PMS readiness is not AFC-ready
+
+Historical records without a PMS snapshot remain visible in the line
+register, but the register and task-first workspace now label them as
+requiring class/PMS revision review instead of marking them ready when
+other AFC documents happen to be present. The workspace readiness count
+and blocked status use the same pin requirement. `confirmAfc` now refuses
+null class/pin with a localized field error, before evidence checks; after
+explicit classification, the existing AFC evidence checks still apply.
+Existing issue-time snapshots are not revalidated against *today's* revision
+when confirming an already-created line, preserving revision pinning.
+The regression exercises the pre-insert-gate historical row, register and
+workspace labels, and AFC refusal. Syntax checks passed; database and view
+tests await CI when private-repository Actions billing is available or the
+owner chooses to make the repository public again. Separate direct-SQL AFC
+state transition enforcement remains to be addressed.

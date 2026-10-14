@@ -213,6 +213,14 @@ final class PipingLineService
 
         $this->assertTransition($line, LineReleaseState::AFC_CONFIRMED);
 
+        // An old unmapped line can remain in the register, but must never be
+        // certified for construction as though its PMS provenance were known.
+        if ($line->piping_class_id === null || $line->pms_class_snapshot_id === null) {
+            throw ValidationException::withMessages([
+                'release_state' => __('epcc.line.afc_needs_pms_pin'),
+            ]);
+        }
+
         $missing = $this->missingEvidence($line);
 
         if ($missing !== []) {

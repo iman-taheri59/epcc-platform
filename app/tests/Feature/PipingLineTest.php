@@ -257,6 +257,17 @@ final class PipingLineTest extends TestCase
             'created_at' => now(), 'updated_at' => now(),
         ]));
         $migration->up();
+        $legacy = $this->asOwner(fn () => PipingLine::findOrFail($id));
+        try {
+            $this->asOwner(fn () => $this->service()->confirmAfc($legacy, $actor));
+            $this->fail('A historical line without a PMS pin cannot pass AFC.');
+        } catch (ValidationException $e) {
+            $this->assertStringContainsString('PMS', implode(' ', $e->errors()['release_state'] ?? []));
+        }
+        $this->actingAs($actor)->get('/projects/PH-14/piping?lang=en')
+            ->assertOk()->assertSee('Class/PMS revision review required');
+        $this->actingAs($actor)->get('/projects/PH-14/piping/workspace?lang=en')
+            ->assertOk()->assertSee('Class/PMS revision review required');
         $this->asOwner(fn () => DB::table('piping_lines')->where('id', $id)
             ->update(['release_note' => 'Awaiting explicit class review']));
         $this->assertSame('Awaiting explicit class review', $this->asOwner(

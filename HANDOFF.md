@@ -4295,3 +4295,17 @@ rows and PMS authoring/lifecycle protection are still separate follow-ups.
   runtime or phpunit installation is present locally. The historical class
   amendment migration must be rerun once the owner's Actions billing/limits
   permit private-repository jobs. Do not claim the new slice is CI-green.
+
+## Historical PMS review visibility / AFC service gate
+
+The register now counts/labels null-pin historical lines as awaiting class
+and PMS revision review; the workspace marks them blocked and removes them
+from its ready count. `PipingLineService::confirmAfc` refuses null class or
+snapshot with localized fa/en feedback, without requiring an old pinned
+revision to remain the current document revision. The historical migration
+fixture now asserts register/workspace labels and AFC refusal. PHP lint and
+`git diff --check` pass. No PostgreSQL run yet: private-repository Actions
+billing is still blocked; do not claim database/HTTP test success. A direct
+SQL transition to AFC is not yet protected by this service-level change.
+The owner explicitly plans to make the repository public again **after
+several more steps** for database tests; do not change its visibility now.

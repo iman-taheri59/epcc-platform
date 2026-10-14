@@ -14,6 +14,7 @@
         'model' => ['fa' => 'مدل خط', 'en' => 'Line model'],
         'line' => ['fa' => 'خط', 'en' => 'Line'],
         'subsystem' => ['fa' => 'زیرسیستم', 'en' => 'Subsystem'],
+        'unmapped' => ['fa' => 'در انتظار بررسی کلاس و بازنگری PMS', 'en' => 'Class/PMS revision review required'],
         'class' => ['fa' => 'کلاس', 'en' => 'Class'],
         'state' => ['fa' => 'وضعیت', 'en' => 'State'],
         'afc_docs' => ['fa' => 'مدارک AFC', 'en' => 'AFC docs'],
@@ -99,6 +100,7 @@
         $line = $row['line'];
         $label = \App\Support\LineReleaseState::label((string) $line->release_state);
         $problems = [];
+        if ($line->pms_class_snapshot_id === null) $problems[] = $L('unmapped');
         if ($row['missing'] !== []) $problems[] = $L('missing').': '.implode(', ', $row['missing']);
         if ($row['unapproved'] !== []) $problems[] = $L('unapproved').': '.implode(', ', $row['unapproved']);
         if ($row['joints']['invalid'] > 0) $problems[] = $L('badjoint').': '.$num($row['joints']['invalid']);

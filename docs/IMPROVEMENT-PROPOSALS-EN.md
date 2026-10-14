@@ -792,3 +792,11 @@ unmapped line with a bare class ID. A narrow UPDATE trigger now requires the
 approved snapshot whenever a previously null-pin line acquires a different
 non-null class. It does not rewrite older classifications automatically or
 block unrelated maintenance. See ADR-028; CI pending.
+
+### 2026-10-14: historical register readiness should match AFC service gate (BUILT)
+
+A null-pin historical line must not appear AFC-ready merely because its
+other documents have been linked. The service now refuses AFC, and both the
+register and task-first workspace label unresolved PMS provenance and keep
+these rows out of their readiness totals. This does not silently reassign
+historical revisions. Direct SQL state changes still merit a database guard.

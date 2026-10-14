@@ -373,6 +373,7 @@ return [
         'number_required' => 'A line number is required.',
         'number_taken' => 'Line number :number already exists on this project.',
         'bad_transition' => 'A line cannot go from :from to :to.',
+        'afc_needs_pms_pin' => 'AFC requires a class pinned to an approved PMS revision. Review and classify this historical line first.',
         'afc_missing_evidence' => 'AFC needs these documents linked first: :kinds.',
         'afc_evidence_not_approved' => 'These documents are not at an approved revision: :documents. A published revision with a B suitability code is approved with comments, not approved for construction.',
         'revert_needs_reason' => 'Say why the line is going back to draft - it cancels an approval somebody gave.',
