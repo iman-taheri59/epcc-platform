@@ -868,3 +868,12 @@ old live class specification would misrepresent the reviewed engineering
 basis. The CDE publication service now refuses such drafts until the new
 capture and database provenance checks are complete. This temporary
 availability cost is preferable to a falsely approved schedule. See ADR-028.
+
+### 2026-10-14: capture reviewed draft, not live class, on PMS issue (BUILT; CI PENDING)
+
+A versioned document approval must pin its reviewed working copy; falling
+back to the older live class would falsify revision provenance. The service
+now captures the validated draft and the DB checks it against the prior
+approved snapshot with only schedule leaves allowed to differ. This is
+limited to the current schedule-only scope; DB-side engineering validation
+or a protected CDE write channel remains a further improvement. See ADR-028.

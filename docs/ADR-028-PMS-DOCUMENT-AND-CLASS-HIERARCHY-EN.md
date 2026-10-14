@@ -469,3 +469,29 @@ revised class contents. The next step is to capture the validated draft as
 the issue-time snapshot with a corresponding database provenance guard, then
 remove only this temporary changed-draft refusal. Existing class/line pins
 remain immutable. PostgreSQL CI remains deferred while the repo is private.
+
+### Nineteenth slice: capture the validated revision-specific class copy
+
+The temporary refusal in slice 18 is replaced by an issue-time capture of
+the reviewed WIP draft. On approved CDE publication the transaction first
+revalidates the full class set, schedule-only delta, published wall schedule
+availability and B31.3 branch-pad results, then inserts an immutable snapshot
+of **that draft** rather than the frozen live class. The database snapshot
+trigger now also verifies current approved PMS provenance. Where a revision
+has a working copy, its candidate must equal that exact copy and differ
+from the immediately preceding approved snapshot ONLY at existing
+PIPE_SCHEDULE `value.schedule` leaves. PostgreSQL compares the full JSONB
+object after whitelisted substitutions; other rule/header/branch changes
+are rejected with SQLSTATE 23514. First revisions without a draft retain
+the original live-class snapshot gate. The test issues revision B with STD
+from a prior SCH 80 snapshot, checks new-line pin B and old-line pin A,
+and attempts a forged SQL snapshot with an altered DN range.
+
+**Important boundary:** the database delta predicate is structural and does
+not itself run the external reference-pack/pad calculator. That engineering
+check is re-run inside the service CDE approval transaction; a privileged
+raw-SQL CDE state mutation and raw draft write could still evade it. The
+DB-only CDE transition authorization/integrity audit remains outstanding.
+No claim of a universal engineering gate until PostgreSQL CI runs and this
+separate writer boundary is handled. Database tests remain deferred while
+the repository stays private at the owner's request.

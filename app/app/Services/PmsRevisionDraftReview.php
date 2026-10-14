@@ -18,29 +18,10 @@ final class PmsRevisionDraftReview
         private readonly PipingClassService $classes,
     ) {}
 
-    /** Until capture can use draft content, never issue a falsely labelled revision. */
+    /** Recheck immediately before capture; a service review cannot be cached. */
     public function assertPublishable(Document $document, DocumentRevision $revision): void
     {
         $this->assertShareable($document, $revision);
-        if ($document->doc_type !== 'PMS' || $document->discipline !== 'PIPING') {
-            return;
-        }
-        $drafts = DB::table('pms_class_revision_drafts')
-            ->where('document_revision_id', $revision->id)->get();
-        foreach ($drafts as $draft) {
-            $previous = DB::table('pms_class_revision_snapshots as s')
-                ->join('document_revisions as r', 'r.id', '=', 's.document_revision_id')
-                ->where('s.pms_document_id', $document->id)
-                ->where('s.piping_class_id', $draft->piping_class_id)
-                ->where('r.ordinal', '<', $revision->ordinal)
-                ->orderByDesc('r.ordinal')->value('s.specification');
-            if ($previous === null || json_decode($draft->specification, true, 512, JSON_THROW_ON_ERROR)
-                !== json_decode($previous, true, 512, JSON_THROW_ON_ERROR)) {
-                throw ValidationException::withMessages([
-                    'specification' => 'Revised PMS schedules cannot be published until revision-specific snapshot capture is available.',
-                ]);
-            }
-        }
     }
 
     public function assertShareable(Document $document, DocumentRevision $revision): void

@@ -4417,3 +4417,20 @@ asserts the refusal, rollback to SHARED and unchanged snapshot count. PHP
 syntax and diff checks passed, PostgreSQL test execution deferred per owner.
 Next: database provenance guard plus immutable capture of validated revision
 copies; only then remove the temporary changed-draft publication block.
+
+## Revision-specific PMS snapshot capture (PostgreSQL test pending)
+
+Migration `2026_10_14_150000_capture_validated_pms_revision_drafts.php` adds
+PostgreSQL full-JSONB schedule-only delta comparison and replaces the
+snapshot trigger so an approved current PMS revision can capture precisely
+its matching WIP draft, sourced from the immediately preceding approved
+snapshot. No draft still means exact live-spec capture on first issue.
+`PmsRevisionSnapshotService` now inserts reviewed draft specification and
+checks complete class membership; `PmsRevisionDraftReview` repeats structural
+and engineering validation immediately before approval. Regression issues a
+STD revision after SCH 80, checks the old lines stay pinned to A and new
+line pins B, and expects 23514 on a forged DN-range snapshot. PHP lint and
+diff checks passed. **No PostgreSQL tests yet** while repository private
+Actions billing is blocked. Raw SQL mutation of CDE state/drafts could
+bypass engineering (reference-pack/pad) service checks: separately audit
+DB-only approval/author boundaries before calling this a universal gate.

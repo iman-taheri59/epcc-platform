@@ -231,32 +231,47 @@ final class PmsClassDocumentTest extends TestCase
                 $this->assertSame('23514', $e->getCode());
             }
             $this->assertSame([], app(PmsLineEligibility::class)->eligibleClassIds($project->id));
+            $oldPin = DB::table('pms_class_revision_snapshots')
+                ->where('piping_class_id', $class->id)->value('id');
+            $reviewed = json_decode(DB::table('pms_class_revision_drafts')
+                ->where('id', $draft->id)->value('specification'), true, 512, JSON_THROW_ON_ERROR);
+            $oldSpec = json_decode(DB::table('pms_class_revision_snapshots')
+                ->where('id', $oldPin)->value('specification'), true, 512, JSON_THROW_ON_ERROR);
+            $forged = $reviewed;
+            $forged['rules'][0]['dn_range'] = '[15,800)';
+            $this->assertTrue((bool) DB::selectOne('SELECT epcc_pms_schedule_only_delta(?::jsonb, ?::jsonb) AS ok',
+                [json_encode($oldSpec), json_encode($reviewed)])->ok);
+            $this->assertFalse((bool) DB::selectOne('SELECT epcc_pms_schedule_only_delta(?::jsonb, ?::jsonb) AS ok',
+                [json_encode($oldSpec), json_encode($forged)])->ok);
+            $register->transition($doc->refresh(), $author, CdeState::PUBLISHED, 'A1');
+            $newSnapshot = DB::table('pms_class_revision_snapshots')
+                ->where('document_revision_id', $next->id)->where('piping_class_id', $class->id)->first();
+            $this->assertNotNull($newSnapshot);
+            $this->assertNotSame($oldPin, $newSnapshot->id);
+            $this->assertSame('STD', json_decode($newSnapshot->specification, true, 512, JSON_THROW_ON_ERROR)['rules'][0]['value']['schedule']);
+            $this->assertSame('80', json_decode(DB::table('pms_class_revision_snapshots')
+                ->where('id', $oldPin)->value('specification'), true, 512, JSON_THROW_ON_ERROR)['rules'][0]['value']['schedule']);
+            $this->assertSame($newSnapshot->id, app(PmsLineEligibility::class)->snapshotId($project->id, $class->id));
             try {
-                $register->transition($doc->refresh(), $author, CdeState::PUBLISHED, 'A1');
-                $this->fail('A revised schedule must not publish with an unchanged class snapshot.');
-            } catch (ValidationException $e) {
-                $this->assertArrayHasKey('specification', $e->errors());
+                DB::table('pms_class_revision_snapshots')->insert([
+                    'id' => (string) Str::uuid(), 'project_id' => $project->id,
+                    'company_id' => $author->company_id,
+                    'pms_document_id' => $doc->id, 'document_revision_id' => $next->id,
+                    'piping_class_id' => $class->id,
+                    'specification' => json_encode($forged, JSON_THROW_ON_ERROR),
+                    'created_at' => now(),
+                ]);
+                $this->fail('Raw SQL must not forge a different reviewed class snapshot.');
+            } catch (QueryException $e) {
+                $this->assertSame('23514', $e->getCode());
             }
-            $this->assertSame(CdeState::SHARED, $doc->refresh()->currentRevision->cde_state);
-            $this->assertSame(1, DB::table('pms_class_revision_snapshots')
-                ->where('piping_class_id', $class->id)->count());
-            try {
-                app(PipingLineService::class)->register(
-                    Subsystem::where('project_id', $project->id)->firstOrFail(),
-                    $author, 'SNAPSHOT-TEST-2', ['piping_class_id' => $class->id]
-                );
-                $this->fail('A superseded PMS cannot authorize a new imported line.');
-            } catch (ValidationException $e) {
-                $this->assertArrayHasKey('piping_class_id', $e->errors());
-            }
-            try {
-                app(PmsLineEligibility::class)->snapshotId($project->id, $class->id);
-                $this->fail('An archived PMS revision cannot qualify a new line.');
-            } catch (ValidationException $e) {
-                $this->assertArrayHasKey('piping_class_id', $e->errors());
-            }
-            $this->assertSame(2, DB::table('piping_lines')->where('piping_class_id', $class->id)
-                ->whereNotNull('pms_class_snapshot_id')->count(), 'Prior line retains its issued revision.');
+            $newLine = app(PipingLineService::class)->register(
+                Subsystem::where('project_id', $project->id)->firstOrFail(),
+                $author, 'SNAPSHOT-TEST-2', ['piping_class_id' => $class->id],
+            );
+            $this->assertSame($newSnapshot->id, $newLine->pms_class_snapshot_id);
+            $this->assertSame(2, DB::table('piping_lines')->where('pms_class_snapshot_id', $oldPin)->count());
+            $this->assertSame(1, DB::table('piping_lines')->where('pms_class_snapshot_id', $newSnapshot->id)->count());
         }, $project->id);
     }
 

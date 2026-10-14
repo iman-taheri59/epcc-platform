@@ -29,6 +29,13 @@ final class PmsRevisionSnapshotService
             throw ValidationException::withMessages(['pms' => 'All PMS classes must be published before approving this revision, and at least one class is required.']);
         }
 
+        $drafts = DB::table('pms_class_revision_drafts')
+            ->where('document_revision_id', $revision->id)->get()->keyBy('piping_class_id');
+        if ($drafts->isNotEmpty()
+            && $drafts->keys()->sort()->values()->all() !== $classes->pluck('id')->sort()->values()->all()) {
+            throw ValidationException::withMessages(['pms' => 'The approved revision must contain every governed PMS class.']);
+        }
+
         foreach ($classes as $class) {
             if (! DB::table('piping_class_rules')->where('piping_class_id', $class->id)->exists()) {
                 throw ValidationException::withMessages(['pms' => 'Every published PMS class must have specification rules.']);
@@ -53,7 +60,10 @@ final class PmsRevisionSnapshotService
                 'pms_document_id' => $document->id,
                 'document_revision_id' => $revision->id,
                 'piping_class_id' => $class->id,
-                'specification' => $spec->specification,
+                // Review checked this exact copy before PUBLISHED. The SQL
+                // snapshot trigger also checks draft identity, previous issue
+                // and the strict schedule-only delta, then freezes the row.
+                'specification' => $drafts->get($class->id)?->specification ?? $spec->specification,
                 'created_at' => now(),
             ]);
         }
