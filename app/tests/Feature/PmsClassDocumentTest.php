@@ -232,6 +232,15 @@ final class PmsClassDocumentTest extends TestCase
             }
             $this->assertSame([], app(PmsLineEligibility::class)->eligibleClassIds($project->id));
             try {
+                $register->transition($doc->refresh(), $author, CdeState::PUBLISHED, 'A1');
+                $this->fail('A revised schedule must not publish with an unchanged class snapshot.');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('specification', $e->errors());
+            }
+            $this->assertSame(CdeState::SHARED, $doc->refresh()->currentRevision->cde_state);
+            $this->assertSame(1, DB::table('pms_class_revision_snapshots')
+                ->where('piping_class_id', $class->id)->count());
+            try {
                 app(PipingLineService::class)->register(
                     Subsystem::where('project_id', $project->id)->firstOrFail(),
                     $author, 'SNAPSHOT-TEST-2', ['piping_class_id' => $class->id]

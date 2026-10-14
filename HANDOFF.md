@@ -4405,3 +4405,15 @@ uses STD, which the reference pack lists for that band. PHP lint and diff
 checks passed; PostgreSQL CI remains deferred under private Actions billing.
 No new PMS snapshot captures the edited schedule yet. Do not treat a
 SHARED draft as approved or use it to authorize line registration.
+
+## Fail-closed publication of revised PMS drafts
+
+`DocumentRegister` now revalidates every draft and the engineering schedule
+checks before an A-family PMS approval, then refuses any changed working
+copy until the snapshot-capture path is capable of issuing that reviewed
+copy. A valid SHARED STD revision cannot silently publish the old live class
+rules as though they were the reviewed specification. PmsClassDocumentTest
+asserts the refusal, rollback to SHARED and unchanged snapshot count. PHP
+syntax and diff checks passed, PostgreSQL test execution deferred per owner.
+Next: database provenance guard plus immutable capture of validated revision
+copies; only then remove the temporary changed-draft publication block.

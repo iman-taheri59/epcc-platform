@@ -860,3 +860,11 @@ wall thickness or that the old pad remains sufficient. Reusing the class
 publish pad gate with draft schedule overrides is safer than accepting any
 well-formed schedule string. The full revision publication path still needs
 an issue-time validation and immutable snapshot capture. See ADR-028.
+
+### 2026-10-14: fail closed while revision snapshot capture is incomplete (BUILT)
+
+Allowing a changed WIP draft to reach approved PUBLISHED while storing the
+old live class specification would misrepresent the reviewed engineering
+basis. The CDE publication service now refuses such drafts until the new
+capture and database provenance checks are complete. This temporary
+availability cost is preferable to a falsely approved schedule. See ADR-028.

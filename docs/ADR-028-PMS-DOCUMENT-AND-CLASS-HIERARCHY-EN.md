@@ -452,3 +452,20 @@ DN550/NPS22 for a class spanning `[15,600)`, while the reference-backed STD
 schedule may pass this check; an unrelated branch-rule forgery still fails
 structural validation. Drafts still are not captured into approved snapshots
 and cannot authorize new lines. PostgreSQL CI is deferred as requested.
+
+### Eighteenth slice: fail-closed PMS publication until capture matches reviewed draft
+
+A SHARED draft with a revised schedule would currently be accepted by the
+old publication service, which snapshots the *unchanged live class* rather
+than the reviewed draft. The document would be approved under a false
+specification. Before moving a PMS revision to approved PUBLISHED, the CDE
+service now repeats the complete working-copy and engineering checks under
+the locked revision, and refuses publication if any draft differs from its
+prior issued snapshot. Unchanged drafts retain the old publication path.
+The regression shares a valid STD schedule revision, attempts approval,
+asserts a specification error, SHARED rollback and no new approved snapshot.
+This is an explicit temporary fail-closed gate, **not** support for publishing
+revised class contents. The next step is to capture the validated draft as
+the issue-time snapshot with a corresponding database provenance guard, then
+remove only this temporary changed-draft refusal. Existing class/line pins
+remain immutable. PostgreSQL CI remains deferred while the repo is private.

@@ -191,6 +191,9 @@ final class DocumentRegister
             if ($to === CdeState::SHARED && $fresh->cde_state === CdeState::WIP) {
                 $this->pmsDraftReview->assertShareable($document, $fresh);
             }
+            if ($to === CdeState::PUBLISHED && CdeState::isApproved($to, $suitability)) {
+                $this->pmsDraftReview->assertPublishable($document, $fresh);
+            }
             $fresh->update([
                 'cde_state' => $to,
                 'suitability' => $suitability,
