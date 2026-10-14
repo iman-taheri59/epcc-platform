@@ -4233,3 +4233,10 @@ bypasses engineering publish completeness only inside tests; production
 writer still uses published class + approved PMS snapshot. Direct SQL/new
 unclassified insert remains possible because DB nullable column preserves
 historical fixtures. PHP lint succeeded; PostgreSQL CI pending.
+
+- CI run 38533755067 for `3c0cbe2`: five jobs green; Laravel suite red
+  (3255 tests, zero assertion failures; annotated UnitPreferenceTest fixture
+  errors, with two extra unannotated errors in the JUnit artifact). The unit
+  preference fixture was still creating a draft A1 class, so the new service
+  correctly refused those lines. It now uses the shared tests-only approved
+  PMS fixture before creating lines. Recheck CI before claiming this slice.

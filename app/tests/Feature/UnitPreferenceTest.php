@@ -21,6 +21,7 @@ use Database\Seeders\EpccDemoSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
+use Tests\Support\ApprovedPmsClassFixture;
 
 /**
  * Unit preferences and the canonical mirror columns (ADR-014).
@@ -79,6 +80,7 @@ final class UnitPreferenceTest extends TestCase
                 ['project_id' => $project->id, 'code' => 'A1'],
                 ['company_id' => $project->owner_company_id, 'description_en' => 'CS 150#'],
             );
+            $class = ApprovedPmsClassFixture::ensure($project, $owner, $class);
             $sub = Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail();
 
             return $svc->create($sub, $owner, array_merge([

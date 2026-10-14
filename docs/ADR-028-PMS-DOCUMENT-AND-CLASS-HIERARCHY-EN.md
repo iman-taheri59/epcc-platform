@@ -240,3 +240,8 @@ retain historical unknown lines only as explicitly reviewed legacy data, and
 reject **new** null pins at the DB boundary. Do not add a blind default PMS
 mapping. No source class revision or PMS suitability is inferred from the
 line number alone.
+
+CI correction: run 38533755067 failed in the unit-preference test fixture,
+which still created a draft class before line creation. It now builds an
+approved PMS class snapshot through the shared test fixture. No production
+gate was relaxed. The run is not green; a fresh CI check is required.
