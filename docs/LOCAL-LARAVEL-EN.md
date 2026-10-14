@@ -51,3 +51,11 @@ and XML extensions plus official Composer, install dev dependencies, and run
 the existing PHPUnit suite against a non-superuser PostgreSQL role. Until
 then, neither a `/up` response nor `artisan --version` proves the product
 pages work end to end.
+
+## CI availability note
+
+The first CI run after the preceding local-PHP tooling change (`a945088`, run
+38508213581) failed **before any job started** because GitHub Actions reported
+account payments/spending-limit restrictions. This does not measure Laravel
+or the installer. Recheck the run for this change once GitHub Actions is
+available; local smoke checks are reported separately above.

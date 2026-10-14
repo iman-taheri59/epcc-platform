@@ -4125,3 +4125,11 @@ than SQLite. Local PHP still lacks pdo_pgsql/pgsql and XMLReader/XMLWriter,
 `vendor/` is production-only (no PHPUnit); `/login` returned 500. Stopped
 Laravel preview to avoid a broken live app; CI remains required for DB pages
 and RLS tests. Full local environment requires different PHP build/Composer.
+
+- CI for `a945088` (run 38508213581) did not start ANY job: GitHub check
+  annotations state that account payments failed or the Actions spending limit
+  needs increasing. This is a GitHub billing/execution block, not a test
+  failure. Run 38508782336 for the Laravel installer commit `db0aa0e` was
+  queued at last check; inspect its outcome before claiming CI success.
+  Local Laravel CLI/package-discovery smoke checks succeeded, but no local
+  PostgreSQL/PHPUnit runtime exists.
