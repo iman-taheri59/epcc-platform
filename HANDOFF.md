@@ -4240,3 +4240,10 @@ historical fixtures. PHP lint succeeded; PostgreSQL CI pending.
   preference fixture was still creating a draft A1 class, so the new service
   correctly refused those lines. It now uses the shared tests-only approved
   PMS fixture before creating lines. Recheck CI before claiming this slice.
+
+- CI run 38536908956 for `1c60554`: five jobs green; Laravel reported
+  3261 tests with three nested JUnit failures arising from one HTTP
+  UnitPreferenceTest assertion. Its separate bad-unit form fixture still
+  used a draft class; the new PMS gate correctly returned a class error
+  before unit validation. Updated that fixture to an approved PMS class so
+  the test exercises the intended unit validation. CI recheck pending.

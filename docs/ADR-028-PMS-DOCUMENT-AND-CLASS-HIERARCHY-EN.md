@@ -245,3 +245,8 @@ CI correction: run 38533755067 failed in the unit-preference test fixture,
 which still created a draft class before line creation. It now builds an
 approved PMS class snapshot through the shared test fixture. No production
 gate was relaxed. The run is not green; a fresh CI check is required.
+
+CI correction: run 38536908956 showed one remaining HTTP unit-preference
+fixture with a draft class; the PMS gate (correctly) refused it before the
+invalid-unit check. That fixture now supplies an approved PMS class. No
+production authorization rule was weakened; retry the full suite.
