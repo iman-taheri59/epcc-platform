@@ -4096,3 +4096,17 @@ create/register/import/HTTP**; current register still admits missing classes
 and null pins. Never present as strict line eligibility until every write
 path and DB non-null admission backstop are complete. No old line receives an
 invented assignment. CI pending.
+
+## 2026-10-14 local PHP CLI in the repository workspace
+
+Added reproducible `scripts/install-local-php.sh` and
+`docs/LOCAL-PHP-CLI-EN.md`, with an ignored `.local/php-native/bin/php`
+installation. NativePHP upstream commit and archive SHA-256 are pinned.
+Installed native PHP 8.4.21; verified `php -v`, `php -l` for
+PmsLineEligibility and the framework-free standards-engine conformance corpus
+(**25 passed, 0 failed**). This binary has no pdo_pgsql/pgsql, so Laravel
+PostgreSQL/RLS tests still run in CI; app/vendor also remains absent. Do not
+claim a complete local Laravel environment. Laragon with PostgreSQL extensions
+remains the primary Windows runtime. CI for the earlier line-pin commit
+`f1d4ae5` completed successfully (all six jobs); the installer itself still
+needs its own verification.

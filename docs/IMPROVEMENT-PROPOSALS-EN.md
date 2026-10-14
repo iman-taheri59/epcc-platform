@@ -716,3 +716,12 @@ require a non-null valid pin at all **new** line insert paths and in the DB
 while migrating historical unassigned records with explicit owner review.
 This step only adds the optional pin and its integrity checks; it does not yet
 fulfil the class-before-line rejection requirement (ADR-028).
+
+### 2026-10-14: native pinned CLI instead of WebAssembly for sandbox checks (PARTIAL)
+
+A reproducible native PHP 8.4 binary gives real CLI semantics and keeps large
+binaries out of Git. It is strictly better than a Node/WebAssembly fallback
+for local syntax and dependency-free rule tests. The available upstream build
+has **no pdo_pgsql**, so the stronger target remains a full Laragon-like local
+PHP 8.4 + Composer + PostgreSQL environment with non-superuser RLS tests.
+Never replace PostgreSQL with SQLite merely to get a local green badge.

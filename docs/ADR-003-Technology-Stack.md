@@ -146,3 +146,14 @@ Before locking: what does the engineering team look like — existing C#/.NET pe
 ---
 
 *End of document — ADR-EPCC-003*
+
+## Local sandbox PHP CLI (2026-10-14, development tooling only)
+
+The Linux repository workspace has a reproducible, SHA-256-verified native
+PHP 8.4 CLI installer (`scripts/install-local-php.sh`). The installed binary
+is ignored at `.local/php-native/bin/php`; it supports local syntax checks and
+framework-free conformance tests. This does **not** change the Laravel stack
+choice or its PostgreSQL/RLS acceptance criterion: this particular upstream
+binary lacks `pdo_pgsql`, so Laravel integration tests still require the CI
+runtime or Windows Laragon with the required extensions. See
+`docs/LOCAL-PHP-CLI-EN.md`. Do not treat an SQLite test run as equivalent.
