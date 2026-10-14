@@ -4565,3 +4565,9 @@ continue to show the review warning. `PipingLineHttpTest` now asserts the
 English register and workspace show a newly created line's synthetic PMS
 number and A revision. PHP lint and diff checks passed; real PostgreSQL/RLS
 HTTP verification pending. No direct SQL/CDE writer authorization claim.
+
+- CI 38646018638 for `b7ac3eb` did not start its Laravel or other test
+  jobs: GitHub annotated the run with account payment/spending-limit
+  restrictions. The issued-revision UI regression is PHP-linted but not
+  PostgreSQL/HTTP-verified in this run. Last successful Laravel/PostgreSQL/RLS
+  check remains 38591064891 on older commit `283c4ee`.

@@ -616,3 +616,7 @@ that a newly registered line displays its issued PMS document and A-family
 revision in both views. This is visibility, not a workflow for assigning an
 unmapped historical line or approving revised authoring. PHP lint passed;
 PostgreSQL HTTP tests await Actions availability or the owner's Laragon run.
+
+CI run 38646018638 on `b7ac3eb` did not start test jobs because of GitHub
+account payment/spending-limit restrictions. The issued-revision UI change
+has not yet been verified by the Laravel/PostgreSQL/HTTP suite.
