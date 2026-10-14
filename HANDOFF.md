@@ -4133,3 +4133,7 @@ and RLS tests. Full local environment requires different PHP build/Composer.
   queued at last check; inspect its outcome before claiming CI success.
   Local Laravel CLI/package-discovery smoke checks succeeded, but no local
   PostgreSQL/PHPUnit runtime exists.
+
+- Update: Laravel installer run 38508782336 (`db0aa0e`) also failed before
+  starting any job with the same GitHub billing/spending-limit annotation.
+  Its red status is infrastructure-only; no CI result for this installer.

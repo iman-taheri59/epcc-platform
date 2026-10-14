@@ -59,3 +59,7 @@ The first CI run after the preceding local-PHP tooling change (`a945088`, run
 account payments/spending-limit restrictions. This does not measure Laravel
 or the installer. Recheck the run for this change once GitHub Actions is
 available; local smoke checks are reported separately above.
+
+The Laravel installer commit (`db0aa0e`, run 38508782336) received the same
+pre-start billing restriction on every job. Its CI status is blocked, not a
+failing PHPUnit or installer result.
