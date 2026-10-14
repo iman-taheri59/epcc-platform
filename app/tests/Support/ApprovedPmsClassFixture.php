@@ -36,7 +36,6 @@ final class ApprovedPmsClassFixture
         $document->update(['current_revision_id' => $revision->id]);
         $class->forceFill([
             'pms_document_id' => $document->id,
-            'state' => 'PUBLISHED',
             'dn_span' => $class->dn_span ?? '[15,600)',
         ])->save();
         if (! PipingClassRule::where('piping_class_id', $class->id)->exists()) {
@@ -46,6 +45,7 @@ final class ApprovedPmsClassFixture
                 'dn_range' => '[15,600)', 'value' => ['schedule' => '80'],
             ]);
         }
+        $class->update(['state' => 'PUBLISHED']);
         $register = app(DocumentRegister::class);
         $register->transition($document->refresh(), $actor, CdeState::SHARED, 'S2');
         $register->transition($document->refresh(), $actor, CdeState::PUBLISHED, 'A1');

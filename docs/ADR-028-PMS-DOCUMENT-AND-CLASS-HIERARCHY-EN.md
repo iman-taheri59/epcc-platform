@@ -334,3 +334,22 @@ with complete actor/timestamp and expects SQLSTATE 23514. This is not a
 claim that database-only SQL validates every AFC evidence document: that
 separate preexisting service requirement still needs its own boundary audit.
 PostgreSQL test execution is deferred while private Actions jobs are blocked.
+
+## Twelfth implementation slice: published class specification cannot drift
+
+The immutable snapshot table alone did not stop raw SQL from mutating the
+published class header or its rules *after* approval. The live class could
+then disagree with the issue-time specification while the same snapshot
+still qualified new lines. A PostgreSQL guard now refuses UPDATE/DELETE of
+a PUBLISHED class and INSERT/UPDATE/DELETE of either rule-table row associated
+with a PUBLISHED class. Rule operations take a share lock on the parent to
+serialize with the publication update. Draft classes remain editable and
+receive rules **before** publication; tests-only fixtures were reordered to
+follow that sequence. The regression asserts failed SQL header/rule edits,
+branch-rule insertion and rule deletion while preserving the captured
+snapshot and valid line registration. This closes specification drift within
+the existing immutable-published-class model; it does not add editable
+per-revision class content. A future business need to revise an existing
+published class's specification requires a versioned authoring model and an
+explicit decision rather than weakening the freeze. PostgreSQL CI deferred
+while the repo stays private at the owner's request.

@@ -808,3 +808,14 @@ and actor but no historical PMS pin. A narrow database transition trigger
 closes that null-pin path while preserving unchanged historical records.
 Approved drawing/evidence verification for direct SQL is a separate audit,
 not implied by this change; see ADR-028.
+
+### 2026-10-14: versioned class authoring rather than mutable published rows (DECISION NEEDED)
+
+Current service semantics make published class rows read-only; the new SQL
+backstop aligns with that. If the owner expects **the same class identity**
+to change its specification in a future PMS revision, the better long-term
+model is mutable per-revision drafts followed by immutable issue-time
+snapshots, not direct edits to a live published class row. This is a schema
+and workflow decision, not a silent relaxation of the freeze. Until that
+design is approved, publish a new class identity for changed specifications
+and retain old line pins. See ADR-028.

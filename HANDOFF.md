@@ -4320,3 +4320,19 @@ actor/timestamp to the historical-row migration test and expects SQLSTATE
 23514; PHP lint and diff checks passed. Database tests deferred per owner's
 plan to keep the repository private for several more steps. Full evidence
 validation on a direct SQL AFC transition is **not** provided by this trigger.
+
+## Published PMS class specification freeze
+
+Migration `2026_10_14_130000_freeze_published_pms_class_specifications.php`
+prevents SQL modifications/deletion of published class headers and all
+insert/update/delete operations on their rule and branch-rule rows. Rules
+acquire a share lock on their parent during state inspection. Both test
+fixtures now add rules while the class is DRAFT, then publish before PMS
+approval. PmsClassDocumentTest now expects 23514 on attempted SQL header
+edit, rule edit/delete and branch insertion, rather than treating mutable
+live rules as a normal way to prove snapshot immutability. PHP lint and diff
+checks pass; PostgreSQL CI deferred until the owner restores public
+visibility or provides private Actions billing. Do not claim tests pass.
+A future requirement to revise a published class's contents needs an
+explicit versioned authoring design; current service already treats
+published classes as read-only.

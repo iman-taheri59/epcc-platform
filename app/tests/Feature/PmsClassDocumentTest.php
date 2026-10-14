@@ -69,7 +69,6 @@ final class PmsClassDocumentTest extends TestCase
         }
 
         $tenant->runAs($author->company_id, function () use ($class, $project, $author): void {
-            $class->update(['state' => 'PUBLISHED']); // Synthetic fixture: real publish gate has separate tests.
             DB::table('piping_class_rules')->insert([
                 'id' => (string) Str::uuid(), 'project_id' => $project->id,
                 'company_id' => $author->company_id, 'piping_class_id' => $class->id,
@@ -77,6 +76,7 @@ final class PmsClassDocumentTest extends TestCase
                 'value' => json_encode(['schedule' => '80'], JSON_THROW_ON_ERROR),
                 'created_at' => now(), 'updated_at' => now(),
             ]);
+            $class->update(['state' => 'PUBLISHED']); // Synthetic fixture: real publish gate has separate tests.
         }, $project->id);
         $tenant->runAs($author->company_id, function () use ($register, $doc, $author, $project, $class): void {
             $revision = $register->transition($doc->refresh(), $author, CdeState::PUBLISHED, 'A1');
@@ -85,8 +85,37 @@ final class PmsClassDocumentTest extends TestCase
             $this->assertSame($class->id, $row->piping_class_id);
             $spec = json_decode($row->specification, true, 512, JSON_THROW_ON_ERROR);
             $this->assertSame('80', $spec['rules'][0]['value']['schedule']);
-            DB::table('piping_class_rules')->where('piping_class_id', $class->id)
-                ->update(['value' => json_encode(['schedule' => '40'], JSON_THROW_ON_ERROR)]);
+            try {
+                DB::table('piping_class_rules')->where('piping_class_id', $class->id)
+                    ->update(['value' => json_encode(['schedule' => '40'], JSON_THROW_ON_ERROR)]);
+                $this->fail('A published PMS rule must be read-only even to raw SQL.');
+            } catch (QueryException $e) {
+                $this->assertSame('23514', $e->getCode());
+            }
+            try {
+                DB::table('piping_classes')->where('id', $class->id)
+                    ->update(['design_pressure_mpa' => 99]);
+                $this->fail('A published PMS class header must be read-only.');
+            } catch (QueryException $e) {
+                $this->assertSame('23514', $e->getCode());
+            }
+            try {
+                DB::table('piping_class_branch_rules')->insert([
+                    'id' => (string) Str::uuid(), 'project_id' => $project->id,
+                    'company_id' => $author->company_id, 'piping_class_id' => $class->id,
+                    'header_range' => '[100,150)', 'branch_range' => '[25,50)',
+                    'component_type' => 'TEE', 'created_at' => now(), 'updated_at' => now(),
+                ]);
+                $this->fail('A published PMS cannot gain a new branch rule via SQL.');
+            } catch (QueryException $e) {
+                $this->assertSame('23514', $e->getCode());
+            }
+            try {
+                DB::table('piping_class_rules')->where('piping_class_id', $class->id)->delete();
+                $this->fail('A published PMS rule cannot be deleted via SQL.');
+            } catch (QueryException $e) {
+                $this->assertSame('23514', $e->getCode());
+            }
             $unchanged = json_decode(DB::table('pms_class_revision_snapshots')->where('id', $row->id)->value('specification'), true, 512, JSON_THROW_ON_ERROR);
             $this->assertSame('80', $unchanged['rules'][0]['value']['schedule']);
             $resolver = app(PmsLineEligibility::class);
