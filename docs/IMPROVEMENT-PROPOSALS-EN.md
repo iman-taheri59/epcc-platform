@@ -827,3 +827,12 @@ revision working copies and immutable issue-time snapshots. The foundation
 is stored separately from published class rows; authoring, semantic checks
 and publication from drafts remain outstanding. This avoids weakening the
 published-class freeze merely to allow a revision. See ADR-028.
+
+### 2026-10-14: narrow, controlled PMS revision editing (IN PROGRESS)
+
+A service for nominated authors edits only existing pipe-schedule values in
+WIP revision working copies; it does not expose arbitrary JSON replacement
+through HTTP or mutate published class rows. This limits the first editable
+path while publication semantics and engineering checks are designed.
+Broader rule/branch-table editing should reuse class publish validations,
+not bypass them. See ADR-028.

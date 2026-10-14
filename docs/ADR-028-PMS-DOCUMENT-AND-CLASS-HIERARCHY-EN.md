@@ -383,3 +383,19 @@ and branch/pad checks before publication and capture immutable snapshots
 from the validated drafts. Until then, changing draft JSON has NO effect on
 line admission. Do not advertise same-identity revisions as complete.
 PostgreSQL CI is deferred while private Actions jobs remain blocked.
+
+### Fourteenth slice: nominated-author WIP edit service (schedule only)
+
+`PmsRevisionDraftService::changePipeSchedule` performs a narrow edit to an
+existing PIPE_SCHEDULE rule's value in the **current WIP** revision draft.
+The project must be writable; it locks the same project admission key used
+by PMS author nomination changes, rechecks current nomination, locks the
+PMS document/revision/draft and verifies authoring-company ownership. It
+cannot change rule identity, rule kind, DN range, class identity, published
+class rows or a prior issue-time snapshot. A non-nominated owner is refused,
+and the same author is refused once the revision is SHARED. A service test
+exercises these cases alongside the database WIP-only trigger. There is no
+public HTTP writer yet, and draft content is **not used for publication**:
+validation of revision-specific specifications and capture from those
+validated drafts must be designed and delivered before line eligibility
+can reflect this change. PostgreSQL CI remains deferred by owner request.

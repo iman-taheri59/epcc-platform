@@ -13,6 +13,7 @@ use App\Services\DocumentRegister;
 use App\Services\PmsAccessService;
 use App\Services\PmsClassDocumentService;
 use App\Services\PmsLineEligibility;
+use App\Services\PmsRevisionDraftService;
 use App\Services\PipingLineService;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
@@ -155,19 +156,35 @@ final class PmsClassDocumentTest extends TestCase
         } catch (QueryException $e) {
             $this->assertSame('23514', $e->getCode());
         }
-        $tenant->runAs($author->company_id, function () use ($register, $doc, $author, $project, $class): void {
+        $tenant->runAs($author->company_id, function () use ($register, $doc, $author, $owner, $project, $class): void {
             $next = $register->issueRevision($doc->refresh(), $author, 'B');
             $draft = DB::table('pms_class_revision_drafts')
                 ->where('document_revision_id', $next->id)->where('piping_class_id', $class->id)->first();
             $this->assertNotNull($draft);
             $baseline = json_decode($draft->specification, true, 512, JSON_THROW_ON_ERROR);
             $this->assertSame('80', $baseline['rules'][0]['value']['schedule']);
-            $baseline['rules'][0]['value']['schedule'] = '40';
-            DB::table('pms_class_revision_drafts')->where('id', $draft->id)
-                ->update(['specification' => json_encode($baseline, JSON_THROW_ON_ERROR)]);
+            try {
+                app(PmsRevisionDraftService::class)->changePipeSchedule(
+                    $project, $owner, $doc->id, $class->id, $baseline['rules'][0]['id'], '40');
+                $this->fail('The employer is not the nominated author of the contractor PMS.');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('pms_access', $e->errors());
+            }
+            $edited = app(PmsRevisionDraftService::class)->changePipeSchedule(
+                $project, $author, $doc->id, $class->id, $baseline['rules'][0]['id'], '40');
+            $this->assertSame('40', $edited['rules'][0]['value']['schedule']);
+            $this->assertSame('40', json_decode(DB::table('pms_class_revision_drafts')
+                ->where('id', $draft->id)->value('specification'), true, 512, JSON_THROW_ON_ERROR)['rules'][0]['value']['schedule']);
             $this->assertSame('80', json_decode(DB::table('pms_class_revision_snapshots')
                 ->where('piping_class_id', $class->id)->value('specification'), true, 512, JSON_THROW_ON_ERROR)['rules'][0]['value']['schedule']);
             $register->transition($doc->refresh(), $author, CdeState::SHARED, 'S2');
+            try {
+                app(PmsRevisionDraftService::class)->changePipeSchedule(
+                    $project, $author, $doc->id, $class->id, $baseline['rules'][0]['id'], '80');
+                $this->fail('The nominated author cannot change a SHARED revision.');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('revision', $e->errors());
+            }
             try {
                 DB::table('pms_class_revision_drafts')->where('id', $draft->id)
                     ->update(['specification' => $draft->specification]);

@@ -4351,3 +4351,17 @@ line admission. Next steps: validated author workflow and issue-time capture
 from the drafts, including range/material/branch checks, before claiming
 same-identity class revision support. Postgres tests are deferred until the
 owner returns the repo to public or enables private GitHub Actions billing.
+
+## Narrow WIP PMS draft authoring service
+
+`PmsRevisionDraftService::changePipeSchedule` lets a freshly nominated
+PMS author change the schedule of one existing PIPE_SCHEDULE rule in the
+current WIP revision's draft only. It serializes with nomination/suspension,
+checks active nomination, archive state, ownership and CDE WIP status and
+locks document/revision/draft. PmsClassDocumentTest now checks non-nominated
+owner refusal, accepted author change, immutable prior snapshot, author
+refusal after SHARED and database trigger rejection after SHARED. PHP lint
+and diff checks passed. No HTTP editor yet; edited drafts **do not** become
+approved snapshots and cannot authorize new lines. PostgreSQL CI deferred
+while private Actions remains blocked by billing. Next: schema/engineering
+validation and issue-time capture from drafts, then an authorized UI.
