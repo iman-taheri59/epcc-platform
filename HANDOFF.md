@@ -4192,3 +4192,16 @@ Do not infer a green test outcome until that new run completes.
   finally verifies the PMS picker slice against the full CI suite; the strict
   line admission service/DB write gate is still outstanding. Repository API
   again confirms `visibility=public`.
+
+## 2026-10-14 external-number PMS admission
+
+`PipingLineService::register` now calls `PmsLineEligibility::snapshotId`
+within its write transaction and persists the exact snapshot on imported or
+manually supplied-number lines. No class / draft / wrong-project /
+superseded-revision class fails before insert; a valid but nonconforming tag
+keeps its literal number only when an approved class was explicitly selected.
+PipingLineTest's synthetic PMS fixture creates a real CDE doc/revision and
+class snapshot; HTTP direct POST missing class refusal and supersession pin
+tests added. `PipingLineService::create` and DB null-pin insertion remain open
+for legacy fixtures; not the complete class-before-line rule. PHP 8.4 syntax
+checks passed; CI pending.

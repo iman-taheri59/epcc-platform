@@ -755,3 +755,13 @@ mis-selection, but a hidden/disabled control is never authorization. The
 stronger next step is an atomic service plus DB insert rule for every newly
 created or imported line, preserving historical unassigned records without
 fabricating a class or revision (ADR-028).
+
+### 2026-10-14: reject unclassified imported lines rather than infer class from tag (BUILT, import path)
+
+An imported line number may encode a plausible class token, but that does not
+prove current PMS approval or specify a particular published class revision.
+The explicit class choice now resolves and stores the approved snapshot in
+the supplied-number registration path. Better next step: apply the same
+resolver to allocated-number creation and all bulk/SQL writers, then reject
+new null pins at the database boundary without assigning fabricated classes
+to historical records (ADR-028).

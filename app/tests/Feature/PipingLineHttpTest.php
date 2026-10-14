@@ -150,6 +150,24 @@ final class PipingLineHttpTest extends TestCase
             ->assertSee('disabled', false);
     }
 
+    public function test_import_without_an_approved_pms_class_is_a_form_error(): void
+    {
+        $this->seedRegisters();
+        $subsystem = $this->subsystem();
+
+        $this->actingAs($this->owner())
+            ->post('/projects/PH-14/piping?lang=en', [
+                'subsystem_id' => $subsystem->id,
+                'line_number' => 'LEGACY-NO-CLASS-01',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasErrors('piping_class_id');
+
+        $count = app(TenantContext::class)->runAs($this->owner()->company_id,
+            fn () => PipingLine::count(), $this->project()->id);
+        $this->assertSame(0, $count);
+    }
+
     public function test_posting_a_line_allocates_the_next_number(): void
     {
         $class = $this->seedRegisters();

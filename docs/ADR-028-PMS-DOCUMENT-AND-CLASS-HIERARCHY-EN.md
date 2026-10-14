@@ -183,3 +183,27 @@ Follow-up CI run 38520710949 on `f4b392b` passed all six jobs, including
 Laravel/PostgreSQL/RLS. The PDF timeout on the preceding public run did not
 recur. This validates the class-picker slice only; direct line creation and
 import still need the approved-snapshot gate.
+
+## Sixth implementation slice: external-number register gate (2026-10-14)
+
+`PipingLineService::register` (supplied-number/manual import path) now
+requires an explicit project class that resolves to the current approved PMS
+revision snapshot **inside the same transaction as the line insert**. It
+writes `pms_class_snapshot_id` alongside `piping_class_id`; the existing DB
+trigger independently checks current A-family approval, class/project
+consistency and immutable pinning. A parsed class code in the tag is not
+accepted as an invented mapping. Nonconforming legacy/vendor numbers are
+still preserved verbatim **when an eligible explicit class is supplied**;
+otherwise the registration is rejected rather than parked in the register.
+The duplicate-number and empty-number refusals remain early and unchanged.
+Service/HTTP tests cover missing class refusal, valid imported number and
+snapshot pin, nonconforming numbered import with an approved class, and
+superseded PMS rejection. Synthetic fixture uses a real approved PMS document
+and snapshot rather than bypassing admission.
+
+**Partial gate:** `PipingLineService::create` (automatically allocated number)
+and other direct writers still admit null pins; the DB currently allows
+unassigned inserts to accommodate historical fixtures. No database-wide
+new-line exclusion can be claimed yet. Next slice should enforce class and
+pin on create, then review and migrate all SQL/import writers and historical
+data before a DB-level non-null insert constraint. PostgreSQL CI pending.

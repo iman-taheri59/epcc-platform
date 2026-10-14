@@ -43,6 +43,7 @@ final class PipingLineService
 {
     public function __construct(
         private readonly NumberEngine $engine,
+        private readonly PmsLineEligibility $pmsEligibility,
         private readonly PipeReference $reference,
         private readonly ProjectArchiveService $archives,
         private readonly UnitRegistry $units,
@@ -128,6 +129,10 @@ final class PipingLineService
         return DB::transaction(function () use ($subsystem, $actor, $lineNumber, $attributes, $project): PipingLine {
             $this->assertNumberIsFree($project, $lineNumber);
 
+            // Imported/external tags keep their original number, but may not
+            // invent a class or bypass the approved PMS revision requirement.
+            $classId = $attributes['piping_class_id'] ?? null;
+            $snapshotId = $this->pmsEligibility->snapshotId($project->id, $classId);
             $parsed = $this->parse($project, $subsystem, $lineNumber);
 
             return PipingLine::create([
@@ -142,7 +147,8 @@ final class PipingLineService
                 'sequence' => null,
                 'nominal_size' => $attributes['nominal_size'] ?? $parsed->token('size'),
                 'service_code' => $attributes['service_code'] ?? $parsed->token('service'),
-                'piping_class_id' => $attributes['piping_class_id'] ?? null,
+                'piping_class_id' => $classId,
+                'pms_class_snapshot_id' => $snapshotId,
                 'coating_code' => $attributes['coating_code'] ?? $parsed->token('coating'),
                 'release_state' => LineReleaseState::DRAFT,
             ] + $this->designAttributes($attributes));

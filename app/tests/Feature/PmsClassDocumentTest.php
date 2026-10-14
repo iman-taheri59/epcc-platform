@@ -13,6 +13,7 @@ use App\Services\DocumentRegister;
 use App\Services\PmsAccessService;
 use App\Services\PmsClassDocumentService;
 use App\Services\PmsLineEligibility;
+use App\Services\PipingLineService;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
@@ -87,13 +88,10 @@ final class PmsClassDocumentTest extends TestCase
             $this->assertSame($row->id, $resolver->snapshotId($project->id, $class->id));
             $this->assertSame([$class->id], $resolver->eligibleClassIds($project->id));
             $subsystem = Subsystem::where('project_id', $project->id)->firstOrFail();
-            DB::table('piping_lines')->insert([
-                'id' => (string) Str::uuid(), 'project_id' => $project->id,
-                'company_id' => $author->company_id, 'subsystem_id' => $subsystem->id,
-                'line_number' => 'SNAPSHOT-TEST-1', 'piping_class_id' => $class->id,
-                'pms_class_snapshot_id' => $row->id, 'release_state' => 'DRAFT',
-                'created_at' => now(), 'updated_at' => now(),
-            ]);
+            $line = app(PipingLineService::class)->register(
+                $subsystem, $author, 'SNAPSHOT-TEST-1', ['piping_class_id' => $class->id]
+            );
+            $this->assertSame($row->id, $line->pms_class_snapshot_id);
             $this->assertSame(1, DB::table('piping_lines')->where('pms_class_snapshot_id', $row->id)->count());
         }, $project->id);
         try {
@@ -122,6 +120,15 @@ final class PmsClassDocumentTest extends TestCase
         $tenant->runAs($author->company_id, function () use ($register, $doc, $author, $project, $class): void {
             $register->issueRevision($doc->refresh(), $author, 'B');
             $this->assertSame([], app(PmsLineEligibility::class)->eligibleClassIds($project->id));
+            try {
+                app(PipingLineService::class)->register(
+                    Subsystem::where('project_id', $project->id)->firstOrFail(),
+                    $author, 'SNAPSHOT-TEST-2', ['piping_class_id' => $class->id]
+                );
+                $this->fail('A superseded PMS cannot authorize a new imported line.');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('piping_class_id', $e->errors());
+            }
             try {
                 app(PmsLineEligibility::class)->snapshotId($project->id, $class->id);
                 $this->fail('An archived PMS revision cannot qualify a new line.');

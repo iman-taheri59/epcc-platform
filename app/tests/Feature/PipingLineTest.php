@@ -8,12 +8,14 @@ use App\Models\Document;
 use App\Models\DocumentRevision;
 use App\Models\LineDocument;
 use App\Models\PipingClass;
+use App\Models\PipingClassRule;
 use App\Models\PipingLine;
 use App\Models\Project;
 use App\Models\ProjectPipingConfig;
 use App\Models\Subsystem;
 use App\Models\User;
 use App\Services\PipingLineService;
+use App\Services\DocumentRegister;
 use App\Services\ProjectArchiveService;
 use App\Support\CdeState;
 use App\Support\LineReleaseState;
@@ -83,6 +85,43 @@ final class PipingLineTest extends TestCase
             ['project_id' => $project->id, 'code' => $code],
             ['company_id' => $project->owner_company_id, 'description_en' => 'Carbon steel 150#'],
         ));
+    }
+
+    /** Synthetic approved PMS fixture for import tests, not a bypass in production. */
+    private function approvedPmsClass(): PipingClass
+    {
+        $class = $this->pipingClass();
+        $project = $this->project();
+        $owner = $this->owner();
+
+        return $this->asOwner(function () use ($class, $project, $owner): PipingClass {
+            $doc = Document::create([
+                'project_id' => $project->id, 'company_id' => $owner->company_id,
+                'number' => 'PH-14-PIP-PMS-A1', 'discipline' => 'PIPING',
+                'doc_type' => 'PMS', 'sequence' => 1,
+                'title_en' => 'Synthetic approved PMS', 'title_fa' => 'PMS آزمایشی',
+            ]);
+            $rev = DocumentRevision::create([
+                'document_id' => $doc->id, 'project_id' => $project->id,
+                'company_id' => $owner->company_id, 'revision' => 'A',
+                'ordinal' => 1, 'cde_state' => CdeState::WIP,
+            ]);
+            $doc->update(['current_revision_id' => $rev->id]);
+            $class->forceFill([
+                'pms_document_id' => $doc->id, 'state' => 'PUBLISHED',
+                'dn_span' => '[15,600)',
+            ])->save();
+            PipingClassRule::create([
+                'project_id' => $project->id, 'company_id' => $owner->company_id,
+                'piping_class_id' => $class->id, 'rule_kind' => 'PIPE_SCHEDULE',
+                'dn_range' => '[15,600)', 'value' => ['schedule' => '80'],
+            ]);
+            $register = app(DocumentRegister::class);
+            $register->transition($doc->refresh(), $owner, CdeState::SHARED, 'S2');
+            $register->transition($doc->refresh(), $owner, CdeState::PUBLISHED, 'A1');
+
+            return $class->refresh();
+        });
     }
 
     /** Register the services/coatings the default pattern expects. */
@@ -206,14 +245,15 @@ final class PipingLineTest extends TestCase
     {
         // ADR-006 §10.2: import must not invent or normalise numbers.
         $this->configure();
-        $this->pipingClass();
+        $class = $this->approvedPmsClass();
         $subsystem = $this->subsystem();
         $actor = $this->owner();
 
-        $line = $this->asOwner(fn () => $this->service()->register($subsystem, $actor, '8-P-A1-PH-14-SS-2201-777'));
+        $line = $this->asOwner(fn () => $this->service()->register($subsystem, $actor, '8-P-A1-PH-14-SS-2201-777', ['piping_class_id' => $class->id]));
 
         $this->assertSame('8-P-A1-PH-14-SS-2201-777', $line->line_number);
         $this->assertNull($line->sequence, 'we did not allocate this number, so we claim no sequence');
+        $this->assertNotNull($line->pms_class_snapshot_id, 'import pins the approved PMS class revision');
     }
 
     public function test_an_imported_number_does_not_disturb_our_counter(): void
@@ -222,11 +262,11 @@ final class PipingLineTest extends TestCase
         // as our sequence, the next allocation would jump to 778 and collide
         // with the external scheme forever after.
         $this->configure();
-        $class = $this->pipingClass();
+        $class = $this->approvedPmsClass();
         $subsystem = $this->subsystem();
         $actor = $this->owner();
 
-        $this->asOwner(fn () => $this->service()->register($subsystem, $actor, '8-P-A1-PH-14-SS-2201-777'));
+        $this->asOwner(fn () => $this->service()->register($subsystem, $actor, '8-P-A1-PH-14-SS-2201-777', ['piping_class_id' => $class->id]));
 
         $next = $this->asOwner(fn () => $this->service()->create($subsystem, $actor, [
             'nominal_size' => '6', 'service_code' => 'P', 'piping_class_id' => $class->id,
@@ -241,16 +281,33 @@ final class PipingLineTest extends TestCase
         // the scheme. Refusing them would mean the register does not describe
         // the plant; what matters is that they are visible AS non-conforming.
         $this->configure();
+        $class = $this->approvedPmsClass();
         $subsystem = $this->subsystem();
         $actor = $this->owner();
 
-        $line = $this->asOwner(fn () => $this->service()->register($subsystem, $actor, 'LEGACY-TAG-001'));
+        $line = $this->asOwner(fn () => $this->service()->register($subsystem, $actor, 'LEGACY-TAG-001', ['piping_class_id' => $class->id]));
 
         $this->assertSame('LEGACY-TAG-001', $line->line_number);
         $this->assertNull($line->number_tokens, 'nothing could be parsed, and we do not pretend otherwise');
 
         $parsed = $this->asOwner(fn () => $this->service()->parse($this->project(), $subsystem, 'LEGACY-TAG-001'));
         $this->assertFalse($parsed->matched);
+    }
+
+    public function test_an_import_without_a_qualifying_class_is_refused_even_if_its_number_is_valid(): void
+    {
+        $this->configure();
+        $this->pipingClass(); // Registered but unapproved: never invent a PMS link.
+        $subsystem = $this->subsystem();
+        $actor = $this->owner();
+
+        try {
+            $this->asOwner(fn () => $this->service()->register($subsystem, $actor, '8-P-A1-PH-14-SS-2201-777'));
+            $this->fail('A parsed class token is not approval.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('piping_class_id', $e->errors());
+        }
+        $this->assertSame(0, $this->asOwner(fn () => PipingLine::count()));
     }
 
     public function test_an_empty_number_is_refused(): void

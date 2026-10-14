@@ -24,7 +24,7 @@ final class PipingLine extends Model
         'design_temperature_c', 'operating_temperature_c',
         'project_id', 'company_id', 'subsystem_id', 'test_pack_id',
         'line_number', 'number_tokens', 'sequence',
-        'nominal_size', 'service_code', 'piping_class_id', 'coating_code',
+        'nominal_size', 'service_code', 'piping_class_id', 'pms_class_snapshot_id', 'coating_code',
         'design_pressure', 'design_pressure_unit',
         'design_temperature', 'design_temperature_unit',
         'operating_pressure', 'operating_pressure_unit',
