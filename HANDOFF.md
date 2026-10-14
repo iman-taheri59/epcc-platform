@@ -4137,3 +4137,15 @@ and RLS tests. Full local environment requires different PHP build/Composer.
 - Update: Laravel installer run 38508782336 (`db0aa0e`) also failed before
   starting any job with the same GitHub billing/spending-limit annotation.
   Its red status is infrastructure-only; no CI result for this installer.
+
+## 2026-10-14 pdo_pgsql installation attempt — BLOCKED, not installed
+
+Owner requested local `pdo_pgsql`. Confirmed the existing PHP 8.4.21 binary
+has only PDO SQLite, no `pdo_pgsql` or `pgsql`; its configure command is
+static musl with no PostgreSQL extensions. No PHPize/libpq headers; apt host
+is inaccessible and GitHub release downloads redirect to inaccessible assets.
+Do not copy a foreign .so or change DB_CONNECTION to SQLite. Existing
+Laravel vendor works for CLI metadata but DB routes remain blocked. Full PHP
+8.4 with pgsql/XML extensions (Laragon on Windows, or a trusted Linux build)
+is required; `docs/LOCAL-LARAVEL-EN.md` records verification commands.
+GitHub Actions is currently billing-blocked, so it cannot build a replacement.

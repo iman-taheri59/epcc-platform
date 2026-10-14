@@ -63,3 +63,25 @@ available; local smoke checks are reported separately above.
 The Laravel installer commit (`db0aa0e`, run 38508782336) received the same
 pre-start billing restriction on every job. Its CI status is blocked, not a
 failing PHPUnit or installer result.
+
+## PostgreSQL extension installation investigation (2026-10-14)
+
+`pdo_pgsql` is **not installed** in this sandbox. The repository-local
+PHP 8.4.21 was compiled as a statically linked musl CLI (`ldd` reports
+"not a dynamic executable"); its configure command includes PDO SQLite but
+neither `--with-pdo-pgsql` nor `--with-pgsql`. There is no matching PHP
+extension build toolchain, libpq headers or packaged extension in this
+sandbox. A generic system `.so` cannot safely be copied into this build.
+The Debian package host is blocked by the sandbox network, and GitHub release
+assets redirect to a blocked host; GitHub Actions currently cannot start jobs
+because of a billing/spending-limit restriction. No unsupported binary or
+SQLite fallback has been installed in its place.
+
+**Remediation:** replace the repository-local binary with a trusted PHP 8.4
+build containing both `pdo_pgsql` and `pgsql` (plus XMLReader/XMLWriter), or
+use the owner's Laragon PHP 8.4 with those extensions enabled. Verify using
+`php -m` (both names), `php -r 'var_dump(PDO::getAvailableDrivers());'`
+(`pgsql` must be listed), and a non-superuser PostgreSQL-backed migration/test.
+This is a runtime replacement, not merely adding a line to `php.ini` of the
+current static build. Do not claim the extension is installed until the
+checks pass in the same PHP executable that runs `artisan`.

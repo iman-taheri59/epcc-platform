@@ -735,3 +735,13 @@ with these extensions, official Composer 2, non-superuser PostgreSQL and dev
 packages, then execute the entire suite. Do **not** choose SQLite simply
 because its PDO driver is available, or disable RLS checks. The local
 production-only vendor install is a reproducible intermediate milestone.
+
+### 2026-10-14: replace the local static PHP with a PostgreSQL-capable build (BLOCKED)
+
+A prebuilt `pdo_pgsql.so` from a different PHP build is not a sound shortcut:
+this CLI is static musl, does not include libpq and has no matching extension
+SDK. A single trusted PHP 8.4 runtime bundling `pdo_pgsql`, `pgsql`,
+XMLReader and XMLWriter is preferable to layering incompatible artifacts;
+verify the actual `artisan` interpreter reports the PDO `pgsql` driver before
+marking the local Laravel environment complete. Current network and Actions
+billing restrictions block provisioning that runtime in the sandbox.
