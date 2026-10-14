@@ -160,3 +160,7 @@ the next step is to enforce this shared resolver in every write path and add
 the DB insert backstop, with historical fixtures updated explicitly. PHP
 syntax checks succeeded; PostgreSQL tests are pending while GitHub Actions
 jobs are blocked by billing.
+
+CI status: run 38515815314 for `1e38780` was blocked before job execution
+by GitHub Actions account billing/spending-limit restrictions. PHP lint
+passed locally; feature tests have not yet run for this slice.

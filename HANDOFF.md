@@ -4162,3 +4162,8 @@ for eligibility before approval, after approval and after supersession.
 remain permissive; strict line creation is next. Local PHP 8.4 syntax check
 passed for changed PHP files, but no pdo_pgsql local and GitHub Actions is
 currently billing-blocked; PostgreSQL feature assertions not yet executed.
+
+- CI run 38515815314 on `1e38780` is red **without starting a single job**:
+  GitHub Actions annotated account billing/spending-limit failure across the
+  jobs. This is not a test result for the picker changes. PostgreSQL feature
+  tests await restored CI or a complete local PHP/PostgreSQL runtime.
