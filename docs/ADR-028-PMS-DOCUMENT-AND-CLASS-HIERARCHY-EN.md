@@ -213,3 +213,8 @@ service bypass. The Pars synthetic import must use an owner-created numbering
 config (RLS forbids Pars creating owner-owned config); the old HTTP test of a
 classless legacy number must now expect a form error and zero rows. Both
 fixtures were corrected for the next run.
+
+CI run 38528034166 on `2e21d16` passed all six jobs, including the
+PostgreSQL/RLS feature suite after fixing the synthetic owner config fixture
+and classless legacy HTTP expectation. This is the verified import-path gate,
+not yet a complete new-line admission guarantee.

@@ -4213,3 +4213,10 @@ checks passed; CI pending.
   test still expected a classless external number to be admitted. Corrected
   the fixture to create config in the owner scope and updated the legacy
   expectation to explicit refusal. CI recheck pending; do not claim green.
+
+- CI run 38528034166 on `2e21d16` **passed all six jobs**, including
+  Laravel/PostgreSQL/RLS. Supplied-number/import registrations now reject a
+  classless or unapproved line and pin an eligible approved PMS class snapshot
+  when one is explicitly supplied; old imported tags remain verbatim. This
+  verifies the import path only. Allocated-number `create` and DB null-pin
+  inserts remain permissive, so the full owner requirement is not done.
