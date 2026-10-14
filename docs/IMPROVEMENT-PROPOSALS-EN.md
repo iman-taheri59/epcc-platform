@@ -725,3 +725,13 @@ for local syntax and dependency-free rule tests. The available upstream build
 has **no pdo_pgsql**, so the stronger target remains a full Laragon-like local
 PHP 8.4 + Composer + PostgreSQL environment with non-superuser RLS tests.
 Never replace PostgreSQL with SQLite merely to get a local green badge.
+
+### 2026-10-14: full native PHP extension stack rather than a green health route (OPEN)
+
+Installing Laravel dependencies and displaying `/up` is not enough: the
+sandbox's static PHP omits `pdo_pgsql`, `pgsql`, XMLReader and XMLWriter; login
+and PHPUnit/PostgreSQL cannot run. Better: acquire a trusted PHP 8.4 build
+with these extensions, official Composer 2, non-superuser PostgreSQL and dev
+packages, then execute the entire suite. Do **not** choose SQLite simply
+because its PDO driver is available, or disable RLS checks. The local
+production-only vendor install is a reproducible intermediate milestone.

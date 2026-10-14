@@ -4110,3 +4110,18 @@ claim a complete local Laravel environment. Laragon with PostgreSQL extensions
 remains the primary Windows runtime. CI for the earlier line-pin commit
 `f1d4ae5` completed successfully (all six jobs); the installer itself still
 needs its own verification.
+
+## 2026-10-14 repository-local Laravel install
+
+Installed locked Laravel 13.31.0 production dependencies into ignored
+`app/vendor/` with local native PHP 8.4.21 and Composer 2.6.5 PHAR pinned to a
+third-party GitHub source (see trust warning in `docs/LOCAL-LARAVEL-EN.md`).
+Added `scripts/install-local-laravel.sh`; it uses GitHub source clones in the
+network-restricted sandbox, suppresses **only** XMLReader/XMLWriter platform
+checks, disables Composer scripts/plugins, then runs Laravel package discovery.
+Verified `artisan --version`, `package:discover`, `route:list`, autoload and
+`/up` HTTP 200. Generated ignored `.env` with PostgreSQL configured rather
+than SQLite. Local PHP still lacks pdo_pgsql/pgsql and XMLReader/XMLWriter,
+`vendor/` is production-only (no PHPUnit); `/login` returned 500. Stopped
+Laravel preview to avoid a broken live app; CI remains required for DB pages
+and RLS tests. Full local environment requires different PHP build/Composer.
