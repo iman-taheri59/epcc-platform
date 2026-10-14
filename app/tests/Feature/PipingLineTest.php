@@ -8,14 +8,12 @@ use App\Models\Document;
 use App\Models\DocumentRevision;
 use App\Models\LineDocument;
 use App\Models\PipingClass;
-use App\Models\PipingClassRule;
 use App\Models\PipingLine;
 use App\Models\Project;
 use App\Models\ProjectPipingConfig;
 use App\Models\Subsystem;
 use App\Models\User;
 use App\Services\PipingLineService;
-use App\Services\DocumentRegister;
 use App\Services\ProjectArchiveService;
 use App\Support\CdeState;
 use App\Support\LineReleaseState;
@@ -25,6 +23,7 @@ use Database\Seeders\EpccDemoSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
+use Tests\Support\ApprovedPmsClassFixture;
 
 /**
  * ADR-006 phase 1 - the line register and the AFC gate.
@@ -87,41 +86,11 @@ final class PipingLineTest extends TestCase
         ));
     }
 
-    /** Synthetic approved PMS fixture for import tests, not a bypass in production. */
     private function approvedPmsClass(): PipingClass
     {
         $class = $this->pipingClass();
-        $project = $this->project();
-        $owner = $this->owner();
 
-        return $this->asOwner(function () use ($class, $project, $owner): PipingClass {
-            $doc = Document::create([
-                'project_id' => $project->id, 'company_id' => $owner->company_id,
-                'number' => 'PH-14-PIP-PMS-A1', 'discipline' => 'PIPING',
-                'doc_type' => 'PMS', 'sequence' => 1,
-                'title_en' => 'Synthetic approved PMS', 'title_fa' => 'PMS آزمایشی',
-            ]);
-            $rev = DocumentRevision::create([
-                'document_id' => $doc->id, 'project_id' => $project->id,
-                'company_id' => $owner->company_id, 'revision' => 'A',
-                'ordinal' => 1, 'cde_state' => CdeState::WIP,
-            ]);
-            $doc->update(['current_revision_id' => $rev->id]);
-            $class->forceFill([
-                'pms_document_id' => $doc->id, 'state' => 'PUBLISHED',
-                'dn_span' => '[15,600)',
-            ])->save();
-            PipingClassRule::create([
-                'project_id' => $project->id, 'company_id' => $owner->company_id,
-                'piping_class_id' => $class->id, 'rule_kind' => 'PIPE_SCHEDULE',
-                'dn_range' => '[15,600)', 'value' => ['schedule' => '80'],
-            ]);
-            $register = app(DocumentRegister::class);
-            $register->transition($doc->refresh(), $owner, CdeState::SHARED, 'S2');
-            $register->transition($doc->refresh(), $owner, CdeState::PUBLISHED, 'A1');
-
-            return $class->refresh();
-        });
+        return $this->asOwner(fn () => ApprovedPmsClassFixture::ensure($this->project(), $this->owner(), $class));
     }
 
     /** Register the services/coatings the default pattern expects. */
@@ -144,7 +113,7 @@ final class PipingLineTest extends TestCase
     private function makeLine(array $extra = []): PipingLine
     {
         $this->configure();
-        $class = $this->pipingClass();
+        $class = $this->approvedPmsClass();
         $subsystem = $this->subsystem();
         $actor = $this->owner();
 
@@ -164,6 +133,24 @@ final class PipingLineTest extends TestCase
         $this->assertSame('8-P-A1-PH-14-SS-2201-001', $line->line_number);
         $this->assertSame(1, $line->sequence);
         $this->assertSame(LineReleaseState::DRAFT, $line->release_state);
+        $this->assertNotNull($line->pms_class_snapshot_id);
+    }
+
+    public function test_a_draft_class_cannot_authorize_a_new_allocated_line(): void
+    {
+        $this->configure();
+        $draft = $this->pipingClass();
+        $subsystem = $this->subsystem();
+
+        try {
+            $this->asOwner(fn () => $this->service()->create($subsystem, $this->owner(), [
+                'nominal_size' => '8', 'service_code' => 'P', 'piping_class_id' => $draft->id,
+            ]));
+            $this->fail('A registered class alone does not prove approved PMS membership.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('piping_class_id', $e->errors());
+        }
+        $this->assertSame(0, $this->asOwner(fn () => PipingLine::count()));
     }
 
     public function test_the_sequence_increments_per_subsystem(): void
@@ -184,7 +171,7 @@ final class PipingLineTest extends TestCase
         $this->makeLine();
 
         $other = $this->subsystem('PH-14-SS-3301');
-        $class = $this->pipingClass();
+        $class = $this->approvedPmsClass();
         $actor = $this->owner();
 
         $line = $this->asOwner(fn () => $this->service()->create($other, $actor, [

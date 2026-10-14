@@ -4220,3 +4220,16 @@ checks passed; CI pending.
   when one is explicitly supplied; old imported tags remain verbatim. This
   verifies the import path only. Allocated-number `create` and DB null-pin
   inserts remain permissive, so the full owner requirement is not done.
+
+## 2026-10-14 automatic line numbering PMS gate
+
+`PipingLineService::create` now shares the approved PMS snapshot resolver with
+`register` and writes a pinned snapshot ID on each new allocated-number line.
+A missing/draft class fails before insert even if the numbering pattern omits
+its class token. Updated PipingLine, PipingConfig, HTTP, Joint and Component
+fixtures to create a real approved CDE PMS revision via a tests-only helper;
+added rejection tests and pin assertions. Synthetic fixture intentionally
+bypasses engineering publish completeness only inside tests; production
+writer still uses published class + approved PMS snapshot. Direct SQL/new
+unclassified insert remains possible because DB nullable column preserves
+historical fixtures. PHP lint succeeded; PostgreSQL CI pending.

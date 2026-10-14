@@ -80,6 +80,11 @@ final class PipingLineService
 
             $this->assertNumberIsFree($project, $number);
 
+            // A generated tag is not permission to use a class: resolve the
+            // current approved PMS snapshot before inserting the new line.
+            $classId = $attributes['piping_class_id'] ?? null;
+            $snapshotId = $this->pmsEligibility->snapshotId($project->id, $classId);
+
             return PipingLine::create([
                 'project_id' => $project->id,
                 'company_id' => $actor->company_id,
@@ -89,7 +94,8 @@ final class PipingLineService
                 'sequence' => $seq,
                 'nominal_size' => $attributes['nominal_size'] ?? null,
                 'service_code' => $attributes['service_code'] ?? null,
-                'piping_class_id' => $attributes['piping_class_id'] ?? null,
+                'piping_class_id' => $classId,
+                'pms_class_snapshot_id' => $snapshotId,
                 'coating_code' => $attributes['coating_code'] ?? null,
                 'release_state' => LineReleaseState::DRAFT,
             ] + $this->designAttributes($attributes));

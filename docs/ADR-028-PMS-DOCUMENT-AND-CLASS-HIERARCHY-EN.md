@@ -218,3 +218,25 @@ CI run 38528034166 on `2e21d16` passed all six jobs, including the
 PostgreSQL/RLS feature suite after fixing the synthetic owner config fixture
 and classless legacy HTTP expectation. This is the verified import-path gate,
 not yet a complete new-line admission guarantee.
+
+## Seventh implementation slice: allocated-number line gate (2026-10-14)
+
+`PipingLineService::create` now resolves the exact current A-family-approved
+PMS class snapshot before writing a newly numbered line and stores its
+immutable `pms_class_snapshot_id`. This is the **same resolver and in-write-
+transaction check** already used for supplied-number imports. The class is
+mandatory even when the project's number pattern has no class token. A
+registered draft class cannot authorize a line. The database snapshot trigger
+independently validates every non-null new pin. The service tests now build
+synthetic *approved* PMS revisions through the real CDE transitions rather
+than relying on draft class rows; one shared test helper is intentionally
+confined to `tests/Support` and is not an application bypass. PostgreSQL CI
+pending.
+
+Existing historical lines remain untouched. DB inserts with a null snapshot
+are still possible, and any direct writer that does not call either service
+method remains outside this gate. The final step is to inventory those writers,
+retain historical unknown lines only as explicitly reviewed legacy data, and
+reject **new** null pins at the DB boundary. Do not add a blind default PMS
+mapping. No source class revision or PMS suitability is inferred from the
+line number alone.

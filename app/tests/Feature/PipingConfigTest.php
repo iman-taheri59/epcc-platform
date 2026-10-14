@@ -18,6 +18,7 @@ use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
+use Tests\Support\ApprovedPmsClassFixture;
 
 /**
  * Editing the line-number format (ADR-006 §4).
@@ -62,6 +63,18 @@ final class PipingConfigTest extends TestCase
         $project = $this->project();
 
         return $this->tenant->runAs($project->owner_company_id, $fn, $project->id);
+    }
+
+    /** Synthetic approval; number formats can omit the class token, lines cannot. */
+    private function approvedClass(): PipingClass
+    {
+        $project = $this->project();
+        $class = PipingClass::firstOrCreate(
+            ['project_id' => $project->id, 'code' => 'A1'],
+            ['company_id' => $project->owner_company_id, 'description_en' => 'CS 150#'],
+        );
+
+        return ApprovedPmsClassFixture::ensure($project, $this->owner(), $class);
     }
 
     /** A valid pattern, as the stored jsonb shape. */
@@ -118,6 +131,26 @@ final class PipingConfigTest extends TestCase
         $this->assertSame(4, $config->pattern()->counterToken()->width);
     }
 
+    public function test_a_format_without_class_token_still_requires_an_approved_class_for_line_creation(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $this->asOwner(fn () => app(PipingLineService::class)->configFor($project)
+            ->update(['services' => ['P']]));
+        $this->useSimplePattern();
+
+        try {
+            $this->asOwner(fn () => app(PipingLineService::class)->create(
+                Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail(),
+                $owner, ['service_code' => 'P'],
+            ));
+            $this->fail('The number format is not a class authorization rule.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('piping_class_id', $e->errors());
+        }
+        $this->assertSame(0, $this->asOwner(fn () => PipingLine::count()));
+    }
+
     public function test_a_new_format_applies_to_new_lines_only(): void
     {
         // The most important property of the whole editor. A number that has
@@ -136,7 +169,7 @@ final class PipingConfigTest extends TestCase
             );
             $sub = Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail();
 
-            $class = PipingClass::where('project_id', $project->id)->where('code', 'A1')->firstOrFail();
+            $class = $this->approvedClass();
 
             return app(PipingLineService::class)->create($sub, $owner, [
                 'nominal_size' => '8',
@@ -156,7 +189,9 @@ final class PipingConfigTest extends TestCase
         $second = $this->asOwner(function () use ($owner) {
             $sub = Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail();
 
-            return app(PipingLineService::class)->create($sub, $owner, ['service_code' => 'P']);
+            return app(PipingLineService::class)->create($sub, $owner, [
+                'service_code' => 'P', 'piping_class_id' => $this->approvedClass()->id,
+            ]);
         });
 
         // fresh() must run inside the tenant scope: piping_lines carries RLS,
@@ -234,7 +269,9 @@ final class PipingConfigTest extends TestCase
 
         $this->asOwner(function () use ($owner) {
             $sub = Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail();
-            $line = app(PipingLineService::class)->create($sub, $owner, ['service_code' => 'P']);
+            $line = app(PipingLineService::class)->create($sub, $owner, [
+                'service_code' => 'P', 'piping_class_id' => $this->approvedClass()->id,
+            ]);
             // Pretend the project has issued 120 lines in this subsystem.
             $line->update(['sequence' => 120]);
         });
@@ -354,7 +391,9 @@ final class PipingConfigTest extends TestCase
 
         $this->asOwner(function () use ($owner) {
             $sub = Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail();
-            app(PipingLineService::class)->create($sub, $owner, ['service_code' => 'P']);
+            app(PipingLineService::class)->create($sub, $owner, [
+                'service_code' => 'P', 'piping_class_id' => $this->approvedClass()->id,
+            ]);
         });
 
         $this->expectException(ValidationException::class);
@@ -373,7 +412,9 @@ final class PipingConfigTest extends TestCase
 
         $this->asOwner(function () use ($owner) {
             $sub = Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail();
-            app(PipingLineService::class)->create($sub, $owner, ['service_code' => 'P']);
+            app(PipingLineService::class)->create($sub, $owner, [
+                'service_code' => 'P', 'piping_class_id' => $this->approvedClass()->id,
+            ]);
         });
 
         $config = $this->asOwner(fn () => $this->service()->updateRegister($project, $owner, 'services', ['P']));

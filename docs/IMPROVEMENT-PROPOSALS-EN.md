@@ -765,3 +765,12 @@ the supplied-number registration path. Better next step: apply the same
 resolver to allocated-number creation and all bulk/SQL writers, then reject
 new null pins at the database boundary without assigning fabricated classes
 to historical records (ADR-028).
+
+### 2026-10-14: require PMS snapshot for numbered lines independently of tag format (BUILT, service path)
+
+A project can omit class from its line-number pattern; that must not silently
+waive engineering approval. Both allocated and externally supplied numbers
+now require the same approved revision snapshot in the application service.
+The stronger remaining alternative is a database insert backstop for all
+writers with a deliberate migration strategy for historical records that
+cannot be classified (ADR-028); do not auto-assign a fake class.

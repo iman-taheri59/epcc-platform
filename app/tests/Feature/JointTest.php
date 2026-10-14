@@ -24,6 +24,7 @@ use Database\Seeders\EpccDemoSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
+use Tests\Support\ApprovedPmsClassFixture;
 
 /**
  * ADR-006 phase 3 - joints, compatibility and dia-inch.
@@ -95,6 +96,8 @@ final class JointTest extends TestCase
                 ['project_id' => $project->id, 'code' => 'A1'],
                 ['company_id' => $project->owner_company_id, 'description_en' => 'CS 150#'],
             );
+
+            ApprovedPmsClassFixture::ensure($project, $owner, $class);
 
             return $lines->create(
                 Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail(),

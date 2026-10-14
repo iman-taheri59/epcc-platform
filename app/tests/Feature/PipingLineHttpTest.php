@@ -20,6 +20,7 @@ use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
 use Tests\TestCase;
+use Tests\Support\ApprovedPmsClassFixture;
 
 /**
  * ADR-006 phase 1 over HTTP - the register screen and its two doors.
@@ -53,19 +54,19 @@ final class PipingLineHttpTest extends TestCase
     }
 
     /** Give the project the registers the default pattern needs. */
-    private function seedRegisters(): PipingClass
+    private function seedRegisters(bool $approved = true): PipingClass
     {
         $project = $this->project();
 
         return app(TenantContext::class)->runAs(
             $project->owner_company_id,
-            function () use ($project): PipingClass {
+            function () use ($project, $approved): PipingClass {
                 app(PipingLineService::class)->configFor($project)->update([
                     'services' => ['P', 'HC'],
                     'coatings' => ['CT1'],
                 ]);
 
-                return PipingClass::create([
+                $class = PipingClass::create([
                     'project_id' => $project->id,
                     'company_id' => $project->owner_company_id,
                     'code' => 'A1',
@@ -73,6 +74,10 @@ final class PipingLineHttpTest extends TestCase
                     'material' => 'CS',
                     'corrosion_allowance' => 3.0,
                 ]);
+
+                return $approved
+                    ? ApprovedPmsClassFixture::ensure($project, $this->owner(), $class)
+                    : $class;
             },
             $project->id,
         );
@@ -140,7 +145,7 @@ final class PipingLineHttpTest extends TestCase
 
     public function test_class_picker_hides_unapproved_classes_and_explains_why_registration_is_unavailable(): void
     {
-        $draft = $this->seedRegisters();
+        $draft = $this->seedRegisters(false);
 
         $this->actingAs($this->owner())
             ->get('/projects/PH-14/piping?lang=en')

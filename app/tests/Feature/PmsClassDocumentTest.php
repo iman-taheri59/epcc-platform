@@ -42,7 +42,8 @@ final class PmsClassDocumentTest extends TestCase
         // Numbering config is owner-authored; the contractor may consume it
         // but cannot create it under the owner's company_id (RLS WITH CHECK).
         $tenant->runAs($owner->company_id,
-            fn () => app(PipingLineService::class)->configFor($project), $project->id);
+            fn () => app(PipingLineService::class)->configFor($project)
+                ->update(['services' => ['P']]), $project->id);
         $doc = $tenant->runAs($author->company_id, fn () => $register->register($project, $author, [
             'discipline' => 'PIPING', 'doc_type' => 'PMS',
             'title_en' => 'Versioned PMS', 'title_fa' => 'مدرک نسخه دار',
@@ -96,7 +97,11 @@ final class PmsClassDocumentTest extends TestCase
                 $subsystem, $author, 'SNAPSHOT-TEST-1', ['piping_class_id' => $class->id]
             );
             $this->assertSame($row->id, $line->pms_class_snapshot_id);
-            $this->assertSame(1, DB::table('piping_lines')->where('pms_class_snapshot_id', $row->id)->count());
+            $allocated = app(PipingLineService::class)->create($subsystem, $author, [
+                'nominal_size' => '8', 'service_code' => 'P', 'piping_class_id' => $class->id,
+            ]);
+            $this->assertSame($row->id, $allocated->pms_class_snapshot_id);
+            $this->assertSame(2, DB::table('piping_lines')->where('pms_class_snapshot_id', $row->id)->count());
         }, $project->id);
         try {
             $tenant->runAs($author->company_id, function () use ($class, $project, $author): void {
@@ -139,7 +144,7 @@ final class PmsClassDocumentTest extends TestCase
             } catch (ValidationException $e) {
                 $this->assertArrayHasKey('piping_class_id', $e->errors());
             }
-            $this->assertSame(1, DB::table('piping_lines')->where('piping_class_id', $class->id)
+            $this->assertSame(2, DB::table('piping_lines')->where('piping_class_id', $class->id)
                 ->whereNotNull('pms_class_snapshot_id')->count(), 'Prior line retains its issued revision.');
         }, $project->id);
     }
