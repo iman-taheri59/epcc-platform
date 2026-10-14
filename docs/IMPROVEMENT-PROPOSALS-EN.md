@@ -784,3 +784,11 @@ pin trigger verifies the exact approval provenance. Further improvement:
 report historical null-pin lines explicitly as awaiting class review, and
 ensure their future class amendments are also pinned to an approved snapshot.
 See ADR-028.
+
+### 2026-10-14: explicit evidence for historical class amendments (BUILT)
+
+The insert-only backstop alone left a SQL UPDATE path to label a historical
+unmapped line with a bare class ID. A narrow UPDATE trigger now requires the
+approved snapshot whenever a previously null-pin line acquires a different
+non-null class. It does not rewrite older classifications automatically or
+block unrelated maintenance. See ADR-028; CI pending.

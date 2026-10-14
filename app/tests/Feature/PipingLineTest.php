@@ -262,6 +262,25 @@ final class PipingLineTest extends TestCase
         $this->assertSame('Awaiting explicit class review', $this->asOwner(
             fn () => PipingLine::findOrFail($id)->release_note));
         $this->assertNull($this->asOwner(fn () => PipingLine::findOrFail($id)->pms_class_snapshot_id));
+
+        $approved = $this->makeLine();
+        try {
+            $this->asOwner(fn () => DB::table('piping_lines')->where('id', $id)
+                ->update(['piping_class_id' => $approved->piping_class_id]));
+            $this->fail('A historical class change without PMS evidence must be rejected.');
+        } catch (QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
+        $this->assertNull($this->asOwner(fn () => PipingLine::findOrFail($id)->piping_class_id));
+
+        // Explicit owner-reviewed classification: class and approved snapshot
+        // must be assigned together; the existing pin guard checks provenance.
+        $this->asOwner(fn () => DB::table('piping_lines')->where('id', $id)->update([
+            'piping_class_id' => $approved->piping_class_id,
+            'pms_class_snapshot_id' => $approved->pms_class_snapshot_id,
+        ]));
+        $this->assertSame($approved->pms_class_snapshot_id,
+            $this->asOwner(fn () => PipingLine::findOrFail($id)->pms_class_snapshot_id));
     }
 
     public function test_preview_shows_the_number_without_creating_anything(): void

@@ -281,3 +281,19 @@ readiness/reporting; do not treat an old null pin as approved.
 CI run 38543947981 for `7bf732d` passed all six jobs, including
 PostgreSQL/RLS migration tests for direct SQL null-pin refusal, duplicate
 number index behavior and survival of unmapped historical lines.
+
+## Ninth implementation slice: historical classification is evidence-bound
+
+The INSERT backstop preserves old unclassified records, but a direct SQL
+UPDATE could previously attach a bare class ID to one of those rows without
+PMS evidence. A separate PostgreSQL `BEFORE UPDATE OF piping_class_id` trigger
+now rejects changing a historical null-pin line to a non-null class without
+setting a snapshot in the same statement. The existing pin trigger then
+verifies that this is the current approved A-family PMS revision for the
+same class and project. Edits to unrelated fields remain possible, as do
+explicitly reviewed class-and-snapshot assignments; old, unchanged class
+IDs with unresolved historical provenance are not fabricated or overwritten.
+
+The database migration and end-to-end regression test are awaiting CI.
+Remaining distinct tasks: reporting unclassified historical lines as not
+ready, and enforcing authoring/lifecycle integrity of PMS documents.

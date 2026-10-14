@@ -4275,3 +4275,14 @@ PMS author write gates and historic-readiness reporting remain outstanding.
   pin. Old unmapped rows remain unchanged; no synthetic PMS was assigned.
   PMS author-write enforcement and visibility/reporting of unresolved
   historical records remain separate follow-up work.
+
+## 2026-10-14 historical line classification backstop
+
+Migration `2026_10_14_110000_require_pms_pin_when_classifying_historical_lines.php`
+blocks SQL updates which change a historical null-pin line's class to a
+non-null class without also assigning its approved PMS snapshot. Existing
+rows remain editable for unrelated fields. PipingLineTest exercises both
+rejection of bare class assignment and acceptance of an explicit joint
+class+approved snapshot mapping after the previous insert-gate migration.
+PHP lint and diff checks passed; CI pending. Reporting historical unresolved
+rows and PMS authoring/lifecycle protection are still separate follow-ups.
