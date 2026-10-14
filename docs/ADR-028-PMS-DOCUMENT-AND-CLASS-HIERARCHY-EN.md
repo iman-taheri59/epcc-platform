@@ -250,3 +250,8 @@ CI correction: run 38536908956 showed one remaining HTTP unit-preference
 fixture with a draft class; the PMS gate (correctly) refused it before the
 invalid-unit check. That fixture now supplies an approved PMS class. No
 production authorization rule was weakened; retry the full suite.
+
+CI run 38540006442 on `7d30df6` passed all six jobs after updating the
+legacy unit-preference fixture. Both service creation doors are now verified
+against real PostgreSQL/RLS; direct SQL/bulk null-pin inserts still require
+the final backstop and historical-data strategy.

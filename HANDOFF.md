@@ -4247,3 +4247,11 @@ historical fixtures. PHP lint succeeded; PostgreSQL CI pending.
   used a draft class; the new PMS gate correctly returned a class error
   before unit validation. Updated that fixture to an approved PMS class so
   the test exercises the intended unit validation. CI recheck pending.
+
+- CI run 38540006442 on `7d30df6` **passed all six jobs**, including the
+  Laravel/PostgreSQL/RLS suite after updating all known class fixtures.
+  Allocated-number and supplied-number service paths now both require and
+  persist the current approved PMS class snapshot. Remaining work: audit
+  direct SQL/bulk writers and enforce non-null admission at the DB boundary
+  while preserving legitimately historical unmapped rows without inventing
+  classifications. Existing PR is still open; do not claim full gate yet.
