@@ -21,6 +21,7 @@ use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 use Tests\Support\ApprovedPmsClassFixture;
@@ -194,22 +195,73 @@ final class PipingLineTest extends TestCase
 
     public function test_the_database_also_refuses_a_duplicate(): void
     {
-        // The service checks first, but the unique index is what makes a race
-        // impossible rather than unlikely.
+        // Supply a VALID PMS pin; otherwise the new admission trigger would
+        // (correctly) refuse it before the unique-number index is exercised.
         $line = $this->makeLine();
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        try {
+            $this->asOwner(fn () => DB::table('piping_lines')->insert([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'project_id' => $line->project_id,
+                'company_id' => $line->company_id,
+                'subsystem_id' => $line->subsystem_id,
+                'line_number' => $line->line_number,
+                'piping_class_id' => $line->piping_class_id,
+                'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+                'release_state' => LineReleaseState::DRAFT,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]));
+            $this->fail('The project line-number uniqueness index must win.');
+        } catch (QueryException $e) {
+            $this->assertSame('23505', $e->getCode());
+        }
+    }
 
+    public function test_direct_sql_cannot_insert_a_new_line_without_an_approved_pms_pin(): void
+    {
+        $approved = $this->makeLine();
+        try {
+            $this->asOwner(fn () => DB::table('piping_lines')->insert([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'project_id' => $approved->project_id,
+                'company_id' => $approved->company_id,
+                'subsystem_id' => $approved->subsystem_id,
+                'line_number' => 'DIRECT-UNCLASSIFIED-2',
+                'piping_class_id' => $approved->piping_class_id,
+                // Even a real published class is not a snapshot approval.
+                'release_state' => LineReleaseState::DRAFT,
+                'created_at' => now(), 'updated_at' => now(),
+            ]));
+            $this->fail('New SQL inserts without an approved pin must be rejected.');
+        } catch (QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
+        $this->assertSame(1, $this->asOwner(fn () => PipingLine::count()));
+    }
+
+    public function test_existing_unclassified_rows_survive_the_insert_only_migration(): void
+    {
+        $project = $this->project();
+        $subsystem = $this->subsystem();
+        $actor = $this->owner();
+        $migration = require database_path('migrations/2026_10_14_100000_require_approved_pms_pin_on_new_lines.php');
+        $migration->down(); // Simulate a line that predates the new insert gate.
+        $id = (string) \Illuminate\Support\Str::uuid();
         $this->asOwner(fn () => DB::table('piping_lines')->insert([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
-            'project_id' => $line->project_id,
-            'company_id' => $line->company_id,
-            'subsystem_id' => $line->subsystem_id,
-            'line_number' => $line->line_number,
+            'id' => $id, 'project_id' => $project->id,
+            'company_id' => $actor->company_id,
+            'subsystem_id' => $subsystem->id,
+            'line_number' => 'EXISTING-UNMAPPED-001',
             'release_state' => LineReleaseState::DRAFT,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'created_at' => now(), 'updated_at' => now(),
         ]));
+        $migration->up();
+        $this->asOwner(fn () => DB::table('piping_lines')->where('id', $id)
+            ->update(['release_note' => 'Awaiting explicit class review']));
+        $this->assertSame('Awaiting explicit class review', $this->asOwner(
+            fn () => PipingLine::findOrFail($id)->release_note));
+        $this->assertNull($this->asOwner(fn () => PipingLine::findOrFail($id)->pms_class_snapshot_id));
     }
 
     public function test_preview_shows_the_number_without_creating_anything(): void

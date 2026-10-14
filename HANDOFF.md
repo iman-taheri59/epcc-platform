@@ -4255,3 +4255,16 @@ historical fixtures. PHP lint succeeded; PostgreSQL CI pending.
   direct SQL/bulk writers and enforce non-null admission at the DB boundary
   while preserving legitimately historical unmapped rows without inventing
   classifications. Existing PR is still open; do not claim full gate yet.
+
+## 2026-10-14 new-line DB backstop
+
+New migration `2026_10_14_100000_require_approved_pms_pin_on_new_lines.php`
+adds an INSERT-only trigger refusing new piping lines without BOTH class ID
+and PMS snapshot ID. The existing trigger validates the exact current
+approved document/class snapshot. A database NOT NULL would break historical
+unmapped rows; the insert-only gate leaves them in place without assigning
+invented classes, while all new direct SQL/bulk/service entries fail closed.
+PipingLineTest now asserts SQLSTATE 23514 for class-without-pin raw insertion,
+23505 for real duplicate number with valid pin, and pre-migration legacy row
+survival after installing the gate. PHP lint passed; PostgreSQL CI pending.
+PMS author write gates and historic-readiness reporting remain outstanding.

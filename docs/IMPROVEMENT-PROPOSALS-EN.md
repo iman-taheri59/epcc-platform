@@ -774,3 +774,13 @@ now require the same approved revision snapshot in the application service.
 The stronger remaining alternative is a database insert backstop for all
 writers with a deliberate migration strategy for historical records that
 cannot be classified (ADR-028); do not auto-assign a fake class.
+
+### 2026-10-14: INSERT-only database admission rather than blanket NOT NULL (BUILT)
+
+A blanket `NOT NULL` on snapshot would either reject migration of legitimate
+historical records or tempt a fake backfill. A database BEFORE INSERT trigger
+blocks all *new* unclassified lines without rewriting old ones; the existing
+pin trigger verifies the exact approval provenance. Further improvement:
+report historical null-pin lines explicitly as awaiting class review, and
+ensure their future class amendments are also pinned to an approved snapshot.
+See ADR-028.

@@ -255,3 +255,25 @@ CI run 38540006442 on `7d30df6` passed all six jobs after updating the
 legacy unit-preference fixture. Both service creation doors are now verified
 against real PostgreSQL/RLS; direct SQL/bulk null-pin inserts still require
 the final backstop and historical-data strategy.
+
+## Eighth implementation slice: database INSERT backstop (2026-10-14)
+
+A new PostgreSQL `BEFORE INSERT` trigger on `piping_lines` now refuses any
+row whose `piping_class_id` or `pms_class_snapshot_id` is NULL. Unlike a
+column-wide `NOT NULL` change, it does **not** invent a classification for
+pre-existing/historical lines with an unresolved class; such rows can remain
+in the register and have their other fields edited while their class is
+reviewed. The previously deployed pin-integrity trigger continues to refuse
+invalid project/class, superseded revision and non-A-family PMS snapshot IDs.
+It applies to service, HTTP, future imports and raw/bulk SQL equally. There
+is no import-only bypass or fake approved class. New lines through both
+service doors already supply a valid snapshot.
+
+Tests assert direct SQL null-pin insertion fails with SQLSTATE 23514 even
+when a real published class ID is supplied, while a duplicate number with a
+valid pin still fails its unique index (23505). A migration rehearsal inserts
+an unmapped line before the new trigger, installs the trigger, and verifies
+that the historical row survives, remains editable and is **not** silently
+assigned a snapshot. Postgres CI pending. Remaining: protect the PMS rule
+writer paths and distinguish historical unclassified records in downstream
+readiness/reporting; do not treat an old null pin as approved.
