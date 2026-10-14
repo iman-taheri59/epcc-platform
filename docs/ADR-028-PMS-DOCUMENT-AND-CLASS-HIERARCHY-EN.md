@@ -521,3 +521,25 @@ range/material/branch/whitespace changes. This does NOT validate the full
 snapshot trigger against real schema/RLS or run PHPUnit. GitHub Actions
 run 38583348269 was blocked at scheduling by account billing and no new CI
 run appeared after `d2b143a`; full PostgreSQL tests remain pending.
+
+### Twenty-first slice: commit-time PMS approval completeness backstop
+
+An SQL UPDATE could previously set a PMS revision to approved PUBLISHED
+without creating any class snapshots, bypassing the CDE service's review,
+engineering and capture transaction. A PostgreSQL **deferred constraint
+trigger** now checks the *current* PIPING/PMS revision at transaction commit:
+if it is approved A-family PUBLISHED, at least one governed class must be
+published, no governed draft class may remain, and the number of immutable
+revision snapshots must equal the published-class count. Deferral is essential:
+the service first transitions the revision, then inserts all snapshots in
+the same transaction. A direct status UPDATE with no snapshots fails with
+SQLSTATE 23514. Existing approved revisions are not retroactively rewritten;
+new state changes are checked. A regression forces the deferred trigger
+inside an RLS transaction savepoint before attempting normal service
+publication. A standalone PostgreSQL 16.2 smoke test installed the actual
+migration function/trigger on a minimal schema: update + snapshot COMMIT
+succeeded, while an update without a snapshot raised the expected exception.
+This is not the full Laravel/RLS suite and does not prove pad engineering for
+a privileged SQL writer able to forge the complete draft and snapshots.
+GitHub Actions still does not schedule latest-head CI despite public
+visibility; account billing or Actions permissions need attention.

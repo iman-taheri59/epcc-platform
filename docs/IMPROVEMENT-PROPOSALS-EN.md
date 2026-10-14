@@ -885,3 +885,12 @@ its frozen live rules would give a B-pinned line the A schedule. A new
 line-pin resolver reads exactly the immutable issued snapshot and refuses
 unmapped or ambiguous schedules. Future line-dependent component/MTO
 consumers must use it, with tests; see ADR-028.
+
+### 2026-10-14: deferred database completeness for PMS approval (BUILT; CI PENDING)
+
+A regular immediate check would reject the legitimate service transaction
+between the revision UPDATE and immutable snapshot INSERTs. A deferred
+commit-time trigger closes the no-snapshot direct SQL approval path while
+preserving that transaction order. It cannot alone attest that pad and
+reference-pack checks ran for a privileged writer who also inserts a
+structurally valid snapshot. See ADR-028.

@@ -4470,3 +4470,21 @@ successfully; `epcc_pms_schedule_only_delta` returned true for a schedule
 change and false for DN-range, material, branch and whitespace mutations.
 This is **not** the full Laravel migration/RLS/engineering suite. The local
 PHP build lacks `pdo_pgsql`, so those tests still require CI or Laragon.
+
+## Commit-time direct SQL PMS approval completeness gate
+
+`2026_10_14_160000_require_pms_snapshots_on_approved_revision.php` adds a
+DEFERRABLE INITIALLY DEFERRED row constraint trigger to document_revisions.
+For a current approved A-family PIPING/PMS revision it requires >=1 published
+class, no draft governed classes, and exactly one approved immutable snapshot
+per class at commit. This permits the existing service sequence (revision
+UPDATE then snapshot INSERTs in one TX) but rejects bare SQL approval.
+PmsClassDocumentTest now tests rejection with `SET CONSTRAINTS ... IMMEDIATE`
+inside a savepoint before normal service publication. PHP lint and diff
+checks passed. Local PostgreSQL 16.2 smoke test with a minimal schema parsed
+the real trigger and verified success with snapshot and expected failure
+`PMS_ISSUE_NEEDS_CLASS_SNAPSHOTS` without it. **Full Laravel/PostgreSQL/RLS
+CI is still NOT run**: Actions billing/permissions block persists even though
+repo is public. Forging both snapshots and document state using raw SQL could
+still evade the service-only reference-pack/pad check. Do not call this a
+universal engineering authorization gate.

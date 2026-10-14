@@ -245,6 +245,20 @@ final class PmsClassDocumentTest extends TestCase
                 [json_encode($oldSpec), json_encode($reviewed)])->ok);
             $this->assertFalse((bool) DB::selectOne('SELECT epcc_pms_schedule_only_delta(?::jsonb, ?::jsonb) AS ok',
                 [json_encode($oldSpec), json_encode($forged)])->ok);
+            try {
+                DB::transaction(function () use ($next): void {
+                    DB::table('document_revisions')->where('id', $next->id)->update([
+                        'cde_state' => CdeState::PUBLISHED, 'suitability' => 'A1',
+                    ]);
+                    // Force the deferred constraint inside a savepoint so an
+                    // expected rejection does not poison the outer RLS scope.
+                    DB::statement('SET CONSTRAINTS pms_approved_revision_snapshots_required IMMEDIATE');
+                });
+                $this->fail('Direct SQL cannot approve a PMS without class snapshots.');
+            } catch (QueryException $e) {
+                $this->assertSame('23514', $e->getCode());
+            }
+            $this->assertSame(CdeState::SHARED, $doc->refresh()->currentRevision->cde_state);
             $register->transition($doc->refresh(), $author, CdeState::PUBLISHED, 'A1');
             $newSnapshot = DB::table('pms_class_revision_snapshots')
                 ->where('document_revision_id', $next->id)->where('piping_class_id', $class->id)->first();
