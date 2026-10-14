@@ -164,3 +164,9 @@ jobs are blocked by billing.
 CI status: run 38515815314 for `1e38780` was blocked before job execution
 by GitHub Actions account billing/spending-limit restrictions. PHP lint
 passed locally; feature tests have not yet run for this slice.
+
+CI recovery attempt (2026-10-14): the owner made the repository public; API
+confirmed `visibility=public`. Previously blocked Actions runs cannot be
+rerun via `gh run rerun`, so a fresh run is requested on this documentation
+commit. The last verified green code baseline remains 38465772360 for
+`f1d4ae5`; the eligible-class picker still awaits a full CI execution.

@@ -4167,3 +4167,13 @@ currently billing-blocked; PostgreSQL feature assertions not yet executed.
   GitHub Actions annotated account billing/spending-limit failure across the
   jobs. This is not a test result for the picker changes. PostgreSQL feature
   tests await restored CI or a complete local PHP/PostgreSQL runtime.
+
+## 2026-10-14 visibility and CI recheck
+
+Owner changed GitHub repository visibility to public. Verified using GitHub
+repository API: `private=false`, `visibility=public` for
+`iman-taheri59/epcc-platform`. The earlier runs remain pre-start failures;
+`gh run rerun 38515847134` was refused ("workflow file may be broken").
+This documentation push requests a fresh Actions run on standard
+`ubuntu-24.04` runners, which GitHub documents as free for public repos.
+Do not infer a green test outcome until that new run completes.
