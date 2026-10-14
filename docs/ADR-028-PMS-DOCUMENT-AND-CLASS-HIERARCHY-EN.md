@@ -277,3 +277,7 @@ that the historical row survives, remains editable and is **not** silently
 assigned a snapshot. Postgres CI pending. Remaining: protect the PMS rule
 writer paths and distinguish historical unclassified records in downstream
 readiness/reporting; do not treat an old null pin as approved.
+
+CI run 38543947981 for `7bf732d` passed all six jobs, including
+PostgreSQL/RLS migration tests for direct SQL null-pin refusal, duplicate
+number index behavior and survival of unmapped historical lines.

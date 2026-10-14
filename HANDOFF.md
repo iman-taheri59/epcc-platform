@@ -4268,3 +4268,10 @@ PipingLineTest now asserts SQLSTATE 23514 for class-without-pin raw insertion,
 23505 for real duplicate number with valid pin, and pre-migration legacy row
 survival after installing the gate. PHP lint passed; PostgreSQL CI pending.
 PMS author write gates and historic-readiness reporting remain outstanding.
+
+- CI run 38543947981 on `7bf732d` **passed all six jobs**, including
+  Laravel/PostgreSQL/RLS and the new migration/legacy-preservation tests.
+  New direct SQL and bulk inserts can no longer omit the approved PMS class
+  pin. Old unmapped rows remain unchanged; no synthetic PMS was assigned.
+  PMS author-write enforcement and visibility/reporting of unresolved
+  historical records remain separate follow-up work.
