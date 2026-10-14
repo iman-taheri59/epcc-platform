@@ -170,3 +170,11 @@ confirmed `visibility=public`. Previously blocked Actions runs cannot be
 rerun via `gh run rerun`, so a fresh run is requested on this documentation
 commit. The last verified green code baseline remains 38465772360 for
 `f1d4ae5`; the eligible-class picker still awaits a full CI execution.
+
+Run 38518232416 under public visibility started all six jobs. Five passed;
+Laravel/PostgreSQL was red on one annotated 30-second PDF renderer timeout
+(3249 tests, zero assertion failures, nested JUnit three errors). There were
+no annotated PMS picker errors. This is a CI execution, but not a green gate
+for the picker. A fresh documentation-triggered run can distinguish transient
+runner contention from reproducible PDF failure without altering acceptance
+limits.

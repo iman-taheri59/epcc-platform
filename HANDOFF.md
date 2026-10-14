@@ -4177,3 +4177,12 @@ repository API: `private=false`, `visibility=public` for
 This documentation push requests a fresh Actions run on standard
 `ubuntu-24.04` runners, which GitHub documents as free for public repos.
 Do not infer a green test outcome until that new run completes.
+
+- Fresh public-repo run 38518232416 on `aa0369f` **started all six jobs**:
+  five jobs succeeded. The Laravel/PostgreSQL suite collected 3249 tests,
+  reported zero assertion failures and one annotated PDF export rendering
+  timeout after 30 s (`PdfExportTest::test_rendering_produces_a_real_pdf`;
+  JUnit nested totals show three errors). This is no longer the billing block;
+  it does NOT establish a green full suite. No PMS picker failure appears in
+  the check annotations, but that is not proof every picker assertion ran.
+  Avoid changing production PDF limits just to hide a slow CI runner.
