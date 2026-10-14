@@ -4535,3 +4535,15 @@ Compose job remains subject to GitHub account billing/scheduling limits.
   PostgreSQL-verified. Run 38591064891 on `283c4ee` remains the last
   successful Laravel/PostgreSQL/RLS suite. Owner must resolve GitHub Actions
   billing/limits before treating this new slice as validated.
+
+## Issue-time generic + branch PMS rule resolution
+
+`PmsPinnedClassSpecification` now resolves arbitrary one-dimensional rule
+values and branch cells from a line's frozen snapshot (rather than the live
+class). Branch precedence is specificity, priority, creation time, with
+explicit refusal of ambiguous/missing/reversed or malformed input. P2P kind
+and pad data are preserved in the returned issued cell. Added pure unit
+coverage for overlap/tie behaviour and a feature assertion for the
+revision-B schedule via generic rule lookup. PHP lint and diff checks passed;
+full CI pending given intermittent account billing failures. Raw-SQL CDE
+writers remain a separate security/engineering audit item.

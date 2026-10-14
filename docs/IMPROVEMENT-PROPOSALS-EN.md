@@ -902,3 +902,12 @@ specification would reset working copies after a published B-family issue,
 which has no engineering-approval snapshots. A shared baseline resolver and
 matching database guard now use the latest prior A-family issue, preserving
 class content without granting B-coded documents line eligibility.
+
+### 2026-10-14: pin-based branch resolution (BUILT AS READ API)
+
+Future line-based engineering and MTO work must select branches from each
+line's issued PMS snapshot; selecting a current live class rule would erase
+revision-specific pads or P2P kinds. The resolver now applies the established
+footprint/priority/time precedence to immutable snapshot cells and fails
+closed on ambiguity. Integrate it only where a line is available; do not
+silently use a current class for historic lines. See ADR-028.

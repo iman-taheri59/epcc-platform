@@ -581,3 +581,20 @@ CI status: run 38639634136 for `3fc043f` did not start any test jobs due to
 GitHub account payment or spending-limit restrictions. B-coded baseline
 behavior is not yet verified by PostgreSQL; 38591064891 on `283c4ee` is
 the last successful Laravel/PostgreSQL/RLS check.
+
+### Twenty-third slice: line-pinned generic and branch rule reads
+
+The issue-time resolver now exposes a typed generic one-dimensional rule
+value and a branch-rule selection from each line's immutable class snapshot.
+Branch precedence mirrors the class-authoring resolver: smallest combined
+header/branch DN footprint, then highest explicit priority, then earliest
+creation time. The resolver refuses reversed branch DN, malformed ranges,
+missing coverage and indistinguishable first-place cells rather than falling
+back to the frozen live class or guessing a fitting. It retains P2P kind,
+reinforcement and pad thickness from the issued snapshot. Pure unit tests
+exercise specificity/priority/timestamp selection and fail-closed cases;
+feature regression checks a B-pinned schedule through the generic rule API.
+No existing production per-line component/MTO writer currently calls the
+live rule resolver, so this is a safe read API for future line-dependent
+engineering, not a claim that all downstream consumers are migrated.
+Real PostgreSQL CI is pending; GitHub Actions billing has been intermittent.

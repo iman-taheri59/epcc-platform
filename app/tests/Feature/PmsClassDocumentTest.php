@@ -290,6 +290,7 @@ final class PmsClassDocumentTest extends TestCase
             $oldLine = PipingLine::where('pms_class_snapshot_id', $oldPin)->firstOrFail();
             $this->assertSame('80', $issued->pipeSchedule($oldLine, 100));
             $this->assertSame('STD', $issued->pipeSchedule($newLine, 100));
+            $this->assertSame('STD', $issued->ruleValue($newLine, 'PIPE_SCHEDULE', 100)['schedule']);
             $this->assertSame('80', app(\App\Services\PipingClassService::class)
                 ->ruleFor($class, 'PIPE_SCHEDULE', 100)->value['schedule'],
                 'The live published class is frozen; line rules must follow the issue-time pin.');
