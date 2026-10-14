@@ -576,3 +576,8 @@ regression traverses A(SCH 80) -> A(STD) -> B1(no snapshot) -> A(STD): the
 intervening B never authorizes new lines; the following A carries forward
 STD; the line issued before B remains pinned to its own earlier A snapshot.
 PHP lint passed, real PostgreSQL/RLS CI pending on this new slice.
+
+CI status: run 38639634136 for `3fc043f` did not start any test jobs due to
+GitHub account payment or spending-limit restrictions. B-coded baseline
+behavior is not yet verified by PostgreSQL; 38591064891 on `283c4ee` is
+the last successful Laravel/PostgreSQL/RLS check.

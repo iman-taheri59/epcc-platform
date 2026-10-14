@@ -4527,3 +4527,11 @@ including the old line's unchanged issue-time pin. PHP lint and diff checks
 passed; CI pending. The previous 283c4ee Laravel/PostgreSQL/RLS run was
 successful, but this slice has NOT yet been verified against PostgreSQL.
 Compose job remains subject to GitHub account billing/scheduling limits.
+
+- CI run 38639634136 on `3fc043f` did **not start any test job**:
+  GitHub annotated Laravel and the other jobs with failed account payments
+  or spending-limit restrictions; Compose was skipped. The new B-coded
+  baseline migration/regression is therefore PHP-linted but **not** yet
+  PostgreSQL-verified. Run 38591064891 on `283c4ee` remains the last
+  successful Laravel/PostgreSQL/RLS suite. Owner must resolve GitHub Actions
+  billing/limits before treating this new slice as validated.
