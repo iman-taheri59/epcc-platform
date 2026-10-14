@@ -194,6 +194,12 @@ final class PipingLineHttpTest extends TestCase
         );
 
         $this->assertSame(['8-P-A1-PH-14-SS-2201-001'], $numbers);
+        $this->actingAs($this->owner())->get('/projects/PH-14/piping?lang=en')
+            ->assertOk()->assertSee('Issued PMS revision')
+            ->assertSee('PH-14-PIP-PMS-A1')->assertSee('· A')->assertSee('(A1)');
+        $this->actingAs($this->owner())->get('/projects/PH-14/piping/workspace?lang=en')
+            ->assertOk()->assertSee('Issued PMS revision')
+            ->assertSee('PH-14-PIP-PMS-A1');
     }
 
     public function test_an_unregistered_value_is_a_form_error_not_a_crash(): void

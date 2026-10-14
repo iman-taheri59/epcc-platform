@@ -61,6 +61,12 @@ final class PipingLine extends Model
         return $this->belongsTo(PipingClass::class, 'piping_class_id');
     }
 
+    /** Exact PMS class specification issued with this line, never the current revision. */
+    public function pmsSnapshot(): BelongsTo
+    {
+        return $this->belongsTo(PmsClassRevisionSnapshot::class, 'pms_class_snapshot_id');
+    }
+
     public function testPack(): BelongsTo
     {
         return $this->belongsTo(PipingTestPack::class, 'test_pack_id');

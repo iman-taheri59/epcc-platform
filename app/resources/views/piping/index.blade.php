@@ -34,6 +34,7 @@
         'unlink'  => ['fa' => 'حذف پیوست', 'en' => 'Remove link'],
         'config'  => ['fa' => 'تنظیم شماره‌گذاری', 'en' => 'Numbering setup'],
         'model'   => ['fa' => 'مدل', 'en' => 'Model'],
+        'issuedPms'=> ['fa' => 'بازنگری PMS زمان صدور', 'en' => 'Issued PMS revision'],
         'unmapped'=> ['fa' => 'در انتظار بررسی کلاس و بازنگری PMS', 'en' => 'Class/PMS revision review required'],
         'nopms'  => ['fa' => 'هیچ کلاس منتشرشده‌ای در بازنگری تأییدشدهٔ جاری مدرک PMS موجود نیست؛ ثبت خط جدید تا تأیید آن ممکن نیست.',
                       'en' => 'No published class in a currently approved PMS revision. New lines require an approved PMS first.'],
@@ -165,6 +166,13 @@
         <td>{{ $line->pipingClass?->code ?? '—' }}
           @if($line->pms_class_snapshot_id === null)
             <div style="font-size:11px;color:#fca5a5;">{{ $L('unmapped') }}</div>
+          @else
+            @php $issued = $line->pmsSnapshot?->documentRevision; @endphp
+            <div style="font-size:11px;color:var(--muted);">
+              {{ $L('issuedPms') }}:
+              {{ $issued?->document?->number ?? 'PMS' }} · {{ $issued?->revision ?? '—' }}
+              @if($issued?->suitability) ({{ $issued->suitability }}) @endif
+            </div>
           @endif
         </td>
         <td class="mono" style="white-space:nowrap;">

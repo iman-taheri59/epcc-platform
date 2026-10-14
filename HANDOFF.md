@@ -4553,3 +4553,15 @@ writers remain a separate security/engineering audit item.
   needs increase. The pinned-branch resolver and B-baseline regression remain
   PHP-linted but unverified by current PostgreSQL CI. Do not interpret this
   scheduling failure as a test failure or a pass.
+
+## Piping screens now show the issued PMS revision
+
+`PmsClassRevisionSnapshot` is a read-only Eloquent model for immutable
+issue-time class content; `PipingLine::pmsSnapshot()` and eager-loaded
+revision/document relationships drive the piping register and task-first
+workspace. Each mapped line shows its issued PMS document number and
+revision, not the document's latest revision. Null-pin historical lines
+continue to show the review warning. `PipingLineHttpTest` now asserts the
+English register and workspace show a newly created line's synthetic PMS
+number and A revision. PHP lint and diff checks passed; real PostgreSQL/RLS
+HTTP verification pending. No direct SQL/CDE writer authorization claim.

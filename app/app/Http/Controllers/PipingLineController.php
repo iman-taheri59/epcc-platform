@@ -58,7 +58,7 @@ final class PipingLineController extends Controller
         [$rows, $subsystems, $classes, $stats] = $this->tenant->runAs(
             $user->company_id,
             function () use ($project): array {
-                $lines = PipingLine::with(['subsystem', 'pipingClass'])
+                $lines = PipingLine::with(['subsystem', 'pipingClass', 'pmsSnapshot.documentRevision.document'])
                     ->orderBy('line_number')
                     ->get();
 
@@ -173,7 +173,7 @@ final class PipingLineController extends Controller
         [$lines, $packs, $subsystems] = $this->tenant->runAs(
             $user->company_id,
             fn (): array => [
-                PipingLine::with(['subsystem', 'pipingClass', 'testPack'])
+                PipingLine::with(['subsystem', 'pipingClass', 'testPack', 'pmsSnapshot.documentRevision.document'])
                     ->orderBy('line_number')
                     ->get(),
                 PipingTestPack::with('subsystem')

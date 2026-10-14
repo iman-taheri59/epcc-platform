@@ -14,6 +14,7 @@
         'model' => ['fa' => 'مدل خط', 'en' => 'Line model'],
         'line' => ['fa' => 'خط', 'en' => 'Line'],
         'subsystem' => ['fa' => 'زیرسیستم', 'en' => 'Subsystem'],
+        'issuedPms' => ['fa' => 'بازنگری PMS زمان صدور', 'en' => 'Issued PMS revision'],
         'unmapped' => ['fa' => 'در انتظار بررسی کلاس و بازنگری PMS', 'en' => 'Class/PMS revision review required'],
         'class' => ['fa' => 'کلاس', 'en' => 'Class'],
         'state' => ['fa' => 'وضعیت', 'en' => 'State'],
@@ -109,7 +110,14 @@
         $shown += count($problems) > 0 ? 1 : 0;
       @endphp
       <tr>
-        <td data-label="{{ $L('line') }}" class="mono">{{ $line->line_number }}</td>
+        <td data-label="{{ $L('line') }}" class="mono">{{ $line->line_number }}
+          @if($line->pms_class_snapshot_id !== null)
+            @php $issued = $line->pmsSnapshot?->documentRevision; @endphp
+            <div class="muted" style="font-size:11px;">{{ $L('issuedPms') }}:
+              {{ $issued?->document?->number ?? 'PMS' }} · {{ $issued?->revision ?? '—' }}
+            </div>
+          @endif
+        </td>
         <td data-label="{{ $L('subsystem') }}">{{ $line->subsystem?->code ?? '—' }}</td>
         <td data-label="{{ $L('pack') }}">{{ $line->testPack?->code ?? $L('no_pack') }}</td>
         <td data-label="{{ $L('state') }}"><span class="pill">{{ $fa ? $label['fa'] : $label['en'] }}</span></td>

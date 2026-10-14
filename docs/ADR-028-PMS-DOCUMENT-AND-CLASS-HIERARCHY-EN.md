@@ -602,3 +602,17 @@ Real PostgreSQL CI is pending; GitHub Actions billing has been intermittent.
 Validation note: CI run 38640300534 for `9a000e3` did not start Laravel or
 any other test job due to GitHub Actions account billing/spending limits.
 Current branch changes after `283c4ee` still await a real PostgreSQL/RLS run.
+
+### Twenty-fourth slice: show issue-time PMS provenance in piping screens
+
+The register and task-first workspace now display the PMS document number
+and the **issued revision** next to a line, using its immutable
+`pms_class_snapshot_id` relationship rather than the document's current
+revision. A lightweight read-only snapshot model and eager-loaded
+revision/document relations prevent per-row queries; RLS still scopes the
+relations. Historical null-pin lines continue to display the explicit
+"Class/PMS revision review required" label. The HTTP regression checks
+that a newly registered line displays its issued PMS document and A-family
+revision in both views. This is visibility, not a workflow for assigning an
+unmapped historical line or approving revised authoring. PHP lint passed;
+PostgreSQL HTTP tests await Actions availability or the owner's Laragon run.

@@ -911,3 +911,12 @@ revision-specific pads or P2P kinds. The resolver now applies the established
 footprint/priority/time precedence to immutable snapshot cells and fails
 closed on ambiguity. Integrate it only where a line is available; do not
 silently use a current class for historic lines. See ADR-028.
+
+### 2026-10-14: issue-time provenance should be visible, not just stored (BUILT)
+
+Showing only a class code hides whether a line was issued under PMS revision
+A or B. The register and workspace now read the pinned snapshot and display
+the issued document/revision; they do not accidentally show the *current*
+revision after supersession. A later improvement is a permission-aware link
+to the exact archived CDE revision and an owner-reviewed historical mapping
+workflow; do not infer such a link from the current document pointer.
