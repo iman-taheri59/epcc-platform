@@ -190,6 +190,19 @@ final class PmsClassDocumentTest extends TestCase
                 ->where('id', $draft->id)->value('specification'), true, 512, JSON_THROW_ON_ERROR)['rules'][0]['value']['schedule']);
             $this->assertSame('80', json_decode(DB::table('pms_class_revision_snapshots')
                 ->where('piping_class_id', $class->id)->value('specification'), true, 512, JSON_THROW_ON_ERROR)['rules'][0]['value']['schedule']);
+            $reviewTamper = $edited;
+            $reviewTamper['branch_rules'][] = ['id' => 'invented-branch'];
+            DB::table('pms_class_revision_drafts')->where('id', $draft->id)
+                ->update(['specification' => json_encode($reviewTamper, JSON_THROW_ON_ERROR)]);
+            try {
+                $register->transition($doc->refresh(), $author, CdeState::SHARED, 'S2');
+                $this->fail('A forged branch rule must block sharing the entire PMS revision.');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('specification', $e->errors());
+            }
+            $this->assertSame(CdeState::WIP, $doc->refresh()->currentRevision->cde_state);
+            DB::table('pms_class_revision_drafts')->where('id', $draft->id)
+                ->update(['specification' => json_encode($edited, JSON_THROW_ON_ERROR)]);
             $register->transition($doc->refresh(), $author, CdeState::SHARED, 'S2');
             try {
                 app(PmsRevisionDraftService::class)->changePipeSchedule(

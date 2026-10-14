@@ -844,3 +844,11 @@ already present in a WIP JSON working copy pass through the service. A
 strict full-copy comparison against the last approved snapshot whitelists
 only schedule leaves before an authorized edit. The publication path and
 raw-SQL draft write boundary still need the same invariant; see ADR-028.
+
+### 2026-10-14: review the whole PMS draft set at WIP-to-SHARED (BUILT FOR SERVICE)
+
+Checking an author's individual edit is not enough when another writer can
+alter a JSON draft. The CDE transition now revalidates every working copy
+and membership against the previous approved snapshot in the same
+transaction before review. A later database guard is needed for raw SQL
+CDE state changes and a separate snapshot capture step is still required.

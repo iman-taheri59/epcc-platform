@@ -22,7 +22,11 @@ use Illuminate\Validation\ValidationException;
  */
 final class DocumentRegister
 {
-    public function __construct(private readonly ReviewCycle $review, private readonly PmsRevisionSnapshotService $pmsSnapshots)
+    public function __construct(
+        private readonly ReviewCycle $review,
+        private readonly PmsRevisionSnapshotService $pmsSnapshots,
+        private readonly PmsRevisionDraftReview $pmsDraftReview,
+    )
     {
     }
 
@@ -183,6 +187,9 @@ final class DocumentRegister
             $fresh = DocumentRevision::whereKey($revision->id)->lockForUpdate()->firstOrFail();
             if ($fresh->cde_state !== $revision->cde_state) {
                 throw ValidationException::withMessages(['state' => 'Revision state changed concurrently; please retry.']);
+            }
+            if ($to === CdeState::SHARED && $fresh->cde_state === CdeState::WIP) {
+                $this->pmsDraftReview->assertShareable($document, $fresh);
             }
             $fresh->update([
                 'cde_state' => $to,

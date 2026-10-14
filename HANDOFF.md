@@ -4379,3 +4379,17 @@ PostgreSQL CI while private Actions billing is blocked per owner's plan.
 **Do not** treat this as a database-wide draft gate or publication support:
 raw SQL WIP edits still bypass this service validation; approval capture
 still ignores draft content. Next protect review/publication transaction.
+
+## PMS WIP-to-SHARED working-copy review gate
+
+`PmsRevisionDraftReview` checks that the next PMS revision's draft class set
+exactly equals the preceding approved snapshot set and every draft passes
+the schedule-only full-delta validator before `DocumentRegister::transition`
+moves WIP to SHARED. The check runs under the locked revision in the same
+transaction. PmsClassDocumentTest now forges a branch rule after a legitimate
+schedule edit, expects a `specification` error and WIP rollback, then
+restores the draft and shares successfully. PHP lint and diff checks pass.
+PostgreSQL CI still deferred by the owner's private-repository plan.
+**Remaining:** direct SQL CDE transitions are not protected by this
+service check; snapshot capture still ignores drafts. Do not claim revised
+schedules can authorize new lines.

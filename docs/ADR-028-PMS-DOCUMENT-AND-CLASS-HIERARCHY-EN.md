@@ -418,3 +418,20 @@ This guard applies to **the service edit only**. Direct database edits to a
 WIP draft and publication from drafts still need a separate integrity and
 engineering validation gate. There is no approval or line authorization for
 a changed schedule yet. Database CI deferred while the repo stays private.
+
+### Sixteenth slice: block invalid PMS drafts before CDE review
+
+The CDE service now validates the entire PMS working-copy set when moving a
+revision from WIP to SHARED, inside the revision transition transaction and
+after locking the revision. Draft class IDs must exactly match the previous
+issued revision's approved snapshot class IDs; each draft is compared against
+its own prior snapshot using the strict schedule-only validator. A tampered
+branch rule (even after an authorized schedule edit) therefore prevents
+sharing, rather than entering the review cycle as though it were approved
+material. The first PMS revision has no prior snapshots/drafts and follows
+the original class publication checks. A regression checks rejection,
+rollback to WIP, restoration and successful sharing. Direct SQL CDE state
+updates bypass this service; database review/publish integrity remains a
+separate requirement. Draft content is still **not used** for approval
+snapshot capture and does not authorize a new line. PostgreSQL CI remains
+deferred until the owner restores public visibility or private Actions runs.
