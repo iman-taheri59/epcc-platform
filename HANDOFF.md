@@ -4434,3 +4434,18 @@ diff checks passed. **No PostgreSQL tests yet** while repository private
 Actions billing is blocked. Raw SQL mutation of CDE state/drafts could
 bypass engineering (reference-pack/pad) service checks: separately audit
 DB-only approval/author boundaries before calling this a universal gate.
+
+## Issue-time line PMS rule resolution
+
+`PmsPinnedClassSpecification` now retrieves a line's immutable snapshot by
+its pin, project and class and resolves exactly one PIPE_SCHEDULE for a DN.
+It rejects null/unmapped historical lines, missing or structurally bad
+snapshots and ambiguous/missing DN bands; it never falls back to the live
+class. Regression in PmsClassDocumentTest contrasts an A-pinned line (SCH
+80) with B-pinned line (STD) while the live published class still reads SCH
+80. PHP lint and diff checks passed, PostgreSQL CI deferred while private.
+Before any downstream line-based MTO, branch or engineering calculation is
+built, route its class-rule reads through the pin. No current production
+caller uses `PipingClassService::ruleFor` for a line; do not claim universal
+revision-aware calculations yet. DB-only CDE approval/author integrity still
+needs a separate boundary audit.

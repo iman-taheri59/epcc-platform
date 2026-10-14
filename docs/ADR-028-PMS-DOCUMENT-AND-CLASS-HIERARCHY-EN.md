@@ -495,3 +495,21 @@ DB-only CDE transition authorization/integrity audit remains outstanding.
 No claim of a universal engineering gate until PostgreSQL CI runs and this
 separate writer boundary is handled. Database tests remain deferred while
 the repository stays private at the owner's request.
+
+### Twentieth slice: resolve engineering rules from each line's pin
+
+A stable class ID is not sufficient to identify its specification after a
+revision: the frozen live class row still carries the earlier schedule,
+while a newer line may have a later approved schedule. New
+`PmsPinnedClassSpecification` reads the exact immutable snapshot referenced
+by a line, verifies project/class identity, and resolves the issued
+PIPE_SCHEDULE for a DN from that snapshot. It fails closed on a historical
+null pin, missing/malformed snapshot, missing DN coverage or ambiguous
+coverage rather than falling back to mutable/live class rules. The
+regression demonstrates the same class identity with old line SCH 80, new
+line STD, and unchanged live class SCH 80. Current production workflows do
+not yet consume class rules during per-line material or branch resolution;
+future line-dependent modelling/MTO writers MUST use the pinned resolver,
+not `PipingClassService::ruleFor($class, ...)`, which reads live rows.
+This API is a first read path, not evidence of downstream-wide migration.
+PostgreSQL CI remains deferred while the repository is private.

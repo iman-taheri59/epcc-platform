@@ -877,3 +877,11 @@ now captures the validated draft and the DB checks it against the prior
 approved snapshot with only schedule leaves allowed to differ. This is
 limited to the current schedule-only scope; DB-side engineering validation
 or a protected CDE write channel remains a further improvement. See ADR-028.
+
+### 2026-10-14: issue-time rule reads for each line (BUILT AS API)
+
+A stable class ID can span multiple approved PMS specifications; reading
+its frozen live rules would give a B-pinned line the A schedule. A new
+line-pin resolver reads exactly the immutable issued snapshot and refuses
+unmapped or ambiguous schedules. Future line-dependent component/MTO
+consumers must use it, with tests; see ADR-028.

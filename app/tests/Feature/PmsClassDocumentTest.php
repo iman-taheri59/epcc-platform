@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\PipingClass;
+use App\Models\PipingLine;
 use App\Support\CdeState;
 use Illuminate\Support\Str;
 use App\Models\Project;
@@ -13,6 +14,7 @@ use App\Services\DocumentRegister;
 use App\Services\PmsAccessService;
 use App\Services\PmsClassDocumentService;
 use App\Services\PmsLineEligibility;
+use App\Services\PmsPinnedClassSpecification;
 use App\Services\PmsRevisionDraftService;
 use App\Services\PipingLineService;
 use App\Support\TenantContext;
@@ -270,6 +272,13 @@ final class PmsClassDocumentTest extends TestCase
                 $author, 'SNAPSHOT-TEST-2', ['piping_class_id' => $class->id],
             );
             $this->assertSame($newSnapshot->id, $newLine->pms_class_snapshot_id);
+            $issued = app(PmsPinnedClassSpecification::class);
+            $oldLine = PipingLine::where('pms_class_snapshot_id', $oldPin)->firstOrFail();
+            $this->assertSame('80', $issued->pipeSchedule($oldLine, 100));
+            $this->assertSame('STD', $issued->pipeSchedule($newLine, 100));
+            $this->assertSame('80', app(\App\Services\PipingClassService::class)
+                ->ruleFor($class, 'PIPE_SCHEDULE', 100)->value['schedule'],
+                'The live published class is frozen; line rules must follow the issue-time pin.');
             $this->assertSame(2, DB::table('piping_lines')->where('pms_class_snapshot_id', $oldPin)->count());
             $this->assertSame(1, DB::table('piping_lines')->where('pms_class_snapshot_id', $newSnapshot->id)->count());
         }, $project->id);
