@@ -920,3 +920,12 @@ the issued document/revision; they do not accidentally show the *current*
 revision after supersession. A later improvement is a permission-aware link
 to the exact archived CDE revision and an owner-reviewed historical mapping
 workflow; do not infer such a link from the current document pointer.
+
+### 2026-10-14: fail-closed offline Laravel test preflight (BUILT)
+
+When GitHub Actions is blocked, running `php artisan test` against the wrong
+DB role or an important database could erase data or falsely pass RLS tests.
+The Laragon verifier first proves the dedicated test DB, non-superuser role,
+PostgreSQL extension and selected PHP version; only explicit `--run` starts
+PHPUnit. This is safer than treating any local `artisan test` output as
+CI-equivalent. It does not replace image/Compose or PDF-toolchain checks.

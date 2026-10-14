@@ -4571,3 +4571,20 @@ HTTP verification pending. No direct SQL/CDE writer authorization claim.
   restrictions. The issued-revision UI regression is PHP-linted but not
   PostgreSQL/HTTP-verified in this run. Last successful Laravel/PostgreSQL/RLS
   check remains 38591064891 on older commit `283c4ee`.
+
+## Offline Laragon PostgreSQL/RLS verification path
+
+`scripts/verify-laragon-pms.php` is a new safe local verifier while GitHub
+Actions is billing-blocked. Default mode is READ-ONLY: checks PHP >=8.4.1,
+PDO/pgsql and other required extensions, Composer dev dependencies,
+`app/phpunit.xml` epcc_test target, the real database connection, PostgreSQL
+>=16, btree_gist and the connected role's non-superuser/NOBYPASSRLS status.
+It refuses conflicting exported DB variables; it never prints credentials.
+Explicit `--run` clears cached configuration and invokes the PMS feature
+regression then all `php artisan test`; warns that the dedicated epcc_test
+schema will be dropped/recreated, and that skipped PDF tests/Compose are not
+validated by this runner. `docs/LARAGON-DEVELOPMENT-ENVIRONMENT.md` contains
+commands. PHP lint passed; the sandbox PHP correctly fails preflight at its
+missing `pdo_pgsql`, so success on Laragon is NOT claimed here. Owner can
+send sanitized test output without sharing .env/passwords. This verifier is
+not a replacement for the absent GitHub Compose job.

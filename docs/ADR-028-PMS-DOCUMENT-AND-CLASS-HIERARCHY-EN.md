@@ -620,3 +620,10 @@ PostgreSQL HTTP tests await Actions availability or the owner's Laragon run.
 CI run 38646018638 on `b7ac3eb` did not start test jobs because of GitHub
 account payment/spending-limit restrictions. The issued-revision UI change
 has not yet been verified by the Laravel/PostgreSQL/HTTP suite.
+
+Offline verification route while Actions is billing-blocked: the optional
+Laragon verifier `scripts/verify-laragon-pms.php` checks PHP/PostgreSQL,
+non-superuser RLS role, `btree_gist` and dedicated `epcc_test` without
+modifying data by default. `--run` explicitly opts in to destructive test
+migrations and runs the PMS regression followed by the whole Laravel suite.
+Its successful run is not yet reported; the sandbox PHP lacks `pdo_pgsql`.

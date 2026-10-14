@@ -70,9 +70,9 @@ tests (`SeedPathTest` fail-closed assertion first) go red — see the CI
 comment in `.github/workflows/ci.yml` and HANDOFF §4. Do not "simplify"
 this by logging the app in as `postgres`.
 
-`btree_gist` is not required by any current migration; it is the first thing
-piping phase P1 (ADR-008) needs, and creating it later requires admin
-rights, so create it now.
+`btree_gist` is required by the current piping-class EXCLUDE migration
+(ADR-008). Create it in **both** databases as the PostgreSQL admin before
+running migrations; the non-superuser app role cannot provision it.
 
 ## 4. The application
 
@@ -127,6 +127,28 @@ others and fills the form on click.
 cd app
 php artisan test
 ```
+
+For a read-only preflight from the repository root (checks the selected PHP,
+locked dev dependencies, dedicated test database, RLS role and extension):
+
+```bat
+php scripts/verify-laragon-pms.php
+```
+
+When it passes, the opt-in runner first runs the PMS class/revision feature
+test, then the full Laravel suite:
+
+```bat
+php scripts/verify-laragon-pms.php --run
+```
+
+**Warning:** `--run` executes `migrate:fresh` and deletes existing data in
+`epcc_test`. It refuses a superuser/BYPASSRLS role, a missing btree_gist
+extension, conflicting exported DB settings or any other database name in the
+PHPUnit configuration. Never use a database with important data for tests.
+The runner cannot check Docker Compose and it prints a reminder to inspect
+SKIPPED tests (especially PDF tooling) before claiming CI equivalence. Do
+not paste your `.env` or passwords into an issue; share the test output only.
 
 Runs against `epcc_test`. Two standing rules: never run the DB suites in
 **parallel** against the same `epcc_test` database (migration/drop-schema
