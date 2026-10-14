@@ -178,3 +178,8 @@ no annotated PMS picker errors. This is a CI execution, but not a green gate
 for the picker. A fresh documentation-triggered run can distinguish transient
 runner contention from reproducible PDF failure without altering acceptance
 limits.
+
+Follow-up CI run 38520710949 on `f4b392b` passed all six jobs, including
+Laravel/PostgreSQL/RLS. The PDF timeout on the preceding public run did not
+recur. This validates the class-picker slice only; direct line creation and
+import still need the approved-snapshot gate.

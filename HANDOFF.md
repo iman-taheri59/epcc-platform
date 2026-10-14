@@ -4186,3 +4186,9 @@ Do not infer a green test outcome until that new run completes.
   it does NOT establish a green full suite. No PMS picker failure appears in
   the check annotations, but that is not proof every picker assertion ran.
   Avoid changing production PDF limits just to hide a slow CI runner.
+
+- Follow-up public-repo run 38520710949 on `f4b392b` **passed all six jobs**,
+  including Laravel/PostgreSQL/RLS. The prior PDF timeout did not recur. This
+  finally verifies the PMS picker slice against the full CI suite; the strict
+  line admission service/DB write gate is still outstanding. Repository API
+  again confirms `visibility=public`.
