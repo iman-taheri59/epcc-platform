@@ -4501,3 +4501,14 @@ universal engineering authorization gate.
   remaining unannotated failures still need a fresh run/log. Run
   38590891134 for `a5f45b1` was in progress when checked and predates this
   fixture correction. Retest full PostgreSQL/RLS after push; no green claim.
+
+- **Real PostgreSQL/RLS verification resumed:** run 38591064891 for
+  `283c4ee` completed the Laravel suite **successfully** after fixing nested
+  PostgreSQL test savepoints and booting the Laravel unit test harness. Image,
+  PCF, standards and HTML jobs also succeeded. Overall workflow remains
+  **red solely because the Compose stack job did not start**: GitHub check
+  annotation says recent account payments failed or the spending limit must
+  increase. `gh run rerun 38591064891 --failed` was refused ("workflow file
+  may be broken"). This is a billing/scheduling failure, NOT a Compose
+  test failure. Owner must resolve GitHub billing/Actions limits, then
+  re-run the missed Compose job. Do not claim all six jobs green.

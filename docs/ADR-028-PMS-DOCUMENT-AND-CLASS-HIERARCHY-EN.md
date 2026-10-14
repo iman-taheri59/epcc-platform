@@ -551,3 +551,10 @@ for the next assertion; negative SQL writes now use savepoints. Pure
 validator PHPUnit tests now boot Laravel before creating framework
 ValidationExceptions. The artifact download failed with EOF; a fresh full
 CI run is required to identify any unannotated failures.
+
+Validation update: CI 38591064891 on `283c4ee` passed the complete Laravel
+PostgreSQL/RLS suite and the image, PCF, standards and HTML jobs. The only
+failed check was Compose, which never started because of GitHub billing or
+spending-limit restrictions. A failed-job rerun request was refused by
+GitHub. The PMS revision and admission regressions therefore have a green
+real-database suite, but the overall six-job workflow is not green.
