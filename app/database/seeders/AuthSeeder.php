@@ -65,19 +65,19 @@ final class AuthSeeder extends Seeder
             // someone else's drawing. It is deliberately NOT part of doc.* for
             // the originator - answering comments is doc.issue.
             ['employer_rep', 'Employer Representative', 'نمایندهٔ کارفرما',
-                ['cert.view', 'cert.approve', 'project.*', 'doc.view', 'doc.review', 'punch.*']],
+                ['cert.view', 'cert.approve', 'project.*', 'doc.view', 'doc.review', 'punch.*', 'engineering.report.capture']],
             ['project_manager', 'Project Manager', 'مدیر پروژه',
-                ['cert.view', 'cert.submit', 'project.view', 'doc.*', 'punch.*']],
+                ['cert.view', 'cert.submit', 'project.view', 'doc.*', 'punch.*', 'engineering.report.capture']],
             ['qc_inspector', 'QC Inspector', 'بازرس کنترل کیفیت',
-                ['cert.view', 'punch.*', 'project.view']],
+                ['cert.view', 'punch.*', 'project.view', 'engineering.report.capture']],
             ['site_engineer', 'Site Engineer', 'مهندس اجرا',
-                ['cert.view', 'project.view', 'doc.view']],
+                ['cert.view', 'project.view', 'doc.view', 'engineering.report.capture']],
             // The SRS visibility matrix (4.1) gives PMC "Verify" on punch
             // items, so the consultant needs punch.* to reach the register at
             // all. Which ACTIONS it may take is decided by PunchListService,
             // not by withholding the capability.
             ['consultant', 'Consultant / supervisor', 'مشاور / ناظر',
-                ['cert.view', 'cert.verify', 'project.view', 'doc.view', 'doc.review', 'punch.*']],
+                ['cert.view', 'cert.verify', 'project.view', 'doc.view', 'doc.review', 'punch.*', 'engineering.report.capture']],
             // The MANAGEMENT CONTRACTOR (مدیریت پیمان) administers the contract
             // for the employer: it walks systems down, checks what the
             // contractor claims, and signs off completion on the employer's
@@ -86,7 +86,7 @@ final class AuthSeeder extends Seeder
             // capability, because the SRS matrix gives MC "Raise/Verify" and
             // OWN "Approve close".
             ['mc_supervisor', 'Management contractor supervisor', 'ناظر مدیریت پیمان',
-                ['punch.*', 'project.view', 'doc.view']],
+                ['punch.*', 'project.view', 'doc.view', 'engineering.report.capture']],
         ];
 
         foreach ($roles as [$code, $en, $fa, $caps]) {

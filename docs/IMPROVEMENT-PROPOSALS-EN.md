@@ -1040,3 +1040,11 @@ report-capture capability (rather than the interim `project.view` permission)
 and keep issue, external verification, disposition and responsible-company
 sign-off as separate privileged events. Never interpret `EXTERNAL_RECORDED`
 as verified evidence.
+
+### 2026-10-15: replace project.view write shortcut (BUILT)
+
+Using `project.view` to create report rows was too permissive even without
+HTTP routes. `engineering.report.capture` now gates the capture service,
+while PIPING scope and RLS continue to apply. Keep future issue/signature/
+verify/disposition permissions separate; granting capture must never silently
+grant engineering approval.

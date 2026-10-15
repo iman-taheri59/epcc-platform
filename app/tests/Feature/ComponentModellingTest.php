@@ -761,6 +761,29 @@ final class ComponentModellingTest extends TestCase
         $this->assertSame(2, $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->count()));
     }
 
+    public function test_report_capture_needs_its_own_capability_and_piping_scope(): void
+    {
+        $service = app(\App\Services\PipeScheduleReportService::class);
+        $project = $this->project();
+        $requestId = (string) \Illuminate\Support\Str::uuid();
+        $civilEngineer = $this->userByEmail('mousavi@sahand.example');
+        try {
+            $service->draft($project, $civilEngineer, $requestId, 'TQ');
+            $this->fail('A CIVIL-only project member cannot capture PIPING reports.');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            $this->assertSame(403, $e->getStatusCode());
+        }
+
+        $role = \App\Models\Role::where('code', 'employer_rep')->firstOrFail();
+        $role->update(['capabilities' => ['project.view']]);
+        try {
+            $service->draft($project, $this->owner(), $requestId, 'TQ');
+            $this->fail('Project viewing alone must not grant report capture.');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            $this->assertSame(403, $e->getStatusCode());
+        }
+    }
+
     public function test_the_register_links_to_the_model_page(): void
     {
         // A screen nobody can reach is a screen that does not exist.

@@ -4781,3 +4781,13 @@ and diff check passed but PostgreSQL tests remain unrun. No HTTP UI/routes,
 issuer authorization, TQ response, NCR disposition or approval gate exist.
 The `project.view` permission is an interim capture guard and must be
 replaced with distinct report-capture capability before public exposure.
+
+## Dedicated report-capture capability (2026-10-15)
+
+`PipeScheduleReportService` no longer authorizes writes with `project.view`.
+The authorization pipeline maps `engineering.*` to core; seeded demo roles
+explicitly grant `engineering.report.capture` for capture only. Tests assert
+PIPING scope denies the CIVIL-only engineer and a role reduced to
+`project.view` cannot create a report. No report issue/signature/verification
+capability is granted; no public HTTP routes exist yet. PHP lint and diff
+check passed; PostgreSQL feature tests still unrun.

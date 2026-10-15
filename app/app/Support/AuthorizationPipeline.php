@@ -50,6 +50,7 @@ final class AuthorizationPipeline
         'doc.' => 'doc',
         'punch.' => 'qaqc',
         'project.' => 'core',
+        'engineering.' => 'core',
     ];
 
     public function __construct(private readonly TenantContext $tenant)

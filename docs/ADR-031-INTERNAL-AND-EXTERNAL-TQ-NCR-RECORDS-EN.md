@@ -62,3 +62,16 @@ its use is currently limited to application code/tests. `project.view` is a
 minimal interim capture capability, **not** signing or approval authority;
 a distinct issue/verification permission is required before exposing public
 report operations. DB-backed feature assertions have not run locally.
+
+## Dedicated capture authorization (2026-10-15)
+
+The interim `project.view` write guard has been replaced by the atomic
+`engineering.report.capture` capability in the core module. Demo roles are
+explicitly granted capture so employer, contractor, QC, consultant and
+management-contractor access arrangements can record their own scoped reports;
+project membership, PIPING discipline scope, plan and same-company request
+checks still apply. A view-only role is refused. This capability is **only**
+for capture; it grants no issue, signature, external verification, NCR closure
+or disposition right. Before exposing routes, agree project-specific authority
+and audit/denial UX. This correction supersedes the earlier paragraph that
+called `project.view` an interim guard.

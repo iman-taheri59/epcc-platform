@@ -46,7 +46,7 @@ final class PipeScheduleReportService
     {
         return $this->tenant->runAs($actor->company_id, function () use ($project, $actor, $requestId, $kind, $origin, $input): object {
             $this->archives->assertWritable($project);
-            abort_unless($this->authz->check($actor, 'project.view', $project, ['discipline' => 'PIPING']) === null, 403);
+            abort_unless($this->authz->check($actor, 'engineering.report.capture', $project, ['discipline' => 'PIPING']) === null, 403);
             $base = Validator::make(['request_id' => $requestId, 'kind' => $kind], [
                 'request_id' => ['required', 'uuid'],
                 'kind' => ['required', 'in:TQ,NCR'],
