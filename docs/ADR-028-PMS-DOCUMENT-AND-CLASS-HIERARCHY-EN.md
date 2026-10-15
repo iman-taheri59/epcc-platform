@@ -647,3 +647,8 @@ lines without a pin retain the existing manual modelling path for now, but
 cannot pass the newer AFC pin gate. A revision test asserts that old/new lines
 modelled after a new A-family PMS issue default to their respective old/new
 schedules.
+
+The component modelling screen shows the line's issued PMS document number
+and revision via the pinned snapshot relation, not `documents.current_revision_id`.
+It also displays each component's stored schedule, so an explicit override
+is visible. This is not an override authorization or conformance verdict.

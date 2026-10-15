@@ -949,3 +949,11 @@ a future reviewed decision should define how mismatching overrides are
 approved and audited before making them automatically valid for procurement.
 Manual MTO rows do not all map to a piping line, so a blanket MTO pin gate
 would be unsafe without designing row provenance first.
+
+### 2026-10-15: make modelled schedule/provenance visible (BUILT)
+
+Showing the component's stored schedule beside the line's issue-time PMS
+revision is safer than leaving an invisible explicit override hidden behind
+a joint warning. It is not a substitute for a reviewed schedule-override
+policy or an issue-time PMS conformance check. Those require a separate
+workflow decision; do not silently label every manually entered value valid.

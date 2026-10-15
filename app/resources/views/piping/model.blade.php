@@ -25,6 +25,8 @@
         'small'    => ['fa' => 'سر کوچک', 'en' => 'Small end'],
         'lenmm'    => ['fa' => 'طول (میلی‌متر)', 'en' => 'Length (mm)'],
         'sched'    => ['fa' => 'رده', 'en' => 'Schedule'],
+        'issuedPms'=> ['fa' => 'بازنگری PMS زمان صدور', 'en' => 'Issued PMS revision'],
+        'unmapped' => ['fa' => 'در انتظار بررسی کلاس و بازنگری PMS', 'en' => 'Class/PMS revision review required'],
         'inherit'  => ['fa' => 'سایز از پورت والد به ارث می‌رسد و قابل تایپ نیست.',
                        'en' => 'The size is inherited from the parent port and cannot be typed.'],
         'locked'   => ['fa' => 'این خط ابلاغ شده است؛ تغییر مدل آن نیاز به بازگشت به پیش‌نویس دارد.',
@@ -86,6 +88,16 @@
     @if($line->nominal_size) · <bdi>{{ $num($line->nominal_size) }}"</bdi> @endif
     @if($line->pipingClass) · {{ $line->pipingClass->code }} @endif
   </div>
+  @if($line->pms_class_snapshot_id !== null)
+    @php $issued = $line->pmsSnapshot?->documentRevision; @endphp
+    <div style="font-size:12px;color:var(--muted);margin-top:5px;">
+      {{ $L('issuedPms') }}:
+      {{ $issued?->document?->number ?? 'PMS' }} · {{ $issued?->revision ?? '—' }}
+      @if($issued?->suitability) ({{ $issued->suitability }}) @endif
+    </div>
+  @else
+    <div style="font-size:12px;color:#fca5a5;margin-top:5px;">{{ $L('unmapped') }}</div>
+  @endif
   <p style="color:var(--muted);font-size:13px;line-height:1.8;margin:6px 0 0;">{{ $L('sub') }}</p>
   <p style="margin:10px 0 0;">
     <a href="/projects/{{ $project->code }}/piping?{{ http_build_query($q) }}"
@@ -159,6 +171,7 @@
         <th data-sort="number">{{ $L('seq') }}</th>
         <th data-sort="text" data-facet>{{ $L('type') }}</th>
         <th data-sort="text">{{ $L('size') }}</th>
+        <th data-sort="text">{{ $L('sched') }}</th>
         <th>{{ $L('ports') }}</th>
         <th data-sort="number">{{ $L('length') }}</th>
         <th>{{ $L('actions') }}</th>
@@ -172,6 +185,7 @@
           <div style="color:var(--muted);font-size:11px;" class="mono">{{ $c->template_code }}</div>
         </td>
         <td class="mono">@if($c->nominal_size)<bdi>{{ $num($c->nominal_size) }}"</bdi>@else—@endif</td>
+        <td class="mono">{{ $c->schedule ?? '—' }}</td>
         <td style="font-size:12px;">
           @foreach($c->ports as $p)
             {{-- Open vs connected must be legible at a glance, and colour
@@ -207,7 +221,7 @@
         </td>
       </tr>
     @empty
-      <tr><td colspan="6" style="color:var(--muted);">{{ $L('none') }}</td></tr>
+      <tr><td colspan="7" style="color:var(--muted);">{{ $L('none') }}</td></tr>
     @endforelse
     </tbody>
   </table>

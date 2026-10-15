@@ -47,7 +47,7 @@ final class ComponentController extends Controller
         [$line, $rows, $open, $joints, $metrics] = $this->tenant->runAs(
             $user->company_id,
             function () use ($lineId): array {
-                $line = PipingLine::with(['subsystem', 'pipingClass'])->findOrFail($lineId);
+                $line = PipingLine::with(['subsystem', 'pipingClass', 'pmsSnapshot.documentRevision.document'])->findOrFail($lineId);
 
                 $rows = Component::with('ports')
                     ->where('piping_line_id', $line->id)

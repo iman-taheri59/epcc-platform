@@ -4652,3 +4652,14 @@ approved schedule-only revision, even though live class remains SCH 80.
 PHP lint and diff whitespace checks passed, not PHPUnit/PG (unavailable here).
 Remaining: decide policy for explicit schedule override; manual MTO has no
 universal line link, so do not impose a fake pin on all MTO rows.
+
+## Piping model visibility step (2026-10-15)
+
+Component modelling now eager-loads the line's pinned PMS document revision,
+displays its issue-time document number/revision or a legacy-unmapped warning,
+and shows each component's stored schedule in the model table (including
+manual overrides; this is visibility, NOT engineering approval). HTTP
+assertions added to ComponentModellingTest. PHP lint and diff check passed;
+the DB-backed HTTP test has not run locally due missing pdo_pgsql/Composer.
+Do not treat the displayed schedule as confirmation that an explicit override
+matches the issued PMS rule.

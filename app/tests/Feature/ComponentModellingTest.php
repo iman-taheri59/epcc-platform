@@ -572,6 +572,10 @@ final class ComponentModellingTest extends TestCase
             ->getContent();
 
         $this->assertStringContainsString('TEE', $html);
+        $this->assertStringContainsString('Issued PMS revision', $html);
+        $this->assertStringContainsString('PH-14-PIP-PMS-A1', $html);
+        $this->assertStringContainsString('Schedule', $html);
+        $this->assertStringContainsString('<td class="mono">80</td>', $html);
         $this->assertStringContainsString('Open ends', $html);
         // Three ports remain open: the tee's two runs and the pipe's far end.
         $this->assertStringContainsString('(3)', $html);
