@@ -75,3 +75,16 @@ for capture; it grants no issue, signature, external verification, NCR closure
 or disposition right. Before exposing routes, agree project-specific authority
 and audit/denial UX. This correction supersedes the earlier paragraph that
 called `project.view` an interim guard.
+
+## Freshness at internal draft creation (2026-10-15)
+
+The schedule-report service now locks the component/line and re-resolves the
+current issue-time PMS rule before creating an **IN_SYSTEM** TQ/NCR draft. A
+request whose actual schedule or snapshot no longer matches the current pipe,
+or whose expected schedule was forged through direct SQL, is refused. A report
+already issued and signed *outside* the application may be registered later
+against the historical request even if the component subsequently changed;
+that registration is only metadata, labelled stale by the model view, and
+still needs independent verification and applicable disposition. It must not
+be used to approve the component's new value. This is not a bypass around
+report issue/signature authority.

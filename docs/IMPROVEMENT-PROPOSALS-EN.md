@@ -1118,3 +1118,12 @@ and unverified external metadata plainly. It does not treat a raw approval
 row as engineering acceptance. At scale, paginate the per-line history and
 add report-event links once the issue/signature workflow exists; avoid
 loading every project report into a single page.
+
+### 2026-10-15: refuse stale internal report drafts, preserve historical imports (BUILT)
+
+An in-system draft written after a pipe was edited cannot honestly describe
+the old request as current. Recheck pinned PMS, DN and stored schedule under
+row locks for internal drafts. Retrospective external report metadata remains
+possible for audit, but its historical scope must be visibly distinct from a
+new issue or a present-day approval. Review/issue stages must repeat this
+freshness check later, not rely on the capture-time verdict alone.

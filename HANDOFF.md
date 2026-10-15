@@ -4886,3 +4886,14 @@ and report provenance: internal draft **not issued** vs external metadata
 not engineering acceptance. Tests assert history survives a 40 -> 60 schedule
 edit and both TQ draft/NCR external report labels. No release/approval gate is
 connected. PHP lint and diff check passed; PostgreSQL HTTP tests still unrun.
+
+## Report capture freshness split (2026-10-15)
+
+`PipeScheduleReportService` now locks pipe/line and rechecks actual schedule,
+issued PMS snapshot and recalculated expected schedule for a newly created
+IN_SYSTEM TQ/NCR draft. It refuses stale component state and raw-SQL forged
+expected values. EXTERNAL_REGISTER still permits retrospective metadata for
+an already issued/signed report on an old request, but no verification or
+approval results. Feature assertions cover forged expected value and 40->60
+edit: internal draft rejected, historical external registration remains
+EXTERNAL_RECORDED. PHP lint/diff checked, PostgreSQL tests still unrun.

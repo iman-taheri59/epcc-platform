@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Component;
+use App\Models\PipingLine;
 use App\Models\Project;
 use App\Models\User;
 use App\Support\AuthorizationPipeline;
@@ -22,6 +24,8 @@ final class PipeScheduleReportService
         private readonly TenantContext $tenant,
         private readonly AuthorizationPipeline $authz,
         private readonly ProjectArchiveService $archives,
+        private readonly PmsPinnedClassSpecification $issuedPms,
+        private readonly \App\Support\Reference\PipeReference $reference,
     ) {}
 
     /** @return object The newly recorded, unissued TQ/NCR draft. */
@@ -81,6 +85,29 @@ final class PipeScheduleReportService
                     ->where('id', $base['request_id'])->where('project_id', $project->id)
                     ->where('company_id', $actor->company_id)->first();
                 abort_if($request === null, 404);
+                if ($origin === 'IN_SYSTEM') {
+                    // A newly authored internal draft must describe the
+                    // component as it is NOW, not an old mismatch or a forged
+                    // request. Old externally issued reports may be registered
+                    // retrospectively, but remain unverified metadata.
+                    $component = Component::query()->whereKey($request->component_id)
+                        ->where('project_id', $project->id)->where('company_id', $actor->company_id)
+                        ->lockForUpdate()->firstOrFail();
+                    $line = PipingLine::query()->whereKey($component->piping_line_id)
+                        ->where('project_id', $project->id)->where('company_id', $actor->company_id)
+                        ->lockForUpdate()->firstOrFail();
+                    $size = $component->nominal_size !== null
+                        ? $this->reference->resolveLabel($component->nominal_size) : null;
+                    if ($component->template_code !== 'PIPE' || $size === null
+                        || $line->pms_class_snapshot_id !== $request->pms_class_snapshot_id
+                        || $component->schedule !== $request->actual_schedule
+                        || $request->actual_schedule === $request->expected_schedule
+                        || $this->issuedPms->pipeSchedule($line, $size->dn) !== $request->expected_schedule) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'request_id' => 'This schedule request no longer matches the issued PMS and current pipe. Capture a fresh discrepancy before drafting a report.',
+                        ]);
+                    }
+                }
                 $id = (string) Str::uuid();
                 DB::table('pipe_schedule_discrepancy_reports')->insert([
                     'id' => $id, 'request_id' => $request->id,

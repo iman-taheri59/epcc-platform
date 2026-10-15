@@ -747,6 +747,19 @@ final class ComponentModellingTest extends TestCase
         ]);
         $this->assertSame('EXTERNAL_RECORDED', $external->state);
         $this->assertNull($external->report_revision);
+        $forgedId = (string) \Illuminate\Support\Str::uuid();
+        $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
+            'id' => $forgedId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+            'expected_schedule' => '60', 'actual_schedule' => '40',
+            'reason' => 'Incorrect claimed PMS schedule entered by raw SQL', 'requested_by' => $actor->id,
+        ]));
+        try {
+            $service->draft($this->project(), $actor, $forgedId, 'TQ');
+            $this->fail('A forged expected PMS schedule must not create an internal TQ draft.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('request_id', $e->errors());
+        }
         try {
             $service->registerExternal($this->project(), $actor, $requestId, 'TQ', [
                 'report_number' => 'TQ-EXT-43', 'reported_issuer' => 'Contractor QC',
@@ -759,6 +772,22 @@ final class ComponentModellingTest extends TestCase
             $this->assertArrayHasKey('external_register_ref', $e->errors());
         }
         $this->assertSame(2, $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->count()));
+        $this->asOwner(fn () => DB::table('components')->where('id', $pipe->id)->update(['schedule' => '60']));
+        try {
+            $service->draft($this->project(), $actor, $requestId, 'TQ');
+            $this->fail('A new internal TQ draft must not use a stale schedule request.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('request_id', $e->errors());
+        }
+        $historical = $service->registerExternal($this->project(), $actor, $requestId, 'TQ', [
+            'report_number' => 'TQ-EXT-OLD', 'reported_issuer' => 'Contractor engineering',
+            'reported_signer' => 'External engineer',
+            'reported_signer_capacity' => 'Engineering signatory',
+            'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
+            'external_register_ref' => 'Contractor TQ register / old value',
+        ]);
+        $this->assertSame('EXTERNAL_RECORDED', $historical->state);
+        $this->assertSame(3, $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->count()));
     }
 
     public function test_report_capture_needs_its_own_capability_and_piping_scope(): void
