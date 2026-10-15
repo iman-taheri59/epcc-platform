@@ -652,3 +652,10 @@ The component modelling screen shows the line's issued PMS document number
 and revision via the pinned snapshot relation, not `documents.current_revision_id`.
 It also displays each component's stored schedule, so an explicit override
 is visible. This is not an override authorization or conformance verdict.
+
+A read-only component-screen comparison now uses the loaded issue-time PMS
+snapshot to mark each sized PIPE schedule matching, differing (with the
+expected schedule), or unverifiable. It does not query live class rules,
+silently accept missing evidence, or block a manually entered override.
+Only the schedule field is compared; material/pressure/other class conformance
+and approval of overrides remain outside this incremental step.

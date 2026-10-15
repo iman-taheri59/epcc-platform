@@ -4663,3 +4663,16 @@ assertions added to ComponentModellingTest. PHP lint and diff check passed;
 the DB-backed HTTP test has not run locally due missing pdo_pgsql/Composer.
 Do not treat the displayed schedule as confirmation that an explicit override
 matches the issued PMS rule.
+
+## Read-only issued schedule comparison (2026-10-15)
+
+On the model page each sized PIPE component with a pinned PMS line is compared
+against its **issued** snapshot, using in-memory eager-loaded JSON (no live
+class lookup or per-component DB queries). The screen shows a match, an
+explicit difference plus expected schedule, or "cannot be checked" for a
+missing/invalid DN or snapshot rule; it NEVER labels unknown as matching.
+`pipeScheduleFromSpecification()` shares the production resolver logic with
+`pipeSchedule()`; unit and HTTP regression assertions added. This is a
+visual warning, not a rejection/authorization or full material conformity
+check. PHP lint and diff check passed; DB-backed HTTP tests await Laragon or a
+PostgreSQL-capable PHP runtime. Do not infer that overrides are approved.

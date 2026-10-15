@@ -957,3 +957,13 @@ revision is safer than leaving an invisible explicit override hidden behind
 a joint warning. It is not a substitute for a reviewed schedule-override
 policy or an issue-time PMS conformance check. Those require a separate
 workflow decision; do not silently label every manually entered value valid.
+
+### 2026-10-15: surface pipe schedule mismatch without granting approval (BUILT)
+
+The safest interim approach before defining schedule-override authorization is
+to compare sized PIPE components to their line's pinned PMS in the model view,
+showing expected schedule when different and "cannot be checked" when input
+is incomplete. This avoids a misleading green indicator for legacy/corrupt
+provenance, but is not a procurement acceptance gate. A reviewed exception
+workflow with actor, reason and audit record is preferable to permanently
+allowing unexplained manual mismatches.

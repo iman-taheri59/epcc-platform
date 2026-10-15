@@ -41,6 +41,7 @@ final class PmsPinnedBranchResolutionTest extends TestCase
         ]];
         $this->assertSame(['schedule' => '80'], $resolver->ruleValueFromSpecification($spec, 'PIPE_SCHEDULE', 25));
         $this->assertSame(['schedule' => 'STD'], $resolver->ruleValueFromSpecification($spec, 'PIPE_SCHEDULE', 100));
+        $this->assertSame('80', $resolver->pipeScheduleFromSpecification($spec, 25));
 
         foreach ([
             [$spec, 300],

@@ -81,7 +81,13 @@ final class PmsPinnedClassSpecification
     /** Resolve exactly one issued pipe schedule covering DN. Never use the live rule table. */
     public function pipeSchedule(PipingLine $line, int $dn): string
     {
-        $schedule = $this->ruleValue($line, PipingRuleKind::PIPE_SCHEDULE, $dn)['schedule'] ?? null;
+        return $this->pipeScheduleFromSpecification($this->forLine($line), $dn);
+    }
+
+    /** @param array<string, mixed> $specification */
+    public function pipeScheduleFromSpecification(array $specification, int $dn): string
+    {
+        $schedule = $this->ruleValueFromSpecification($specification, PipingRuleKind::PIPE_SCHEDULE, $dn)['schedule'] ?? null;
         if (! is_string($schedule) || $schedule === '') {
             throw ValidationException::withMessages([
                 'piping_class_id' => "The issued PMS pipe schedule is missing for DN{$dn}.",

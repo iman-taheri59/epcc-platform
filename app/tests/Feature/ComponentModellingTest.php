@@ -581,6 +581,22 @@ final class ComponentModellingTest extends TestCase
         $this->assertStringContainsString('(3)', $html);
     }
 
+    public function test_model_page_flags_explicit_pipe_schedule_difference_against_issued_pms(): void
+    {
+        $line = $this->line('6');
+        $this->asOwner(function () use ($line): void {
+            $this->svc()->place($line, $this->owner(), 'PIPE', ['schedule' => '40']);
+            $this->svc()->place($line, $this->owner(), 'PIPE');
+        });
+
+        $this->actingAs($this->owner())
+            ->get("/projects/PH-14/piping/{$line->id}/model?lang=en")
+            ->assertOk()
+            ->assertSee('Differs from issued PMS schedule')
+            ->assertSee('Expected: 80')
+            ->assertSee('Matches issued PMS schedule');
+    }
+
     public function test_the_register_links_to_the_model_page(): void
     {
         // A screen nobody can reach is a screen that does not exist.

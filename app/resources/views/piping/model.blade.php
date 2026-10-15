@@ -27,6 +27,10 @@
         'sched'    => ['fa' => 'رده', 'en' => 'Schedule'],
         'issuedPms'=> ['fa' => 'بازنگری PMS زمان صدور', 'en' => 'Issued PMS revision'],
         'unmapped' => ['fa' => 'در انتظار بررسی کلاس و بازنگری PMS', 'en' => 'Class/PMS revision review required'],
+        'scheduleMatches' => ['fa' => 'منطبق با ردهٔ PMS زمان صدور', 'en' => 'Matches issued PMS schedule'],
+        'scheduleDiffers' => ['fa' => 'مغایر با ردهٔ PMS زمان صدور', 'en' => 'Differs from issued PMS schedule'],
+        'scheduleUnknown' => ['fa' => 'ردهٔ PMS قابل بررسی نیست', 'en' => 'Issued PMS schedule cannot be checked'],
+        'expected' => ['fa' => 'ردهٔ مورد انتظار', 'en' => 'Expected'],
         'inherit'  => ['fa' => 'سایز از پورت والد به ارث می‌رسد و قابل تایپ نیست.',
                        'en' => 'The size is inherited from the parent port and cannot be typed.'],
         'locked'   => ['fa' => 'این خط ابلاغ شده است؛ تغییر مدل آن نیاز به بازگشت به پیش‌نویس دارد.',
@@ -185,7 +189,19 @@
           <div style="color:var(--muted);font-size:11px;" class="mono">{{ $c->template_code }}</div>
         </td>
         <td class="mono">@if($c->nominal_size)<bdi>{{ $num($c->nominal_size) }}"</bdi>@else—@endif</td>
-        <td class="mono">{{ $c->schedule ?? '—' }}</td>
+        <td class="mono">
+          {{ $c->schedule ?? '—' }}
+          @if($c->template_code === 'PIPE' && $line->pms_class_snapshot_id !== null)
+            @php $check = $scheduleChecks[$c->id] ?? null; @endphp
+            @if($check === null)
+              <div style="font-size:11px;color:#fcd34d;">{{ $L('scheduleUnknown') }}</div>
+            @elseif($check['matches'])
+              <div style="font-size:11px;color:#86efac;">{{ $L('scheduleMatches') }}</div>
+            @else
+              <div style="font-size:11px;color:#fca5a5;">{{ $L('scheduleDiffers') }} · {{ $L('expected') }}: {{ $check['expected'] }}</div>
+            @endif
+          @endif
+        </td>
         <td style="font-size:12px;">
           @foreach($c->ports as $p)
             {{-- Open vs connected must be legible at a glance, and colour

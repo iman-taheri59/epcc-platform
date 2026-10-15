@@ -35,6 +35,7 @@ final class ComponentController extends Controller
         private readonly ComponentService $components,
         private readonly TenantContext $tenant,
         private readonly PipeReference $reference,
+        private readonly \App\Services\PmsPinnedClassSpecification $issuedPms,
         private readonly \App\Services\JointService $joints,
     ) {}
 
@@ -73,7 +74,34 @@ final class ComponentController extends Controller
             $project->id,
         );
 
+        // Read-only comparison against the eagerly loaded ISSUE-TIME snapshot.
+        // Missing/corrupt evidence is unknown, never silently marked conforming.
+        $scheduleChecks = [];
+        $spec = $line->pmsSnapshot?->specification;
+        if (is_array($spec)) {
+            foreach ($rows as $component) {
+                if ($component->template_code !== 'PIPE') {
+                    continue;
+                }
+                $size = $component->nominal_size !== null
+                    ? $this->reference->resolveLabel($component->nominal_size) : null;
+                if ($size === null) {
+                    continue;
+                }
+                try {
+                    $expected = $this->issuedPms->pipeScheduleFromSpecification($spec, $size->dn);
+                    $scheduleChecks[$component->id] = [
+                        'expected' => $expected,
+                        'matches' => $component->schedule === $expected,
+                    ];
+                } catch (ValidationException) {
+                    // A malformed/uncovered snapshot must not receive a green badge.
+                }
+            }
+        }
+
         return view('piping.model', [
+            'scheduleChecks' => $scheduleChecks,
             'lang' => $lang,
             'dir' => $lang === 'fa' ? 'rtl' : 'ltr',
             'user' => $user,
