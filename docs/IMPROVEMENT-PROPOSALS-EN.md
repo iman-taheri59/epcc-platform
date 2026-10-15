@@ -1180,3 +1180,13 @@ DN. Recheck expected PMS in both submission deduplication and model-page
 pending/draft affordances. Leave the old row visible with a warning rather
 than rewriting its immutable evidence. The report service still enforces
 freshness as the server-side authority.
+
+### 2026-10-15: keep preview and integration-test claims distinct (ACTIVE)
+
+The runnable Node preview and jsdom tests verify the air-gap-safe prototype,
+not the Laravel schedule request/report UI or PostgreSQL/RLS. A green degraded
+runner must explicitly retain the skipped integration suite. Recommended
+next verification: run Laragon preflight and the isolated `epcc_test` suite
+on the Windows primary environment (destructive `--run` only after confirming
+that database has no valuable data). CI billing is still blocked. No local
+SQLite substitute can prove PostgreSQL RLS correctness.

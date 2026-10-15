@@ -4958,3 +4958,19 @@ Model history warns of an unverified PMS claim and hides the internal draft
 form; report service remains the final server-side freshness check. A DB
 feature test inserts a false expected schedule by raw SQL and asserts a
 legitimate request can follow. PHP lint/diff checked; PostgreSQL tests unrun.
+
+## Verified degraded-environment run (2026-10-15)
+
+Installed local ignored npm/jsdom and Python jsonschema environments and ran
+`PATH="$PWD/.local/php-native/bin:$PATH" bash scripts/run-tests.sh` successfully:
+standards-pack validation, PHP rules conformance/material screening (including
+60 screening assertions), and five jsdom prototype suites (render: 324
+render combinations; sidebar: 19; piping workspace: 16; MTO: 15; order gap:
+19). **One suite skipped:** Laravel/PHPUnit/PostgreSQL RLS because `app/vendor`
+and `pdo_pgsql` are absent. These green results do NOT validate the recent
+schedule-request/report services, migrations, routes, or database RLS. The
+zero-dependency Node prototype server was started on `0.0.0.0:8080` as a
+live preview. It serves prototype screens, **not** the Laravel model page;
+run the latter with Laragon PHP 8.4 + PostgreSQL on a suitable workstation
+following `docs/LARAGON-DEVELOPMENT-ENVIRONMENT.md`. Do not claim DB tests
+passed based on the prototype preview.
