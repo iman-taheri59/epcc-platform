@@ -967,3 +967,13 @@ is incomplete. This avoids a misleading green indicator for legacy/corrupt
 provenance, but is not a procurement acceptance gate. A reviewed exception
 workflow with actor, reason and audit record is preferable to permanently
 allowing unexplained manual mismatches.
+
+### 2026-10-15: event-based exception audit instead of mutable approval flag (STAGED)
+
+The owner approved a reviewed exception with reason and traceability. An
+append-only request and independent decision pair better preserves who asked,
+what the issued PMS required, and who signed than a mutable `approved` flag on
+components. The evidence schema is implemented, but no approval capability is
+exposed until expected-value revalidation and reviewer authorization exist.
+For stronger evidence, separate database privileges must prevent direct SQL
+writes from impersonating the reviewer; RLS alone cannot attest identity.

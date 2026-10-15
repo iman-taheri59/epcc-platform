@@ -597,6 +597,40 @@ final class ComponentModellingTest extends TestCase
             ->assertSee('Matches issued PMS schedule');
     }
 
+    public function test_schedule_exception_audit_requires_reason_and_independent_decision_and_is_append_only(): void
+    {
+        $line = $this->line('6');
+        $pipe = $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'PIPE', ['schedule' => '40']));
+        $actor = $this->owner();
+        $id = (string) \Illuminate\Support\Str::uuid();
+        $request = [
+            'id' => $id, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+            'expected_schedule' => '80', 'actual_schedule' => '40',
+            'reason' => 'Approved alternative pending engineering review', 'requested_by' => $actor->id,
+        ];
+        $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert($request));
+        try {
+            $this->asOwner(fn () => DB::transaction(fn () => DB::table('pipe_schedule_exception_requests')
+                ->where('id', $id)->update(['reason' => 'Changed after submission'])));
+            $this->fail('Audit reason must be immutable.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
+        try {
+            $this->asOwner(fn () => DB::transaction(fn () => DB::table('pipe_schedule_exception_decisions')->insert([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+                'request_id' => $id, 'decision' => 'APPROVED', 'note' => 'Looks acceptable',
+                'decided_by' => $actor->id,
+            ])));
+            $this->fail('The requester must not approve their own exception.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
+        $this->assertSame(0, $this->asOwner(fn () => DB::table('pipe_schedule_exception_decisions')->count()));
+    }
+
     public function test_the_register_links_to_the_model_page(): void
     {
         // A screen nobody can reach is a screen that does not exist.

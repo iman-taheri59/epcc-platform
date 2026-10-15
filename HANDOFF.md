@@ -4676,3 +4676,18 @@ missing/invalid DN or snapshot rule; it NEVER labels unknown as matching.
 visual warning, not a rejection/authorization or full material conformity
 check. PHP lint and diff check passed; DB-backed HTTP tests await Laragon or a
 PostgreSQL-capable PHP runtime. Do not infer that overrides are approved.
+
+## Schedule-exception owner decision / first stage (2026-10-15)
+
+Owner explicitly chose an exception with reason, approver and traceable
+history rather than an unconditional rejection of mismatched PIPE schedules.
+ADR-029 records the staged contract. Migration `2026_10_15_100000` introduces
+append-only request/decision evidence, one decision per request, immutable
+reason and decision, actor separation, same-company/project/pin integrity,
+RLS and project archive write protection. Test assertions were added for
+immutable reason and blocked self-approval. **No request/review UI or
+approval service exists yet; do not count any mismatch as approved.** The
+next step is a transaction-safe service that derives expected schedule from
+the pinned snapshot and authorizes the reviewer. Cross-company sign-off
+requires a separate owner decision; existing RLS only writes own-company rows.
+PHP lint and whitespace checks passed; DB tests still unavailable locally.
