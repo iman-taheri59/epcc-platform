@@ -678,6 +678,50 @@ final class ComponentModellingTest extends TestCase
         }
     }
 
+    public function test_tq_ncr_register_keeps_internal_draft_distinct_from_externally_issued_metadata(): void
+    {
+        $line = $this->line('6');
+        $actor = $this->owner();
+        $pipe = $this->asOwner(fn () => $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']));
+        $requestId = (string) \Illuminate\Support\Str::uuid();
+        $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
+            'id' => $requestId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+            'expected_schedule' => '80', 'actual_schedule' => '40',
+            'reason' => 'Technical query required for schedule deviation', 'requested_by' => $actor->id,
+        ]));
+        $base = ['request_id' => $requestId, 'project_id' => $line->project_id,
+            'company_id' => $actor->company_id, 'recorded_by' => $actor->id];
+        $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->insert($base + [
+            'id' => (string) \Illuminate\Support\Str::uuid(), 'kind' => 'TQ',
+            'origin' => 'IN_SYSTEM', 'state' => 'DRAFT',
+        ]));
+        $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->insert($base + [
+            'id' => (string) \Illuminate\Support\Str::uuid(), 'kind' => 'NCR',
+            'origin' => 'EXTERNAL_REGISTER', 'state' => 'EXTERNAL_RECORDED',
+            'report_number' => 'EXT-NCR-42', 'reported_issuer' => 'Project contractor',
+            'reported_signer' => 'External engineer', 'reported_signer_capacity' => 'NCR signatory',
+            'reported_issued_at' => now(), 'reported_signed_at' => now(),
+            'external_register_ref' => 'Contractor register 2026 / NCR 42',
+        ]));
+        $this->assertSame(2, $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->count()));
+        foreach ([
+            ['kind' => 'TQ', 'origin' => 'IN_SYSTEM', 'state' => 'EXTERNAL_RECORDED'],
+            ['kind' => 'NCR', 'origin' => 'EXTERNAL_REGISTER', 'state' => 'EXTERNAL_RECORDED',
+                'report_number' => 'EXT-NCR-43', 'reported_issuer' => 'Project contractor',
+                'reported_signer' => 'External engineer', 'reported_signer_capacity' => 'NCR signatory',
+                'reported_issued_at' => now(), 'reported_signed_at' => now()],
+        ] as $invalid) {
+            try {
+                $this->asOwner(fn () => DB::transaction(fn () => DB::table('pipe_schedule_discrepancy_reports')
+                    ->insert($base + ['id' => (string) \Illuminate\Support\Str::uuid()] + $invalid)));
+                $this->fail('Incomplete external metadata or forged internal issue must be refused.');
+            } catch (\Illuminate\Database\QueryException $e) {
+                $this->assertSame('23514', $e->getCode());
+            }
+        }
+    }
+
     public function test_the_register_links_to_the_model_page(): void
     {
         // A screen nobody can reach is a screen that does not exist.

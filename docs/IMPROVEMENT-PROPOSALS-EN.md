@@ -1020,3 +1020,13 @@ without an uploaded document. Requiring an uploaded PDF would incorrectly
 exclude valid offline-issued documents. See ADR-031. In-system issuance needs
 a separately auditable workflow and cannot be simulated by an external
 report-number form.
+
+### 2026-10-15: mode-specific report constraints (BUILT schema, workflow pending)
+
+A single generic `issued=true` flag could make an in-system unsigned draft
+look like an externally signed NCR. A typed schedule-report register now
+permits only internal DRAFT or external RECORDED shapes and does not carry
+any approval boolean. For production, prefer separate append-only issue,
+answer, sign-off, external verification and disposition events attached to a
+common discrepancy identity. Generalize beyond schedule only after contract
+roles and held gates are specified (ADR-031).

@@ -4755,3 +4755,16 @@ TQ/NCR register or in-system signature/issuance exists yet, no approval gate
 uses these candidate rows. PHP lint/whitespace checked; PostgreSQL test still
 pending. The existing `uploaded_by` column is a legacy name for metadata
 recorder when no file exists and should be renamed in a future schema step.
+
+## TQ/NCR two-mode register slice (2026-10-15)
+
+New migration `2026_10_15_130000` adds a schedule-discrepancy-linked,
+project/RLS-scoped, append-only TQ/NCR register. DB CHECK distinguishes
+IN_SYSTEM/DRAFT (no purported signature or issue number) from
+EXTERNAL_REGISTER/EXTERNAL_RECORDED (reported number, issuer, signer/capacity,
+issue and sign dates, external register reference; no file or revision
+required). The latter means information captured, NOT verified or approved.
+A feature test inserts both modes and checks incomplete/forged shapes fail.
+No HTTP workflow, internal TQ/NCR issuance or external verification exists yet;
+no approval or release gate consumes these rows. PostgreSQL tests have not
+run due missing local pdo_pgsql and billing-blocked CI. See ADR-031.

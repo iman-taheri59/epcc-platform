@@ -32,3 +32,19 @@ The existing `pipe_schedule_external_signatures` tables are a **schedule-specifi
 ## Verification plan
 
 PostgreSQL/RLS tests must cover both modes independently; externally registered metadata without a file/revision; failed, withdrawn or superseded verification; missing line-owner sign-off; unanswered TQ; NCR without disposition; and tenant/company-scope denial. No successful integration test has run for this requirement yet.
+
+## First typed register slice (2026-10-15)
+
+`pipe_schedule_discrepancy_reports` records a TQ or NCR linked by FK to a
+schedule-exception request, with two non-overlapping shapes. `IN_SYSTEM` can
+only be inserted as DRAFT without an issue number, issuer or signature;
+`EXTERNAL_REGISTER` requires reported number, external issuer/signatory/
+capacity, issue/signature dates and external register reference, but accepts
+no file and no revision. Database CHECKs, append-only trigger, source-company
+integrity, project-scope RLS and archive write guard prevent mode confusion.
+This is a **schema-only, schedule-specific first slice**; there is no public
+controller/service yet, no in-system issue/signature events, independent
+external-source verification, TQ answer, NCR disposition or release gate.
+The `EXTERNAL_RECORDED` state means metadata captured, not accepted. Direct
+SQL with application credentials can still forge metadata; DB role separation
+and authorized API are required before treating it as trustworthy evidence.
