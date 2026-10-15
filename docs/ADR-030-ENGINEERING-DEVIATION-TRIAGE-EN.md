@@ -18,12 +18,27 @@ A discrepancy may be accepted when (1) a project-applicable reference standard, 
 
 The ADR-029 tables hold an append-only reason and an independent decision but **have no reference type/edition/clause, TQ/NCR linkage, condition-evidence check, disposition or authorized reviewer workflow**. Thus their schema alone cannot establish acceptance under this ADR. The existing model-page badge is informational; no downstream gate may regard an `APPROVED` row in those tables as a sufficient engineering disposition. Before exposing an approval API, evolve the evidence model around a common discrepancy identity and add route-specific evidence/decision records rather than a free-form justification string or a generic APPROVED flag. Legacy data is not migrated to assumed approvals.
 
-## Open governance questions
+## Owner clarifications (2026-10-15)
 
-1. Who is the designated approval authority for the three routes (originating contractor, employer, consultant, or an assigned discipline authority), and may it sign off across company boundaries? Current RLS does not grant cross-company writes to components/lines.
-2. Is a TQ answer itself sufficient when it explicitly permits use-as-is, or must a separate acceptance decision follow? Recommendation: separate answer from disposition.
-3. Which checkpoints must block on an unresolved discrepancy (component issue, AFC, MTO acceptance, procurement, fabrication, final handover)? Recommendation: block irreversible/issued gates and show a warning during draft modelling.
-4. What is the binding precedence of project contract, PMS, adopted standard and project specification/procedure if they conflict? Record the project-specific order; never hard-code an invented universal order.
+1. The **company responsible for the line must also sign**; other reviewing parties may need to sign per project workflow. The purchased package can grant access only to employer, consultant or management contractor, not to the contractor/line-owning company. Missing a paid interactive account must NOT silently waive the responsible company's signature.
+2. A **TQ answer alone is not final acceptance**: record a separate explicit disposition after the answer, with conditions and required sign-offs.
+
+## Proposed access-independent signature model (awaiting owner approval)
+
+Separate (a) the *legally/contractually responsible organization* for the line, (b) the tenant company that recorded the row, (c) the human who signed, and (d) the person who imported/verified the evidence. `piping_lines.company_id` currently identifies a writing tenant for RLS and must not automatically be treated as proof of the legally responsible line company. Record project-party identity and authority, effective period and scope (e.g. line/discipline), not a made-up signature from the only licensed user. Two acceptable routes, subject to contract:
+
+- A narrowly scoped **external signer** invitation/portal with only assigned discrepancy and attached evidence, short lifetime, identity verification and a tamper-evident decision record, ideally independent of paid full seats. Commercial feasibility and licensing require owner approval; do not assume this feature exists.
+- **Offline signed evidence** (formally signed letter, TQ response or approved document) from the responsible organization, uploaded by a licensed user and checked by a *different* authorized verifier against signatory identity, authority, validity, document/version and the exact discrepancy. Record signer organization/person/capacity/date, source document ID/hash, uploader, verifier, verification outcome/time and any withdrawal. Never display the uploader as the signer; an uploaded PDF alone does not establish authenticity or delegated authority.
+
+The remaining employer/consultant/management-contractor decisions are separate signed events under a project-configured authority matrix. Stages/signatories depend on project agreement, not a hard-coded universal order. If the responsible company cannot sign or the signature cannot be independently verified, keep the discrepancy **ON HOLD**; allow substitution only with explicit contractual delegation/novation evidence approved by authorized parties, never because of the subscription tier. For an unresolved TQ/NCR, an external signature is not itself a technical disposition.
+
+RLS design implication: store an evidence/attestation record written by the verifier's **own tenant** with a separate `represented_company_id`/`responsible_company_id` and evidence provenance. Do not change another company's component/line row or broaden its WITH CHECK. A future approval projection may read several cross-company attestation events under carefully scoped project RLS; active signature/role authority must be checked at the time of signing. ADR-029's existing decision row is same-company only and cannot implement this multi-party process; it must not be exposed as final approval.
+
+## Remaining governance questions
+
+1. Which checkpoints block on an unresolved discrepancy (component issue, AFC, MTO acceptance, procurement, fabrication, final handover)? Recommendation: block irreversible/issued gates and show a warning during draft modelling.
+2. What is the binding precedence of project contract, PMS, adopted standard and project specification/procedure if they conflict? Record the project-specific order; never hard-code an invented universal order.
+3. Is offline signed evidence accepted as a valid signature under the project's contractual/document-control rules, and can a limited-access external signer be offered outside paid full-user seats? Until resolved, both are proposals, not deployed capabilities.
 
 ## Verification plan
 

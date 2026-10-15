@@ -988,3 +988,15 @@ project specifications/procedures, answered TQs and NCR dispositions; compute
 current applicability and downstream holds from the evidence. Do not ship
 ADR-029's bare decision row as a procurement/AFC approval. Scope, approval
 authority and contractual precedence need owner decisions first (ADR-030).
+
+### 2026-10-15: separate responsible party from licensed tenant (PROPOSED)
+
+The owner requires a responsible-line-company signature even on packages where
+that organization lacks a paid login. Treat the subscription as a UI/access
+policy, never as grounds to waive engineering authorization. Prefer a
+scope-limited external signatory flow, or project-contract-permitted offline
+signed evidence verified by an independent authorized user. Model signer,
+organization, tenant uploader and verifier separately; `piping_lines.company_id`
+is not necessarily legal responsibility. Without verified signature or formal
+delegation, leave the discrepancy on hold (ADR-030). Commercial terms for
+limited signers and document-control validity require owner decisions.

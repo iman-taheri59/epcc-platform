@@ -27,3 +27,11 @@ TQ and subsequent disposition; otherwise NCR handling applies. A TQ/NCR
 number or issuance alone is **not acceptance**. The current request/decision
 tables do not yet encode this proof, so **do not expose their APPROVED row as
 an effective override**, and do not connect it to AFC/MTO/procurement gates.
+
+Owner clarification: the responsible line company must sign even if its users
+cannot access the licensed application. `company_id` on existing request/
+decision rows is an RLS tenant attribute, **not verified legal responsibility
+or a valid offline signature**. See ADR-030 for a proposed external signer or
+independently verified offline attestation, with separate signatory, uploader
+and verifier identities. Do not mistake the same-company SQL constraint in
+this initial skeleton for a complete multi-party approval workflow.

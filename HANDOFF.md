@@ -4708,3 +4708,20 @@ answers: authority across companies, TQ answer vs disposition, affected hold
 gates, contractual reference precedence. No application code changed in this
 step; PostgreSQL tests remain pending due local pdo_pgsql absence/Actions
 billing block.
+
+## Signature when responsible party has no paid login (2026-10-15)
+
+Owner answered that the responsible line company MUST sign; depending on the
+commercial package only employer/consultant/management contractor may have
+system access. Owner also confirmed TQ answer needs a separate final
+acceptance/disposition. ADR-030 now distinguishes contractual responsibility
+from `piping_lines.company_id` (RLS recording tenant), human signatory,
+uploader and independent verifier. Proposed routes: restricted external
+signer, or project-permitted offline signed document with independently
+verified authority, provenance/hash and scope. Without a verified signature
+or formal contractual delegation, keep ON HOLD; do not impersonate an absent
+contractor or silently waive a sign-off due to plan tier. ADR-029's same-
+company decision table is insufficient and must not drive release. Questions
+remain on whether offline signatures are contractually valid, guest-signing
+commercial policy, project-specific authority matrix and blocked gates.
+Documentation step only; no signature feature exists yet, no DB tests ran.
