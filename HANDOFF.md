@@ -4768,3 +4768,16 @@ A feature test inserts both modes and checks incomplete/forged shapes fail.
 No HTTP workflow, internal TQ/NCR issuance or external verification exists yet;
 no approval or release gate consumes these rows. PostgreSQL tests have not
 run due missing local pdo_pgsql and billing-blocked CI. See ADR-031.
+
+## Schedule TQ/NCR provenance capture service (2026-10-15)
+
+`PipeScheduleReportService` now records only IN_SYSTEM/DRAFT or
+EXTERNAL_REGISTER/EXTERNAL_RECORDED TQ/NCR rows. It validates project/PIPING
+membership + `project.view`, the same-company schedule request, archive
+status, and mandatory external metadata, then writes inside tenant context.
+No caller can provide a state or issue/sign via this service. A feature test
+checks both paths and rejects missing external register reference; PHP lint
+and diff check passed but PostgreSQL tests remain unrun. No HTTP UI/routes,
+issuer authorization, TQ response, NCR disposition or approval gate exist.
+The `project.view` permission is an interim capture guard and must be
+replaced with distinct report-capture capability before public exposure.

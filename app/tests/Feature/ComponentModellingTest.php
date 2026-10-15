@@ -722,6 +722,45 @@ final class ComponentModellingTest extends TestCase
         }
     }
 
+    public function test_report_service_records_only_internal_drafts_or_unverified_external_metadata(): void
+    {
+        $line = $this->line('6');
+        $actor = $this->owner();
+        $pipe = $this->asOwner(fn () => $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']));
+        $requestId = (string) \Illuminate\Support\Str::uuid();
+        $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
+            'id' => $requestId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+            'expected_schedule' => '80', 'actual_schedule' => '40',
+            'reason' => 'Reference conflict needs independent resolution', 'requested_by' => $actor->id,
+        ]));
+        $service = app(\App\Services\PipeScheduleReportService::class);
+        $draft = $service->draft($this->project(), $actor, $requestId, 'TQ');
+        $this->assertSame('DRAFT', $draft->state);
+        $this->assertNull($draft->report_number);
+        $external = $service->registerExternal($this->project(), $actor, $requestId, 'NCR', [
+            'report_number' => 'NCR-EXT-42', 'reported_issuer' => 'Contractor QC',
+            'reported_signer' => 'Authorized engineer',
+            'reported_signer_capacity' => 'QC signatory',
+            'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
+            'external_register_ref' => 'Contractor NCR register / 42',
+        ]);
+        $this->assertSame('EXTERNAL_RECORDED', $external->state);
+        $this->assertNull($external->report_revision);
+        try {
+            $service->registerExternal($this->project(), $actor, $requestId, 'TQ', [
+                'report_number' => 'TQ-EXT-43', 'reported_issuer' => 'Contractor QC',
+                'reported_signer' => 'Authorized engineer',
+                'reported_signer_capacity' => 'QC signatory',
+                'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
+            ]);
+            $this->fail('An external report without its source register must be refused.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('external_register_ref', $e->errors());
+        }
+        $this->assertSame(2, $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->count()));
+    }
+
     public function test_the_register_links_to_the_model_page(): void
     {
         // A screen nobody can reach is a screen that does not exist.

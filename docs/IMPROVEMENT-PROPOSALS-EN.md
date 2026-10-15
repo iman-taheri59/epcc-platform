@@ -1030,3 +1030,13 @@ any approval boolean. For production, prefer separate append-only issue,
 answer, sign-off, external verification and disposition events attached to a
 common discrepancy identity. Generalize beyond schedule only after contract
 roles and held gates are specified (ADR-031).
+
+### 2026-10-15: separate capture from issue/signature authority (BUILT service, API pending)
+
+`PipeScheduleReportService` now checks the actor's project/PIPING scope for
+recording either provenance shape, but cannot issue an internal draft or
+verify an external report. A future public route should use a dedicated
+report-capture capability (rather than the interim `project.view` permission)
+and keep issue, external verification, disposition and responsible-company
+sign-off as separate privileged events. Never interpret `EXTERNAL_RECORDED`
+as verified evidence.

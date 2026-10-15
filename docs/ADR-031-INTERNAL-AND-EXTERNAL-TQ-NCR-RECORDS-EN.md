@@ -48,3 +48,17 @@ external-source verification, TQ answer, NCR disposition or release gate.
 The `EXTERNAL_RECORDED` state means metadata captured, not accepted. Direct
 SQL with application credentials can still forge metadata; DB role separation
 and authorized API are required before treating it as trustworthy evidence.
+
+## Scoped capture service (2026-10-15)
+
+`PipeScheduleReportService` can record an IN_SYSTEM TQ/NCR **draft** or
+EXTERNAL_REGISTER metadata for an already issued/signed report, scoped to an
+existing same-company project schedule request. It checks active project
+membership, `project.view` capability, PIPING discipline, archive status and
+external source metadata before writing under tenant/RLS context. It never
+allows a caller to set state, issue an internal report, or claim an external
+record has been independently verified. The service is not an HTTP workflow;
+its use is currently limited to application code/tests. `project.view` is a
+minimal interim capture capability, **not** signing or approval authority;
+a distinct issue/verification permission is required before exposing public
+report operations. DB-backed feature assertions have not run locally.
