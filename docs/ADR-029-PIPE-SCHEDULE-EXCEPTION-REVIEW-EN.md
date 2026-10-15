@@ -17,3 +17,13 @@ The application service must independently recompute expected schedule from the 
 ## Verification
 
 Feature assertions cover immutable reason and rejection of self-approval; execution awaits a real Laravel/PostgreSQL/RLS runtime. PHP lint and whitespace checks are not DB verification. Existing CI is billing-blocked. Do not claim the workflow is operational until reviewer authorization, application API, and DB tests pass.
+
+## 2026-10-15 scope correction from owner
+
+See ADR-030: exception review is not merely an independent actor plus a free-text
+reason. Valid disposition requires proof under a project-applicable standard
+or specification/procedure and its stated conditions, or a formally answered
+TQ and subsequent disposition; otherwise NCR handling applies. A TQ/NCR
+number or issuance alone is **not acceptance**. The current request/decision
+tables do not yet encode this proof, so **do not expose their APPROVED row as
+an effective override**, and do not connect it to AFC/MTO/procurement gates.

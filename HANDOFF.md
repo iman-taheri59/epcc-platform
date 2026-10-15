@@ -4691,3 +4691,20 @@ next step is a transaction-safe service that derives expected schedule from
 the pinned snapshot and authorizes the reviewer. Cross-company sign-off
 requires a separate owner decision; existing RLS only writes own-company rows.
 PHP lint and whitespace checks passed; DB tests still unavailable locally.
+
+## Owner correction: global discrepancy triage (2026-10-15)
+
+Owner clarified that **any** discrepancy can be accepted with documented,
+fulfilled conditions of an applicable project standard or project
+specification/procedure; alternatively issue a TQ for resolution; otherwise
+issue NCR. Recorded in English ADR-030 and ADR-029 scope correction. Crucial
+safety interpretation proposed (awaiting governance decisions): issuing a TQ
+or NCR is not itself acceptance; TQ answer and NCR disposition need controlled
+review/closure, and an incomplete or unsupported citation is not acceptance.
+ADR-029's prior request/decision tables are only an unexposed audit skeleton:
+no reference/clause, conditions, TQ/NCR link, reviewer workflow or downstream
+holds exist. Do not treat an APPROVED row as effective approval. Pending owner
+answers: authority across companies, TQ answer vs disposition, affected hold
+gates, contractual reference precedence. No application code changed in this
+step; PostgreSQL tests remain pending due local pdo_pgsql absence/Actions
+billing block.

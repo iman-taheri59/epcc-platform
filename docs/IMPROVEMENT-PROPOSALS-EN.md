@@ -977,3 +977,14 @@ components. The evidence schema is implemented, but no approval capability is
 exposed until expected-value revalidation and reviewer authorization exist.
 For stronger evidence, separate database privileges must prevent direct SQL
 writes from impersonating the reviewer; RLS alone cannot attest identity.
+
+### 2026-10-15: one discrepancy identity, route-specific evidence (PROPOSED)
+
+The owner clarified that the schedule case is one example of a wider
+engineering deviation process. A generic approval flag or free-text reason
+would silently equate citations, issued TQs and NCRs. Prefer a common
+immutable discrepancy record plus typed, versioned evidence for standards,
+project specifications/procedures, answered TQs and NCR dispositions; compute
+current applicability and downstream holds from the evidence. Do not ship
+ADR-029's bare decision row as a procurement/AFC approval. Scope, approval
+authority and contractual precedence need owner decisions first (ADR-030).
