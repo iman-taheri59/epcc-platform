@@ -1145,3 +1145,13 @@ DN's discrepancy because the same code denotes different wall thickness at
 different sizes. Persist NPS/DN on new requests, compare them when deduping
 and drafting reports, and mark size-unknown legacy entries as unverified
 rather than reconstructing history from today's component size.
+
+### 2026-10-15: make external metadata auditable from the model page (BUILT)
+
+Capturing signatory and external register reference while showing only the
+report number made it difficult to spot transcription errors and blurred the
+separate roles of reporter and system recorder. History now exposes the
+recorded claims behind an explicitly unverified details panel, preserving
+both identities without treating either as project approval. A future
+correction workflow should supersede, not mutate, append-only entries; its
+identity/authority policy requires a separate decision.

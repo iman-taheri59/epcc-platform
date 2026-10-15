@@ -4924,3 +4924,12 @@ Feature test changes NPS 6/DN150 to NPS 8/DN200 at unchanged schedule,
 asserts new request can be made and old draft rejected. No Fit-up validation
 or engineering acceptance is inferred. PHP lint/diff checks passed;
 PostgreSQL tests still unrun.
+
+## External report readback (2026-10-15)
+
+The model's report history now has a collapsed details panel for each
+external TQ/NCR: number/revision, claimed issuer/signatory/capacity, claimed
+issue/signature dates, external register reference, and separate local
+recorder ID/time. Everything remains visibly *unverified*, and Blade escapes
+external free text. Feature HTTP assertions check readback. No verification,
+issuance, disposition, signature or Fit-up acceptance is added.

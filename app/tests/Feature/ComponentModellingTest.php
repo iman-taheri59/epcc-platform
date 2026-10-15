@@ -931,7 +931,14 @@ final class ComponentModellingTest extends TestCase
             ->assertSee('Discrepancy request history')
             ->assertSee('Internal draft; not issued')
             ->assertSee('External report metadata; not verified')
+            ->assertSee('Recorded details (external claim; not verified)')
             ->assertSee('EXT-NCR-42')
+            ->assertSee('Contractor QC')
+            ->assertSee('External engineer')
+            ->assertSee('NCR signatory')
+            ->assertSee('2026-10-14')
+            ->assertSee('Contractor NCR register / 42')
+            ->assertSee('System recorder ID (not issuer)')
             ->assertSee('Review requested; not approved')
             ->assertDontSee('Request discrepancy review');
         $this->actingAs($this->owner())->post($url."/{$pipe->id}/request-review?lang=en", [

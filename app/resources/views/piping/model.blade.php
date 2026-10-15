@@ -51,6 +51,9 @@
         'reportIssuedAt' => ['fa' => 'تاریخ صدور بیرونی', 'en' => 'External issue date'],
         'reportSignedAt' => ['fa' => 'تاریخ امضا', 'en' => 'Signature date'],
         'reportRegister' => ['fa' => 'مرجع رجیستر/بایگانی بیرونی', 'en' => 'External register reference'],
+        'reportDetails' => ['fa' => 'جزئیات اطلاعات ثبت‌شده (ادعای بیرونی؛ راستی‌آزمایی نشده)', 'en' => 'Recorded details (external claim; not verified)'],
+        'reportRecordedAt' => ['fa' => 'زمان ثبت در سامانه', 'en' => 'Recorded in system at'],
+        'reportRecorder' => ['fa' => 'شناسهٔ ثبت‌کننده در سامانه (نه صادرکننده)', 'en' => 'System recorder ID (not issuer)'],
         'inherit'  => ['fa' => 'سایز از پورت والد به ارث می‌رسد و قابل تایپ نیست.',
                        'en' => 'The size is inherited from the parent port and cannot be typed.'],
         'locked'   => ['fa' => 'این خط ابلاغ شده است؛ تغییر مدل آن نیاز به بازگشت به پیش‌نویس دارد.',
@@ -269,6 +272,21 @@
                         {{ $L('internalDraft') }}
                       @else
                         {{ $L('externalMetadata') }} · <bdi>{{ $report->report_number }}</bdi>
+                        <details style="margin:4px 0 8px 12px;">
+                          <summary>{{ $L('reportDetails') }}</summary>
+                          <div>{{ $L('reportNumber') }}: <bdi>{{ $report->report_number }}</bdi></div>
+                          @if($report->report_revision !== null)
+                            <div>{{ $L('reportRevision') }}: <bdi>{{ $report->report_revision }}</bdi></div>
+                          @endif
+                          <div>{{ $L('reportIssuer') }}: {{ $report->reported_issuer }}</div>
+                          <div>{{ $L('reportSigner') }}: {{ $report->reported_signer }}</div>
+                          <div>{{ $L('reportCapacity') }}: {{ $report->reported_signer_capacity }}</div>
+                          <div>{{ $L('reportIssuedAt') }}: <bdi>{{ substr((string) $report->reported_issued_at, 0, 10) }}</bdi></div>
+                          <div>{{ $L('reportSignedAt') }}: <bdi>{{ substr((string) $report->reported_signed_at, 0, 10) }}</bdi></div>
+                          <div>{{ $L('reportRegister') }}: <bdi>{{ $report->external_register_ref }}</bdi></div>
+                          <div>{{ $L('reportRecordedAt') }}: <bdi>{{ $report->created_at }}</bdi></div>
+                          <div>{{ $L('reportRecorder') }}: <bdi>{{ $report->recorded_by }}</bdi></div>
+                        </details>
                       @endif
                     </div>
                   @endforeach

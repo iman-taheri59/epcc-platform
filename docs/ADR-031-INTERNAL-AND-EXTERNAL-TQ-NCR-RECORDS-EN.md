@@ -103,3 +103,13 @@ internal drafts are refused while retrospective external registrations remain
 historical, never verified. No route issues, signs, verifies or disposes of
 a report; neither mode grants a release. Report fields supplied by a user are
 unverified claims until project-authorized verification is implemented.
+
+## Read back external report claims (2026-10-15)
+
+The model history displays the captured external issuer, signatory and
+capacity, issue/signature dates, register reference, optional revision, plus
+system recording time and recorder ID under a collapsed **unverified external
+claim** heading. This enables review of what was actually recorded without
+confusing the external signatory with the user who typed the metadata.
+Displaying a claim does not verify a signature, issue a report or provide a
+contractual disposition. Blade escapes user-supplied field values.
