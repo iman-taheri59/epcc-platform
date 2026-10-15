@@ -41,3 +41,14 @@ Laravel/PostgreSQL runtime. The artifact was not copied into the repository
 or used to replace the verified local CLI. Obtain a trusted PHP 8.4 CLI with
 `pdo_pgsql`, `pgsql`, session, and the Laravel-required extensions, then
 check `PDO::getAvailableDrivers()` before running migrations.
+
+### PostgreSQL-capable sandbox runtime feasibility (2026-10-15)
+
+The static-php-cli source on GitHub supports building PHP 8.4 with pgsql,
+pdo_pgsql and session, but its ready-made release asset redirect is not
+reachable from this sandbox and local autoconf/pkg-config plus development
+headers are unavailable. A PostgreSQL 16.2 server wheel from PyPI provides
+`libpq.so` and `libpq-fe.h` (under ignored `.cache/pgve`); it does not provide
+a PHP extension. No compatible PHP runtime or passing PostgreSQL/Laravel test
+result exists here yet. Use a verified Linux x86_64 PHP 8.4 runtime with
+pdo_pgsql and the Laravel extension set, or run the documented Laragon route.

@@ -4608,3 +4608,20 @@ extensions across builds would also be unsafe. This archive cannot run the
 Laravel/PostgreSQL/RLS tests as-is. Keep it outside the repository. A
 compatible Linux PHP 8.4 build with pgsql/PDO_PGSQL and session support, or
 the owner's properly configured Laragon PHP, remains necessary.
+
+## PHP/PostgreSQL sandbox feasibility check (2026-10-15)
+
+Investigated building a Linux PHP 8.4 CLI with `pdo_pgsql` after the user's
+request. The official static-php-cli source (GitHub) DOES support pdo_pgsql,
+pgsql and session; however its release binary URL redirects to a host this
+sandbox cannot reach (HEAD failed TLS EOF), and the sandbox lacks autoconf,
+pkg-config and development headers for a from-source PHP build. The existing
+NativePHP statically linked NTS CLI cannot load a ZTS extension from the
+uploaded PM5 archive. The `pgserver` PyPI wheel IS reachable and was
+installed to ignored `.cache/pgve`: PostgreSQL 16.2 including `libpq.so` and
+`libpq-fe.h` is available, but that alone cannot add pdo_pgsql to PHP. No
+Laravel/PostgreSQL tests have run in this sandbox. Next viable route is a
+trusted ready-made Linux x86_64 PHP 8.4 CLI with pgsql, pdo_pgsql, session,
+intl, zip, gd and XML, or tests on owner's Laragon; only then start isolated
+PG 16 / epcc_test and run the preflight and suite. Do not describe this
+investigation as passing DB tests.
