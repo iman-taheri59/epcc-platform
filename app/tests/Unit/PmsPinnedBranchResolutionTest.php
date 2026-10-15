@@ -32,6 +32,32 @@ final class PmsPinnedBranchResolutionTest extends TestCase
         $this->assertSame('general', $resolver->branchRuleFromSpecification($spec, 500, 150)['id']);
     }
 
+    public function test_issued_pipe_schedule_rules_are_resolved_without_live_class_rows(): void
+    {
+        $resolver = new PmsPinnedClassSpecification();
+        $spec = ['rules' => [
+            ['rule_kind' => 'PIPE_SCHEDULE', 'dn_range' => '[15,100)', 'value' => ['schedule' => '80']],
+            ['rule_kind' => 'PIPE_SCHEDULE', 'dn_range' => '[100,300)', 'value' => ['schedule' => 'STD']],
+        ]];
+        $this->assertSame(['schedule' => '80'], $resolver->ruleValueFromSpecification($spec, 'PIPE_SCHEDULE', 25));
+        $this->assertSame(['schedule' => 'STD'], $resolver->ruleValueFromSpecification($spec, 'PIPE_SCHEDULE', 100));
+
+        foreach ([
+            [$spec, 300],
+            [$spec, 0],
+            [['rules' => [$spec['rules'][0], $spec['rules'][0]]], 25],
+            [['rules' => [['rule_kind' => 'PIPE_SCHEDULE', 'dn_range' => '[15,100)', 'value' => '80']]], 25],
+            [['rules' => ['corrupt']], 25],
+        ] as [$candidate, $dn]) {
+            try {
+                $resolver->ruleValueFromSpecification($candidate, 'PIPE_SCHEDULE', $dn);
+                $this->fail('A missing, ambiguous, or malformed issued rule must be refused.');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('piping_class_id', $e->errors());
+            }
+        }
+    }
+
     public function test_ambiguous_or_uncovered_issued_cells_fail_closed(): void
     {
         $cell = $this->cell('first', '[100,300)', '[15,100)', 0, '2026-10-01T12:00:00+00:00');

@@ -929,3 +929,12 @@ The Laragon verifier first proves the dedicated test DB, non-superuser role,
 PostgreSQL extension and selected PHP version; only explicit `--run` starts
 PHPUnit. This is safer than treating any local `artisan test` output as
 CI-equivalent. It does not replace image/Compose or PDF-toolchain checks.
+
+### 2026-10-15: isolate issued schedule resolution (BUILT, integration pending)
+
+Instead of letting downstream material consumers read mutable
+`piping_class_rules`, resolve schedule values through the line's issue-time
+PMS snapshot. The pure resolver now validates DN and refuses missing or
+ambiguous matches; a follow-up should wire each MTO consumer to the pinned
+resolver and add database-backed regression tests. Do not treat a lint pass
+as an MTO integration result.

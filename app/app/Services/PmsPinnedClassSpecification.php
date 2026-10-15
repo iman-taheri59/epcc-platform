@@ -46,8 +46,22 @@ final class PmsPinnedClassSpecification
     /** Resolve a typed rule value from the issued specification, never from live rows. */
     public function ruleValue(PipingLine $line, string $kind, int $dn): array
     {
+        return $this->ruleValueFromSpecification($this->forLine($line), $kind, $dn);
+    }
+
+    /** @param array<string, mixed> $specification
+     *  @return array<string, mixed>
+     */
+    public function ruleValueFromSpecification(array $specification, string $kind, int $dn): array
+    {
+        if ($dn <= 0 || ! is_array($specification['rules'] ?? null)) {
+            throw ValidationException::withMessages(['piping_class_id' => 'Invalid issued PMS rule query.']);
+        }
         $found = [];
-        foreach ($this->forLine($line)['rules'] as $rule) {
+        foreach ($specification['rules'] as $rule) {
+            if (! is_array($rule)) {
+                throw ValidationException::withMessages(['piping_class_id' => 'Invalid issued PMS rule.']);
+            }
             if (($rule['rule_kind'] ?? null) !== $kind) {
                 continue;
             }

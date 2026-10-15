@@ -4625,3 +4625,18 @@ trusted ready-made Linux x86_64 PHP 8.4 CLI with pgsql, pdo_pgsql, session,
 intl, zip, gd and XML, or tests on owner's Laragon; only then start isolated
 PG 16 / epcc_test and run the preflight and suite. Do not describe this
 investigation as passing DB tests.
+
+## Piping incremental step: pinned schedule rule contract (2026-10-15)
+
+`PmsPinnedClassSpecification::ruleValueFromSpecification()` now resolves
+issue-time typed rule values without querying mutable live class rows, and
+fails closed on invalid DN, malformed, missing or overlapping rules. The
+line-bound `ruleValue()` delegates to it. Unit assertions added in
+`PmsPinnedBranchResolutionTest`. Both PHP files passed lint and `git diff
+--check` passed; the sandbox still has no `pdo_pgsql` or Composer vendor, so
+this is NOT a passing PHPUnit/DB test result. Next: wire MTO/component
+consumers to pinned specifications and run Laragon/PostgreSQL tests.
+Historical cross-company classification workflow is still undecided; the
+piping_lines RLS policy's WITH CHECK requires row.company_id == tenant,
+so a project-owner actor cannot write another company's line by default.
+Do not silently broaden this authorization.

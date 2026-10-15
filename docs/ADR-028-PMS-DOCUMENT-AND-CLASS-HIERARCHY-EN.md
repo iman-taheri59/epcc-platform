@@ -631,3 +631,9 @@ Its successful run is not yet reported; the sandbox PHP lacks `pdo_pgsql`.
 CI 38647897238 on `2b03acd` did not start its Laravel job because of
 GitHub account billing/spending limits. The optional local preflight awaits
 an actual Laragon run; no full-database success is claimed for current HEAD.
+
+Issued schedule resolution now has a separately testable rule resolver over the
+immutable snapshot's `rules`, rather than requiring a live class-rule lookup.
+At DN boundaries it requires exactly one typed rule; absent, overlapping,
+malformed or nonpositive-DN requests are rejected. This does not yet wire an
+MTO consumer to this resolver; it establishes the fail-closed contract first.
