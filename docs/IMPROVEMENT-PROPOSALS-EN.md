@@ -1171,3 +1171,12 @@ which could encourage repeated submissions and misinterpretation of the
 record's authority. A bilingual one-request status message now acknowledges
 only the saved provenance, never issuance, signature verification or approval.
 The error summary is separately marked as an alert for assistive technology.
+
+### 2026-10-15: exclude false expected-PMS requests from pending status (BUILT)
+
+Deduplication and pending badges previously trusted an unverified request's
+expected schedule even when it contradicted the pinned PMS for the current
+DN. Recheck expected PMS in both submission deduplication and model-page
+pending/draft affordances. Leave the old row visible with a warning rather
+than rewriting its immutable evidence. The report service still enforces
+freshness as the server-side authority.

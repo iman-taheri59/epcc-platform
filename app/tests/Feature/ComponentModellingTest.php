@@ -881,6 +881,31 @@ final class ComponentModellingTest extends TestCase
         }
     }
 
+    public function test_false_expected_pms_request_cannot_mask_a_valid_schedule_discrepancy(): void
+    {
+        $line = $this->line('6');
+        $actor = $this->owner();
+        $pipe = $this->asOwner(fn () => $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']));
+        $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
+            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+            'expected_schedule' => '60', 'actual_schedule' => '40',
+            'nps_at_request' => '6', 'dn_at_request' => 150,
+            'reason' => 'An invalid expected PMS value entered outside the service',
+            'requested_by' => $actor->id,
+        ]));
+        $url = "/projects/PH-14/piping/{$line->id}/model?lang=en";
+        $this->actingAs($actor)->get($url)->assertOk()
+            ->assertSee('Request PMS value does not match the current issued basis')
+            ->assertSee('Request discrepancy review')
+            ->assertDontSee('/draft?lang=en', false);
+        $valid = app(\App\Services\PipeScheduleExceptionRequestService::class)
+            ->submit($this->project(), $actor, $pipe->id, 'Review against the real issued PMS schedule');
+        $this->assertSame('80', $valid->expected_schedule);
+        $this->assertSame(2, $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->count()));
+    }
+
     public function test_internal_taper_is_only_a_proposal_for_a_thicker_reference_wall(): void
     {
         $line = $this->line('6');

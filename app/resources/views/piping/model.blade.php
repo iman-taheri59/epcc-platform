@@ -38,6 +38,7 @@
         'remedyUndetermined' => ['fa' => 'روش رفع هنوز تعیین نشده است', 'en' => 'Remedy not yet determined'],
         'requestHistory' => ['fa' => 'سابقهٔ درخواست‌های مغایرت', 'en' => 'Discrepancy request history'],
         'previousValue' => ['fa' => 'مقدار پیشین؛ برای ردهٔ فعلی معتبر نیست', 'en' => 'Previous value; not applicable to current schedule'],
+        'unverifiedPmsClaim' => ['fa' => 'مقدار PMS این درخواست با مدرک حاکم فعلی قابل تطبیق نیست؛ مبنای پیش‌نویس جدید نیست', 'en' => 'Request PMS value does not match the current issued basis; not eligible for a new draft'],
         'reviewRecorded' => ['fa' => 'رویداد بررسی ثبت شده؛ تأیید مهندسی احراز نشده', 'en' => 'Review event recorded; engineering acceptance not established'],
         'internalDraft' => ['fa' => 'پیش‌نویس داخلی؛ صادر نشده', 'en' => 'Internal draft; not issued'],
         'externalMetadata' => ['fa' => 'اطلاعات گزارش بیرونی؛ راستی‌آزمایی نشده', 'en' => 'External report metadata; not verified'],
@@ -259,8 +260,11 @@
                   @if($entry->nps_at_request)<bdi>{{ $num($entry->nps_at_request) }}" (DN{{ $num($entry->dn_at_request) }})</bdi> · @endif
                   {{ $entry->actual_schedule }} / {{ $entry->expected_schedule }}
                   @if($entry->actual_schedule !== $c->schedule || $entry->pms_class_snapshot_id !== $line->pms_class_snapshot_id
-                      || $entry->nps_at_request === null || $entry->nps_at_request !== $c->nominal_size)
+                      || $entry->nps_at_request !== $c->nominal_size)
                     <div style="color:#fcd34d;">{{ $L('previousValue') }}</div>
+                  @elseif(! isset($scheduleChecks[$c->id]) || $entry->expected_schedule !== $scheduleChecks[$c->id]['expected']
+                      || (int) $entry->dn_at_request !== $scheduleChecks[$c->id]['dn'])
+                    <div style="color:#fcd34d;">{{ $L('unverifiedPmsClaim') }}</div>
                   @endif
                   @if($entry->proposed_remedy === 'INTERNAL_TAPER_PROPOSED')
                     <div>{{ $L('taperProposal') }}</div>
@@ -297,6 +301,9 @@
                   @endforeach
                   @if($canCapture && $c->company_id === $user->company_id && $line->company_id === $user->company_id)
                     @if($entry->nps_at_request !== null && $entry->nps_at_request === $c->nominal_size
+                        && isset($scheduleChecks[$c->id])
+                        && (int) $entry->dn_at_request === $scheduleChecks[$c->id]['dn']
+                        && $entry->expected_schedule === $scheduleChecks[$c->id]['expected']
                         && $entry->actual_schedule === $c->schedule && $entry->pms_class_snapshot_id === $line->pms_class_snapshot_id)
                       <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/model/reports/{{ $entry->id }}/draft?{{ http_build_query($q) }}" style="margin-top:6px;">
                         @csrf

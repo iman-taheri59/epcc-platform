@@ -96,6 +96,7 @@ final class ComponentController extends Controller
                     $expected = $this->issuedPms->pipeScheduleFromSpecification($spec, $size->dn);
                     $scheduleChecks[$component->id] = [
                         'expected' => $expected,
+                        'dn' => $size->dn,
                         'matches' => $component->schedule === $expected,
                         'taper_eligible' => $component->schedule !== null
                             && $this->reference->hasSchedule($size->nps, $expected)
@@ -136,6 +137,9 @@ final class ComponentController extends Controller
                 && $r->pms_class_snapshot_id === $line->pms_class_snapshot_id
                 && $r->nps_at_request !== null
                 && $r->nps_at_request === $component->nominal_size
+                && isset($scheduleChecks[$component->id])
+                && (int) $r->dn_at_request === $scheduleChecks[$component->id]['dn']
+                && $r->expected_schedule === $scheduleChecks[$component->id]['expected']
                 && $r->actual_schedule === $component->schedule);
             if ($pending !== null) {
                 $pendingScheduleRequests[$component->id] = [

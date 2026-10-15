@@ -185,3 +185,13 @@ mutable component, so the added fields are nullable for legacy evidence;
 missing size is treated as unknown/stale, not silently backfilled from today.
 The application must not infer engineering adequacy from NPS alone. This is
 provenance/freshness hardening, not a pressure-wall or ITP Fit-up check.
+
+## Recheck expected PMS before treating a request as pending (2026-10-15)
+
+Pending-request detection now includes the calculated issue-time PMS schedule
+for the current DN, not merely the request's claimed pin, NPS and actual
+schedule. A malformed/imported request with an incorrect expected value is
+preserved as history but cannot hide a genuine discrepancy or suppress its
+review form. The model also checks DN and expected PMS before offering an
+internal report draft; the service independently repeats the validation.
+This does not promote any historical decision into final acceptance.

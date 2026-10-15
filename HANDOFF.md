@@ -4949,3 +4949,12 @@ TQ/NCR capture: internal draft not issued/approved, or external metadata not
 verified. Validation failures do not receive a success receipt. The model
 announces status/errors with appropriate accessibility roles; HTTP assertions
 cover both receipts. No report issuance, acceptance or signature workflow.
+
+## Pending request expected PMS hardening (2026-10-15)
+
+A historical request whose claimed expected schedule differs from the
+current DN's issue-time pinned PMS no longer suppresses a fresh request.
+Model history warns of an unverified PMS claim and hides the internal draft
+form; report service remains the final server-side freshness check. A DB
+feature test inserts a false expected schedule by raw SQL and asserts a
+legitimate request can follow. PHP lint/diff checked; PostgreSQL tests unrun.

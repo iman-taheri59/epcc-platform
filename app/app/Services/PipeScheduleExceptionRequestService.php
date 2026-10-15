@@ -86,6 +86,7 @@ final class PipeScheduleExceptionRequestService
                     ->where('r.project_id', $project->id)
                     ->where('r.pms_class_snapshot_id', $line->pms_class_snapshot_id)
                     ->where('r.actual_schedule', $component->schedule)
+                    ->where('r.expected_schedule', $expected)
                     ->where('r.nps_at_request', $size->nps)
                     ->where('r.dn_at_request', $size->dn)
                     ->whereNull('d.id')->exists();
