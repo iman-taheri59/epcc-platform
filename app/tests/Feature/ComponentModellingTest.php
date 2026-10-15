@@ -854,7 +854,19 @@ final class ComponentModellingTest extends TestCase
         $this->assertNotNull($request);
         $this->assertSame('80', $request->expected_schedule);
         $this->assertSame('40', $request->actual_schedule);
+        $reports = app(\App\Services\PipeScheduleReportService::class);
+        $reports->draft($this->project(), $this->owner(), $request->id, 'TQ');
+        $reports->registerExternal($this->project(), $this->owner(), $request->id, 'NCR', [
+            'report_number' => 'EXT-NCR-42', 'reported_issuer' => 'Contractor QC',
+            'reported_signer' => 'External engineer', 'reported_signer_capacity' => 'NCR signatory',
+            'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
+            'external_register_ref' => 'Contractor NCR register / 42',
+        ]);
         $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
+            ->assertSee('Discrepancy request history')
+            ->assertSee('Internal draft; not issued')
+            ->assertSee('External report metadata; not verified')
+            ->assertSee('EXT-NCR-42')
             ->assertSee('Review requested; not approved')
             ->assertDontSee('Request discrepancy review');
         $this->actingAs($this->owner())->post($url."/{$pipe->id}/request-review?lang=en", [
@@ -865,7 +877,9 @@ final class ComponentModellingTest extends TestCase
         ])->assertNotFound();
         $this->asOwner(fn () => DB::table('components')->where('id', $pipe->id)->update(['schedule' => '60']));
         $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
-            ->assertSee('Request discrepancy review');
+            ->assertSee('Request discrepancy review')
+            ->assertSee('Previous value; not applicable to current schedule')
+            ->assertSee('Schedule differs from issued PMS and needs review');
         $this->actingAs($this->owner())->post($url."/{$pipe->id}/request-review?lang=en", [
             'reason' => 'Schedule changed again; a new review is needed',
         ])->assertRedirect($url.'?lang=en');

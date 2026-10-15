@@ -108,22 +108,32 @@ final class ComponentController extends Controller
             }
         }
 
-        $openRequests = $this->tenant->runAs($user->company_id,
+        // All own-company requests remain visible, including old component
+        // schedules. A decided row is history, NOT automatically an approval.
+        $requestHistory = $this->tenant->runAs($user->company_id,
             fn () => DB::table('pipe_schedule_exception_requests as r')
                 ->leftJoin('pipe_schedule_exception_decisions as d', 'd.request_id', '=', 'r.id')
                 ->whereIn('r.component_id', $rows->pluck('id'))
                 ->where('r.company_id', $user->company_id)
-                ->where('r.pms_class_snapshot_id', $line->pms_class_snapshot_id)
-                ->whereNull('d.id')
-                ->get(['r.id', 'r.component_id', 'r.actual_schedule', 'r.proposed_remedy']),
+                ->orderByDesc('r.created_at')->orderByDesc('r.id')
+                ->get(['r.*', 'd.id as decision_id']),
             $project->id,
         );
-        // An earlier still-open request for a DIFFERENT component schedule
-        // must not hide the form for the current mismatch.
+        $reportHistory = $this->tenant->runAs($user->company_id,
+            fn () => DB::table('pipe_schedule_discrepancy_reports')
+                ->whereIn('request_id', $requestHistory->pluck('id'))
+                ->where('company_id', $user->company_id)
+                ->orderBy('created_at')->get()
+                ->groupBy('request_id'),
+            $project->id,
+        );
+        // A still-open request for a FORMER schedule cannot mask a new one.
         $pendingScheduleRequests = [];
         foreach ($rows as $component) {
-            $pending = $openRequests->first(fn ($r): bool =>
-                $r->component_id === $component->id && $r->actual_schedule === $component->schedule);
+            $pending = $requestHistory->first(fn ($r): bool =>
+                $r->component_id === $component->id && $r->decision_id === null
+                && $r->pms_class_snapshot_id === $line->pms_class_snapshot_id
+                && $r->actual_schedule === $component->schedule);
             if ($pending !== null) {
                 $pendingScheduleRequests[$component->id] = [
                     'id' => $pending->id, 'remedy' => $pending->proposed_remedy,
@@ -136,6 +146,8 @@ final class ComponentController extends Controller
         );
 
         return view('piping.model', [
+            'requestHistory' => $requestHistory->groupBy('component_id'),
+            'reportHistory' => $reportHistory,
             'pendingScheduleRequests' => $pendingScheduleRequests,
             'canCapture' => $canCapture,
             'scheduleChecks' => $scheduleChecks,

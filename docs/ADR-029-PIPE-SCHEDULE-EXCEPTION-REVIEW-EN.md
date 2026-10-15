@@ -158,3 +158,16 @@ geometry, WPS, completed Fit-up, approval or ITP sign-off. The model page
 labels it explicitly as a plan, not Fit-up acceptance. Even a nominally
 thicker pipe can have invalid construction details; the later ITP workflow
 must check them. No automatic downstream release follows.
+
+## Read-only request history on the line model (2026-10-15)
+
+The modelling page now presents own-company schedule request history for
+visible components, including captured expected/actual schedules, recorded
+reason, proposed remedy and creation time. A former schedule or pin is marked
+as not applicable to the component's current state. Linked TQ/NCR rows are
+shown as **unissued internal draft** or **unverified external metadata**,
+never as an answered TQ, NCR disposition or approved deviation. A raw
+ADR-029 decision row is only labelled as a recorded review event; it does not
+prove ADR-030's multi-party sign-off/technical basis. Reads are batched per
+line under project RLS, not queried once per component. Future workflow must
+show verified dispositions separately and check freshness at decision time.

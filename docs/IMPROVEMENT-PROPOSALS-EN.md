@@ -1108,3 +1108,13 @@ by real size-specific reference wall instead of a lexicographic schedule-code
 comparison (STD/XS aliases are not universal). This deliberately omits a
 numeric 1:3 or minimum-remaining-wall PASS status until the project edition
 and ITP Fit-up evidence are defined.
+
+### 2026-10-15: show stale requests and report provenance (BUILT)
+
+An old request hidden after a schedule edit erases the visible trail and may
+mislead staff into believing no discrepancy was previously raised. The line
+model now shows read-only history and labels prior values, in-system drafts
+and unverified external metadata plainly. It does not treat a raw approval
+row as engineering acceptance. At scale, paginate the per-line history and
+add report-event links once the issue/signature workflow exists; avoid
+loading every project report into a single page.

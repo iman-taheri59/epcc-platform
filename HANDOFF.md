@@ -4875,3 +4875,14 @@ pending intent "plan only; not Fit-up acceptance". Feature test covers
 thinner refusal, thicker proposal and no decision event. Geometry, remaining
 wall after grinding, WPS and ITP verification explicitly deferred (ADR-029/
 030); no automatic approval/release. PHP lint/diff checked, DB tests unrun.
+
+## Schedule discrepancy history visibility (2026-10-15)
+
+The model screen now batches own-company request history and linked TQ/NCR
+register rows for all visible components on a line. A collapsed history shows
+captured schedules, reason/time, proposed taper intent, stale former values,
+and report provenance: internal draft **not issued** vs external metadata
+**not verified**. An ADR-029 raw decision is labelled only as a review event,
+not engineering acceptance. Tests assert history survives a 40 -> 60 schedule
+edit and both TQ draft/NCR external report labels. No release/approval gate is
+connected. PHP lint and diff check passed; PostgreSQL HTTP tests still unrun.

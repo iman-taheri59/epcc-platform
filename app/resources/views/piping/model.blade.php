@@ -36,6 +36,11 @@
         'reviewPending' => ['fa' => 'درخواست بررسی ثبت شده؛ هنوز تأیید نشده است', 'en' => 'Review requested; not approved'],
         'taperProposal' => ['fa' => 'Taper داخلیِ پیشنهادی (صرفاً طرح؛ تأیید Fit-up نیست)', 'en' => 'Proposed internal taper (plan only; not Fit-up acceptance)'],
         'remedyUndetermined' => ['fa' => 'روش رفع هنوز تعیین نشده است', 'en' => 'Remedy not yet determined'],
+        'requestHistory' => ['fa' => 'سابقهٔ درخواست‌های مغایرت', 'en' => 'Discrepancy request history'],
+        'previousValue' => ['fa' => 'مقدار پیشین؛ برای ردهٔ فعلی معتبر نیست', 'en' => 'Previous value; not applicable to current schedule'],
+        'reviewRecorded' => ['fa' => 'رویداد بررسی ثبت شده؛ تأیید مهندسی احراز نشده', 'en' => 'Review event recorded; engineering acceptance not established'],
+        'internalDraft' => ['fa' => 'پیش‌نویس داخلی؛ صادر نشده', 'en' => 'Internal draft; not issued'],
+        'externalMetadata' => ['fa' => 'اطلاعات گزارش بیرونی؛ راستی‌آزمایی نشده', 'en' => 'External report metadata; not verified'],
         'inherit'  => ['fa' => 'سایز از پورت والد به ارث می‌رسد و قابل تایپ نیست.',
                        'en' => 'The size is inherited from the parent port and cannot be typed.'],
         'locked'   => ['fa' => 'این خط ابلاغ شده است؛ تغییر مدل آن نیاز به بازگشت به پیش‌نویس دارد.',
@@ -226,6 +231,37 @@
                 </form>
               @endif
             @endif
+          @endif
+          @if(($requestHistory[$c->id] ?? collect())->isNotEmpty())
+            <details style="margin-top:8px;font-size:11px;">
+              <summary>{{ $L('requestHistory') }} ({{ $num($requestHistory[$c->id]->count()) }})</summary>
+              @foreach($requestHistory[$c->id] as $entry)
+                <div style="border-top:1px solid var(--line);padding:5px 0;white-space:normal;">
+                  <bdi>{{ $entry->created_at }}</bdi> · {{ $entry->actual_schedule }} / {{ $entry->expected_schedule }}
+                  @if($entry->actual_schedule !== $c->schedule || $entry->pms_class_snapshot_id !== $line->pms_class_snapshot_id)
+                    <div style="color:#fcd34d;">{{ $L('previousValue') }}</div>
+                  @endif
+                  @if($entry->proposed_remedy === 'INTERNAL_TAPER_PROPOSED')
+                    <div>{{ $L('taperProposal') }}</div>
+                  @endif
+                  <div>{{ $entry->reason }}</div>
+                  @if($entry->decision_id !== null)
+                    <div style="color:#fcd34d;">{{ $L('reviewRecorded') }}</div>
+                  @else
+                    <div style="color:#fcd34d;">{{ $L('reviewPending') }}</div>
+                  @endif
+                  @foreach($reportHistory[$entry->id] ?? [] as $report)
+                    <div>{{ $report->kind }} ·
+                      @if($report->origin === 'IN_SYSTEM')
+                        {{ $L('internalDraft') }}
+                      @else
+                        {{ $L('externalMetadata') }} · <bdi>{{ $report->report_number }}</bdi>
+                      @endif
+                    </div>
+                  @endforeach
+                </div>
+              @endforeach
+            </details>
           @endif
         </td>
         <td style="font-size:12px;">
