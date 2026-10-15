@@ -1048,3 +1048,12 @@ HTTP routes. `engineering.report.capture` now gates the capture service,
 while PIPING scope and RLS continue to apply. Keep future issue/signature/
 verify/disposition permissions separate; granting capture must never silently
 grant engineering approval.
+
+### 2026-10-15: derive expected schedule at request time (BUILT service)
+
+A client-supplied PMS target could forge an apparently valid exception.
+Instead, the request service locks the component and line, checks the pin,
+and resolves expected schedule directly from the immutable issued snapshot.
+An identical outstanding request is refused; later edits must be checked for
+staleness before any reviewer decision. Service checks are not a substitute
+for future DB privilege isolation or a workflow-approved disposition.

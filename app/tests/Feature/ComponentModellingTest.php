@@ -784,6 +784,35 @@ final class ComponentModellingTest extends TestCase
         }
     }
 
+    public function test_schedule_request_recomputes_issued_value_and_refuses_matching_or_duplicate_pipes(): void
+    {
+        $line = $this->line('6');
+        $actor = $this->owner();
+        [$matching, $different] = $this->asOwner(fn () => [
+            $this->svc()->place($line, $actor, 'PIPE'),
+            $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']),
+        ]);
+        $requests = app(\App\Services\PipeScheduleExceptionRequestService::class);
+        try {
+            $requests->submit($this->project(), $actor, $matching->id, 'Schedule differs from contract PMS');
+            $this->fail('A pipe matching the issued PMS cannot request a difference.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('component_id', $e->errors());
+        }
+        $record = $requests->submit($this->project(), $actor, $different->id, 'Schedule differs from contract PMS');
+        $this->assertSame($line->pms_class_snapshot_id, $record->pms_class_snapshot_id);
+        $this->assertSame('80', $record->expected_schedule);
+        $this->assertSame('40', $record->actual_schedule);
+        $this->assertSame($actor->id, $record->requested_by);
+        try {
+            $requests->submit($this->project(), $actor, $different->id, 'Repeated request without a decision');
+            $this->fail('An identical unresolved request must not be duplicated.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('component_id', $e->errors());
+        }
+        $this->assertSame(1, $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->count()));
+    }
+
     public function test_the_register_links_to_the_model_page(): void
     {
         // A screen nobody can reach is a screen that does not exist.

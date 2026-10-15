@@ -4791,3 +4791,15 @@ PIPING scope denies the CIVIL-only engineer and a role reduced to
 `project.view` cannot create a report. No report issue/signature/verification
 capability is granted; no public HTTP routes exist yet. PHP lint and diff
 check passed; PostgreSQL feature tests still unrun.
+
+## Pipe-schedule discrepancy request service (2026-10-15)
+
+New `PipeScheduleExceptionRequestService::submit()` runs under tenant/RLS and
+`engineering.report.capture`, locks the pipe and its line, recomputes expected
+schedule from the issue-time PMS pin at the actual pipe DN, and stores reason,
+requester and actual value. It rejects matching/missing/unpinned pipes and
+an identical unresolved request. Added feature assertions for matching,
+new request provenance, and duplicate refusal. No public route or decision
+service; a request alone never approves work. PHP lint/diff checks pass; DB
+feature tests remain unrun. Before approval, a reviewer must recheck
+component/snapshot freshness and project-specific authority (ADR-029/030).

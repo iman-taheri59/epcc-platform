@@ -48,3 +48,17 @@ signed external report. The candidate external signature table does not itself
 implement either TQ/NCR route. Optional file hash in migration
 `2026_10_15_120000` corrects an overly strict assumption; external report
 metadata may be registered without a file.
+
+## Scoped discrepancy-request capture (2026-10-15)
+
+`PipeScheduleExceptionRequestService::submit()` now captures a PIPE mismatch
+from the locked component/line and **recomputes** the expected schedule from
+the line's immutable issued PMS snapshot at its DN. Clients cannot provide or
+forge the expected value, snapshot or actual schedule. The service requires
+an active, entitled project/PIPING member with
+`engineering.report.capture`, the same-company component/line, a substantive
+reason, a writable project and a distinct actual schedule; it refuses an
+identical unresolved request. The request is evidence of a discrepancy,
+**not** a sign-off, approved exception, TQ answer or NCR disposition. It has
+no public HTTP route yet. PostgreSQL feature assertions are added but have
+not been executed locally.
