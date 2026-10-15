@@ -925,7 +925,11 @@ final class ComponentModellingTest extends TestCase
         $reportUrl = $url."/reports/{$request->id}";
         $this->actingAs($this->owner())->post($reportUrl.'/draft?lang=en', [
             'kind' => 'TQ',
-        ])->assertRedirect($url.'?lang=en');
+        ])->assertRedirect($url.'?lang=en')
+            ->assertSessionHas('status', 'Internal draft saved; not issued or approved.');
+        $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
+            ->assertSee('role="status"', false)
+            ->assertSee('Internal draft saved; not issued or approved.');
         $this->actingAs($this->owner())->post($reportUrl.'/draft?lang=en', [
             'kind' => 'TQ',
         ])->assertRedirect($url.'?lang=en')->assertSessionHasErrors('kind');
@@ -935,7 +939,10 @@ final class ComponentModellingTest extends TestCase
             'reported_signer_capacity' => 'NCR signatory',
             'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
             'external_register_ref' => 'Contractor NCR register / 42',
-        ])->assertRedirect($url.'?lang=en');
+        ])->assertRedirect($url.'?lang=en')
+            ->assertSessionHas('status', 'External report metadata saved; report and signature not verified.');
+        $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
+            ->assertSee('External report metadata saved; report and signature not verified.');
         $this->actingAs($this->owner())->post($reportUrl.'/external?lang=en', [
             'kind' => 'NCR', 'report_number' => '   ',
             'reported_issuer' => 'Contractor QC', 'reported_signer' => 'External engineer',

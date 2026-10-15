@@ -1163,3 +1163,11 @@ pass Laravel's initial min length then fail the database CHECK (HTTP 500).
 Normalize first, then run the full required/min/max rules and return ordinary
 field errors. Optional blank revision becomes null. Keep the database CHECK
 as a defense in depth, not as the user-facing validator.
+
+### 2026-10-15: explicit non-approval receipt after capture (BUILT)
+
+The forms redirected to a collapsed history without a visible confirmation,
+which could encourage repeated submissions and misinterpretation of the
+record's authority. A bilingual one-request status message now acknowledges
+only the saved provenance, never issuance, signature verification or approval.
+The error summary is separately marked as an alert for assistive technology.

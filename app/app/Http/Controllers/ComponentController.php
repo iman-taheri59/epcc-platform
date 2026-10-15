@@ -267,7 +267,12 @@ final class ComponentController extends Controller
                 ->withInput()->withErrors($e->errors());
         }
 
-        return redirect($this->backTo($projectCode, $lineId, $lang, $request));
+        return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+            ->with('status', $mode === 'draft'
+                ? ($lang === 'fa' ? 'پیش‌نویس داخلی ثبت شد؛ هنوز صادر یا تأیید نشده است.'
+                    : 'Internal draft saved; not issued or approved.')
+                : ($lang === 'fa' ? 'اطلاعات گزارش بیرونی ثبت شد؛ امضا و گزارش هنوز راستی‌آزمایی نشده‌اند.'
+                    : 'External report metadata saved; report and signature not verified.'));
     }
 
     /** Attach a new component to an open port - the modelling gesture. */

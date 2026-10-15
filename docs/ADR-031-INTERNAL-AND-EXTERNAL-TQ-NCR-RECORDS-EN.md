@@ -122,3 +122,11 @@ rather than failing the database CHECK and surfacing as a server error. A
 whitespace-only optional revision normalizes to null. Validation remains
 separate from external-report verification and cannot authenticate a claimed
 signature or document reference.
+
+## Capture acknowledgement is not approval (2026-10-15)
+
+After a successful model-page POST, the user sees a one-request flash
+acknowledgement specific to the chosen mode: internal draft **not issued or
+approved**, or external metadata **report and signature not verified**. Field
+errors remain separate and no success acknowledgement is set on a failed
+capture. The feedback is informational and is not an audit decision.

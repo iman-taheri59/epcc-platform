@@ -137,8 +137,13 @@
     </div>
   @endif
 
+  @if(session('status'))
+    <div role="status" style="margin-top:14px;padding:10px 12px;border-radius:8px;border:1px solid #14532d;background:rgba(20,83,45,.25);color:#86efac;font-size:13px;line-height:1.7;">
+      {{ session('status') }}
+    </div>
+  @endif
   @if($errors->any())
-    <div style="margin-top:14px;padding:10px 12px;border-radius:8px;border:1px solid #7f1d1d;background:rgba(127,29,29,.25);color:#fca5a5;font-size:13px;line-height:1.7;">
+    <div role="alert" style="margin-top:14px;padding:10px 12px;border-radius:8px;border:1px solid #7f1d1d;background:rgba(127,29,29,.25);color:#fca5a5;font-size:13px;line-height:1.7;">
       @foreach($errors->all() as $message)<div>{{ $message }}</div>@endforeach
     </div>
   @endif

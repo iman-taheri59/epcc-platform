@@ -4941,3 +4941,11 @@ blank required text is a ValidationException and blank optional revision is
 null. Service and HTTP tests cover whitespace-only fields, with no reliance
 on a DB CHECK failure for user input. Lint/diff passed; PostgreSQL suite
 remains unrun locally due to missing vendor/pdo_pgsql.
+
+## Capture acknowledgement (2026-10-15)
+
+The model shows a bilingual, mode-specific flash receipt following successful
+TQ/NCR capture: internal draft not issued/approved, or external metadata not
+verified. Validation failures do not receive a success receipt. The model
+announces status/errors with appropriate accessibility roles; HTTP assertions
+cover both receipts. No report issuance, acceptance or signature workflow.
