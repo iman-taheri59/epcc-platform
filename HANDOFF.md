@@ -4933,3 +4933,11 @@ issue/signature dates, external register reference, and separate local
 recorder ID/time. Everything remains visibly *unverified*, and Blade escapes
 external free text. Feature HTTP assertions check readback. No verification,
 issuance, disposition, signature or Fit-up acceptance is added.
+
+## External metadata validation fix (2026-10-15)
+
+`PipeScheduleReportService` trims claimed report fields before validating;
+blank required text is a ValidationException and blank optional revision is
+null. Service and HTTP tests cover whitespace-only fields, with no reliance
+on a DB CHECK failure for user input. Lint/diff passed; PostgreSQL suite
+remains unrun locally due to missing vendor/pdo_pgsql.

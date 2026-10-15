@@ -739,15 +739,27 @@ final class ComponentModellingTest extends TestCase
         $draft = $service->draft($this->project(), $actor, $requestId, 'TQ');
         $this->assertSame('DRAFT', $draft->state);
         $this->assertNull($draft->report_number);
-        $external = $service->registerExternal($this->project(), $actor, $requestId, 'NCR', [
-            'report_number' => 'NCR-EXT-42', 'reported_issuer' => 'Contractor QC',
-            'reported_signer' => 'Authorized engineer',
+        $externalInput = [
+            'report_number' => ' NCR-EXT-42 ', 'report_revision' => '   ',
+            'reported_issuer' => 'Contractor QC', 'reported_signer' => 'Authorized engineer',
             'reported_signer_capacity' => 'QC signatory',
             'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
             'external_register_ref' => 'Contractor NCR register / 42',
-        ]);
+        ];
+        $external = $service->registerExternal($this->project(), $actor, $requestId, 'NCR', $externalInput);
         $this->assertSame('EXTERNAL_RECORDED', $external->state);
+        $this->assertSame('NCR-EXT-42', $external->report_number);
         $this->assertNull($external->report_revision);
+        foreach (['report_number', 'reported_issuer', 'reported_signer',
+            'reported_signer_capacity', 'external_register_ref'] as $field) {
+            try {
+                $service->registerExternal($this->project(), $actor, $requestId, 'NCR',
+                    array_replace($externalInput, [$field => '   ']));
+                $this->fail("Whitespace-only $field must be a validation error, not a SQL exception.");
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey($field, $e->errors());
+            }
+        }
         $forgedId = (string) \Illuminate\Support\Str::uuid();
         $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
             'id' => $forgedId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
@@ -924,6 +936,13 @@ final class ComponentModellingTest extends TestCase
             'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
             'external_register_ref' => 'Contractor NCR register / 42',
         ])->assertRedirect($url.'?lang=en');
+        $this->actingAs($this->owner())->post($reportUrl.'/external?lang=en', [
+            'kind' => 'NCR', 'report_number' => '   ',
+            'reported_issuer' => 'Contractor QC', 'reported_signer' => 'External engineer',
+            'reported_signer_capacity' => 'NCR signatory',
+            'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
+            'external_register_ref' => 'Contractor NCR register / 42',
+        ])->assertRedirect($url.'?lang=en')->assertSessionHasErrors('report_number');
         $this->actingAs($this->owner())->post("/projects/PH-14/piping/".\Illuminate\Support\Str::uuid()."/model/reports/{$request->id}/draft?lang=en", [
             'kind' => 'TQ',
         ])->assertNotFound();

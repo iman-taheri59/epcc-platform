@@ -113,3 +113,12 @@ claim** heading. This enables review of what was actually recorded without
 confusing the external signatory with the user who typed the metadata.
 Displaying a claim does not verify a signature, issue a report or provide a
 contractual disposition. Blade escapes user-supplied field values.
+
+## Whitespace-only metadata is invalid (2026-10-15)
+
+External claim text is trimmed *before* required/min-length validation.
+Whitespace-only required fields now return field-level validation errors
+rather than failing the database CHECK and surfacing as a server error. A
+whitespace-only optional revision normalizes to null. Validation remains
+separate from external-report verification and cannot authenticate a claimed
+signature or document reference.

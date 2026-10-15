@@ -1155,3 +1155,11 @@ recorded claims behind an explicitly unverified details panel, preserving
 both identities without treating either as project approval. A future
 correction workflow should supersede, not mutate, append-only entries; its
 identity/authority policy requires a separate decision.
+
+### 2026-10-15: normalize claimed metadata before validating (BUILT)
+
+Post-validation trimming let whitespace-only required external-report fields
+pass Laravel's initial min length then fail the database CHECK (HTTP 500).
+Normalize first, then run the full required/min/max rules and return ordinary
+field errors. Optional blank revision becomes null. Keep the database CHECK
+as a defense in depth, not as the user-facing validator.

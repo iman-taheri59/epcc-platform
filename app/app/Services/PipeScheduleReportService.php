@@ -55,6 +55,17 @@ final class PipeScheduleReportService
                 'request_id' => ['required', 'uuid'],
                 'kind' => ['required', 'in:TQ,NCR'],
             ])->validate();
+            // Normalize BEFORE required/min validation: an all-whitespace
+            // value must produce a field error, never a database CHECK error.
+            foreach (['report_number', 'report_revision', 'reported_issuer', 'reported_signer',
+                'reported_signer_capacity', 'external_register_ref'] as $key) {
+                if (isset($input[$key]) && is_string($input[$key])) {
+                    $input[$key] = trim($input[$key]);
+                }
+            }
+            if (($input['report_revision'] ?? null) === '') {
+                $input['report_revision'] = null;
+            }
             $data = $origin === 'EXTERNAL_REGISTER' ? Validator::make($input, [
                 'report_number' => ['required', 'string', 'min:2', 'max:160'],
                 'report_revision' => ['nullable', 'string', 'max:64'],
@@ -65,18 +76,6 @@ final class PipeScheduleReportService
                 'reported_signed_at' => ['required', 'date'],
                 'external_register_ref' => ['required', 'string', 'min:2', 'max:512'],
             ])->validate() : [];
-            foreach (['report_number', 'reported_issuer', 'reported_signer', 'reported_signer_capacity', 'external_register_ref'] as $key) {
-                if (isset($data[$key])) {
-                    $data[$key] = trim($data[$key]);
-                }
-            }
-            if ($origin === 'EXTERNAL_REGISTER') {
-                Validator::make($data, [
-                    'report_number' => ['min:2'], 'reported_issuer' => ['min:2'],
-                    'reported_signer' => ['min:2'], 'reported_signer_capacity' => ['min:2'],
-                    'external_register_ref' => ['min:2'],
-                ])->validate();
-            }
             return DB::transaction(function () use ($project, $actor, $base, $origin, $data): object {
                 // Company check is deliberate: a participant cannot create a
                 // report pretending to be the originating tenant of another
