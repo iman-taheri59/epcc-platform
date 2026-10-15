@@ -83,3 +83,30 @@ Pending UI status is evaluated against the component's current stored
 schedule and pinned revision. An unresolved request for a former schedule
 does not stand in for a review of a new value; its history remains intact.
 Any future decision must independently reject stale requests.
+
+## Thicker-than-required pipe is not automatically compliant (analysis, 2026-10-15)
+
+The current model-page comparison is **schedule-code equality** against the
+line's issue-time PMS, not a B31.3 required-wall calculation. A different
+schedule with greater nominal wall is flagged as a difference; no approval,
+rejection or automatic NCR follows merely from that flag. `PipeReference::wall`
+provides the actual reference wall by NPS and schedule, including the
+important fact that STD/XS cannot be treated as SCH40/SCH80 aliases at all
+sizes. A sound engineering assessment would compare actual/nominal wall at
+that NPS with the required minimum under issue-time design P/T, material,
+corrosion/mechanical allowances and the applicable 12.5% mill tolerance
+(e.g. `t_nominal * 0.875 >= t_pressure + allowances` only where the specified
+tolerance and code formula apply). It must also check component/fitting bore,
+weld fit-up/WPS thickness qualification, branch reinforcement/pad assumptions,
+weight/supports, hydraulics and other project-specific conditions. A larger
+wall may be adequate for pressure yet differ from an exact PMS schedule or
+create interface problems; it is not a universal 'better' substitution.
+
+Recommendation pending owner confirmation: show **two distinct assessments**,
+`PMS_SCHEDULE_DIFFERENCE` and `ENGINEERING_MINIMUM_WALL_CHECK` (PASS/FAIL/
+UNKNOWN). PASS for the latter is not an approved exception: use ADR-030's
+project-applicable standard/spec/answered-TQ and responsible-company signature
+route, or NCR if no valid disposition exists. Do not infer comparison from
+schedule names or approve merely because the nominal thickness is greater.
+Clarify whether the PMS schedule specifies an exact mandatory schedule or a
+minimum acceptable wall; until then keep the discrepancy pending review.

@@ -1066,3 +1066,15 @@ company and then explicitly displays "Review requested; not approved" while
 pending. No issue-time PMS values are accepted from the browser. A later
 step should display request history and TQ/NCR links as read-only evidence,
 then define multi-party dispositions before connecting any downstream gate.
+
+### 2026-10-15: distinguish excess wall from PMS schedule conformity (PROPOSED)
+
+A red schedule-difference badge is not proof that thicker pipe is unsafe,
+while a larger nominal wall is not proof that it is buildable or contractually
+permitted. Prefer a size-specific reference-wall and B31.3/allowance/mill-
+tolerance assessment separate from the issued PMS schedule comparison. Show
+PASS/FAIL/UNKNOWN for minimum wall, still requiring referenced conditions,
+independent reviewer and line-owner signature for any approved substitution.
+Unknown material/design data must not turn into a green badge. Await owner
+clarification on whether PMS schedule is exact or minimum; no automatic
+thicker-is-approved rule should be added.

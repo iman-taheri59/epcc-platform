@@ -4822,3 +4822,16 @@ still not run. No TQ/NCR issue, signature or acceptance UI is present.
   still-open request for an old component schedule cannot suppress a new
   review form after an edit; HTTP test covers 40 -> 60. Old request remains
   historical evidence and must fail reviewer freshness checks (not built).
+
+## Owner question: pipe thicker than required (2026-10-15)
+
+Analysed current behavior: model page flags schedule string mismatch only;
+`PipeReference::wall` can resolve size-specific nominal wall, but no end-to-
+end minimum-wall acceptance for schedule substitutions is connected. Greater
+thickness can satisfy pressure thickness (subject to design P/T, material,
+corrosion/mechanical allowances and 12.5% mill tolerance) yet still violate
+an exact PMS schedule or introduce bore/fit-up, weld qualification, branch,
+support and hydraulic issues. ADR-029 and improvement proposals recommend
+separate PMS difference and engineering wall-adequacy statuses; PASS is not
+approval under ADR-030. Asked owner whether the PMS schedule is an exact
+mandatory value or a minimum wall. No code or DB tests in this analysis step.
