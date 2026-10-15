@@ -4849,3 +4849,16 @@ apply. Source review found inconsistent secondary summaries of B31.3 328.4.3
 versus other ASME code figures; do not hard-code 1:3 or cite a definitive
 paragraph until owner provides adopted edition/figure (or authoritative pack
 text is verified). No code changed and no test run for this clarification.
+
+## Fit-up inspection boundary corrected (2026-10-15)
+
+Owner clarified: remaining wall after internal grinding, taper geometry,
+connection alignment and WPS are to be checked later at **Fit-up inspection**
+by the parties specified in the project's ITP. Detailed stage requirements
+will be discussed when development reaches Fit-up. ADR-029/030 and improvement
+proposal corrected: current PMS discrepancy/request may record a proposed
+taper and conditional engineering path without as-built fit-up evidence; it
+must NOT show Fit-up accepted or use a future fit-up report as a prerequisite
+for opening the discrepancy. Engineering disposition, responsible line-company
+signature and ITP inspection/release remain distinct. No code or DB tests
+changed in this clarification step.

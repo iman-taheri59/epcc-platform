@@ -125,21 +125,21 @@ and applicability are NOT yet hard-coded from a secondary summary. Do not
 mistake the entire difference between schedule nominal walls for the measured
 joint mismatch where ODs, tolerances or fit-up differ.
 
-Required evidence before an engineer can consider acceptance: governing PMS
-pin and class conditions; both components' NPS/OD, schedule/material and
-specified/actual wall (with mill tolerance); pressure/corrosion/mechanical
-minimum wall **at the machined thinnest section**; measured internal offset,
-transition start/end and axial length, drawing and inspection record; mating
-end preparation, WPS/PQR thickness ranges, applicable NDE, branch/pad and
-support/hydraulic implications where relevant. The independent engineering
-review and responsible-line-company signature remain mandatory under ADR-030.
-A submitted taper plan or completed grinding operation is not automatic
-acceptance, and a missing/failed inspection remains a discrepancy to route via
-standards/spec, answered TQ and final disposition, or NCR as applicable.
+The engineering-stage record may identify the issued PMS schedule
+difference, applicable reference and **planned internal taper** as a
+conditional route. It must not imply that the as-built taper, remaining wall,
+fit-up alignment or WPS have already been inspected. The owner expressly
+defers verification of remaining thickness **after grinding**, transition
+geometry, alignment and WPS to the later **Fit-up inspection**, performed by
+the inspection parties and hold/witness points defined in the project's ITP.
+Do not require a future Fit-up report to capture or evaluate the engineering
+request now, and do not label a proposed transition `FITUP_ACCEPTED`.
+Engineering disposition, responsible-line-company signature (ADR-030), and
+later ITP Fit-up release are distinct decisions with separate evidence and
+audit; a conditional engineering disposition must not stand in for site
+inspection or unblock a gate that requires completed Fit-up.
 
-Open for project standard pack: identify the adopted ASME B31.3 edition and
-exact para./figure for this geometry before encoding a universal 1:3
-calculator or displaying a PASS badge. Figure 328.4.3 (trimming/permitted
-misalignment) is a candidate to verify, not proof of every possible internal
-taper application. Keep the existing schedule-difference badge and request
-flow pending engineering disposition.
+The project-adopted code edition/figure and any precise 1:3 acceptance
+calculation will be verified when the Fit-up workflow is designed with the
+owner. No universal numeric PASS badge or WPS/ITP sign-off is implemented
+at this stage. Preserve the PMS schedule-difference badge and request flow.

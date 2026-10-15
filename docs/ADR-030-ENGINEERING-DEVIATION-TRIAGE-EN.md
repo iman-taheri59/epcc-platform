@@ -61,3 +61,16 @@ or authorizes the verifier. A raw `VERIFIED` row therefore cannot approve an
 exception or unblock any downstream gate. Future design should generalize the
 evidence identity beyond schedule without inventing a universal free-text
 approval.
+
+## Engineering decision versus ITP Fit-up verification (owner clarification, 2026-10-15)
+
+For a thicker PIPE/component proposed with internal taper, recording the
+project-standard basis and a conditional engineering disposition does not
+constitute physical acceptance. The owner assigns inspection of remaining
+thickness **after grinding**, transition geometry, alignment and WPS to the
+later Fit-up stage, by the parties specified in that project's ITP. Model
+engineering disposition and ITP Fit-up inspection/release as separate
+provenance and gate conditions. Do not require future Fit-up data to log the
+present design discrepancy; do not label the transition as inspected before
+ITP sign-off. Detailed fit-up evidence, code-figure selection and inspection
+roles are deferred for discussion when that stage is developed.

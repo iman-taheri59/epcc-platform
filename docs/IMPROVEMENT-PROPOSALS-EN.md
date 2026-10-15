@@ -1088,3 +1088,14 @@ minimum remaining wall, drawing, WPS and inspection evidence, with code
 edition/figure and approval provenance. A 1:3 geometry check alone is not
 PMS conformity or sign-off; first obtain the project's adopted code edition
 and verify the figure's application to the intended butt-weld configuration.
+
+### 2026-10-15 correction: defer as-built taper verification to ITP Fit-up (OWNER DECISION)
+
+The prior proposed transition record listed measured wall, geometry,
+alignment and WPS as though they were prerequisites for the current PMS
+discrepancy review. Owner clarified they are verified **after internal
+grinding at Fit-up** by ITP-defined inspectors. Keep engineering-stage
+proposed taper/conditional disposition separate from later as-built
+inspection and its hold-point release. Do not block recording today's
+engineering request on evidence that cannot exist until fabrication, or
+claim a proposed taper has passed Fit-up.
