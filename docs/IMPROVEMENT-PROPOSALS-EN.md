@@ -1000,3 +1000,12 @@ organization, tenant uploader and verifier separately; `piping_lines.company_id`
 is not necessarily legal responsibility. Without verified signature or formal
 delegation, leave the discrepancy on hold (ADR-030). Commercial terms for
 limited signers and document-control validity require owner decisions.
+
+### 2026-10-15: offline evidence must be file-bound and authority-checked (PENDING)
+
+The owner permits offline signatures. Candidate metadata alone cannot prove
+that a SHA-256 digest corresponds to a stored signed file, or that the named
+signer was authorized for this line and date. Before exposing verification,
+bind the digest to an immutable stored CDE file and validate contractual
+responsibility/authority, project and scope using an independently authorized
+reviewer; do not treat a raw VERIFIED row as engineering approval.

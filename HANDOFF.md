@@ -4725,3 +4725,17 @@ company decision table is insufficient and must not drive release. Questions
 remain on whether offline signatures are contractually valid, guest-signing
 commercial policy, project-specific authority matrix and blocked gates.
 Documentation step only; no signature feature exists yet, no DB tests ran.
+
+## Offline signature answer / first evidence slice (2026-10-15)
+
+Owner confirmed offline signed documents may constitute a valid signature.
+Migration `2026_10_15_110000` adds append-only, project/RLS-scoped candidate
+metadata for schedule-exception external signature and independent verification
+(signer organization/person/capacity vs licensed uploader, document number/
+revision/SHA-256/date, verifier/decision/authority basis). PostgreSQL guards
+reject uploader self-verification and mismatched request/project/tenant;
+feature assertions added but have NOT run on PostgreSQL. The metadata is NOT
+file-bound, the signer's contractual line responsibility and verifier's
+project authority are NOT checked by an application service, and no approval
+or gate is enabled. Never claim the rows alone are valid signatures. ADR-030,
+ADR-029 and improvement proposals describe remaining steps.

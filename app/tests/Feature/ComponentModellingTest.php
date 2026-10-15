@@ -631,6 +631,43 @@ final class ComponentModellingTest extends TestCase
         $this->assertSame(0, $this->asOwner(fn () => DB::table('pipe_schedule_exception_decisions')->count()));
     }
 
+    public function test_offline_signature_metadata_keeps_signer_separate_from_uploader_and_refuses_self_verification(): void
+    {
+        $line = $this->line('6');
+        $actor = $this->owner();
+        $pipe = $this->asOwner(fn () => $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']));
+        $requestId = (string) \Illuminate\Support\Str::uuid();
+        $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
+            'id' => $requestId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+            'expected_schedule' => '80', 'actual_schedule' => '40',
+            'reason' => 'Reviewed outside the application by contractor', 'requested_by' => $actor->id,
+        ]));
+        $signerCompany = \App\Models\Company::where('code', 'EPC-PARS')->firstOrFail();
+        $signatureId = (string) \Illuminate\Support\Str::uuid();
+        $this->asOwner(fn () => DB::table('pipe_schedule_external_signatures')->insert([
+            'id' => $signatureId, 'request_id' => $requestId,
+            'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'signer_company_id' => $signerCompany->id, 'signer_name' => 'Contractor engineer',
+            'signer_capacity' => 'Authorized project signatory',
+            'document_number' => 'PH14-EXT-001', 'document_revision' => 'A',
+            'file_sha256' => str_repeat('a', 64), 'signed_at' => now(), 'uploaded_by' => $actor->id,
+        ]));
+        $this->assertSame($signerCompany->id, $this->asOwner(fn () => DB::table('pipe_schedule_external_signatures')
+            ->where('id', $signatureId)->value('signer_company_id')));
+        try {
+            $this->asOwner(fn () => DB::transaction(fn () => DB::table('pipe_schedule_signature_verifications')->insert([
+                'id' => (string) \Illuminate\Support\Str::uuid(), 'signature_id' => $signatureId,
+                'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+                'decision' => 'VERIFIED', 'authority_basis' => 'PH14 contract appointment',
+                'note' => 'Signature checked', 'verified_by' => $actor->id,
+            ])));
+            $this->fail('The uploader cannot verify their own uploaded signature.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
+    }
+
     public function test_the_register_links_to_the_model_page(): void
     {
         // A screen nobody can reach is a screen that does not exist.

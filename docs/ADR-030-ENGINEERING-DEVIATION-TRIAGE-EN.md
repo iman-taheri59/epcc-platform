@@ -23,7 +23,7 @@ The ADR-029 tables hold an append-only reason and an independent decision but **
 1. The **company responsible for the line must also sign**; other reviewing parties may need to sign per project workflow. The purchased package can grant access only to employer, consultant or management contractor, not to the contractor/line-owning company. Missing a paid interactive account must NOT silently waive the responsible company's signature.
 2. A **TQ answer alone is not final acceptance**: record a separate explicit disposition after the answer, with conditions and required sign-offs.
 
-## Proposed access-independent signature model (awaiting owner approval)
+## Access-independent signature model (offline path accepted by owner; workflow pending)
 
 Separate (a) the *legally/contractually responsible organization* for the line, (b) the tenant company that recorded the row, (c) the human who signed, and (d) the person who imported/verified the evidence. `piping_lines.company_id` currently identifies a writing tenant for RLS and must not automatically be treated as proof of the legally responsible line company. Record project-party identity and authority, effective period and scope (e.g. line/discipline), not a made-up signature from the only licensed user. Two acceptable routes, subject to contract:
 
@@ -38,8 +38,26 @@ RLS design implication: store an evidence/attestation record written by the veri
 
 1. Which checkpoints block on an unresolved discrepancy (component issue, AFC, MTO acceptance, procurement, fabrication, final handover)? Recommendation: block irreversible/issued gates and show a warning during draft modelling.
 2. What is the binding precedence of project contract, PMS, adopted standard and project specification/procedure if they conflict? Record the project-specific order; never hard-code an invented universal order.
-3. Is offline signed evidence accepted as a valid signature under the project's contractual/document-control rules, and can a limited-access external signer be offered outside paid full-user seats? Until resolved, both are proposals, not deployed capabilities.
+3. The owner accepts offline signed evidence as a valid signature route, subject to verification. Limited-access external signing and its commercial terms are still open; neither route is deployed yet.
 
 ## Verification plan
 
 Test each route with linked project-applicable revision and clause, condition evidence, independent reviewer authorization, stale/withdrawn evidence, unanswered TQ, open NCR, cross-company RLS denial, superseded PMS, and downstream hold. Run on PostgreSQL with RLS; lint is not acceptance testing.
+
+## First offline-evidence persistence slice (implemented schema only)
+
+On 2026-10-15 the owner accepted an offline signed document as a valid
+signature route. The schedule-specific initial evidence tables
+`pipe_schedule_external_signatures` and
+`pipe_schedule_signature_verifications` store the *claimed* signer company,
+person and capacity, signed document number/revision/hash/date, uploader,
+independent verifier, decision and verification basis. They are append-only,
+project/RLS-scoped and prohibit the uploader from verifying their own evidence.
+The signer company differs from the uploader's `company_id`; **neither** is
+assumed to be the project's responsible party without separately verified
+project authority. The SHA-256 value is metadata only: no file-upload or
+hash-to-content binding exists yet, and no service checks signature validity
+or authorizes the verifier. A raw `VERIFIED` row therefore cannot approve an
+exception or unblock any downstream gate. Future design should generalize the
+evidence identity beyond schedule without inventing a universal free-text
+approval.

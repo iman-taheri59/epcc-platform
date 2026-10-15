@@ -35,3 +35,9 @@ or a valid offline signature**. See ADR-030 for a proposed external signer or
 independently verified offline attestation, with separate signatory, uploader
 and verifier identities. Do not mistake the same-company SQL constraint in
 this initial skeleton for a complete multi-party approval workflow.
+
+Offline signed evidence is now an owner-accepted route (ADR-030) and has
+append-only **candidate metadata** tables. It remains separate from the
+same-company ADR-029 decision: uploader, external signer and independent
+verifier are distinct identities. These tables do not certify the file,
+responsible-party authority or engineering disposition by themselves.
