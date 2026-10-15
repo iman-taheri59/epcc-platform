@@ -110,3 +110,36 @@ route, or NCR if no valid disposition exists. Do not infer comparison from
 schedule names or approve merely because the nominal thickness is greater.
 Clarify whether the PMS schedule specifies an exact mandatory schedule or a
 minimum acceptable wall; until then keep the discrepancy pending review.
+
+## Owner clarification: thicker pipe / internal taper transition (2026-10-15)
+
+Owner states that a thicker pipe or component may be used with an **internal
+1:3 taper (grinding/machining)** under ASME B31.3. This is a **conditional
+engineering route** for a wall-thickness transition at an applicable joint,
+not a blanket exemption from the issued PMS schedule. For a measured radial
+wall/bore offset `delta_mm > 0`, an internal transition specified as no
+steeper than 1:3 implies an axial transition length `L_mm >= 3 * delta_mm`.
+The actual geometry must follow the project-adopted edition, paragraph/figure,
+joint configuration, WPS and engineering design; the exact code dimensions
+and applicability are NOT yet hard-coded from a secondary summary. Do not
+mistake the entire difference between schedule nominal walls for the measured
+joint mismatch where ODs, tolerances or fit-up differ.
+
+Required evidence before an engineer can consider acceptance: governing PMS
+pin and class conditions; both components' NPS/OD, schedule/material and
+specified/actual wall (with mill tolerance); pressure/corrosion/mechanical
+minimum wall **at the machined thinnest section**; measured internal offset,
+transition start/end and axial length, drawing and inspection record; mating
+end preparation, WPS/PQR thickness ranges, applicable NDE, branch/pad and
+support/hydraulic implications where relevant. The independent engineering
+review and responsible-line-company signature remain mandatory under ADR-030.
+A submitted taper plan or completed grinding operation is not automatic
+acceptance, and a missing/failed inspection remains a discrepancy to route via
+standards/spec, answered TQ and final disposition, or NCR as applicable.
+
+Open for project standard pack: identify the adopted ASME B31.3 edition and
+exact para./figure for this geometry before encoding a universal 1:3
+calculator or displaying a PASS badge. Figure 328.4.3 (trimming/permitted
+misalignment) is a candidate to verify, not proof of every possible internal
+taper application. Keep the existing schedule-difference badge and request
+flow pending engineering disposition.

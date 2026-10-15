@@ -1078,3 +1078,13 @@ independent reviewer and line-owner signature for any approved substitution.
 Unknown material/design data must not turn into a green badge. Await owner
 clarification on whether PMS schedule is exact or minimum; no automatic
 thicker-is-approved rule should be added.
+
+### 2026-10-15: evaluate tapered thicker-wall substitution with geometry evidence (PROPOSED)
+
+Owner permits a thicker pipe/component via internal 1:3 taper per applicable
+ASME B31.3 requirements. Better than an automatic "thicker is okay" switch:
+a size- and joint-specific transition record storing measured offset/length,
+minimum remaining wall, drawing, WPS and inspection evidence, with code
+edition/figure and approval provenance. A 1:3 geometry check alone is not
+PMS conformity or sign-off; first obtain the project's adopted code edition
+and verify the figure's application to the intended butt-weld configuration.

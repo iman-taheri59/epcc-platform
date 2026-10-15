@@ -4835,3 +4835,17 @@ support and hydraulic issues. ADR-029 and improvement proposals recommend
 separate PMS difference and engineering wall-adequacy statuses; PASS is not
 approval under ADR-030. Asked owner whether the PMS schedule is an exact
 mandatory value or a minimum wall. No code or DB tests in this analysis step.
+
+## Owner clarification on thicker wall (2026-10-15)
+
+Owner says ASME B31.3 permits thicker pipe/component via an internal 1:3
+taper (grinding). ADR-029 records this as a conditional **joint transition**
+route, not automatic schedule approval. For measured internal radial offset
+Δ, provisional geometric reading is axial length >=3Δ, subject to the
+project-adopted code edition/figure, WPS and engineering design. Must check
+remaining minimum wall after machining, end fit-up, inspection, material,
+branch/weight etc; line-owner signature and independent disposition still
+apply. Source review found inconsistent secondary summaries of B31.3 328.4.3
+versus other ASME code figures; do not hard-code 1:3 or cite a definitive
+paragraph until owner provides adopted edition/figure (or authoritative pack
+text is verified). No code changed and no test run for this clarification.
