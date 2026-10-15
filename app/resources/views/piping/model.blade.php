@@ -41,6 +41,16 @@
         'reviewRecorded' => ['fa' => 'رویداد بررسی ثبت شده؛ تأیید مهندسی احراز نشده', 'en' => 'Review event recorded; engineering acceptance not established'],
         'internalDraft' => ['fa' => 'پیش‌نویس داخلی؛ صادر نشده', 'en' => 'Internal draft; not issued'],
         'externalMetadata' => ['fa' => 'اطلاعات گزارش بیرونی؛ راستی‌آزمایی نشده', 'en' => 'External report metadata; not verified'],
+        'captureDraft' => ['fa' => 'ساخت پیش‌نویس داخلی TQ/NCR (بدون صدور)', 'en' => 'Create internal TQ/NCR draft (not issued)'],
+        'captureExternal' => ['fa' => 'ثبت اطلاعات TQ/NCR صادرشده در خارج (بدون تأیید)', 'en' => 'Record externally issued TQ/NCR metadata (not verified)'],
+        'reportNumber' => ['fa' => 'شمارهٔ گزارش بیرونی', 'en' => 'External report number'],
+        'reportRevision' => ['fa' => 'بازنگری (اختیاری)', 'en' => 'Revision (optional)'],
+        'reportIssuer' => ['fa' => 'صادرکنندهٔ بیرونی', 'en' => 'External issuer'],
+        'reportSigner' => ['fa' => 'نام امضاکنندهٔ بیرونی', 'en' => 'External signatory'],
+        'reportCapacity' => ['fa' => 'سمت امضاکننده', 'en' => 'Signatory capacity'],
+        'reportIssuedAt' => ['fa' => 'تاریخ صدور بیرونی', 'en' => 'External issue date'],
+        'reportSignedAt' => ['fa' => 'تاریخ امضا', 'en' => 'Signature date'],
+        'reportRegister' => ['fa' => 'مرجع رجیستر/بایگانی بیرونی', 'en' => 'External register reference'],
         'inherit'  => ['fa' => 'سایز از پورت والد به ارث می‌رسد و قابل تایپ نیست.',
                        'en' => 'The size is inherited from the parent port and cannot be typed.'],
         'locked'   => ['fa' => 'این خط ابلاغ شده است؛ تغییر مدل آن نیاز به بازگشت به پیش‌نویس دارد.',
@@ -259,6 +269,31 @@
                       @endif
                     </div>
                   @endforeach
+                  @if($canCapture && $c->company_id === $user->company_id && $line->company_id === $user->company_id)
+                    @if($entry->actual_schedule === $c->schedule && $entry->pms_class_snapshot_id === $line->pms_class_snapshot_id)
+                      <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/model/reports/{{ $entry->id }}/draft?{{ http_build_query($q) }}" style="margin-top:6px;">
+                        @csrf
+                        <select name="kind" aria-label="TQ/NCR"><option value="TQ">TQ</option><option value="NCR">NCR</option></select>
+                        <button type="submit">{{ $L('captureDraft') }}</button>
+                      </form>
+                    @endif
+                    <details style="margin-top:6px;">
+                      <summary>{{ $L('captureExternal') }}</summary>
+                      <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/model/reports/{{ $entry->id }}/external?{{ http_build_query($q) }}" style="display:grid;gap:5px;max-width:330px;margin-top:5px;">
+                        @csrf
+                        <select name="kind" aria-label="TQ/NCR"><option value="TQ">TQ</option><option value="NCR">NCR</option></select>
+                        <input name="report_number" required maxlength="160" placeholder="{{ $L('reportNumber') }}" aria-label="{{ $L('reportNumber') }}">
+                        <input name="report_revision" maxlength="64" placeholder="{{ $L('reportRevision') }}" aria-label="{{ $L('reportRevision') }}">
+                        <input name="reported_issuer" required maxlength="200" placeholder="{{ $L('reportIssuer') }}" aria-label="{{ $L('reportIssuer') }}">
+                        <input name="reported_signer" required maxlength="200" placeholder="{{ $L('reportSigner') }}" aria-label="{{ $L('reportSigner') }}">
+                        <input name="reported_signer_capacity" required maxlength="200" placeholder="{{ $L('reportCapacity') }}" aria-label="{{ $L('reportCapacity') }}">
+                        <label>{{ $L('reportIssuedAt') }} <input type="date" name="reported_issued_at" required></label>
+                        <label>{{ $L('reportSignedAt') }} <input type="date" name="reported_signed_at" required></label>
+                        <input name="external_register_ref" required maxlength="512" placeholder="{{ $L('reportRegister') }}" aria-label="{{ $L('reportRegister') }}">
+                        <button type="submit">{{ $L('captureExternal') }}</button>
+                      </form>
+                    </details>
+                  @endif
                 </div>
               @endforeach
             </details>

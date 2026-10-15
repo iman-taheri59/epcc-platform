@@ -83,7 +83,7 @@ final class PipeScheduleReportService
                 // company's discrepancy. This is not a sign-off policy.
                 $request = DB::table('pipe_schedule_exception_requests')
                     ->where('id', $base['request_id'])->where('project_id', $project->id)
-                    ->where('company_id', $actor->company_id)->first();
+                    ->where('company_id', $actor->company_id)->lockForUpdate()->first();
                 abort_if($request === null, 404);
                 if ($origin === 'IN_SYSTEM') {
                     // A newly authored internal draft must describe the
@@ -105,6 +105,13 @@ final class PipeScheduleReportService
                         || $this->issuedPms->pipeSchedule($line, $size->dn) !== $request->expected_schedule) {
                         throw \Illuminate\Validation\ValidationException::withMessages([
                             'request_id' => 'This schedule request no longer matches the issued PMS and current pipe. Capture a fresh discrepancy before drafting a report.',
+                        ]);
+                    }
+                    if (DB::table('pipe_schedule_discrepancy_reports')
+                        ->where('request_id', $request->id)->where('kind', $base['kind'])
+                        ->where('origin', 'IN_SYSTEM')->exists()) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'kind' => 'An internal draft of this report kind already exists for the request.',
                         ]);
                     }
                 }

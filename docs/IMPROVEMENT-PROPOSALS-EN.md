@@ -1127,3 +1127,13 @@ row locks for internal drafts. Retrospective external report metadata remains
 possible for audit, but its historical scope must be visibly distinct from a
 new issue or a present-day approval. Review/issue stages must repeat this
 freshness check later, not rely on the capture-time verdict alone.
+
+### 2026-10-15: expose distinct report capture forms without issue action (BUILT)
+
+A shared 'create TQ/NCR' action could falsely imply that external report
+metadata had been issued by this system. The model-page forms are distinct:
+internal draft versus external information registration. Both require a
+schedule request and report-capture permission; the latter asks for the
+external register reference, not a compulsory file. Keep issuance, responses,
+verification, sign-off and NCR disposition in separate workflows and audit
+events, not in this entry form.

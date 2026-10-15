@@ -4897,3 +4897,16 @@ an already issued/signed report on an old request, but no verification or
 approval results. Feature assertions cover forged expected value and 40->60
 edit: internal draft rejected, historical external registration remains
 EXTERNAL_RECORDED. PHP lint/diff checked, PostgreSQL tests still unrun.
+
+## Model-page TQ/NCR capture (2026-10-15)
+
+ComponentController now routes scoped POSTs for own-company schedule requests:
+create an in-system unissued TQ/NCR draft (only current request), or register
+already-issued external TQ/NCR metadata without file/revision. Both use the
+existing `PipeScheduleReportService` after verifying request -> component ->
+line URL binding, CSRF, capture capability and tenant scope. Internal draft
+creation serializes on request row and refuses a duplicate of same kind.
+Read-only history explicitly calls internal rows "not issued" and external
+rows "not verified"; no signature/issue/approval/disposition route exists.
+HTTP assertions cover both forms, cross-line refusal, duplicate draft and
+stale internal draft refusal. PHP lint/diff checked; PostgreSQL tests unrun.

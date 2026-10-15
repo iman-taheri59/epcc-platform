@@ -88,3 +88,18 @@ that registration is only metadata, labelled stale by the model view, and
 still needs independent verification and applicable disposition. It must not
 be used to approve the component's new value. This is not a bypass around
 report issue/signature authority.
+
+## Report capture from the model page (2026-10-15)
+
+For an existing own-company schedule discrepancy, the line model now exposes
+CSRF-protected capture forms: create an **unissued internal draft** on a
+current request, or register **metadata only** for an externally issued/signed
+TQ/NCR, including report number, issuer, signatory/capacity, dates and external
+register reference (optional revision, no file requirement). The controller
+checks the report request belongs to the line in the URL; the service checks
+capture capability, project scope and archive status. One in-system draft per
+request/report kind is permitted, serialized by a request-row lock. Stale
+internal drafts are refused while retrospective external registrations remain
+historical, never verified. No route issues, signs, verifies or disposes of
+a report; neither mode grants a release. Report fields supplied by a user are
+unverified claims until project-authorized verification is implemented.

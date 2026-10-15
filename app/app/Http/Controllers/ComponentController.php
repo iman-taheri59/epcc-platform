@@ -37,6 +37,7 @@ final class ComponentController extends Controller
         private readonly PipeReference $reference,
         private readonly \App\Services\PmsPinnedClassSpecification $issuedPms,
         private readonly \App\Services\PipeScheduleExceptionRequestService $scheduleRequests,
+        private readonly \App\Services\PipeScheduleReportService $reports,
         private readonly \App\Services\ProjectArchiveService $archives,
         private readonly \App\Support\AuthorizationPipeline $authz,
         private readonly \App\Services\JointService $joints,
@@ -222,6 +223,43 @@ final class ComponentController extends Controller
                 $project, $user, $componentId, $data['reason'],
                 $data['proposed_remedy'] ?? 'UNDETERMINED',
             );
+        } catch (ValidationException $e) {
+            return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+                ->withInput()->withErrors($e->errors());
+        }
+
+        return redirect($this->backTo($projectCode, $lineId, $lang, $request));
+    }
+
+    /** Capture provenance; neither mode issues or verifies a TQ/NCR. */
+    public function captureReport(Request $request, string $projectCode, string $lineId, string $requestId, string $mode): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+        abort_unless(in_array($mode, ['draft', 'external'], true)
+            && \Illuminate\Support\Str::isUuid($requestId), 404);
+        $data = $request->validate(['kind' => ['required', 'in:TQ,NCR']]);
+
+        try {
+            $this->tenant->runAs($user->company_id, function () use ($lineId, $requestId, $user): void {
+                $belongs = DB::table('pipe_schedule_exception_requests as r')
+                    ->join('components as c', 'c.id', '=', 'r.component_id')
+                    ->where('r.id', $requestId)
+                    ->where('r.company_id', $user->company_id)
+                    ->where('c.piping_line_id', $lineId)->exists();
+                abort_unless($belongs, 404);
+            }, $project->id);
+            if ($mode === 'draft') {
+                $this->reports->draft($project, $user, $requestId, $data['kind']);
+            } else {
+                $this->reports->registerExternal($project, $user, $requestId, $data['kind'],
+                    $request->only([
+                        'report_number', 'report_revision', 'reported_issuer', 'reported_signer',
+                        'reported_signer_capacity', 'reported_issued_at', 'reported_signed_at',
+                        'external_register_ref',
+                    ]));
+            }
         } catch (ValidationException $e) {
             return redirect($this->backTo($projectCode, $lineId, $lang, $request))
                 ->withInput()->withErrors($e->errors());

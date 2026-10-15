@@ -883,14 +883,23 @@ final class ComponentModellingTest extends TestCase
         $this->assertNotNull($request);
         $this->assertSame('80', $request->expected_schedule);
         $this->assertSame('40', $request->actual_schedule);
-        $reports = app(\App\Services\PipeScheduleReportService::class);
-        $reports->draft($this->project(), $this->owner(), $request->id, 'TQ');
-        $reports->registerExternal($this->project(), $this->owner(), $request->id, 'NCR', [
-            'report_number' => 'EXT-NCR-42', 'reported_issuer' => 'Contractor QC',
-            'reported_signer' => 'External engineer', 'reported_signer_capacity' => 'NCR signatory',
+        $reportUrl = $url."/reports/{$request->id}";
+        $this->actingAs($this->owner())->post($reportUrl.'/draft?lang=en', [
+            'kind' => 'TQ',
+        ])->assertRedirect($url.'?lang=en');
+        $this->actingAs($this->owner())->post($reportUrl.'/draft?lang=en', [
+            'kind' => 'TQ',
+        ])->assertRedirect($url.'?lang=en')->assertSessionHasErrors('kind');
+        $this->actingAs($this->owner())->post($reportUrl.'/external?lang=en', [
+            'kind' => 'NCR', 'report_number' => 'EXT-NCR-42',
+            'reported_issuer' => 'Contractor QC', 'reported_signer' => 'External engineer',
+            'reported_signer_capacity' => 'NCR signatory',
             'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
             'external_register_ref' => 'Contractor NCR register / 42',
-        ]);
+        ])->assertRedirect($url.'?lang=en');
+        $this->actingAs($this->owner())->post("/projects/PH-14/piping/".\Illuminate\Support\Str::uuid()."/model/reports/{$request->id}/draft?lang=en", [
+            'kind' => 'TQ',
+        ])->assertNotFound();
         $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
             ->assertSee('Discrepancy request history')
             ->assertSee('Internal draft; not issued')
@@ -905,6 +914,9 @@ final class ComponentModellingTest extends TestCase
             'reason' => 'Attempt to use an unrelated component identifier',
         ])->assertNotFound();
         $this->asOwner(fn () => DB::table('components')->where('id', $pipe->id)->update(['schedule' => '60']));
+        $this->actingAs($this->owner())->post($reportUrl.'/draft?lang=en', [
+            'kind' => 'TQ',
+        ])->assertRedirect($url.'?lang=en')->assertSessionHasErrors('request_id');
         $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
             ->assertSee('Request discrepancy review')
             ->assertSee('Previous value; not applicable to current schedule')
