@@ -62,3 +62,19 @@ identical unresolved request. The request is evidence of a discrepancy,
 **not** a sign-off, approved exception, TQ answer or NCR disposition. It has
 no public HTTP route yet. PostgreSQL feature assertions are added but have
 not been executed locally.
+
+## Draft-model request entry (2026-10-15)
+
+The line modelling screen now offers a reason form for a PIPE schedule that
+differs from the line's issued PMS pin. It posts only the component identity
+and reason to `PipeScheduleExceptionRequestService`; the service recomputes
+expected/actual values and enforces project/PIPING capture capability, own-
+company component ownership, writable project, and pending-request checks.
+The route also checks that the component belongs to the line in the URL.
+The screen shows "Review requested; not approved" for an outstanding
+request; neither the form nor the status claims an exception approval or
+creates/answers a TQ or NCR. A released line may still report a discovered
+discrepancy; an archived project cannot submit new requests. This is a
+schedule-specific first slice; cross-company signatures and route-specific
+TQ/NCR dispositions remain pending. DB-backed HTTP assertions await a
+PostgreSQL-capable PHP runtime.

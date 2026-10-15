@@ -1057,3 +1057,12 @@ and resolves expected schedule directly from the immutable issued snapshot.
 An identical outstanding request is refused; later edits must be checked for
 staleness before any reviewer decision. Service checks are not a substitute
 for future DB privilege isolation or a workflow-approved disposition.
+
+### 2026-10-15: show pending request without a green approval badge (BUILT)
+
+A discrepancy request is evidence of a problem, not clearance. The modelling
+screen offers capture only for a visible mismatched PIPE owned by the actor's
+company and then explicitly displays "Review requested; not approved" while
+pending. No issue-time PMS values are accepted from the browser. A later
+step should display request history and TQ/NCR links as read-only evidence,
+then define multi-party dispositions before connecting any downstream gate.

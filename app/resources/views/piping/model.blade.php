@@ -31,6 +31,9 @@
         'scheduleDiffers' => ['fa' => 'مغایر با ردهٔ PMS زمان صدور', 'en' => 'Differs from issued PMS schedule'],
         'scheduleUnknown' => ['fa' => 'ردهٔ PMS قابل بررسی نیست', 'en' => 'Issued PMS schedule cannot be checked'],
         'expected' => ['fa' => 'ردهٔ مورد انتظار', 'en' => 'Expected'],
+        'requestReview' => ['fa' => 'درخواست بررسی مغایرت', 'en' => 'Request discrepancy review'],
+        'requestReason' => ['fa' => 'دلیل و شرح مغایرت (تأیید نیست)', 'en' => 'Reason for discrepancy (not approval)'],
+        'reviewPending' => ['fa' => 'درخواست بررسی ثبت شده؛ هنوز تأیید نشده است', 'en' => 'Review requested; not approved'],
         'inherit'  => ['fa' => 'سایز از پورت والد به ارث می‌رسد و قابل تایپ نیست.',
                        'en' => 'The size is inherited from the parent port and cannot be typed.'],
         'locked'   => ['fa' => 'این خط ابلاغ شده است؛ تغییر مدل آن نیاز به بازگشت به پیش‌نویس دارد.',
@@ -199,6 +202,17 @@
               <div style="font-size:11px;color:#86efac;">{{ $L('scheduleMatches') }}</div>
             @else
               <div style="font-size:11px;color:#fca5a5;">{{ $L('scheduleDiffers') }} · {{ $L('expected') }}: {{ $check['expected'] }}</div>
+              @if(isset($pendingScheduleRequests[$c->id]))
+                <div style="font-size:11px;color:#fcd34d;">{{ $L('reviewPending') }}</div>
+              @elseif($canCapture && $c->company_id === $user->company_id && $line->company_id === $user->company_id)
+                <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/model/{{ $c->id }}/request-review?{{ http_build_query($q) }}" style="margin-top:6px;">
+                  @csrf
+                  <textarea name="reason" required minlength="10" maxlength="4000" rows="2"
+                            placeholder="{{ $L('requestReason') }}" aria-label="{{ $L('requestReason') }}"
+                            style="width:100%;min-width:170px;background:var(--bg);color:inherit;border:1px solid var(--line);border-radius:6px;"></textarea>
+                  <button type="submit" style="font:inherit;font-size:11px;cursor:pointer;">{{ $L('requestReview') }}</button>
+                </form>
+              @endif
             @endif
           @endif
         </td>

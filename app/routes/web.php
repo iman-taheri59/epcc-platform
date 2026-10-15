@@ -105,6 +105,7 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::get('/projects/{projectCode}/piping/{lineId}/model', [ComponentController::class, 'index'])->name('piping.model');
     Route::post('/projects/{projectCode}/piping/{lineId}/model', [ComponentController::class, 'store'])->name('piping.model.store');
     Route::post('/projects/{projectCode}/piping/{lineId}/model/attach', [ComponentController::class, 'attach'])->name('piping.model.attach');
+    Route::post('/projects/{projectCode}/piping/{lineId}/model/{componentId}/request-review', [ComponentController::class, 'requestScheduleReview'])->name('piping.model.schedule-review');
     Route::post('/projects/{projectCode}/piping/{lineId}/model/{componentId}/delete', [ComponentController::class, 'destroy'])->name('piping.model.destroy');
 
     // The numbering editor is a setup screen, not part of daily line entry.

@@ -36,6 +36,9 @@ final class ComponentController extends Controller
         private readonly TenantContext $tenant,
         private readonly PipeReference $reference,
         private readonly \App\Services\PmsPinnedClassSpecification $issuedPms,
+        private readonly \App\Services\PipeScheduleExceptionRequestService $scheduleRequests,
+        private readonly \App\Services\ProjectArchiveService $archives,
+        private readonly \App\Support\AuthorizationPipeline $authz,
         private readonly \App\Services\JointService $joints,
     ) {}
 
@@ -100,7 +103,24 @@ final class ComponentController extends Controller
             }
         }
 
+        $pendingScheduleRequests = $this->tenant->runAs($user->company_id,
+            fn (): array => DB::table('pipe_schedule_exception_requests as r')
+                ->leftJoin('pipe_schedule_exception_decisions as d', 'd.request_id', '=', 'r.id')
+                ->whereIn('r.component_id', $rows->pluck('id'))
+                ->where('r.company_id', $user->company_id)
+                ->where('r.pms_class_snapshot_id', $line->pms_class_snapshot_id)
+                ->whereNull('d.id')
+                ->pluck('r.id', 'r.component_id')->all(),
+            $project->id,
+        );
+        $canCapture = $this->archives->isWritable($project) && $this->tenant->runAs($user->company_id,
+            fn (): bool => $this->authz->allows($user, 'engineering.report.capture', $project, ['discipline' => 'PIPING']),
+            $project->id,
+        );
+
         return view('piping.model', [
+            'pendingScheduleRequests' => $pendingScheduleRequests,
+            'canCapture' => $canCapture,
             'scheduleChecks' => $scheduleChecks,
             'lang' => $lang,
             'dir' => $lang === 'fa' ? 'rtl' : 'ltr',
@@ -148,6 +168,28 @@ final class ComponentController extends Controller
             return redirect($this->backTo($projectCode, $lineId, $lang, $request))
                 ->withInput()
                 ->withErrors($e->errors());
+        }
+
+        return redirect($this->backTo($projectCode, $lineId, $lang, $request));
+    }
+
+    /** Submit a review request, not an engineering approval or TQ/NCR issue. */
+    public function requestScheduleReview(Request $request, string $projectCode, string $lineId, string $componentId): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+        $data = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:4000']]);
+
+        try {
+            $this->tenant->runAs($user->company_id, function () use ($lineId, $componentId): void {
+                $component = Component::query()->whereKey($componentId)->firstOrFail();
+                abort_if($component->piping_line_id !== $lineId, 404);
+            }, $project->id);
+            $this->scheduleRequests->submit($project, $user, $componentId, $data['reason']);
+        } catch (ValidationException $e) {
+            return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+                ->withInput()->withErrors($e->errors());
         }
 
         return redirect($this->backTo($projectCode, $lineId, $lang, $request));

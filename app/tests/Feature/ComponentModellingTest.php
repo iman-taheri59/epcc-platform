@@ -813,6 +813,32 @@ final class ComponentModellingTest extends TestCase
         $this->assertSame(1, $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->count()));
     }
 
+    public function test_model_page_submits_schedule_discrepancy_reason_without_approving_it(): void
+    {
+        $line = $this->line('6');
+        $pipe = $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'PIPE', ['schedule' => '40']));
+        $url = "/projects/PH-14/piping/{$line->id}/model";
+        $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
+            ->assertSee('Request discrepancy review');
+        $this->actingAs($this->owner())->post($url."/{$pipe->id}/request-review?lang=en", [
+            'reason' => 'Schedule differs from issued PMS and needs review',
+        ])->assertRedirect($url.'?lang=en');
+        $request = $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')
+            ->where('component_id', $pipe->id)->first());
+        $this->assertNotNull($request);
+        $this->assertSame('80', $request->expected_schedule);
+        $this->assertSame('40', $request->actual_schedule);
+        $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
+            ->assertSee('Review requested; not approved')
+            ->assertDontSee('Request discrepancy review');
+        $this->actingAs($this->owner())->post($url."/{$pipe->id}/request-review?lang=en", [
+            'reason' => 'Duplicate report for same discrepancy',
+        ])->assertRedirect($url.'?lang=en')->assertSessionHasErrors('component_id');
+        $this->actingAs($this->owner())->post($url.'/'.\Illuminate\Support\Str::uuid().'/request-review?lang=en', [
+            'reason' => 'Attempt to use an unrelated component identifier',
+        ])->assertNotFound();
+    }
+
     public function test_the_register_links_to_the_model_page(): void
     {
         // A screen nobody can reach is a screen that does not exist.

@@ -4803,3 +4803,16 @@ new request provenance, and duplicate refusal. No public route or decision
 service; a request alone never approves work. PHP lint/diff checks pass; DB
 feature tests remain unrun. Before approval, a reviewer must recheck
 component/snapshot freshness and project-specific authority (ADR-029/030).
+
+## Model-screen discrepancy request entry (2026-10-15)
+
+ComponentController/model view now expose a POST-only, CSRF-protected
+`request-review` route and reason form for an own-company PIPE with a visible
+issued-PMS schedule difference. Controller checks project/line/component URL
+binding; `PipeScheduleExceptionRequestService` rechecks all source values,
+RLS, ownership, permission, reason and pending duplicate. Model view queries
+pending requests in one batched query and says "Review requested; not
+approved" instead of implying clearance. Capture remains allowed on released
+lines (late-discovered discrepancy) but blocked on archived projects. HTTP
+feature assertions added; PHP lint and diff check passed, PostgreSQL tests
+still not run. No TQ/NCR issue, signature or acceptance UI is present.
