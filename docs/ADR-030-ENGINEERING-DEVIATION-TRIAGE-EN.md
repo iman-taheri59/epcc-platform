@@ -28,7 +28,7 @@ The ADR-029 tables hold an append-only reason and an independent decision but **
 Separate (a) the *legally/contractually responsible organization* for the line, (b) the tenant company that recorded the row, (c) the human who signed, and (d) the person who imported/verified the evidence. `piping_lines.company_id` currently identifies a writing tenant for RLS and must not automatically be treated as proof of the legally responsible line company. Record project-party identity and authority, effective period and scope (e.g. line/discipline), not a made-up signature from the only licensed user. Two acceptable routes, subject to contract:
 
 - A narrowly scoped **external signer** invitation/portal with only assigned discrepancy and attached evidence, short lifetime, identity verification and a tamper-evident decision record, ideally independent of paid full seats. Commercial feasibility and licensing require owner approval; do not assume this feature exists.
-- **Offline signed evidence** (formally signed letter, TQ response or approved document) from the responsible organization, uploaded by a licensed user and checked by a *different* authorized verifier against signatory identity, authority, validity, document/version and the exact discrepancy. Record signer organization/person/capacity/date, source document ID/hash, uploader, verifier, verification outcome/time and any withdrawal. Never display the uploader as the signer; an uploaded PDF alone does not establish authenticity or delegated authority.
+- **Offline signed evidence** (formally signed letter, TQ response or approved document) from the responsible organization, registered by a licensed user and checked by a *different* authorized verifier against signatory identity, authority, validity, document/version and the exact discrepancy. Record signer organization/person/capacity/date, source document reference (optional file/hash if available), metadata recorder, verifier, verification outcome/time and any withdrawal. Never display the metadata recorder as the signer; neither a typed reference nor an uploaded PDF alone establishes authenticity or delegated authority.
 
 The remaining employer/consultant/management-contractor decisions are separate signed events under a project-configured authority matrix. Stages/signatories depend on project agreement, not a hard-coded universal order. If the responsible company cannot sign or the signature cannot be independently verified, keep the discrepancy **ON HOLD**; allow substitution only with explicit contractual delegation/novation evidence approved by authorized parties, never because of the subscription tier. For an unresolved TQ/NCR, an external signature is not itself a technical disposition.
 
@@ -55,7 +55,7 @@ independent verifier, decision and verification basis. They are append-only,
 project/RLS-scoped and prohibit the uploader from verifying their own evidence.
 The signer company differs from the uploader's `company_id`; **neither** is
 assumed to be the project's responsible party without separately verified
-project authority. The SHA-256 value is metadata only: no file-upload or
+project authority. The SHA-256 value is optional metadata (ADR-031): no file-upload or
 hash-to-content binding exists yet, and no service checks signature validity
 or authorizes the verifier. A raw `VERIFIED` row therefore cannot approve an
 exception or unblock any downstream gate. Future design should generalize the

@@ -41,3 +41,10 @@ append-only **candidate metadata** tables. It remains separate from the
 same-company ADR-029 decision: uploader, external signer and independent
 verifier are distinct identities. These tables do not certify the file,
 responsible-party authority or engineering disposition by themselves.
+
+ADR-031 clarifies two provenance modes: an in-system TQ/NCR lifecycle with
+internal issue/signing, or metadata-only registration of an already issued/
+signed external report. The candidate external signature table does not itself
+implement either TQ/NCR route. Optional file hash in migration
+`2026_10_15_120000` corrects an overly strict assumption; external report
+metadata may be registered without a file.

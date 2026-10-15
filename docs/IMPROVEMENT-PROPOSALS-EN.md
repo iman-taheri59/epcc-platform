@@ -1009,3 +1009,14 @@ signer was authorized for this line and date. Before exposing verification,
 bind the digest to an immutable stored CDE file and validate contractual
 responsibility/authority, project and scope using an independently authorized
 reviewer; do not treat a raw VERIFIED row as engineering approval.
+
+### 2026-10-15 correction: metadata-only external reports (REQUIREMENT ACCEPTED)
+
+The owner's two-mode TQ/NCR requirement supersedes the earlier proposal that
+offline evidence "must be file-bound". Keep a content hash/file link only if
+a copy exists; independently verify external report identity, signatory and
+authority against its issuing register or other authoritative source even
+without an uploaded document. Requiring an uploaded PDF would incorrectly
+exclude valid offline-issued documents. See ADR-031. In-system issuance needs
+a separately auditable workflow and cannot be simulated by an external
+report-number form.

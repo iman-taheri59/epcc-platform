@@ -655,6 +655,16 @@ final class ComponentModellingTest extends TestCase
         ]));
         $this->assertSame($signerCompany->id, $this->asOwner(fn () => DB::table('pipe_schedule_external_signatures')
             ->where('id', $signatureId)->value('signer_company_id')));
+        $metadataOnlyId = (string) \Illuminate\Support\Str::uuid();
+        $this->asOwner(fn () => DB::table('pipe_schedule_external_signatures')->insert([
+            'id' => $metadataOnlyId, 'request_id' => $requestId,
+            'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'signer_company_id' => $signerCompany->id, 'signer_name' => 'Contractor engineer',
+            'signer_capacity' => 'Authorized project signatory',
+            'document_number' => 'PH14-EXT-002', 'signed_at' => now(), 'uploaded_by' => $actor->id,
+        ]));
+        $this->assertNull($this->asOwner(fn () => DB::table('pipe_schedule_external_signatures')
+            ->where('id', $metadataOnlyId)->value('file_sha256')));
         try {
             $this->asOwner(fn () => DB::transaction(fn () => DB::table('pipe_schedule_signature_verifications')->insert([
                 'id' => (string) \Illuminate\Support\Str::uuid(), 'signature_id' => $signatureId,

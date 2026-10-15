@@ -4739,3 +4739,19 @@ file-bound, the signer's contractual line responsibility and verifier's
 project authority are NOT checked by an application service, and no approval
 or gate is enabled. Never claim the rows alone are valid signatures. ADR-030,
 ADR-029 and improvement proposals describe remaining steps.
+
+## Two TQ/NCR provenance modes clarified (2026-10-15)
+
+Owner requires BOTH full in-system creation/signing/issuance and registration
+of already-issued/signed external TQ/NCR reports with **information only**.
+Uploading a signed file is optional, not mandatory. ADR-031 records the two
+modes, signatory/recorder/verifier distinction and current missing TQ/NCR
+workflow. Corrected ADR-030 and improvement proposals to supersede the old
+"must be file-bound" suggestion. New migration `2026_10_15_120000` allows
+schedule-specific external-signature candidate metadata with NULL file hash
+and revision (document number, signer, date remain required); feature test
+adds a metadata-only row. SQL guard against self-verification remains. No
+TQ/NCR register or in-system signature/issuance exists yet, no approval gate
+uses these candidate rows. PHP lint/whitespace checked; PostgreSQL test still
+pending. The existing `uploaded_by` column is a legacy name for metadata
+recorder when no file exists and should be renamed in a future schema step.
