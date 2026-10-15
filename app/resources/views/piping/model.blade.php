@@ -34,6 +34,8 @@
         'requestReview' => ['fa' => 'درخواست بررسی مغایرت', 'en' => 'Request discrepancy review'],
         'requestReason' => ['fa' => 'دلیل و شرح مغایرت (تأیید نیست)', 'en' => 'Reason for discrepancy (not approval)'],
         'reviewPending' => ['fa' => 'درخواست بررسی ثبت شده؛ هنوز تأیید نشده است', 'en' => 'Review requested; not approved'],
+        'taperProposal' => ['fa' => 'Taper داخلیِ پیشنهادی (صرفاً طرح؛ تأیید Fit-up نیست)', 'en' => 'Proposed internal taper (plan only; not Fit-up acceptance)'],
+        'remedyUndetermined' => ['fa' => 'روش رفع هنوز تعیین نشده است', 'en' => 'Remedy not yet determined'],
         'inherit'  => ['fa' => 'سایز از پورت والد به ارث می‌رسد و قابل تایپ نیست.',
                        'en' => 'The size is inherited from the parent port and cannot be typed.'],
         'locked'   => ['fa' => 'این خط ابلاغ شده است؛ تغییر مدل آن نیاز به بازگشت به پیش‌نویس دارد.',
@@ -204,9 +206,19 @@
               <div style="font-size:11px;color:#fca5a5;">{{ $L('scheduleDiffers') }} · {{ $L('expected') }}: {{ $check['expected'] }}</div>
               @if(isset($pendingScheduleRequests[$c->id]))
                 <div style="font-size:11px;color:#fcd34d;">{{ $L('reviewPending') }}</div>
+                @if($pendingScheduleRequests[$c->id]['remedy'] === 'INTERNAL_TAPER_PROPOSED')
+                  <div style="font-size:11px;color:#fcd34d;">{{ $L('taperProposal') }}</div>
+                @endif
               @elseif($canCapture && $c->company_id === $user->company_id && $line->company_id === $user->company_id)
                 <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/model/{{ $c->id }}/request-review?{{ http_build_query($q) }}" style="margin-top:6px;">
                   @csrf
+                  @if($check['taper_eligible'])
+                    <select name="proposed_remedy" aria-label="{{ $L('taperProposal') }}"
+                            style="width:100%;min-width:170px;background:var(--bg);color:inherit;border:1px solid var(--line);border-radius:6px;">
+                      <option value="UNDETERMINED">{{ $L('remedyUndetermined') }}</option>
+                      <option value="INTERNAL_TAPER_PROPOSED">{{ $L('taperProposal') }}</option>
+                    </select>
+                  @endif
                   <textarea name="reason" required minlength="10" maxlength="4000" rows="2"
                             placeholder="{{ $L('requestReason') }}" aria-label="{{ $L('requestReason') }}"
                             style="width:100%;min-width:170px;background:var(--bg);color:inherit;border:1px solid var(--line);border-radius:6px;"></textarea>

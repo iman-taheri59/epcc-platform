@@ -27,14 +27,20 @@ final class PipeScheduleExceptionRequestService
         private readonly PmsPinnedClassSpecification $issuedPms,
     ) {}
 
-    public function submit(Project $project, User $actor, string $componentId, string $reason): object
-    {
-        return $this->tenant->runAs($actor->company_id, function () use ($project, $actor, $componentId, $reason): object {
+    public function submit(
+        Project $project, User $actor, string $componentId, string $reason,
+        string $proposedRemedy = 'UNDETERMINED',
+    ): object {
+        return $this->tenant->runAs($actor->company_id, function () use ($project, $actor, $componentId, $reason, $proposedRemedy): object {
             $this->archives->assertWritable($project);
             abort_unless($this->authz->check($actor, 'engineering.report.capture', $project, ['discipline' => 'PIPING']) === null, 403);
-            $data = Validator::make(['component_id' => $componentId, 'reason' => trim($reason)], [
+            $data = Validator::make([
+                'component_id' => $componentId, 'reason' => trim($reason),
+                'proposed_remedy' => $proposedRemedy,
+            ], [
                 'component_id' => ['required', 'uuid'],
                 'reason' => ['required', 'string', 'min:10', 'max:4000'],
+                'proposed_remedy' => ['required', 'in:UNDETERMINED,INTERNAL_TAPER_PROPOSED'],
             ])->validate();
 
             return DB::transaction(function () use ($project, $actor, $data): object {
@@ -62,6 +68,18 @@ final class PipeScheduleExceptionRequestService
                         'component_id' => 'The pipe schedule matches the issued PMS; there is no discrepancy to request.',
                     ]);
                 }
+                if ($data['proposed_remedy'] === 'INTERNAL_TAPER_PROPOSED') {
+                    // Reference-wall comparison is only an eligibility check
+                    // for RECORDING A PLAN. It is not an ASME/ITP approval.
+                    if (! $this->reference->hasSchedule($size->nps, $expected)
+                        || ! $this->reference->hasSchedule($size->nps, $component->schedule)
+                        || $this->reference->wall($size->nps, $component->schedule)
+                            <= $this->reference->wall($size->nps, $expected)) {
+                        throw ValidationException::withMessages([
+                            'proposed_remedy' => 'An internal taper may only be proposed for a reference pipe wall thicker than the issued PMS wall at this size.',
+                        ]);
+                    }
+                }
                 $pending = DB::table('pipe_schedule_exception_requests as r')
                     ->leftJoin('pipe_schedule_exception_decisions as d', 'd.request_id', '=', 'r.id')
                     ->where('r.component_id', $component->id)
@@ -84,6 +102,7 @@ final class PipeScheduleExceptionRequestService
                     'expected_schedule' => $expected,
                     'actual_schedule' => $component->schedule,
                     'reason' => $data['reason'], 'requested_by' => $actor->id,
+                    'proposed_remedy' => $data['proposed_remedy'],
                     'created_at' => now(),
                 ]);
                 return DB::table('pipe_schedule_exception_requests')->where('id', $id)->first();

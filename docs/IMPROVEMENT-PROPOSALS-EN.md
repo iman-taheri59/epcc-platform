@@ -1099,3 +1099,12 @@ proposed taper/conditional disposition separate from later as-built
 inspection and its hold-point release. Do not block recording today's
 engineering request on evidence that cannot exist until fabrication, or
 claim a proposed taper has passed Fit-up.
+
+### 2026-10-15: typed taper intent, not premature inspection (BUILT)
+
+Recording `INTERNAL_TAPER_PROPOSED` on a schedule request retains the owner's
+proposed remedy without inventing an as-built Fit-up result. Gate that intent
+by real size-specific reference wall instead of a lexicographic schedule-code
+comparison (STD/XS aliases are not universal). This deliberately omits a
+numeric 1:3 or minimum-remaining-wall PASS status until the project edition
+and ITP Fit-up evidence are defined.

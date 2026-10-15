@@ -813,6 +813,32 @@ final class ComponentModellingTest extends TestCase
         $this->assertSame(1, $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->count()));
     }
 
+    public function test_internal_taper_is_only_a_proposal_for_a_thicker_reference_wall(): void
+    {
+        $line = $this->line('6');
+        $actor = $this->owner();
+        [$thin, $thick] = $this->asOwner(fn () => [
+            $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']),
+            $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '160']),
+        ]);
+        $requests = app(\App\Services\PipeScheduleExceptionRequestService::class);
+        try {
+            $requests->submit($this->project(), $actor, $thin->id,
+                'Plan an internal transition for this pipe', 'INTERNAL_TAPER_PROPOSED');
+            $this->fail('Thinner pipe cannot claim a thicker-wall taper route.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('proposed_remedy', $e->errors());
+        }
+        $record = $requests->submit($this->project(), $actor, $thick->id,
+            'Propose internal taper subject to future ITP Fit-up', 'INTERNAL_TAPER_PROPOSED');
+        $this->assertSame('INTERNAL_TAPER_PROPOSED', $record->proposed_remedy);
+        $this->assertSame('80', $record->expected_schedule);
+        $this->assertSame('160', $record->actual_schedule);
+        $this->assertSame(0, $this->asOwner(fn () => DB::table('pipe_schedule_exception_decisions')->count()));
+        $this->actingAs($actor)->get("/projects/PH-14/piping/{$line->id}/model?lang=en")
+            ->assertOk()->assertSee('Proposed internal taper (plan only; not Fit-up acceptance)');
+    }
+
     public function test_model_page_submits_schedule_discrepancy_reason_without_approving_it(): void
     {
         $line = $this->line('6');

@@ -4862,3 +4862,16 @@ must NOT show Fit-up accepted or use a future fit-up report as a prerequisite
 for opening the discrepancy. Engineering disposition, responsible line-company
 signature and ITP inspection/release remain distinct. No code or DB tests
 changed in this clarification step.
+
+## Proposed taper intent on schedule request (2026-10-15)
+
+Migration `2026_10_15_140000` adds append-only `proposed_remedy` default
+UNDETERMINED / INTERNAL_TAPER_PROPOSED to existing schedule requests.
+`PipeScheduleExceptionRequestService` only accepts the taper proposal when
+BOTH size-specific schedules exist and the proposed actual reference nominal
+wall is greater than the issued PMS wall, never by comparing schedule labels.
+Controller/view offer that option only for an eligible mismatch and label
+pending intent "plan only; not Fit-up acceptance". Feature test covers
+thinner refusal, thicker proposal and no decision event. Geometry, remaining
+wall after grinding, WPS and ITP verification explicitly deferred (ADR-029/
+030); no automatic approval/release. PHP lint/diff checked, DB tests unrun.

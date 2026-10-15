@@ -143,3 +143,18 @@ The project-adopted code edition/figure and any precise 1:3 acceptance
 calculation will be verified when the Fit-up workflow is designed with the
 owner. No universal numeric PASS badge or WPS/ITP sign-off is implemented
 at this stage. Preserve the PMS schedule-difference badge and request flow.
+
+## Proposed-remedy capture without Fit-up claims (2026-10-15)
+
+A request now records either `UNDETERMINED` (default) or
+`INTERNAL_TAPER_PROPOSED`. The latter is allowed at request capture only when
+the proposed component's **size-specific reference nominal wall** is greater
+than the issued PMS schedule's reference nominal wall. Both `(NPS, schedule)`
+entries must exist in the reference pack. The client cannot provide wall or
+expected schedule values; the service derives them from the stored component
+and issue-time PMS. This size-specific comparison is solely eligibility to
+**propose** a remedy: it does not check minimum wall after grinding, ASME
+geometry, WPS, completed Fit-up, approval or ITP sign-off. The model page
+labels it explicitly as a plan, not Fit-up acceptance. Even a nominally
+thicker pipe can have invalid construction details; the later ITP workflow
+must check them. No automatic downstream release follows.

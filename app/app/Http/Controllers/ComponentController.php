@@ -96,6 +96,11 @@ final class ComponentController extends Controller
                     $scheduleChecks[$component->id] = [
                         'expected' => $expected,
                         'matches' => $component->schedule === $expected,
+                        'taper_eligible' => $component->schedule !== null
+                            && $this->reference->hasSchedule($size->nps, $expected)
+                            && $this->reference->hasSchedule($size->nps, $component->schedule)
+                            && $this->reference->wall($size->nps, $component->schedule)
+                                > $this->reference->wall($size->nps, $expected),
                     ];
                 } catch (ValidationException) {
                     // A malformed/uncovered snapshot must not receive a green badge.
@@ -110,7 +115,7 @@ final class ComponentController extends Controller
                 ->where('r.company_id', $user->company_id)
                 ->where('r.pms_class_snapshot_id', $line->pms_class_snapshot_id)
                 ->whereNull('d.id')
-                ->get(['r.id', 'r.component_id', 'r.actual_schedule']),
+                ->get(['r.id', 'r.component_id', 'r.actual_schedule', 'r.proposed_remedy']),
             $project->id,
         );
         // An earlier still-open request for a DIFFERENT component schedule
@@ -120,7 +125,9 @@ final class ComponentController extends Controller
             $pending = $openRequests->first(fn ($r): bool =>
                 $r->component_id === $component->id && $r->actual_schedule === $component->schedule);
             if ($pending !== null) {
-                $pendingScheduleRequests[$component->id] = $pending->id;
+                $pendingScheduleRequests[$component->id] = [
+                    'id' => $pending->id, 'remedy' => $pending->proposed_remedy,
+                ];
             }
         }
         $canCapture = $this->archives->isWritable($project) && $this->tenant->runAs($user->company_id,
@@ -189,14 +196,20 @@ final class ComponentController extends Controller
         $lang = $this->lang($request);
         $user = $request->user();
         $project = $this->resolveProject($user, $projectCode);
-        $data = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:4000']]);
+        $data = $request->validate([
+            'reason' => ['required', 'string', 'min:10', 'max:4000'],
+            'proposed_remedy' => ['sometimes', 'in:UNDETERMINED,INTERNAL_TAPER_PROPOSED'],
+        ]);
 
         try {
             $this->tenant->runAs($user->company_id, function () use ($lineId, $componentId): void {
                 $component = Component::query()->whereKey($componentId)->firstOrFail();
                 abort_if($component->piping_line_id !== $lineId, 404);
             }, $project->id);
-            $this->scheduleRequests->submit($project, $user, $componentId, $data['reason']);
+            $this->scheduleRequests->submit(
+                $project, $user, $componentId, $data['reason'],
+                $data['proposed_remedy'] ?? 'UNDETERMINED',
+            );
         } catch (ValidationException $e) {
             return redirect($this->backTo($projectCode, $lineId, $lang, $request))
                 ->withInput()->withErrors($e->errors());
