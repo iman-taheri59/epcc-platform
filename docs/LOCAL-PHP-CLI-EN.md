@@ -30,3 +30,14 @@ Linux-only installer intentionally does not alter that workflow. This is
 preferable to the PHP WebAssembly fallback because it runs an actual native
 CLI and needs no large Node dependency tree; the upstream binary still lacks
 PostgreSQL support, which remains an explicit limitation.
+
+### Uploaded alternative PHP inspection (2026-10-15)
+
+A user-provided Linux x86_64 gzip TAR was inspected without executing its
+binary. Its `php-config` omits `--with-pdo-pgsql` and `--with-pgsql`; the
+archive has no matching PostgreSQL PHP extension or bundled libpq and was
+compiled with `--disable-session`/ZTS. It is therefore not a drop-in
+Laravel/PostgreSQL runtime. The artifact was not copied into the repository
+or used to replace the verified local CLI. Obtain a trusted PHP 8.4 CLI with
+`pdo_pgsql`, `pgsql`, session, and the Laravel-required extensions, then
+check `PDO::getAvailableDrivers()` before running migrations.

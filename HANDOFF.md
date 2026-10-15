@@ -4593,3 +4593,18 @@ not a replacement for the absent GitHub Compose job.
   GitHub again reported account payment/spending-limit restrictions. The
   Laragon preflight is PHP-linted and intentionally fails on the sandbox's
   missing `pdo_pgsql`; it has not passed on a real Laragon/PgSQL workstation.
+
+## User-supplied Linux PHP archive inspection (2026-10-15)
+
+The uploaded `PHP-8.4-Linux-x86_64-PM5.tar.txt` is a 13,801,690-byte gzip
+TAR (SHA-256 `5b9a1a8f103f7b91670336495b531d9a75c05cca3bd544251a7b63d2124bcc6c`).
+Archive metadata was inspected without executing its binary or adding it to
+Git. Its bundled `php-config` lists `--with-pdo-sqlite` and
+`--with-pdo-mysql`, but **neither** `--with-pdo-pgsql` nor `--with-pgsql`.
+The only packaged PHP extension modules are xdebug and opcache; no
+`pdo_pgsql.so`, `pgsql.so` or libpq.so appears in the archive. It is a ZTS
+PHP build with `--disable-session`, unlike the existing NTS CLI, so copying
+extensions across builds would also be unsafe. This archive cannot run the
+Laravel/PostgreSQL/RLS tests as-is. Keep it outside the repository. A
+compatible Linux PHP 8.4 build with pgsql/PDO_PGSQL and session support, or
+the owner's properly configured Laragon PHP, remains necessary.
