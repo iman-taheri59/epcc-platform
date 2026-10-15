@@ -4816,3 +4816,9 @@ approved" instead of implying clearance. Capture remains allowed on released
 lines (late-discovered discrepancy) but blocked on archived projects. HTTP
 feature assertions added; PHP lint and diff check passed, PostgreSQL tests
 still not run. No TQ/NCR issue, signature or acceptance UI is present.
+
+- Follow-up hardening: the pending-request badge is now keyed by the
+  component's **current** schedule as well as its pinned PMS revision. A
+  still-open request for an old component schedule cannot suppress a new
+  review form after an edit; HTTP test covers 40 -> 60. Old request remains
+  historical evidence and must fail reviewer freshness checks (not built).

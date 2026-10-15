@@ -78,3 +78,8 @@ discrepancy; an archived project cannot submit new requests. This is a
 schedule-specific first slice; cross-company signatures and route-specific
 TQ/NCR dispositions remain pending. DB-backed HTTP assertions await a
 PostgreSQL-capable PHP runtime.
+
+Pending UI status is evaluated against the component's current stored
+schedule and pinned revision. An unresolved request for a former schedule
+does not stand in for a review of a new value; its history remains intact.
+Any future decision must independently reject stale requests.

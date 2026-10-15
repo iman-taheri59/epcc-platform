@@ -837,6 +837,14 @@ final class ComponentModellingTest extends TestCase
         $this->actingAs($this->owner())->post($url.'/'.\Illuminate\Support\Str::uuid().'/request-review?lang=en', [
             'reason' => 'Attempt to use an unrelated component identifier',
         ])->assertNotFound();
+        $this->asOwner(fn () => DB::table('components')->where('id', $pipe->id)->update(['schedule' => '60']));
+        $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
+            ->assertSee('Request discrepancy review');
+        $this->actingAs($this->owner())->post($url."/{$pipe->id}/request-review?lang=en", [
+            'reason' => 'Schedule changed again; a new review is needed',
+        ])->assertRedirect($url.'?lang=en');
+        $this->assertSame(2, $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')
+            ->where('component_id', $pipe->id)->count()));
     }
 
     public function test_the_register_links_to_the_model_page(): void

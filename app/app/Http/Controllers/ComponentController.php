@@ -103,16 +103,26 @@ final class ComponentController extends Controller
             }
         }
 
-        $pendingScheduleRequests = $this->tenant->runAs($user->company_id,
-            fn (): array => DB::table('pipe_schedule_exception_requests as r')
+        $openRequests = $this->tenant->runAs($user->company_id,
+            fn () => DB::table('pipe_schedule_exception_requests as r')
                 ->leftJoin('pipe_schedule_exception_decisions as d', 'd.request_id', '=', 'r.id')
                 ->whereIn('r.component_id', $rows->pluck('id'))
                 ->where('r.company_id', $user->company_id)
                 ->where('r.pms_class_snapshot_id', $line->pms_class_snapshot_id)
                 ->whereNull('d.id')
-                ->pluck('r.id', 'r.component_id')->all(),
+                ->get(['r.id', 'r.component_id', 'r.actual_schedule']),
             $project->id,
         );
+        // An earlier still-open request for a DIFFERENT component schedule
+        // must not hide the form for the current mismatch.
+        $pendingScheduleRequests = [];
+        foreach ($rows as $component) {
+            $pending = $openRequests->first(fn ($r): bool =>
+                $r->component_id === $component->id && $r->actual_schedule === $component->schedule);
+            if ($pending !== null) {
+                $pendingScheduleRequests[$component->id] = $pending->id;
+            }
+        }
         $canCapture = $this->archives->isWritable($project) && $this->tenant->runAs($user->company_id,
             fn (): bool => $this->authz->allows($user, 'engineering.report.capture', $project, ['discipline' => 'PIPING']),
             $project->id,
