@@ -247,8 +247,11 @@
               <summary>{{ $L('requestHistory') }} ({{ $num($requestHistory[$c->id]->count()) }})</summary>
               @foreach($requestHistory[$c->id] as $entry)
                 <div style="border-top:1px solid var(--line);padding:5px 0;white-space:normal;">
-                  <bdi>{{ $entry->created_at }}</bdi> · {{ $entry->actual_schedule }} / {{ $entry->expected_schedule }}
-                  @if($entry->actual_schedule !== $c->schedule || $entry->pms_class_snapshot_id !== $line->pms_class_snapshot_id)
+                  <bdi>{{ $entry->created_at }}</bdi> ·
+                  @if($entry->nps_at_request)<bdi>{{ $num($entry->nps_at_request) }}" (DN{{ $num($entry->dn_at_request) }})</bdi> · @endif
+                  {{ $entry->actual_schedule }} / {{ $entry->expected_schedule }}
+                  @if($entry->actual_schedule !== $c->schedule || $entry->pms_class_snapshot_id !== $line->pms_class_snapshot_id
+                      || $entry->nps_at_request === null || $entry->nps_at_request !== $c->nominal_size)
                     <div style="color:#fcd34d;">{{ $L('previousValue') }}</div>
                   @endif
                   @if($entry->proposed_remedy === 'INTERNAL_TAPER_PROPOSED')
@@ -270,7 +273,8 @@
                     </div>
                   @endforeach
                   @if($canCapture && $c->company_id === $user->company_id && $line->company_id === $user->company_id)
-                    @if($entry->actual_schedule === $c->schedule && $entry->pms_class_snapshot_id === $line->pms_class_snapshot_id)
+                    @if($entry->nps_at_request !== null && $entry->nps_at_request === $c->nominal_size
+                        && $entry->actual_schedule === $c->schedule && $entry->pms_class_snapshot_id === $line->pms_class_snapshot_id)
                       <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/model/reports/{{ $entry->id }}/draft?{{ http_build_query($q) }}" style="margin-top:6px;">
                         @csrf
                         <select name="kind" aria-label="TQ/NCR"><option value="TQ">TQ</option><option value="NCR">NCR</option></select>

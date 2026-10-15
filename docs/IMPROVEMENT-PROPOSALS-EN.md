@@ -1137,3 +1137,11 @@ schedule request and report-capture permission; the latter asks for the
 external register reference, not a compulsory file. Keep issuance, responses,
 verification, sign-off and NCR disposition in separate workflows and audit
 events, not in this entry form.
+
+### 2026-10-15: avoid size-blind schedule deduplication (BUILT)
+
+A request keyed only by schedule and PMS pin may incorrectly suppress a new
+DN's discrepancy because the same code denotes different wall thickness at
+different sizes. Persist NPS/DN on new requests, compare them when deduping
+and drafting reports, and mark size-unknown legacy entries as unverified
+rather than reconstructing history from today's component size.

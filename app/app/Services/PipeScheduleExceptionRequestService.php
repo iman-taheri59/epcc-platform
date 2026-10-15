@@ -86,6 +86,8 @@ final class PipeScheduleExceptionRequestService
                     ->where('r.project_id', $project->id)
                     ->where('r.pms_class_snapshot_id', $line->pms_class_snapshot_id)
                     ->where('r.actual_schedule', $component->schedule)
+                    ->where('r.nps_at_request', $size->nps)
+                    ->where('r.dn_at_request', $size->dn)
                     ->whereNull('d.id')->exists();
                 if ($pending) {
                     throw ValidationException::withMessages([
@@ -101,6 +103,8 @@ final class PipeScheduleExceptionRequestService
                     'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
                     'expected_schedule' => $expected,
                     'actual_schedule' => $component->schedule,
+                    'nps_at_request' => $size->nps,
+                    'dn_at_request' => $size->dn,
                     'reason' => $data['reason'], 'requested_by' => $actor->id,
                     'proposed_remedy' => $data['proposed_remedy'],
                     'created_at' => now(),

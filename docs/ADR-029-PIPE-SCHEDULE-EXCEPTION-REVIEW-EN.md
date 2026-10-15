@@ -171,3 +171,17 @@ ADR-029 decision row is only labelled as a recorded review event; it does not
 prove ADR-030's multi-party sign-off/technical basis. Reads are batched per
 line under project RLS, not queried once per component. Future workflow must
 show verified dispositions separately and check freshness at decision time.
+
+## Pin the component DN at discrepancy capture (2026-10-15)
+
+Schedule and wall thickness are size-dependent. New requests now capture
+canonical NPS and DN alongside the immutable PMS pin, expected/actual
+schedule, reason and actor. If a component later changes size but keeps the
+same schedule, the old request is visibly historical, no longer blocks a new
+request, and cannot seed a new in-system TQ/NCR draft. A historical external
+report can still be registered for its prior scope as unverified metadata.
+Existing request rows cannot safely recover their issue-time size from a
+mutable component, so the added fields are nullable for legacy evidence;
+missing size is treated as unknown/stale, not silently backfilled from today.
+The application must not infer engineering adequacy from NPS alone. This is
+provenance/freshness hardening, not a pressure-wall or ITP Fit-up check.

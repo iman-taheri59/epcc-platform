@@ -732,6 +732,7 @@ final class ComponentModellingTest extends TestCase
             'id' => $requestId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
             'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
             'expected_schedule' => '80', 'actual_schedule' => '40',
+            'nps_at_request' => '6', 'dn_at_request' => 150,
             'reason' => 'Reference conflict needs independent resolution', 'requested_by' => $actor->id,
         ]));
         $service = app(\App\Services\PipeScheduleReportService::class);
@@ -752,6 +753,7 @@ final class ComponentModellingTest extends TestCase
             'id' => $forgedId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
             'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
             'expected_schedule' => '60', 'actual_schedule' => '40',
+            'nps_at_request' => '6', 'dn_at_request' => 150,
             'reason' => 'Incorrect claimed PMS schedule entered by raw SQL', 'requested_by' => $actor->id,
         ]));
         try {
@@ -840,6 +842,31 @@ final class ComponentModellingTest extends TestCase
             $this->assertArrayHasKey('component_id', $e->errors());
         }
         $this->assertSame(1, $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->count()));
+        $this->assertSame('6', $record->nps_at_request);
+        $this->assertSame(150, (int) $record->dn_at_request);
+        $this->asOwner(function () use ($different): void {
+            DB::table('components')->where('id', $different->id)
+                ->update(['nominal_size' => '8', 'nominal_size_decimal' => 8.0]);
+            DB::table('ports')->where('component_id', $different->id)
+                ->update(['nominal_size' => '8', 'nominal_size_decimal' => 8.0]);
+        });
+        $this->actingAs($actor)->get("/projects/PH-14/piping/{$line->id}/model?lang=en")
+            ->assertOk()->assertSee('Request discrepancy review')
+            ->assertSee('Previous value; not applicable to current schedule');
+        $next = $requests->submit($this->project(), $actor, $different->id,
+            'Pipe size changed; this is a different schedule discrepancy');
+        $this->assertSame('8', $next->nps_at_request);
+        $this->assertSame(200, (int) $next->dn_at_request);
+        $this->assertSame(2, $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->count()));
+        $this->actingAs($actor)->get("/projects/PH-14/piping/{$line->id}/model?lang=en")
+            ->assertOk()->assertSee('Previous value; not applicable to current schedule');
+        try {
+            app(\App\Services\PipeScheduleReportService::class)
+                ->draft($this->project(), $actor, $record->id, 'TQ');
+            $this->fail('The old DN150 request cannot seed a DN200 internal draft.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('request_id', $e->errors());
+        }
     }
 
     public function test_internal_taper_is_only_a_proposal_for_a_thicker_reference_wall(): void

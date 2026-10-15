@@ -4910,3 +4910,17 @@ Read-only history explicitly calls internal rows "not issued" and external
 rows "not verified"; no signature/issue/approval/disposition route exists.
 HTTP assertions cover both forms, cross-line refusal, duplicate draft and
 stale internal draft refusal. PHP lint/diff checked; PostgreSQL tests unrun.
+
+## Issue-time component size on schedule requests (2026-10-15)
+
+Migration `2026_10_15_150000` adds nullable NPS/DN pair to append-only
+schedule requests: null means legacy size unknown, NEVER backfilled from a
+mutable component. Request service captures canonical NPS/DN and dedupes
+per actual schedule **and size**. Model history shows the issued request
+size; pending status also matches current size, and size-unknown/changed
+entries are marked former/unverifiable. Internal TQ/NCR draft refuses a
+request without size or whose NPS/DN no longer matches the current pipe.
+Feature test changes NPS 6/DN150 to NPS 8/DN200 at unchanged schedule,
+asserts new request can be made and old draft rejected. No Fit-up validation
+or engineering acceptance is inferred. PHP lint/diff checks passed;
+PostgreSQL tests still unrun.

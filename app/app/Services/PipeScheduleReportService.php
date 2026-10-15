@@ -99,6 +99,9 @@ final class PipeScheduleReportService
                     $size = $component->nominal_size !== null
                         ? $this->reference->resolveLabel($component->nominal_size) : null;
                     if ($component->template_code !== 'PIPE' || $size === null
+                        || $request->nps_at_request === null || $request->dn_at_request === null
+                        || $request->nps_at_request !== $size->nps
+                        || (int) $request->dn_at_request !== $size->dn
                         || $line->pms_class_snapshot_id !== $request->pms_class_snapshot_id
                         || $component->schedule !== $request->actual_schedule
                         || $request->actual_schedule === $request->expected_schedule

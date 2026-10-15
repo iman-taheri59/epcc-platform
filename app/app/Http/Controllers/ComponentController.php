@@ -134,6 +134,8 @@ final class ComponentController extends Controller
             $pending = $requestHistory->first(fn ($r): bool =>
                 $r->component_id === $component->id && $r->decision_id === null
                 && $r->pms_class_snapshot_id === $line->pms_class_snapshot_id
+                && $r->nps_at_request !== null
+                && $r->nps_at_request === $component->nominal_size
                 && $r->actual_schedule === $component->schedule);
             if ($pending !== null) {
                 $pendingScheduleRequests[$component->id] = [
