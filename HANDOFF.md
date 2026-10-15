@@ -4640,3 +4640,15 @@ Historical cross-company classification workflow is still undecided; the
 piping_lines RLS policy's WITH CHECK requires row.company_id == tenant,
 so a project-owner actor cannot write another company's line by default.
 Do not silently broaden this authorization.
+
+## Incremental component pin consumption (2026-10-15)
+
+`ComponentService::place()` now fills a missing PIPE schedule using
+`PmsPinnedClassSpecification::pipeSchedule($line, $size->dn)` for pinned lines;
+ports inherit the selected schedule. Explicit component schedule inputs and
+unpinned legacy modelling behaviour are unchanged. The PMS revision feature
+test now asserts an old line gets SCH 80 and a new line gets STD after an
+approved schedule-only revision, even though live class remains SCH 80.
+PHP lint and diff whitespace checks passed, not PHPUnit/PG (unavailable here).
+Remaining: decide policy for explicit schedule override; manual MTO has no
+universal line link, so do not impose a fake pin on all MTO rows.

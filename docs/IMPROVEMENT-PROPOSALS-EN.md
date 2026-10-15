@@ -938,3 +938,14 @@ PMS snapshot. The pure resolver now validates DN and refuses missing or
 ambiguous matches; a follow-up should wire each MTO consumer to the pinned
 resolver and add database-backed regression tests. Do not treat a lint pass
 as an MTO integration result.
+
+### 2026-10-15: pipe-component issued schedule default (BUILT)
+
+A missing schedule on a new pipe component should use the line's pinned PMS
+rule rather than remain empty or consult today's live class. This is now
+implemented for pinned lines only. Explicit schedule overrides are still
+accepted to preserve the existing modelling/joint-compatibility workflow;
+a future reviewed decision should define how mismatching overrides are
+approved and audited before making them automatically valid for procurement.
+Manual MTO rows do not all map to a piping line, so a blanket MTO pin gate
+would be unsafe without designing row provenance first.

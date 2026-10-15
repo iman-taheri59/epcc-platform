@@ -37,6 +37,7 @@ final class ComponentService
         private readonly PipeReference $reference,
         private readonly ProjectArchiveService $archives,
         private readonly JointService $joints,
+        private readonly PmsPinnedClassSpecification $issuedPms,
     ) {}
 
     // ------------------------------------------------------------ create --
@@ -66,6 +67,15 @@ final class ComponentService
 
             $size = $this->resolveSize($attributes['nominal_size'] ?? $line->nominal_size);
 
+            // A pipe with no entered schedule inherits the LINE'S ISSUED PMS
+            // specification, not the mutable/current piping-class rules.
+            // Explicit schedules remain a separate modelling override for now.
+            $schedule = $attributes['schedule'] ?? null;
+            if ($template['code'] === 'PIPE' && ($schedule === null || $schedule === '')
+                && $size !== null && $line->pms_class_snapshot_id !== null) {
+                $schedule = $this->issuedPms->pipeSchedule($line, $size->dn);
+            }
+
             $component = Component::create([
                 'project_id' => $project->id,
                 'company_id' => $actor->company_id,
@@ -74,7 +84,7 @@ final class ComponentService
                 'sequence' => $sequence,
                 'nominal_size' => $size?->nps,
                 'nominal_size_decimal' => $size?->npsDecimal,
-                'schedule' => $attributes['schedule'] ?? null,
+                'schedule' => $schedule,
                 'material_code' => $attributes['material_code'] ?? null,
                 'length_mm' => $this->resolveLength($template, $attributes),
                 'fabrication' => $this->resolveFabrication($attributes),

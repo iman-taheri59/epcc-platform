@@ -637,3 +637,13 @@ immutable snapshot's `rules`, rather than requiring a live class-rule lookup.
 At DN boundaries it requires exactly one typed rule; absent, overlapping,
 malformed or nonpositive-DN requests are rejected. This does not yet wire an
 MTO consumer to this resolver; it establishes the fail-closed contract first.
+
+Pipe component modelling now defaults a missing schedule from the line's
+immutable issue-time PMS snapshot at the component's DN (not from the live
+class). The same value is copied onto its ports. Explicit manually supplied
+schedules still remain possible under the existing modelling workflow; this
+is NOT a blanket validation of all component schedules against PMS. Legacy
+lines without a pin retain the existing manual modelling path for now, but
+cannot pass the newer AFC pin gate. A revision test asserts that old/new lines
+modelled after a new A-family PMS issue default to their respective old/new
+schedules.
