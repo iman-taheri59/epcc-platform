@@ -3,13 +3,13 @@
 **تاریخ:** 2026-10-06  
 **وضعیت:** پیشنهاد نیازمندی و طراحی مرحله‌ای؛ وضعیت پیاده‌سازی هر slice در ادامه صریحاً ثبت شده است.
 **دامنه:** پایپینگ اول؛ سایر دیسیپلین‌های EPCC در محدوده محصول باقی می‌مانند اما فعلاً به‌صورت عمیق پیاده‌سازی نمی‌شوند.  
-**ورودی:** بستهٔ آپلودی `epcc-platform-mto-docs-changes-2026-10-06.txt`، کد فعلی branch `arena/roadmap-reconciliation`، ADRهای موجود و تصمیم‌های قبلی کاربر.
+**ورودی:** بستهٔ آپلودی `epcc-platform-mto-docs-changes-2026-10-06.txt`، شاخهٔ تاریخی `arena/roadmap-reconciliation`، کد فعلی `arena/782120e4-epcc-platform`، ADRهای موجود و تصمیم‌های قبلی کاربر.
 
 ---
 
 ## 1. جمع‌بندی اجرایی
 
-نیازمندی‌های MTO آپلودشده از نظر محصولی دقیق و مهم هستند، اما با branch فعلی نباید به‌صورت جایگزینی کامل فایل‌ها اعمال شوند. بعضی فایل‌های بسته از وضعیت مستنداتی/کدی دیگری آمده‌اند و در آن‌ها چند قابلیت به‌صورت `BUILT` توصیف شده که در branch فعلی وجود ندارد؛ مانند `BaselineService`، `PcfParser`، `ModelImportService` و سرویس‌های PMS. بنابراین این سند نیازمندی‌ها را با وضعیت واقعی مخزن فعلی آشتی می‌دهد.
+نیازمندی‌های MTO آپلودشده از نظر محصولی دقیق و مهم هستند، اما با branch فعلی نباید به‌صورت جایگزینی کامل فایل‌ها اعمال شوند. بعضی فایل‌های بسته از وضعیت مستنداتی/کدی دیگری آمده‌اند و در آن‌ها مجموعهٔ کامل baseline/model import به‌صورت `BUILT` توصیف شده است. این شاخه اکنون خوانندهٔ فقط‌خواندنی `PcfParser` و بخشی از PMS/MR را دارد، اما `BaselineService`، `ModelImportService` عملیاتی و schema موازی PMS را ندارد. بنابراین این سند نیازمندی‌ها را با وضعیت واقعی مخزن فعلی آشتی می‌دهد.
 
 هدف فاز بعدی این است که برای پایپینگ، زنجیرهٔ زیر قابل اتکا و قابل آزمون شود:
 
@@ -29,9 +29,9 @@ Material Library
 
 ## 2. وضعیت واقعی branch فعلی
 
-### 2.1 ساخته‌شده و قابل اتکا
+### 2.1 موجود در کد (وضعیت آزمون زمان اجرا بسته به slice متفاوت است)
 
-در branch فعلی این قابلیت‌ها واقعاً وجود دارند و تست دارند:
+در branch فعلی این قابلیت‌ها در کد وجود دارند؛ نتیجهٔ آزمون قدیمی را نباید به برش‌های بعدی تعمیم داد:
 
 - Laravel/PostgreSQL runtime با `restore.sh` اصلاح‌شده.
 - RLS و چندمستأجری پایه.
@@ -45,22 +45,22 @@ Material Library
   - compatibility
   - task-first Piping Workspace در Laravel
   - test-pack workflow اولیه: create pack، assign line، state transition `DRAFT → READY → TESTED → ACCEPTED`.
-- آخرین اجرای کامل: `858 passed / 3166 assertions`.
+- نتیجهٔ تاریخی آزمون کامل در 2026-10-06: `858 passed / 3166 assertions`؛ برش‌های بعدی از جمله PCF و PMS هنوز در Laragon راستی‌آزمایی نشده‌اند.
 
-### 2.2 ادعاهایی در بستهٔ آپلودی که در branch فعلی ساخته نشده‌اند
+### 2.2 قابلیت‌های بستهٔ آپلودی در برابر پیاده‌سازی فعلی
 
-این موارد نباید در مستندات فعلی به‌عنوان ساخته‌شده ثبت شوند مگر کدشان هم وارد شود:
+بستهٔ آپلودی به‌صورت کامل ساخته نشده است؛ خواندن PCF را نباید با واردکردن عملیاتی مدل یکی دانست:
 
 | مورد | وضعیت branch فعلی |
 |---|---|
 | `BaselineService` | وجود ندارد |
 | `baseline_batches` / `baseline_discrepancies` | وجود ندارد |
-| `PcfParser` / `ModelImportService` / `model_imports` | وجود ندارد |
+| `PcfParser` / `ModelImportService` / `model_imports` | خوانندهٔ خالص، کنترل ورودی فقط‌خواندنی و طبقه‌بند انشعاب P2P منتقل شده‌اند (ADR-021–023)؛ واردکننده و جدول‌های model import وجود ندارند؛ آزمون زمان اجرا باقی است |
 | quarantine برای unknown imported line | وجود ندارد |
 | immutable accepted-MTO-row snapshot store | در Slice 4 ساخته شد: `accepted_mto_batches`، `accepted_mto_rows`، پذیرش تراکنشی، label/hash منجمد و تست rollback |
-| PMS entry/access/bulk services ذکرشده در بسته | وجود ندارد |
+| PMS entry/access/bulk services ذکرشده در بسته | `PmsAccessService` و جدول سیاست منتقل شده‌اند؛ این شاخه PMS و فیلد دستهٔ سرویس مستقل خود را دارد؛ bulk-entry نشست موازی منتقل نشده است |
 | NDT requirement model ذکرشده در بسته | وجود ندارد |
-| `material_requisition_sequence` ذکرشده در بسته | وجود ندارد |
+| `material_requisition_sequence` ذکرشده در بسته | با ورود MR منتقل شده است؛ راستی‌آزمایی Laragon باقی است |
 
 نتیجه: بستهٔ آپلودی باید به‌عنوان **منبع نیازمندی و تصمیم طراحی** استفاده شود، نه جایگزین مستقیم فایل‌های موجود.
 
@@ -529,7 +529,7 @@ Workflow فعلی test pack فقط فاز اول است. تکمیل بعدی ب�
 **در 2026-10-06 در همین branch ساخته شد:**
 
 - `engineering_estimate_rows`، `EngineeringEstimateRow` و `EngineeringEstimateService`؛
-- source typeهای `MANUAL_ISO`، `MODEL_DERIVED` و `PCF_IMPORT` بدون ادعای وجود parser برای PCF؛
+- source typeهای `MANUAL_ISO`، `MODEL_DERIVED` و `PCF_IMPORT`؛ خوانندهٔ فقط‌خواندنی PCF اکنون وجود دارد اما اتصال خودکار آن به این برآورد وجود ندارد؛
 - لینک اختیاری به `accepted_mto_row_id` immutable و provenance ساختاریافته؛
 - وقتی net از gross بیشتر باشد، `SHORTAGE` بدون percentage tolerance؛
 - وقتی gross برابر یا بیشتر باشد، `DELTA_ONLY` و بدون استنباط علت؛
@@ -537,9 +537,7 @@ Workflow فعلی test pack فقط فاز اول است. تکمیل بعدی ب�
 
 ### Slice 6 — PO attribution and order gap
 
-- PO line material/scope attribution؛
-- order gap board؛
-- over-plan نمایش جداگانه.
+**در کد پیاده‌سازی شده، منتظر آزمون Laragon:** انتساب متریال سفارش، زنجیرهٔ اصلاحیه، تخصیص محدوده، نمایش شکاف سفارش‌های مؤثر و شاخص بالاتر از برنامه (ADR-015). **محدودیت مهم:** گزارش فعلی تمام ویرایش‌های پذیرفته‌شدهٔ MTO را بدون انتخاب ویرایش مؤثر و کنترل هم‌پوشانی جمع می‌زند؛ در نتیجه ممکن است دوبارشماری رخ دهد. تا پیاده‌سازی و آزمون ADR-024، مجموع نیاز ناخالص در حالت چند ویرایش/چند محدوده نباید قابل اتکا معرفی شود.
 
 ### Slice 7 — Usable material decision and physical gap
 

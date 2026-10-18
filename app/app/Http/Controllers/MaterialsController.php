@@ -12,17 +12,19 @@ use App\Models\MaterialRequisition;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\Subsystem;
+use App\Services\MaterialRequisitionAccessService;
+use App\Services\MaterialRequisitionEntryService;
 use App\Services\ProcurementService;
+use App\Services\ProjectFittingDefinitionService;
 use App\Services\WarehouseService;
 use App\Support\AuthorizationPipeline;
+use App\Support\JalaliDate;
 use App\Support\MovementType;
-use App\Support\ProcurementState;
 use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
-use Morilog\Jalali\Jalalian;
 
 /**
  * تهیه و انبار - procurement and materials.
@@ -43,8 +45,10 @@ final class MaterialsController extends Controller
         private readonly AuthorizationPipeline $authz,
         private readonly ProcurementService $proc,
         private readonly WarehouseService $wh,
-    ) {
-    }
+        private readonly MaterialRequisitionAccessService $mrAccess,
+        private readonly MaterialRequisitionEntryService $mrEntry,
+        private readonly ProjectFittingDefinitionService $projectAccess,
+    ) {}
 
     // -----------------------------------------------------------------------
     // Warehouse
@@ -193,10 +197,12 @@ final class MaterialsController extends Controller
         $lang = $this->lang($request);
         $user = $request->user();
         $project = $this->resolveProject($user, $projectCode);
+        $this->projectAccess->assertAccess($project, $user);
+        abort_unless($user->company?->plan?->hasModule('proc') && $user->company->plan->allowsPack($project->standards_pack), 403);
 
-        [$requisitions, $orders, $inspections, $vendors] = $this->tenant->runAs(
+        [$requisitions, $orders, $inspections, $vendors, $mrAuthorAccess, $canRaiseMr, $mrSubsystems] = $this->tenant->runAs(
             $user->company_id,
-            function () use ($project): array {
+            function () use ($project, $user): array {
                 $requisitions = MaterialRequisition::with(['items.subsystem', 'company'])
                     ->orderByDesc('sequence')
                     ->get();
@@ -218,7 +224,7 @@ final class MaterialsController extends Controller
                     ->orderBy('code')
                     ->get();
 
-                return [$requisitions, $orders, $inspections, $vendors];
+                return [$requisitions, $orders, $inspections, $vendors, $this->mrAccess->dashboard($project, $user), $this->mrAccess->allows($project, $user), Subsystem::where('project_id', $project->id)->orderBy('code')->get()];
             },
             $project->id,
         );
@@ -233,8 +239,31 @@ final class MaterialsController extends Controller
             'orders' => $orders,
             'inspections' => $inspections,
             'vendors' => $vendors,
+            'mrAuthorAccess' => $mrAuthorAccess,
+            'canRaiseMr' => $canRaiseMr,
+            'mrSubsystems' => $mrSubsystems,
             'jalaliDate' => $this->today($lang),
         ]);
+    }
+
+    public function createRequisition(Request $request, string $projectCode): RedirectResponse
+    {
+        $project = $this->resolveProject($request->user(), $projectCode);
+        $request->validate(['mr' => ['required', 'array']]);
+        $mr = $this->mrEntry->create($project, $request->user(), $request->input('mr'), $this->lang($request));
+
+        return redirect()->route('procurement', ['projectCode' => $project->code, 'lang' => $this->lang($request)])
+            ->with('status', __('mr.created', ['number' => $mr->number]));
+    }
+
+    public function configureRequisitionAuthors(Request $request, string $projectCode): RedirectResponse
+    {
+        $project = $this->resolveProject($request->user(), $projectCode);
+        $request->validate(['access' => ['required', 'array']]);
+        $this->mrAccess->configure($project, $request->user(), $request->input('access'));
+
+        return redirect()->route('procurement', ['projectCode' => $project->code, 'lang' => $this->lang($request)])
+            ->with('status', __('mr.access_saved'));
     }
 
     /** Move a requisition one step along. */
@@ -304,8 +333,6 @@ final class MaterialsController extends Controller
 
     private function today(string $lang): string
     {
-        return $lang === 'fa'
-            ? Jalalian::now()->format('Y/m/d')
-            : now()->format('d M Y');
+        return JalaliDate::format(now(), $lang);
     }
 }

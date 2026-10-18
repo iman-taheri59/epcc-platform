@@ -21,6 +21,7 @@ use Database\Seeders\EpccDemoSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
+use Tests\Support\ApprovedPmsClassFixture;
 
 /**
  * ADR-006 phase 2 - components and ports.
@@ -81,6 +82,8 @@ final class ComponentModellingTest extends TestCase
                 ['project_id' => $project->id, 'code' => 'A1'],
                 ['company_id' => $project->owner_company_id, 'description_en' => 'CS 150#'],
             );
+
+            ApprovedPmsClassFixture::ensure($project, $owner, $class);
 
             return $lines->create(
                 Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail(),
@@ -569,9 +572,445 @@ final class ComponentModellingTest extends TestCase
             ->getContent();
 
         $this->assertStringContainsString('TEE', $html);
+        $this->assertStringContainsString('Issued PMS revision', $html);
+        $this->assertStringContainsString('PH-14-PIP-PMS-A1', $html);
+        $this->assertStringContainsString('Schedule', $html);
+        $this->assertStringContainsString('<td class="mono">80</td>', $html);
         $this->assertStringContainsString('Open ends', $html);
         // Three ports remain open: the tee's two runs and the pipe's far end.
         $this->assertStringContainsString('(3)', $html);
+    }
+
+    public function test_model_page_flags_explicit_pipe_schedule_difference_against_issued_pms(): void
+    {
+        $line = $this->line('6');
+        $this->asOwner(function () use ($line): void {
+            $this->svc()->place($line, $this->owner(), 'PIPE', ['schedule' => '40']);
+            $this->svc()->place($line, $this->owner(), 'PIPE');
+        });
+
+        $this->actingAs($this->owner())
+            ->get("/projects/PH-14/piping/{$line->id}/model?lang=en")
+            ->assertOk()
+            ->assertSee('Differs from issued PMS schedule')
+            ->assertSee('Expected: 80')
+            ->assertSee('Matches issued PMS schedule');
+    }
+
+    public function test_schedule_exception_audit_requires_reason_and_independent_decision_and_is_append_only(): void
+    {
+        $line = $this->line('6');
+        $pipe = $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'PIPE', ['schedule' => '40']));
+        $actor = $this->owner();
+        $id = (string) \Illuminate\Support\Str::uuid();
+        $request = [
+            'id' => $id, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+            'expected_schedule' => '80', 'actual_schedule' => '40',
+            'reason' => 'Approved alternative pending engineering review', 'requested_by' => $actor->id,
+        ];
+        $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert($request));
+        try {
+            $this->asOwner(fn () => DB::transaction(fn () => DB::table('pipe_schedule_exception_requests')
+                ->where('id', $id)->update(['reason' => 'Changed after submission'])));
+            $this->fail('Audit reason must be immutable.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
+        try {
+            $this->asOwner(fn () => DB::transaction(fn () => DB::table('pipe_schedule_exception_decisions')->insert([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+                'request_id' => $id, 'decision' => 'APPROVED', 'note' => 'Looks acceptable',
+                'decided_by' => $actor->id,
+            ])));
+            $this->fail('The requester must not approve their own exception.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
+        $this->assertSame(0, $this->asOwner(fn () => DB::table('pipe_schedule_exception_decisions')->count()));
+    }
+
+    public function test_offline_signature_metadata_keeps_signer_separate_from_uploader_and_refuses_self_verification(): void
+    {
+        $line = $this->line('6');
+        $actor = $this->owner();
+        $pipe = $this->asOwner(fn () => $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']));
+        $requestId = (string) \Illuminate\Support\Str::uuid();
+        $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
+            'id' => $requestId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+            'expected_schedule' => '80', 'actual_schedule' => '40',
+            'reason' => 'Reviewed outside the application by contractor', 'requested_by' => $actor->id,
+        ]));
+        $signerCompany = \App\Models\Company::where('code', 'EPC-PARS')->firstOrFail();
+        $signatureId = (string) \Illuminate\Support\Str::uuid();
+        $this->asOwner(fn () => DB::table('pipe_schedule_external_signatures')->insert([
+            'id' => $signatureId, 'request_id' => $requestId,
+            'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'signer_company_id' => $signerCompany->id, 'signer_name' => 'Contractor engineer',
+            'signer_capacity' => 'Authorized project signatory',
+            'document_number' => 'PH14-EXT-001', 'document_revision' => 'A',
+            'file_sha256' => str_repeat('a', 64), 'signed_at' => now(), 'uploaded_by' => $actor->id,
+        ]));
+        $this->assertSame($signerCompany->id, $this->asOwner(fn () => DB::table('pipe_schedule_external_signatures')
+            ->where('id', $signatureId)->value('signer_company_id')));
+        $metadataOnlyId = (string) \Illuminate\Support\Str::uuid();
+        $this->asOwner(fn () => DB::table('pipe_schedule_external_signatures')->insert([
+            'id' => $metadataOnlyId, 'request_id' => $requestId,
+            'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'signer_company_id' => $signerCompany->id, 'signer_name' => 'Contractor engineer',
+            'signer_capacity' => 'Authorized project signatory',
+            'document_number' => 'PH14-EXT-002', 'signed_at' => now(), 'uploaded_by' => $actor->id,
+        ]));
+        $this->assertNull($this->asOwner(fn () => DB::table('pipe_schedule_external_signatures')
+            ->where('id', $metadataOnlyId)->value('file_sha256')));
+        try {
+            $this->asOwner(fn () => DB::transaction(fn () => DB::table('pipe_schedule_signature_verifications')->insert([
+                'id' => (string) \Illuminate\Support\Str::uuid(), 'signature_id' => $signatureId,
+                'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+                'decision' => 'VERIFIED', 'authority_basis' => 'PH14 contract appointment',
+                'note' => 'Signature checked', 'verified_by' => $actor->id,
+            ])));
+            $this->fail('The uploader cannot verify their own uploaded signature.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
+    }
+
+    public function test_tq_ncr_register_keeps_internal_draft_distinct_from_externally_issued_metadata(): void
+    {
+        $line = $this->line('6');
+        $actor = $this->owner();
+        $pipe = $this->asOwner(fn () => $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']));
+        $requestId = (string) \Illuminate\Support\Str::uuid();
+        $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
+            'id' => $requestId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+            'expected_schedule' => '80', 'actual_schedule' => '40',
+            'reason' => 'Technical query required for schedule deviation', 'requested_by' => $actor->id,
+        ]));
+        $base = ['request_id' => $requestId, 'project_id' => $line->project_id,
+            'company_id' => $actor->company_id, 'recorded_by' => $actor->id];
+        $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->insert($base + [
+            'id' => (string) \Illuminate\Support\Str::uuid(), 'kind' => 'TQ',
+            'origin' => 'IN_SYSTEM', 'state' => 'DRAFT',
+        ]));
+        $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->insert($base + [
+            'id' => (string) \Illuminate\Support\Str::uuid(), 'kind' => 'NCR',
+            'origin' => 'EXTERNAL_REGISTER', 'state' => 'EXTERNAL_RECORDED',
+            'report_number' => 'EXT-NCR-42', 'reported_issuer' => 'Project contractor',
+            'reported_signer' => 'External engineer', 'reported_signer_capacity' => 'NCR signatory',
+            'reported_issued_at' => now(), 'reported_signed_at' => now(),
+            'external_register_ref' => 'Contractor register 2026 / NCR 42',
+        ]));
+        $this->assertSame(2, $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->count()));
+        foreach ([
+            ['kind' => 'TQ', 'origin' => 'IN_SYSTEM', 'state' => 'EXTERNAL_RECORDED'],
+            ['kind' => 'NCR', 'origin' => 'EXTERNAL_REGISTER', 'state' => 'EXTERNAL_RECORDED',
+                'report_number' => 'EXT-NCR-43', 'reported_issuer' => 'Project contractor',
+                'reported_signer' => 'External engineer', 'reported_signer_capacity' => 'NCR signatory',
+                'reported_issued_at' => now(), 'reported_signed_at' => now()],
+        ] as $invalid) {
+            try {
+                $this->asOwner(fn () => DB::transaction(fn () => DB::table('pipe_schedule_discrepancy_reports')
+                    ->insert($base + ['id' => (string) \Illuminate\Support\Str::uuid()] + $invalid)));
+                $this->fail('Incomplete external metadata or forged internal issue must be refused.');
+            } catch (\Illuminate\Database\QueryException $e) {
+                $this->assertSame('23514', $e->getCode());
+            }
+        }
+    }
+
+    public function test_report_service_records_only_internal_drafts_or_unverified_external_metadata(): void
+    {
+        $line = $this->line('6');
+        $actor = $this->owner();
+        $pipe = $this->asOwner(fn () => $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']));
+        $requestId = (string) \Illuminate\Support\Str::uuid();
+        $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
+            'id' => $requestId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+            'expected_schedule' => '80', 'actual_schedule' => '40',
+            'nps_at_request' => '6', 'dn_at_request' => 150,
+            'reason' => 'Reference conflict needs independent resolution', 'requested_by' => $actor->id,
+        ]));
+        $service = app(\App\Services\PipeScheduleReportService::class);
+        $draft = $service->draft($this->project(), $actor, $requestId, 'TQ');
+        $this->assertSame('DRAFT', $draft->state);
+        $this->assertNull($draft->report_number);
+        $externalInput = [
+            'report_number' => ' NCR-EXT-42 ', 'report_revision' => '   ',
+            'reported_issuer' => 'Contractor QC', 'reported_signer' => 'Authorized engineer',
+            'reported_signer_capacity' => 'QC signatory',
+            'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
+            'external_register_ref' => 'Contractor NCR register / 42',
+        ];
+        $external = $service->registerExternal($this->project(), $actor, $requestId, 'NCR', $externalInput);
+        $this->assertSame('EXTERNAL_RECORDED', $external->state);
+        $this->assertSame('NCR-EXT-42', $external->report_number);
+        $this->assertNull($external->report_revision);
+        foreach (['report_number', 'reported_issuer', 'reported_signer',
+            'reported_signer_capacity', 'external_register_ref'] as $field) {
+            try {
+                $service->registerExternal($this->project(), $actor, $requestId, 'NCR',
+                    array_replace($externalInput, [$field => '   ']));
+                $this->fail("Whitespace-only $field must be a validation error, not a SQL exception.");
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey($field, $e->errors());
+            }
+        }
+        $forgedId = (string) \Illuminate\Support\Str::uuid();
+        $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
+            'id' => $forgedId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+            'expected_schedule' => '60', 'actual_schedule' => '40',
+            'nps_at_request' => '6', 'dn_at_request' => 150,
+            'reason' => 'Incorrect claimed PMS schedule entered by raw SQL', 'requested_by' => $actor->id,
+        ]));
+        try {
+            $service->draft($this->project(), $actor, $forgedId, 'TQ');
+            $this->fail('A forged expected PMS schedule must not create an internal TQ draft.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('request_id', $e->errors());
+        }
+        try {
+            $service->registerExternal($this->project(), $actor, $requestId, 'TQ', [
+                'report_number' => 'TQ-EXT-43', 'reported_issuer' => 'Contractor QC',
+                'reported_signer' => 'Authorized engineer',
+                'reported_signer_capacity' => 'QC signatory',
+                'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
+            ]);
+            $this->fail('An external report without its source register must be refused.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('external_register_ref', $e->errors());
+        }
+        $this->assertSame(2, $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->count()));
+        $this->asOwner(fn () => DB::table('components')->where('id', $pipe->id)->update(['schedule' => '60']));
+        try {
+            $service->draft($this->project(), $actor, $requestId, 'TQ');
+            $this->fail('A new internal TQ draft must not use a stale schedule request.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('request_id', $e->errors());
+        }
+        $historical = $service->registerExternal($this->project(), $actor, $requestId, 'TQ', [
+            'report_number' => 'TQ-EXT-OLD', 'reported_issuer' => 'Contractor engineering',
+            'reported_signer' => 'External engineer',
+            'reported_signer_capacity' => 'Engineering signatory',
+            'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
+            'external_register_ref' => 'Contractor TQ register / old value',
+        ]);
+        $this->assertSame('EXTERNAL_RECORDED', $historical->state);
+        $this->assertSame(3, $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->count()));
+    }
+
+    public function test_report_capture_needs_its_own_capability_and_piping_scope(): void
+    {
+        $service = app(\App\Services\PipeScheduleReportService::class);
+        $project = $this->project();
+        $requestId = (string) \Illuminate\Support\Str::uuid();
+        $civilEngineer = $this->userByEmail('mousavi@sahand.example');
+        try {
+            $service->draft($project, $civilEngineer, $requestId, 'TQ');
+            $this->fail('A CIVIL-only project member cannot capture PIPING reports.');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            $this->assertSame(403, $e->getStatusCode());
+        }
+
+        $role = \App\Models\Role::where('code', 'employer_rep')->firstOrFail();
+        $role->update(['capabilities' => ['project.view']]);
+        try {
+            $service->draft($project, $this->owner(), $requestId, 'TQ');
+            $this->fail('Project viewing alone must not grant report capture.');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            $this->assertSame(403, $e->getStatusCode());
+        }
+    }
+
+    public function test_schedule_request_recomputes_issued_value_and_refuses_matching_or_duplicate_pipes(): void
+    {
+        $line = $this->line('6');
+        $actor = $this->owner();
+        [$matching, $different] = $this->asOwner(fn () => [
+            $this->svc()->place($line, $actor, 'PIPE'),
+            $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']),
+        ]);
+        $requests = app(\App\Services\PipeScheduleExceptionRequestService::class);
+        try {
+            $requests->submit($this->project(), $actor, $matching->id, 'Schedule differs from contract PMS');
+            $this->fail('A pipe matching the issued PMS cannot request a difference.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('component_id', $e->errors());
+        }
+        $record = $requests->submit($this->project(), $actor, $different->id, 'Schedule differs from contract PMS');
+        $this->assertSame($line->pms_class_snapshot_id, $record->pms_class_snapshot_id);
+        $this->assertSame('80', $record->expected_schedule);
+        $this->assertSame('40', $record->actual_schedule);
+        $this->assertSame($actor->id, $record->requested_by);
+        try {
+            $requests->submit($this->project(), $actor, $different->id, 'Repeated request without a decision');
+            $this->fail('An identical unresolved request must not be duplicated.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('component_id', $e->errors());
+        }
+        $this->assertSame(1, $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->count()));
+        $this->assertSame('6', $record->nps_at_request);
+        $this->assertSame(150, (int) $record->dn_at_request);
+        $this->asOwner(function () use ($different): void {
+            DB::table('components')->where('id', $different->id)
+                ->update(['nominal_size' => '8', 'nominal_size_decimal' => 8.0]);
+            DB::table('ports')->where('component_id', $different->id)
+                ->update(['nominal_size' => '8', 'nominal_size_decimal' => 8.0]);
+        });
+        $this->actingAs($actor)->get("/projects/PH-14/piping/{$line->id}/model?lang=en")
+            ->assertOk()->assertSee('Request discrepancy review')
+            ->assertSee('Previous value; not applicable to current schedule');
+        $next = $requests->submit($this->project(), $actor, $different->id,
+            'Pipe size changed; this is a different schedule discrepancy');
+        $this->assertSame('8', $next->nps_at_request);
+        $this->assertSame(200, (int) $next->dn_at_request);
+        $this->assertSame(2, $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->count()));
+        $this->actingAs($actor)->get("/projects/PH-14/piping/{$line->id}/model?lang=en")
+            ->assertOk()->assertSee('Previous value; not applicable to current schedule');
+        try {
+            app(\App\Services\PipeScheduleReportService::class)
+                ->draft($this->project(), $actor, $record->id, 'TQ');
+            $this->fail('The old DN150 request cannot seed a DN200 internal draft.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('request_id', $e->errors());
+        }
+    }
+
+    public function test_false_expected_pms_request_cannot_mask_a_valid_schedule_discrepancy(): void
+    {
+        $line = $this->line('6');
+        $actor = $this->owner();
+        $pipe = $this->asOwner(fn () => $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']));
+        $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
+            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'project_id' => $line->project_id, 'company_id' => $actor->company_id,
+            'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+            'expected_schedule' => '60', 'actual_schedule' => '40',
+            'nps_at_request' => '6', 'dn_at_request' => 150,
+            'reason' => 'An invalid expected PMS value entered outside the service',
+            'requested_by' => $actor->id,
+        ]));
+        $url = "/projects/PH-14/piping/{$line->id}/model?lang=en";
+        $this->actingAs($actor)->get($url)->assertOk()
+            ->assertSee('Request PMS value does not match the current issued basis')
+            ->assertSee('Request discrepancy review')
+            ->assertDontSee('/draft?lang=en', false);
+        $valid = app(\App\Services\PipeScheduleExceptionRequestService::class)
+            ->submit($this->project(), $actor, $pipe->id, 'Review against the real issued PMS schedule');
+        $this->assertSame('80', $valid->expected_schedule);
+        $this->assertSame(2, $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->count()));
+    }
+
+    public function test_internal_taper_is_only_a_proposal_for_a_thicker_reference_wall(): void
+    {
+        $line = $this->line('6');
+        $actor = $this->owner();
+        [$thin, $thick] = $this->asOwner(fn () => [
+            $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']),
+            $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '160']),
+        ]);
+        $requests = app(\App\Services\PipeScheduleExceptionRequestService::class);
+        try {
+            $requests->submit($this->project(), $actor, $thin->id,
+                'Plan an internal transition for this pipe', 'INTERNAL_TAPER_PROPOSED');
+            $this->fail('Thinner pipe cannot claim a thicker-wall taper route.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('proposed_remedy', $e->errors());
+        }
+        $record = $requests->submit($this->project(), $actor, $thick->id,
+            'Propose internal taper subject to future ITP Fit-up', 'INTERNAL_TAPER_PROPOSED');
+        $this->assertSame('INTERNAL_TAPER_PROPOSED', $record->proposed_remedy);
+        $this->assertSame('80', $record->expected_schedule);
+        $this->assertSame('160', $record->actual_schedule);
+        $this->assertSame(0, $this->asOwner(fn () => DB::table('pipe_schedule_exception_decisions')->count()));
+        $this->actingAs($actor)->get("/projects/PH-14/piping/{$line->id}/model?lang=en")
+            ->assertOk()->assertSee('Proposed internal taper (plan only; not Fit-up acceptance)');
+    }
+
+    public function test_model_page_submits_schedule_discrepancy_reason_without_approving_it(): void
+    {
+        $line = $this->line('6');
+        $pipe = $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'PIPE', ['schedule' => '40']));
+        $url = "/projects/PH-14/piping/{$line->id}/model";
+        $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
+            ->assertSee('Request discrepancy review');
+        $this->actingAs($this->owner())->post($url."/{$pipe->id}/request-review?lang=en", [
+            'reason' => 'Schedule differs from issued PMS and needs review',
+        ])->assertRedirect($url.'?lang=en');
+        $request = $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')
+            ->where('component_id', $pipe->id)->first());
+        $this->assertNotNull($request);
+        $this->assertSame('80', $request->expected_schedule);
+        $this->assertSame('40', $request->actual_schedule);
+        $reportUrl = $url."/reports/{$request->id}";
+        $this->actingAs($this->owner())->post($reportUrl.'/draft?lang=en', [
+            'kind' => 'TQ',
+        ])->assertRedirect($url.'?lang=en')
+            ->assertSessionHas('status', 'Internal draft saved; not issued or approved.');
+        $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
+            ->assertSee('role="status"', false)
+            ->assertSee('Internal draft saved; not issued or approved.');
+        $this->actingAs($this->owner())->post($reportUrl.'/draft?lang=en', [
+            'kind' => 'TQ',
+        ])->assertRedirect($url.'?lang=en')->assertSessionHasErrors('kind');
+        $this->actingAs($this->owner())->post($reportUrl.'/external?lang=en', [
+            'kind' => 'NCR', 'report_number' => 'EXT-NCR-42',
+            'reported_issuer' => 'Contractor QC', 'reported_signer' => 'External engineer',
+            'reported_signer_capacity' => 'NCR signatory',
+            'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
+            'external_register_ref' => 'Contractor NCR register / 42',
+        ])->assertRedirect($url.'?lang=en')
+            ->assertSessionHas('status', 'External report metadata saved; report and signature not verified.');
+        $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
+            ->assertSee('External report metadata saved; report and signature not verified.');
+        $this->actingAs($this->owner())->post($reportUrl.'/external?lang=en', [
+            'kind' => 'NCR', 'report_number' => '   ',
+            'reported_issuer' => 'Contractor QC', 'reported_signer' => 'External engineer',
+            'reported_signer_capacity' => 'NCR signatory',
+            'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
+            'external_register_ref' => 'Contractor NCR register / 42',
+        ])->assertRedirect($url.'?lang=en')->assertSessionHasErrors('report_number');
+        $this->actingAs($this->owner())->post("/projects/PH-14/piping/".\Illuminate\Support\Str::uuid()."/model/reports/{$request->id}/draft?lang=en", [
+            'kind' => 'TQ',
+        ])->assertNotFound();
+        $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
+            ->assertSee('Discrepancy request history')
+            ->assertSee('Internal draft; not issued')
+            ->assertSee('External report metadata; not verified')
+            ->assertSee('Recorded details (external claim; not verified)')
+            ->assertSee('EXT-NCR-42')
+            ->assertSee('Contractor QC')
+            ->assertSee('External engineer')
+            ->assertSee('NCR signatory')
+            ->assertSee('2026-10-14')
+            ->assertSee('Contractor NCR register / 42')
+            ->assertSee('System recorder ID (not issuer)')
+            ->assertSee('Review requested; not approved')
+            ->assertDontSee('Request discrepancy review');
+        $this->actingAs($this->owner())->post($url."/{$pipe->id}/request-review?lang=en", [
+            'reason' => 'Duplicate report for same discrepancy',
+        ])->assertRedirect($url.'?lang=en')->assertSessionHasErrors('component_id');
+        $this->actingAs($this->owner())->post($url.'/'.\Illuminate\Support\Str::uuid().'/request-review?lang=en', [
+            'reason' => 'Attempt to use an unrelated component identifier',
+        ])->assertNotFound();
+        $this->asOwner(fn () => DB::table('components')->where('id', $pipe->id)->update(['schedule' => '60']));
+        $this->actingAs($this->owner())->post($reportUrl.'/draft?lang=en', [
+            'kind' => 'TQ',
+        ])->assertRedirect($url.'?lang=en')->assertSessionHasErrors('request_id');
+        $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
+            ->assertSee('Request discrepancy review')
+            ->assertSee('Previous value; not applicable to current schedule')
+            ->assertSee('Schedule differs from issued PMS and needs review');
+        $this->actingAs($this->owner())->post($url."/{$pipe->id}/request-review?lang=en", [
+            'reason' => 'Schedule changed again; a new review is needed',
+        ])->assertRedirect($url.'?lang=en');
+        $this->assertSame(2, $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')
+            ->where('component_id', $pipe->id)->count()));
     }
 
     public function test_the_register_links_to_the_model_page(): void

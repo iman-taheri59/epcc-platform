@@ -1,0 +1,1717 @@
+{
+ "refId": "valve-testing",
+ "version": "1.0.0",
+ "source": "API Standard 598, Valve Inspection and Testing, Tenth Edition, 2023. Tables 1 through 5. Transcribed from a purchased copy held outside version control.",
+ "note": "The first reference pack that produces ITP rows rather than drawing figures. B16.34 rates the valve and B16.10 measures it; API 598 says what has to be witnessed before anyone accepts it.",
+ "units": {
+  "pressure": "barG",
+  "alternatePressure": "psig",
+  "duration": "seconds"
+ },
+ "conventions": {
+  "shellPressureIsComputedNotTabulated": "For steel and nonferrous valves Table 2 gives no number. It gives a rule: 1.5 x the pressure rating at 38 C, rounded up to the next whole bar. The rating comes from ASME B16.34, so this pack and valve-pt-ratings have to be read together or the answer cannot be produced at all.",
+  "twoAxesTheRepoDidNotHave": "API 598 tests a FLOATING ball valve differently from a TRUNNION MOUNTED one, and an API 609 Category A butterfly differently from a Category B. Neither distinction exists on a PMS row today. The pack records the variant on every requirement so a consumer can refuse to answer for a bare \"BALL\" rather than quietly picking one.",
+  "highAndLowInvert": "Read Table 1 as a pair. Wherever the low-pressure closure test becomes optional - above Class 1500 for small valves, above Class 600 for large ones - the high-pressure closure test becomes required. The two rows are the same decision written twice.",
+  "classThresholdMovesWithSize": "The class band that splits the closure rows is NOT the same for both sizes: 1500 for DN <= 100 and 600 for DN > 100. Treating it as one threshold mis-states every large valve between Class 600 and 1500.",
+  "leakageIsByNominalSize": "API 598 5.9.2.6: leakage rates are based on the DN (NPS) of the valve regardless of whether it is full or reduced bore."
+ },
+ "standard": {
+  "code": "API 598",
+  "editionYear": 2023,
+  "edition": "Tenth",
+  "title": "Valve Inspection and Testing",
+  "tests": [
+   "SHELL",
+   "BACKSEAT",
+   "LOW_PRESSURE_CLOSURE",
+   "HIGH_PRESSURE_CLOSURE",
+   "HIGH_PRESSURE_PNEUMATIC_SHELL"
+  ],
+  "sourceTables": [
+   "Table 1",
+   "Table 2",
+   "Table 3",
+   "Table 4",
+   "Table 5"
+  ]
+ },
+ "columns": {
+  "GATE": {
+   "valveType": "GATE",
+   "variant": null
+  },
+  "GLOBE": {
+   "valveType": "GLOBE",
+   "variant": null,
+   "alsoCovers": [
+    {
+     "valveType": "GATE",
+     "variant": "PARALLEL_SLIDE"
+    }
+   ]
+  },
+  "PLUG": {
+   "valveType": "PLUG",
+   "variant": null
+  },
+  "BFLY_A_CHECK": {
+   "valveType": "BUTTERFLY",
+   "variant": "CATEGORY_A",
+   "alsoCovers": [
+    {
+     "valveType": "CHECK",
+     "variant": null
+    }
+   ]
+  },
+  "BALL_FLOATING": {
+   "valveType": "BALL",
+   "variant": "FLOATING"
+  },
+  "BFLY_B_TRUNNION": {
+   "valveType": "BUTTERFLY",
+   "variant": "CATEGORY_B",
+   "alsoCovers": [
+    {
+     "valveType": "BALL",
+     "variant": "TRUNNION_MOUNTED"
+    }
+   ]
+  }
+ },
+ "requirements": [
+  {
+   "test": "SHELL",
+   "column": "GATE",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": null,
+    "label": "All"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": null,
+    "label": "All"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "SHELL",
+   "column": "GLOBE",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": null,
+    "label": "All"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": null,
+    "label": "All"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "SHELL",
+   "column": "PLUG",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": null,
+    "label": "All"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": null,
+    "label": "All"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "SHELL",
+   "column": "BFLY_A_CHECK",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": null,
+    "label": "All"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": null,
+    "label": "All"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "SHELL",
+   "column": "BALL_FLOATING",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": null,
+    "label": "All"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": null,
+    "label": "All"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "SHELL",
+   "column": "BFLY_B_TRUNNION",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": null,
+    "label": "All"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": null,
+    "label": "All"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "BACKSEAT",
+   "column": "GATE",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": null,
+    "label": "All"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": null,
+    "label": "All"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": [
+    "a"
+   ]
+  },
+  {
+   "test": "BACKSEAT",
+   "column": "GLOBE",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": null,
+    "label": "All"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": null,
+    "label": "All"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": [
+    "a"
+   ]
+  },
+  {
+   "test": "BACKSEAT",
+   "column": "PLUG",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": null,
+    "label": "All"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": null,
+    "label": "All"
+   },
+   "requirement": "NOT_APPLICABLE",
+   "noteRefs": []
+  },
+  {
+   "test": "BACKSEAT",
+   "column": "BFLY_A_CHECK",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": null,
+    "label": "All"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": null,
+    "label": "All"
+   },
+   "requirement": "NOT_APPLICABLE",
+   "noteRefs": []
+  },
+  {
+   "test": "BACKSEAT",
+   "column": "BALL_FLOATING",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": null,
+    "label": "All"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": null,
+    "label": "All"
+   },
+   "requirement": "NOT_APPLICABLE",
+   "noteRefs": []
+  },
+  {
+   "test": "BACKSEAT",
+   "column": "BFLY_B_TRUNNION",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": null,
+    "label": "All"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": null,
+    "label": "All"
+   },
+   "requirement": "NOT_APPLICABLE",
+   "noteRefs": []
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "GATE",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 1500,
+    "minClassExclusive": null,
+    "label": "Class <= 1500"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "PLUG",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 1500,
+    "minClassExclusive": null,
+    "label": "Class <= 1500"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": [
+    "f"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "BFLY_B_TRUNNION",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 1500,
+    "minClassExclusive": null,
+    "label": "Class <= 1500"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "GLOBE",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 1500,
+    "minClassExclusive": null,
+    "label": "Class <= 1500"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "BFLY_A_CHECK",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 1500,
+    "minClassExclusive": null,
+    "label": "Class <= 1500"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "BALL_FLOATING",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 1500,
+    "minClassExclusive": null,
+    "label": "Class <= 1500"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "GATE",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 1500,
+    "label": "Class > 1500"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "PLUG",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 1500,
+    "label": "Class > 1500"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "BFLY_B_TRUNNION",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 1500,
+    "label": "Class > 1500"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "GLOBE",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 1500,
+    "label": "Class > 1500"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "BFLY_A_CHECK",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 1500,
+    "label": "Class > 1500"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "BALL_FLOATING",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 1500,
+    "label": "Class > 1500"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "GATE",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 600,
+    "minClassExclusive": null,
+    "label": "Class <= 600"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "PLUG",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 600,
+    "minClassExclusive": null,
+    "label": "Class <= 600"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": [
+    "f"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "BFLY_B_TRUNNION",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 600,
+    "minClassExclusive": null,
+    "label": "Class <= 600"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "GLOBE",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 600,
+    "minClassExclusive": null,
+    "label": "Class <= 600"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "BFLY_A_CHECK",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 600,
+    "minClassExclusive": null,
+    "label": "Class <= 600"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "BALL_FLOATING",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 600,
+    "minClassExclusive": null,
+    "label": "Class <= 600"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "GATE",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 600,
+    "label": "Class > 600"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "PLUG",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 600,
+    "label": "Class > 600"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "BFLY_B_TRUNNION",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 600,
+    "label": "Class > 600"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "GLOBE",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 600,
+    "label": "Class > 600"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "BFLY_A_CHECK",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 600,
+    "label": "Class > 600"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "test": "LOW_PRESSURE_CLOSURE",
+   "column": "BALL_FLOATING",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 600,
+    "label": "Class > 600"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "GATE",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 1500,
+    "minClassExclusive": null,
+    "label": "Class <= 1500"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b",
+    "e"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "PLUG",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 1500,
+    "minClassExclusive": null,
+    "label": "Class <= 1500"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b",
+    "e",
+    "f"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "BFLY_B_TRUNNION",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 1500,
+    "minClassExclusive": null,
+    "label": "Class <= 1500"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b",
+    "e"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "GLOBE",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 1500,
+    "minClassExclusive": null,
+    "label": "Class <= 1500"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": [
+    "c",
+    "d",
+    "g"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "BFLY_A_CHECK",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 1500,
+    "minClassExclusive": null,
+    "label": "Class <= 1500"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": [
+    "c",
+    "g"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "BALL_FLOATING",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 1500,
+    "minClassExclusive": null,
+    "label": "Class <= 1500"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b",
+    "c",
+    "e",
+    "g"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "GATE",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 1500,
+    "label": "Class > 1500"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "PLUG",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 1500,
+    "label": "Class > 1500"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "BFLY_B_TRUNNION",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 1500,
+    "label": "Class > 1500"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "GLOBE",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 1500,
+    "label": "Class > 1500"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": [
+    "c",
+    "d",
+    "g"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "BFLY_A_CHECK",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 1500,
+    "label": "Class > 1500"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": [
+    "c",
+    "g"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "BALL_FLOATING",
+   "sizeBand": {
+    "maxDn": 100,
+    "minDnExclusive": null,
+    "label": "DN <= 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 1500,
+    "label": "Class > 1500"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b",
+    "c",
+    "e",
+    "g"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "GATE",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 600,
+    "minClassExclusive": null,
+    "label": "Class <= 600"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b",
+    "e"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "PLUG",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 600,
+    "minClassExclusive": null,
+    "label": "Class <= 600"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b",
+    "e",
+    "f"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "BFLY_B_TRUNNION",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 600,
+    "minClassExclusive": null,
+    "label": "Class <= 600"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b",
+    "e"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "GLOBE",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 600,
+    "minClassExclusive": null,
+    "label": "Class <= 600"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": [
+    "c",
+    "d",
+    "g"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "BFLY_A_CHECK",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 600,
+    "minClassExclusive": null,
+    "label": "Class <= 600"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": [
+    "c",
+    "g"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "BALL_FLOATING",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": 600,
+    "minClassExclusive": null,
+    "label": "Class <= 600"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b",
+    "c",
+    "e",
+    "g"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "GATE",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 600,
+    "label": "Class > 600"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "PLUG",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 600,
+    "label": "Class > 600"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "BFLY_B_TRUNNION",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 600,
+    "label": "Class > 600"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": []
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "GLOBE",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 600,
+    "label": "Class > 600"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": [
+    "c",
+    "d",
+    "g"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "BFLY_A_CHECK",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 600,
+    "label": "Class > 600"
+   },
+   "requirement": "REQUIRED",
+   "noteRefs": [
+    "c",
+    "g"
+   ]
+  },
+  {
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "column": "BALL_FLOATING",
+   "sizeBand": {
+    "maxDn": null,
+    "minDnExclusive": 100,
+    "label": "DN > 100 (NPS 4)"
+   },
+   "classBand": {
+    "maxClass": null,
+    "minClassExclusive": 600,
+    "label": "Class > 600"
+   },
+   "requirement": "OPTIONAL",
+   "noteRefs": [
+    "b",
+    "c",
+    "e",
+    "g"
+   ]
+  }
+ ],
+ "requirementNotes": {
+  "a": "The backseat test is required for all valves that have the backseat feature, except for bellows seal valves.",
+  "b": "When an \"optional\" test is specified by the purchaser, the test shall be performed in addition to the required tests.",
+  "c": "The high-pressure closure test of resilient-seated valves may degrade subsequent sealing performance in low-pressure service.",
+  "d": "For power-operated and manually-operated gear-actuated globe valves, including nonreturn-type globe valves, the high-pressure closure test shall be performed at 110 % of the design differential pressure used for sizing of the operator.",
+  "e": "For valves specified to be double block and bleed (DBB), a double block and bleed successive high-pressure closure test (see 6.6) is required unless specified otherwise by the purchaser.",
+  "f": "For lubricated plug valves, the high-pressure closure test is mandatory and the low-pressure closure test is optional.",
+  "g": "In the case where both high- and low-pressure closure testing is to be performed, refer to 6.4.6.",
+  "h": "Butterfly Category A and Category B definition according to API 609."
+ },
+ "shellTestPressure": [
+  {
+   "material": "DUCTILE_IRON",
+   "pressureClass": "150",
+   "barG": 26,
+   "psig": 400
+  },
+  {
+   "material": "DUCTILE_IRON",
+   "pressureClass": "300",
+   "barG": 66,
+   "psig": 975
+  },
+  {
+   "material": "GRAY_IRON",
+   "pressureClass": "125",
+   "dnFrom": 50,
+   "dnTo": 300,
+   "barG": 25,
+   "psig": 350
+  },
+  {
+   "material": "GRAY_IRON",
+   "pressureClass": "125",
+   "dnFrom": 350,
+   "dnTo": 1200,
+   "barG": 19,
+   "psig": 265
+  },
+  {
+   "material": "GRAY_IRON",
+   "pressureClass": "250",
+   "dnFrom": 50,
+   "dnTo": 300,
+   "barG": 61,
+   "psig": 875
+  },
+  {
+   "material": "GRAY_IRON",
+   "pressureClass": "250",
+   "dnFrom": 350,
+   "dnTo": 600,
+   "barG": 37,
+   "psig": 525
+  },
+  {
+   "material": "STEEL_AND_NONFERROUS",
+   "endType": "FLANGED",
+   "classFrom": "150",
+   "classTo": "2500",
+   "rule": "ONE_AND_A_HALF_TIMES_RATING_AT_38C",
+   "seeNote": "b"
+  },
+  {
+   "material": "STEEL_AND_NONFERROUS",
+   "endType": "BUTT_WELD",
+   "classFrom": "150",
+   "classTo": "4500",
+   "rule": "ONE_AND_A_HALF_TIMES_RATING_AT_38C",
+   "seeNote": "b"
+  },
+  {
+   "material": "STEEL_AND_NONFERROUS",
+   "endType": "THREADED_OR_SOCKET_WELD",
+   "classFrom": "800",
+   "classTo": "800",
+   "rule": "ONE_AND_A_HALF_TIMES_RATING_AT_38C",
+   "seeNote": "c"
+  },
+  {
+   "material": "STEEL_AND_NONFERROUS",
+   "endType": "THREADED_OR_SOCKET_WELD",
+   "classFrom": "150",
+   "classTo": "4500",
+   "rule": "ONE_AND_A_HALF_TIMES_RATING_AT_38C",
+   "seeNote": "b"
+  }
+ ],
+ "shellTestRule": {
+  "code": "ONE_AND_A_HALF_TIMES_RATING_AT_38C",
+  "multiplier": 1.5,
+  "ratingTemperatureC": 38,
+  "roundTo": "NEXT_HIGHER_BAR",
+  "roundToUs": "NEXT_HIGHER_25_PSIG",
+  "text": "Per ASME B16.34, the hydrostatic shell test pressure shall be 1.5 times the pressure rating at 38 C (100 F), rounded off to the next higher bar (25 psig). The attachment of hubs, flanges, or other end connections with ambient working pressures lower than the primary valve assembly will require lower test pressures."
+ },
+ "closureTestPressure": [
+  {
+   "appliesTo": "VALVES_EXCEPT_BUTTERFLY_AND_CHECK",
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "rule": "ONE_HUNDRED_AND_TEN_PERCENT_OF_RATING_AT_38C",
+   "seeNote": "b"
+  },
+  {
+   "appliesTo": "VALVES_EXCEPT_BUTTERFLY_AND_CHECK",
+   "test": "BACKSEAT",
+   "rule": "ONE_HUNDRED_AND_TEN_PERCENT_OF_RATING_AT_38C",
+   "seeNote": "b"
+  },
+  {
+   "appliesTo": "VALVES_EXCEPT_BUTTERFLY_AND_CHECK",
+   "test": "LOW_PRESSURE_CLOSURE",
+   "barG": 5.5,
+   "toleranceBarG": 1.5,
+   "psig": 80,
+   "tolerancePsig": 20
+  },
+  {
+   "appliesTo": "BUTTERFLY",
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "rule": "ONE_HUNDRED_AND_TEN_PERCENT_OF_DESIGN_DIFFERENTIAL_AT_38C",
+   "seeNote": "c"
+  },
+  {
+   "appliesTo": "BUTTERFLY",
+   "test": "LOW_PRESSURE_CLOSURE",
+   "barG": 5.5,
+   "toleranceBarG": 1.5,
+   "psig": 80,
+   "tolerancePsig": 20
+  },
+  {
+   "appliesTo": "CHECK",
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "material": "GRAY_IRON",
+   "pressureClass": "125",
+   "dnFrom": 50,
+   "dnTo": 300,
+   "barG": 14,
+   "psig": 200
+  },
+  {
+   "appliesTo": "CHECK",
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "material": "GRAY_IRON",
+   "pressureClass": "125",
+   "dnFrom": 350,
+   "dnTo": 1200,
+   "barG": 11,
+   "psig": 150
+  },
+  {
+   "appliesTo": "CHECK",
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "material": "GRAY_IRON",
+   "pressureClass": "250",
+   "dnFrom": 50,
+   "dnTo": 300,
+   "barG": 35,
+   "psig": 500
+  },
+  {
+   "appliesTo": "CHECK",
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "material": "GRAY_IRON",
+   "pressureClass": "250",
+   "dnFrom": 350,
+   "dnTo": 600,
+   "barG": 21,
+   "psig": 300
+  },
+  {
+   "appliesTo": "CHECK",
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "material": "DUCTILE_IRON",
+   "pressureClass": "150",
+   "barG": 17,
+   "psig": 250
+  },
+  {
+   "appliesTo": "CHECK",
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "material": "DUCTILE_IRON",
+   "pressureClass": "300",
+   "barG": 44,
+   "psig": 640
+  },
+  {
+   "appliesTo": "CHECK",
+   "test": "HIGH_PRESSURE_CLOSURE",
+   "material": "STEEL_AND_ALLOYS",
+   "rule": "ONE_HUNDRED_AND_TEN_PERCENT_OF_RATING_AT_38C",
+   "seeNote": "b"
+  },
+  {
+   "appliesTo": "CHECK",
+   "test": "LOW_PRESSURE_CLOSURE",
+   "barG": 5.5,
+   "toleranceBarG": 1.5,
+   "psig": 80,
+   "tolerancePsig": 20
+  }
+ ],
+ "closureTestRules": {
+  "ONE_HUNDRED_AND_TEN_PERCENT_OF_RATING_AT_38C": {
+   "multiplier": 1.1,
+   "ratingTemperatureC": 38,
+   "text": "110 % of maximum allowable pressure at 38 C (100 F) in accordance with the applicable purchase specification."
+  },
+  "ONE_HUNDRED_AND_TEN_PERCENT_OF_DESIGN_DIFFERENTIAL_AT_38C": {
+   "multiplier": 1.1,
+   "ratingTemperatureC": 38,
+   "basis": "DESIGN_DIFFERENTIAL",
+   "text": "110 % of design differential pressure at 38 C (100 F) in accordance with the applicable purchase specification. The design differential is a purchase-order figure, not a rating, so it cannot be computed from any standard in this repo."
+  }
+ },
+ "duration": [
+  {
+   "dnFrom": null,
+   "dnTo": 50,
+   "npsLabel": "<= 2",
+   "shell": 15,
+   "backseat": 15,
+   "closureCheck": 60,
+   "closureOther": 15
+  },
+  {
+   "dnFrom": 65,
+   "dnTo": 150,
+   "npsLabel": "2 1/2 to 6",
+   "shell": 60,
+   "backseat": 60,
+   "closureCheck": 60,
+   "closureOther": 60
+  },
+  {
+   "dnFrom": 200,
+   "dnTo": 300,
+   "npsLabel": "8 to 12",
+   "shell": 120,
+   "backseat": 60,
+   "closureCheck": 120,
+   "closureOther": 120
+  },
+  {
+   "dnFrom": 350,
+   "dnTo": 600,
+   "npsLabel": "14 to 24",
+   "shell": 300,
+   "backseat": 60,
+   "closureCheck": 120,
+   "closureOther": 120
+  },
+  {
+   "dnFrom": 650,
+   "dnTo": null,
+   "npsLabel": "> 24",
+   "shell": 600,
+   "backseat": 120,
+   "closureCheck": 240,
+   "closureOther": 240
+  }
+ ],
+ "leakage": [
+  {
+   "dn": 50,
+   "nps": "2",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 0.0,
+   "metalLiquidMlPerMin": 0.0,
+   "metalGasBubblesPerMin": 0.0,
+   "metalGasMlPerMin": 0.0,
+   "checkLiquidMlPerMin": 6.0,
+   "checkGasM3PerH": 0.08,
+   "checkGasFt3PerH": 3.0,
+   "noteRefs": [
+    "b"
+   ]
+  },
+  {
+   "dn": 65,
+   "nps": "2 1/2",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 5.0,
+   "metalLiquidMlPerMin": 0.31,
+   "metalGasBubblesPerMin": 10.0,
+   "metalGasMlPerMin": 0.1,
+   "checkLiquidMlPerMin": 7.5,
+   "checkGasM3PerH": 0.11,
+   "checkGasFt3PerH": 3.75,
+   "noteRefs": []
+  },
+  {
+   "dn": 80,
+   "nps": "3",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 6.0,
+   "metalLiquidMlPerMin": 0.38,
+   "metalGasBubblesPerMin": 12.0,
+   "metalGasMlPerMin": 0.12,
+   "checkLiquidMlPerMin": 9.0,
+   "checkGasM3PerH": 0.13,
+   "checkGasFt3PerH": 4.5,
+   "noteRefs": []
+  },
+  {
+   "dn": 100,
+   "nps": "4",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 8.0,
+   "metalLiquidMlPerMin": 0.5,
+   "metalGasBubblesPerMin": 16.0,
+   "metalGasMlPerMin": 0.16,
+   "checkLiquidMlPerMin": 12.0,
+   "checkGasM3PerH": 0.17,
+   "checkGasFt3PerH": 6.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 125,
+   "nps": "5",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 10.0,
+   "metalLiquidMlPerMin": 0.63,
+   "metalGasBubblesPerMin": 20.0,
+   "metalGasMlPerMin": 0.2,
+   "checkLiquidMlPerMin": 15.0,
+   "checkGasM3PerH": 0.21,
+   "checkGasFt3PerH": 7.5,
+   "noteRefs": []
+  },
+  {
+   "dn": 150,
+   "nps": "6",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 12.0,
+   "metalLiquidMlPerMin": 0.75,
+   "metalGasBubblesPerMin": 24.0,
+   "metalGasMlPerMin": 0.24,
+   "checkLiquidMlPerMin": 18.0,
+   "checkGasM3PerH": 0.25,
+   "checkGasFt3PerH": 9.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 200,
+   "nps": "8",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 16.0,
+   "metalLiquidMlPerMin": 1.0,
+   "metalGasBubblesPerMin": 32.0,
+   "metalGasMlPerMin": 0.32,
+   "checkLiquidMlPerMin": 24.0,
+   "checkGasM3PerH": 0.34,
+   "checkGasFt3PerH": 12.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 250,
+   "nps": "10",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 20.0,
+   "metalLiquidMlPerMin": 1.25,
+   "metalGasBubblesPerMin": 40.0,
+   "metalGasMlPerMin": 0.4,
+   "checkLiquidMlPerMin": 30.0,
+   "checkGasM3PerH": 0.42,
+   "checkGasFt3PerH": 15.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 300,
+   "nps": "12",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 24.0,
+   "metalLiquidMlPerMin": 1.5,
+   "metalGasBubblesPerMin": 48.0,
+   "metalGasMlPerMin": 0.48,
+   "checkLiquidMlPerMin": 36.0,
+   "checkGasM3PerH": 0.5,
+   "checkGasFt3PerH": 18.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 350,
+   "nps": "14",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 28.0,
+   "metalLiquidMlPerMin": 1.75,
+   "metalGasBubblesPerMin": 56.0,
+   "metalGasMlPerMin": 0.56,
+   "checkLiquidMlPerMin": 42.0,
+   "checkGasM3PerH": 0.59,
+   "checkGasFt3PerH": 21.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 400,
+   "nps": "16",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 32.0,
+   "metalLiquidMlPerMin": 2.0,
+   "metalGasBubblesPerMin": 64.0,
+   "metalGasMlPerMin": 0.64,
+   "checkLiquidMlPerMin": 48.0,
+   "checkGasM3PerH": 0.67,
+   "checkGasFt3PerH": 24.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 450,
+   "nps": "18",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 36.0,
+   "metalLiquidMlPerMin": 2.25,
+   "metalGasBubblesPerMin": 72.0,
+   "metalGasMlPerMin": 0.72,
+   "checkLiquidMlPerMin": 54.0,
+   "checkGasM3PerH": 0.76,
+   "checkGasFt3PerH": 27.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 500,
+   "nps": "20",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 40.0,
+   "metalLiquidMlPerMin": 2.5,
+   "metalGasBubblesPerMin": 80.0,
+   "metalGasMlPerMin": 0.8,
+   "checkLiquidMlPerMin": 60.0,
+   "checkGasM3PerH": 0.84,
+   "checkGasFt3PerH": 30.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 600,
+   "nps": "24",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 48.0,
+   "metalLiquidMlPerMin": 3.0,
+   "metalGasBubblesPerMin": 96.0,
+   "metalGasMlPerMin": 0.96,
+   "checkLiquidMlPerMin": 72.0,
+   "checkGasM3PerH": 1.01,
+   "checkGasFt3PerH": 36.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 650,
+   "nps": "26",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 52.0,
+   "metalLiquidMlPerMin": 3.25,
+   "metalGasBubblesPerMin": 104.0,
+   "metalGasMlPerMin": 1.04,
+   "checkLiquidMlPerMin": 78.0,
+   "checkGasM3PerH": 1.09,
+   "checkGasFt3PerH": 39.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 700,
+   "nps": "28",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 56.0,
+   "metalLiquidMlPerMin": 3.5,
+   "metalGasBubblesPerMin": 112.0,
+   "metalGasMlPerMin": 1.12,
+   "checkLiquidMlPerMin": 84.0,
+   "checkGasM3PerH": 1.18,
+   "checkGasFt3PerH": 42.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 750,
+   "nps": "30",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 60.0,
+   "metalLiquidMlPerMin": 3.75,
+   "metalGasBubblesPerMin": 120.0,
+   "metalGasMlPerMin": 1.2,
+   "checkLiquidMlPerMin": 90.0,
+   "checkGasM3PerH": 1.26,
+   "checkGasFt3PerH": 45.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 800,
+   "nps": "32",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 64.0,
+   "metalLiquidMlPerMin": 4.0,
+   "metalGasBubblesPerMin": 128.0,
+   "metalGasMlPerMin": 1.28,
+   "checkLiquidMlPerMin": 96.0,
+   "checkGasM3PerH": 1.34,
+   "checkGasFt3PerH": 48.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 900,
+   "nps": "36",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 72.0,
+   "metalLiquidMlPerMin": 4.5,
+   "metalGasBubblesPerMin": 144.0,
+   "metalGasMlPerMin": 1.44,
+   "checkLiquidMlPerMin": 108.0,
+   "checkGasM3PerH": 1.51,
+   "checkGasFt3PerH": 54.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 1000,
+   "nps": "40",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 80.0,
+   "metalLiquidMlPerMin": 5.0,
+   "metalGasBubblesPerMin": 160.0,
+   "metalGasMlPerMin": 1.6,
+   "checkLiquidMlPerMin": 120.0,
+   "checkGasM3PerH": 1.68,
+   "checkGasFt3PerH": 60.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 1050,
+   "nps": "42",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 84.0,
+   "metalLiquidMlPerMin": 5.25,
+   "metalGasBubblesPerMin": 168.0,
+   "metalGasMlPerMin": 1.68,
+   "checkLiquidMlPerMin": 126.0,
+   "checkGasM3PerH": 1.76,
+   "checkGasFt3PerH": 63.0,
+   "noteRefs": []
+  },
+  {
+   "dn": 1200,
+   "nps": "48",
+   "resilientSeated": 0.0,
+   "metalLiquidDropsPerMin": 96.0,
+   "metalLiquidMlPerMin": 6.0,
+   "metalGasBubblesPerMin": 192.0,
+   "metalGasMlPerMin": 1.92,
+   "checkLiquidMlPerMin": 144.0,
+   "checkGasM3PerH": 2.02,
+   "checkGasFt3PerH": 72.0,
+   "noteRefs": []
+  }
+ ],
+ "leakageFormulasAboveTable": {
+  "appliesAboveDn": 1200,
+  "appliesAboveNps": 48,
+  "metalLiquidDropsPerMin": "2 * NPS",
+  "metalGasBubblesPerMin": "4 * NPS",
+  "checkLiquidMlPerMin": "3 * NPS",
+  "checkGasM3PerH": "0.042 * NPS",
+  "checkGasFt3PerH": "1.5 * NPS"
+ },
+ "pneumaticShellTest": {
+  "whenSpecifiedInThePurchaseOrder": true,
+  "performedAfter": "SHELL",
+  "pressureRule": "ONE_HUNDRED_AND_TEN_PERCENT_OF_RATING_AT_38C",
+  "visibleLeakageAllowed": false,
+  "text": "When specified in the purchase order, a high-pressure pneumatic shell test shall be performed after the hydrostatic shell test, at 110 % of the maximum allowable pressure at 38 C (100 F). Visible leakage is not allowed."
+ }
+}

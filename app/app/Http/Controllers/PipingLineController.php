@@ -13,6 +13,7 @@ use App\Models\PipingTestPack;
 use App\Models\Project;
 use App\Models\Subsystem;
 use App\Services\PipingLineService;
+use App\Services\PmsLineEligibility;
 use App\Services\PipingTestPackService;
 use App\Support\AuthorizationPipeline;
 use App\Support\LineReleaseState;
@@ -40,6 +41,7 @@ final class PipingLineController extends Controller
 {
     public function __construct(
         private readonly PipingLineService $lines,
+        private readonly PmsLineEligibility $pmsEligibility,
         private readonly PipingTestPackService $testPacks,
         private readonly TenantContext $tenant,
         private readonly AuthorizationPipeline $authz,
@@ -56,7 +58,7 @@ final class PipingLineController extends Controller
         [$rows, $subsystems, $classes, $stats] = $this->tenant->runAs(
             $user->company_id,
             function () use ($project): array {
-                $lines = PipingLine::with(['subsystem', 'pipingClass'])
+                $lines = PipingLine::with(['subsystem', 'pipingClass', 'pmsSnapshot.documentRevision.document'])
                     ->orderBy('line_number')
                     ->get();
 
@@ -66,12 +68,16 @@ final class PipingLineController extends Controller
                     'afc' => $lines->where('release_state', LineReleaseState::AFC_CONFIRMED)->count(),
                     'released' => $lines->where('release_state', LineReleaseState::RELEASED)->count(),
                     'external' => $lines->whereNull('sequence')->count(),
+                    'unmapped' => $lines->whereNull('pms_class_snapshot_id')->count(),
                 ];
 
                 return [
                     $lines,
                     Subsystem::orderBy('code')->get(),
-                    PipingClass::orderBy('code')->get(),
+                    // The picker reflects approved, current PMS revision
+                    // membership, not merely the existence of a class row.
+                    PipingClass::whereIn('id', $this->pmsEligibility->eligibleClassIds($project->id))
+                        ->orderBy('code')->get(),
                     $stats,
                 ];
             },
@@ -167,7 +173,7 @@ final class PipingLineController extends Controller
         [$lines, $packs, $subsystems] = $this->tenant->runAs(
             $user->company_id,
             fn (): array => [
-                PipingLine::with(['subsystem', 'pipingClass', 'testPack'])
+                PipingLine::with(['subsystem', 'pipingClass', 'testPack', 'pmsSnapshot.documentRevision.document'])
                     ->orderBy('line_number')
                     ->get(),
                 PipingTestPack::with('subsystem')
@@ -218,7 +224,8 @@ final class PipingLineController extends Controller
         $rows = $lines->map(function (PipingLine $line) use ($blockers, $jointStats): array {
             $b = $blockers[$line->id] ?? ['missing' => [], 'unapproved' => []];
             $j = $jointStats[$line->id] ?? ['total' => 0, 'fitted' => 0, 'invalid' => 0, 'awaiting_number' => 0];
-            $evidenceReady = $b['missing'] === [] && $b['unapproved'] === [];
+            $evidenceReady = $line->pms_class_snapshot_id !== null
+                && $b['missing'] === [] && $b['unapproved'] === [];
             $fitPercent = $j['total'] === 0 ? 0 : (int) round(($j['fitted'] / $j['total']) * 100);
             $isBlocked = ! $evidenceReady || $j['invalid'] > 0 || $j['awaiting_number'] > 0 || $line->sequence === null;
 

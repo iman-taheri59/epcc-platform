@@ -1,0 +1,322 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "title": "Material library reference pack",
+ "type": "object",
+ "required": [
+  "refId",
+  "version",
+  "source",
+  "productForms",
+  "groups"
+ ],
+ "additionalProperties": false,
+ "properties": {
+  "refId": {
+   "const": "materials"
+  },
+  "version": {
+   "type": "string",
+   "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+  },
+  "source": {
+   "type": "string",
+   "minLength": 10
+  },
+  "note": {
+   "type": "string"
+  },
+  "conventions": {
+   "type": "object"
+  },
+  "productForms": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "required": [
+     "code",
+     "name",
+     "weldJointQualityFactor",
+     "verified"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "code": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+     },
+     "name": {
+      "$ref": "#/$defs/bilingual"
+     },
+     "weldJointQualityFactor": {
+      "type": [
+       "number",
+       "null"
+      ],
+      "exclusiveMinimum": 0,
+      "maximum": 1.0
+     },
+     "verified": {
+      "type": "boolean"
+     }
+    }
+   }
+  },
+  "groups": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "required": [
+     "code",
+     "name",
+     "metallic",
+     "componentTypes",
+     "specs",
+     "pressureDesigned",
+     "reachedBy"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "code": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+     },
+     "name": {
+      "$ref": "#/$defs/bilingual"
+     },
+     "componentTypes": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+       "type": "string",
+       "pattern": "^[A-Z][A-Z0-9_]*$"
+      },
+      "uniqueItems": true
+     },
+     "specs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+       "type": "object",
+       "required": [
+        "code",
+        "designation",
+        "title",
+        "productForms",
+        "surfaceConditions",
+        "grades"
+       ],
+       "additionalProperties": false,
+       "properties": {
+        "code": {
+         "type": "string",
+         "pattern": "^[A-Z0-9]+(\\.[0-9]+)?(-[A-Z0-9]+)?$"
+        },
+        "designation": {
+         "type": "string",
+         "minLength": 3
+        },
+        "title": {
+         "$ref": "#/$defs/bilingual"
+        },
+        "productForms": {
+         "type": "array",
+         "minItems": 1,
+         "items": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+         },
+         "uniqueItems": true
+        },
+        "grades": {
+         "type": "array",
+         "minItems": 0,
+         "items": {
+          "type": "object",
+          "required": [
+           "code",
+           "classOrType",
+           "name",
+           "properties"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "code": {
+            "type": "string",
+            "minLength": 1
+           },
+           "classOrType": {
+            "type": [
+             "string",
+             "null"
+            ],
+            "minLength": 1
+           },
+           "name": {
+            "$ref": "#/$defs/bilingual"
+           },
+           "properties": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+             "$ref": "#/$defs/property"
+            }
+           },
+           "obsolete": {
+            "type": "boolean"
+           },
+           "obsoleteNote": {
+            "$ref": "#/$defs/bilingual"
+           }
+          }
+         }
+        },
+        "_note": {
+         "type": "string"
+        },
+        "properties": {
+         "type": "object",
+         "description": "Material facts carried by the SPECIFICATION itself. Only meaningful for a spec that has no grades - ASTM A105 is the whole material, so there is no grade to hang a fact on. A spec WITH grades must leave this empty and put the fact on each grade.",
+         "additionalProperties": {
+          "$ref": "#/$defs/property"
+         }
+        },
+        "surfaceConditions": {
+         "type": "array",
+         "minItems": 1,
+         "uniqueItems": true,
+         "items": {
+          "$ref": "#/$defs/surfaceCondition"
+         }
+        },
+        "appliesToValveTypes": {
+         "type": "array",
+         "minItems": 1,
+         "uniqueItems": true,
+         "items": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+         },
+         "description": "Valve qualifiers this trim standard covers. API 600 is gate valves only."
+        },
+        "requiredParts": {
+         "type": "array",
+         "minItems": 1,
+         "uniqueItems": true,
+         "items": {
+          "type": "string",
+          "pattern": "^[a-z][a-zA-Z]*$"
+         },
+         "description": "The parts a trim of this standard must name. A ball valve has no backseat; a check valve has no stem."
+        },
+        "verifiedFrom": {
+         "type": "string",
+         "minLength": 10
+        },
+        "obsoleteGradesAreHeldNotDeleted": {
+         "type": "string",
+         "minLength": 40
+        },
+        "materialsInheritedFrom": {
+         "type": "string",
+         "minLength": 40
+        },
+        "stemDiameterRule": {
+         "type": "object"
+        },
+        "hardnessNotSpecified": {
+         "type": "string",
+         "minLength": 40
+        }
+       }
+      }
+     },
+     "metallic": {
+      "type": "boolean"
+     },
+     "pressureDesigned": {
+      "type": "boolean"
+     },
+     "reachedBy": {
+      "enum": [
+       "CASCADE",
+       "CONSTITUENT",
+       "TRIM",
+       "REQUISITION_ONLY"
+      ],
+      "description": "How a user arrives at this group. CASCADE = the four-step material dropdown. CONSTITUENT = only ever named by another grade's constituent property. TRIM = a separate selector alongside the valve body material. REQUISITION_ONLY = nameable on a requisition but supplies no component."
+     },
+     "noTrimNumberSystem": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "string",
+       "minLength": 60
+      }
+     }
+    }
+   }
+  }
+ },
+ "$defs": {
+  "bilingual": {
+   "type": "object",
+   "required": [
+    "en",
+    "fa"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "en": {
+     "type": "string",
+     "minLength": 1
+    },
+    "fa": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "property": {
+   "type": "object",
+   "required": [
+    "value",
+    "verified"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "value": {
+     "type": [
+      "string",
+      "number",
+      "boolean"
+     ]
+    },
+    "unit": {
+     "type": "string",
+     "minLength": 1
+    },
+    "verified": {
+     "type": "boolean"
+    },
+    "source": {
+     "type": "string",
+     "minLength": 3,
+     "description": "Document and table actually read. Required when verified."
+    },
+    "readOn": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+     "description": "Date the citation was read. Required when verified."
+    }
+   }
+  },
+  "surfaceCondition": {
+   "enum": [
+    "BLACK",
+    "GALV",
+    "NONE"
+   ]
+  }
+ }
+}

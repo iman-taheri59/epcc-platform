@@ -43,6 +43,7 @@ final class PipingLineService
 {
     public function __construct(
         private readonly NumberEngine $engine,
+        private readonly PmsLineEligibility $pmsEligibility,
         private readonly PipeReference $reference,
         private readonly ProjectArchiveService $archives,
         private readonly UnitRegistry $units,
@@ -79,6 +80,11 @@ final class PipingLineService
 
             $this->assertNumberIsFree($project, $number);
 
+            // A generated tag is not permission to use a class: resolve the
+            // current approved PMS snapshot before inserting the new line.
+            $classId = $attributes['piping_class_id'] ?? null;
+            $snapshotId = $this->pmsEligibility->snapshotId($project->id, $classId);
+
             return PipingLine::create([
                 'project_id' => $project->id,
                 'company_id' => $actor->company_id,
@@ -88,7 +94,8 @@ final class PipingLineService
                 'sequence' => $seq,
                 'nominal_size' => $attributes['nominal_size'] ?? null,
                 'service_code' => $attributes['service_code'] ?? null,
-                'piping_class_id' => $attributes['piping_class_id'] ?? null,
+                'piping_class_id' => $classId,
+                'pms_class_snapshot_id' => $snapshotId,
                 'coating_code' => $attributes['coating_code'] ?? null,
                 'release_state' => LineReleaseState::DRAFT,
             ] + $this->designAttributes($attributes));
@@ -128,6 +135,10 @@ final class PipingLineService
         return DB::transaction(function () use ($subsystem, $actor, $lineNumber, $attributes, $project): PipingLine {
             $this->assertNumberIsFree($project, $lineNumber);
 
+            // Imported/external tags keep their original number, but may not
+            // invent a class or bypass the approved PMS revision requirement.
+            $classId = $attributes['piping_class_id'] ?? null;
+            $snapshotId = $this->pmsEligibility->snapshotId($project->id, $classId);
             $parsed = $this->parse($project, $subsystem, $lineNumber);
 
             return PipingLine::create([
@@ -142,7 +153,8 @@ final class PipingLineService
                 'sequence' => null,
                 'nominal_size' => $attributes['nominal_size'] ?? $parsed->token('size'),
                 'service_code' => $attributes['service_code'] ?? $parsed->token('service'),
-                'piping_class_id' => $attributes['piping_class_id'] ?? null,
+                'piping_class_id' => $classId,
+                'pms_class_snapshot_id' => $snapshotId,
                 'coating_code' => $attributes['coating_code'] ?? $parsed->token('coating'),
                 'release_state' => LineReleaseState::DRAFT,
             ] + $this->designAttributes($attributes));
@@ -200,6 +212,14 @@ final class PipingLineService
         $this->archives->assertWritable($project);
 
         $this->assertTransition($line, LineReleaseState::AFC_CONFIRMED);
+
+        // An old unmapped line can remain in the register, but must never be
+        // certified for construction as though its PMS provenance were known.
+        if ($line->piping_class_id === null || $line->pms_class_snapshot_id === null) {
+            throw ValidationException::withMessages([
+                'release_state' => __('epcc.line.afc_needs_pms_pin'),
+            ]);
+        }
 
         $missing = $this->missingEvidence($line);
 

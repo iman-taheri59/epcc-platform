@@ -103,6 +103,11 @@
 
 ### فاز P1 — PMS و branch table
 
+> **وضعیت ۲۰۲۶-۱۰-۱۱: پیاده‌سازی شده — در انتظار تأیید اجرایی.** هر شش
+> خروجی زیر در مایگریشن `2026_10_11_120000_create_piping_classes_and_rules`،
+> `PipingClassService` و `PipingClassTest` پیاده شد (ADR-008 §9). اتصال به
+> component attach و سازگاری جوش‌ها فاز ۳ ساختِ ADR-008 است و هنوز باز است.
+
 بر اساس ADR-008:
 
 - `piping_classes`
@@ -111,6 +116,10 @@
 - gap detection در publish gate
 - branch table با specificity-wins
 - integration با component attach و joint compatibility
+- **الحاقیه (کارفرما ۲۰۲۶-۱۰-۱۱، ‏ADR-008 §9.1):** واژگان نتیجهٔ جدول انشعاب
+  بسته شد — `TEE / WELDOLET / SOCKOLET / P2P`؛ ‏`P2P` (لوله‌به‌لوله) نتیجهٔ
+  درجه‌یک به معنای *بدون کامپوننت* است، با دو نوع **stub-in / stub-on** و پد
+  تقویتی که در صورت نیاز، ضخامت آن (میلی‌متر) اجباری است.
 
 ارزش: جلوگیری از ورود دادهٔ غلط قبل از field.
 
@@ -161,6 +170,11 @@
 - repair cycle
 - repair rate KPI
 - heat/material traceability به weld در حد feasible
+- **انواع مفصلِ جوش انشعاب (نیازمندی کارفرما، ۲۰۲۶-۱۰-۱۲، پیشنهاد P-21):**
+  اتصالات لوله‌به‌لوله (stub-in/stub-on) کامپوننت ندارند — اتصال، جوش است.
+  رجیستر جوش‌ها باید `BRANCH_STUB_IN` / `BRANCH_STUB_ON` را به‌عنوان نوعِ
+  مفصل درجه‌یک داشته باشد تا جوش‌های انشعاب جدا از جوش‌های لب‌به‌لب شمارش و
+  گزارش شوند و الزام پد از قواعد کلاسِ ADR-008 قابل ردیابی بماند.
 
 این فاز باید با QA/QC هماهنگ شود و ممکن است ADR جدا لازم داشته باشد.
 

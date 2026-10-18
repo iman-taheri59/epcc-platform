@@ -25,6 +25,36 @@
         'small'    => ['fa' => 'سر کوچک', 'en' => 'Small end'],
         'lenmm'    => ['fa' => 'طول (میلی‌متر)', 'en' => 'Length (mm)'],
         'sched'    => ['fa' => 'رده', 'en' => 'Schedule'],
+        'issuedPms'=> ['fa' => 'بازنگری PMS زمان صدور', 'en' => 'Issued PMS revision'],
+        'unmapped' => ['fa' => 'در انتظار بررسی کلاس و بازنگری PMS', 'en' => 'Class/PMS revision review required'],
+        'scheduleMatches' => ['fa' => 'منطبق با ردهٔ PMS زمان صدور', 'en' => 'Matches issued PMS schedule'],
+        'scheduleDiffers' => ['fa' => 'مغایر با ردهٔ PMS زمان صدور', 'en' => 'Differs from issued PMS schedule'],
+        'scheduleUnknown' => ['fa' => 'ردهٔ PMS قابل بررسی نیست', 'en' => 'Issued PMS schedule cannot be checked'],
+        'expected' => ['fa' => 'ردهٔ مورد انتظار', 'en' => 'Expected'],
+        'requestReview' => ['fa' => 'درخواست بررسی مغایرت', 'en' => 'Request discrepancy review'],
+        'requestReason' => ['fa' => 'دلیل و شرح مغایرت (تأیید نیست)', 'en' => 'Reason for discrepancy (not approval)'],
+        'reviewPending' => ['fa' => 'درخواست بررسی ثبت شده؛ هنوز تأیید نشده است', 'en' => 'Review requested; not approved'],
+        'taperProposal' => ['fa' => 'Taper داخلیِ پیشنهادی (صرفاً طرح؛ تأیید Fit-up نیست)', 'en' => 'Proposed internal taper (plan only; not Fit-up acceptance)'],
+        'remedyUndetermined' => ['fa' => 'روش رفع هنوز تعیین نشده است', 'en' => 'Remedy not yet determined'],
+        'requestHistory' => ['fa' => 'سابقهٔ درخواست‌های مغایرت', 'en' => 'Discrepancy request history'],
+        'previousValue' => ['fa' => 'مقدار پیشین؛ برای ردهٔ فعلی معتبر نیست', 'en' => 'Previous value; not applicable to current schedule'],
+        'unverifiedPmsClaim' => ['fa' => 'مقدار PMS این درخواست با مدرک حاکم فعلی قابل تطبیق نیست؛ مبنای پیش‌نویس جدید نیست', 'en' => 'Request PMS value does not match the current issued basis; not eligible for a new draft'],
+        'reviewRecorded' => ['fa' => 'رویداد بررسی ثبت شده؛ تأیید مهندسی احراز نشده', 'en' => 'Review event recorded; engineering acceptance not established'],
+        'internalDraft' => ['fa' => 'پیش‌نویس داخلی؛ صادر نشده', 'en' => 'Internal draft; not issued'],
+        'externalMetadata' => ['fa' => 'اطلاعات گزارش بیرونی؛ راستی‌آزمایی نشده', 'en' => 'External report metadata; not verified'],
+        'captureDraft' => ['fa' => 'ساخت پیش‌نویس داخلی TQ/NCR (بدون صدور)', 'en' => 'Create internal TQ/NCR draft (not issued)'],
+        'captureExternal' => ['fa' => 'ثبت اطلاعات TQ/NCR صادرشده در خارج (بدون تأیید)', 'en' => 'Record externally issued TQ/NCR metadata (not verified)'],
+        'reportNumber' => ['fa' => 'شمارهٔ گزارش بیرونی', 'en' => 'External report number'],
+        'reportRevision' => ['fa' => 'بازنگری (اختیاری)', 'en' => 'Revision (optional)'],
+        'reportIssuer' => ['fa' => 'صادرکنندهٔ بیرونی', 'en' => 'External issuer'],
+        'reportSigner' => ['fa' => 'نام امضاکنندهٔ بیرونی', 'en' => 'External signatory'],
+        'reportCapacity' => ['fa' => 'سمت امضاکننده', 'en' => 'Signatory capacity'],
+        'reportIssuedAt' => ['fa' => 'تاریخ صدور بیرونی', 'en' => 'External issue date'],
+        'reportSignedAt' => ['fa' => 'تاریخ امضا', 'en' => 'Signature date'],
+        'reportRegister' => ['fa' => 'مرجع رجیستر/بایگانی بیرونی', 'en' => 'External register reference'],
+        'reportDetails' => ['fa' => 'جزئیات اطلاعات ثبت‌شده (ادعای بیرونی؛ راستی‌آزمایی نشده)', 'en' => 'Recorded details (external claim; not verified)'],
+        'reportRecordedAt' => ['fa' => 'زمان ثبت در سامانه', 'en' => 'Recorded in system at'],
+        'reportRecorder' => ['fa' => 'شناسهٔ ثبت‌کننده در سامانه (نه صادرکننده)', 'en' => 'System recorder ID (not issuer)'],
         'inherit'  => ['fa' => 'سایز از پورت والد به ارث می‌رسد و قابل تایپ نیست.',
                        'en' => 'The size is inherited from the parent port and cannot be typed.'],
         'locked'   => ['fa' => 'این خط ابلاغ شده است؛ تغییر مدل آن نیاز به بازگشت به پیش‌نویس دارد.',
@@ -86,6 +116,16 @@
     @if($line->nominal_size) · <bdi>{{ $num($line->nominal_size) }}"</bdi> @endif
     @if($line->pipingClass) · {{ $line->pipingClass->code }} @endif
   </div>
+  @if($line->pms_class_snapshot_id !== null)
+    @php $issued = $line->pmsSnapshot?->documentRevision; @endphp
+    <div style="font-size:12px;color:var(--muted);margin-top:5px;">
+      {{ $L('issuedPms') }}:
+      {{ $issued?->document?->number ?? 'PMS' }} · {{ $issued?->revision ?? '—' }}
+      @if($issued?->suitability) ({{ $issued->suitability }}) @endif
+    </div>
+  @else
+    <div style="font-size:12px;color:#fca5a5;margin-top:5px;">{{ $L('unmapped') }}</div>
+  @endif
   <p style="color:var(--muted);font-size:13px;line-height:1.8;margin:6px 0 0;">{{ $L('sub') }}</p>
   <p style="margin:10px 0 0;">
     <a href="/projects/{{ $project->code }}/piping?{{ http_build_query($q) }}"
@@ -98,8 +138,13 @@
     </div>
   @endif
 
+  @if(session('status'))
+    <div role="status" style="margin-top:14px;padding:10px 12px;border-radius:8px;border:1px solid #14532d;background:rgba(20,83,45,.25);color:#86efac;font-size:13px;line-height:1.7;">
+      {{ session('status') }}
+    </div>
+  @endif
   @if($errors->any())
-    <div style="margin-top:14px;padding:10px 12px;border-radius:8px;border:1px solid #7f1d1d;background:rgba(127,29,29,.25);color:#fca5a5;font-size:13px;line-height:1.7;">
+    <div role="alert" style="margin-top:14px;padding:10px 12px;border-radius:8px;border:1px solid #7f1d1d;background:rgba(127,29,29,.25);color:#fca5a5;font-size:13px;line-height:1.7;">
       @foreach($errors->all() as $message)<div>{{ $message }}</div>@endforeach
     </div>
   @endif
@@ -159,6 +204,7 @@
         <th data-sort="number">{{ $L('seq') }}</th>
         <th data-sort="text" data-facet>{{ $L('type') }}</th>
         <th data-sort="text">{{ $L('size') }}</th>
+        <th data-sort="text">{{ $L('sched') }}</th>
         <th>{{ $L('ports') }}</th>
         <th data-sort="number">{{ $L('length') }}</th>
         <th>{{ $L('actions') }}</th>
@@ -172,6 +218,121 @@
           <div style="color:var(--muted);font-size:11px;" class="mono">{{ $c->template_code }}</div>
         </td>
         <td class="mono">@if($c->nominal_size)<bdi>{{ $num($c->nominal_size) }}"</bdi>@else—@endif</td>
+        <td class="mono">
+          {{ $c->schedule ?? '—' }}
+          @if($c->template_code === 'PIPE' && $line->pms_class_snapshot_id !== null)
+            @php $check = $scheduleChecks[$c->id] ?? null; @endphp
+            @if($check === null)
+              <div style="font-size:11px;color:#fcd34d;">{{ $L('scheduleUnknown') }}</div>
+            @elseif($check['matches'])
+              <div style="font-size:11px;color:#86efac;">{{ $L('scheduleMatches') }}</div>
+            @else
+              <div style="font-size:11px;color:#fca5a5;">{{ $L('scheduleDiffers') }} · {{ $L('expected') }}: {{ $check['expected'] }}</div>
+              @if(isset($pendingScheduleRequests[$c->id]))
+                <div style="font-size:11px;color:#fcd34d;">{{ $L('reviewPending') }}</div>
+                @if($pendingScheduleRequests[$c->id]['remedy'] === 'INTERNAL_TAPER_PROPOSED')
+                  <div style="font-size:11px;color:#fcd34d;">{{ $L('taperProposal') }}</div>
+                @endif
+              @elseif($canCapture && $c->company_id === $user->company_id && $line->company_id === $user->company_id)
+                <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/model/{{ $c->id }}/request-review?{{ http_build_query($q) }}" style="margin-top:6px;">
+                  @csrf
+                  @if($check['taper_eligible'])
+                    <select name="proposed_remedy" aria-label="{{ $L('taperProposal') }}"
+                            style="width:100%;min-width:170px;background:var(--bg);color:inherit;border:1px solid var(--line);border-radius:6px;">
+                      <option value="UNDETERMINED">{{ $L('remedyUndetermined') }}</option>
+                      <option value="INTERNAL_TAPER_PROPOSED">{{ $L('taperProposal') }}</option>
+                    </select>
+                  @endif
+                  <textarea name="reason" required minlength="10" maxlength="4000" rows="2"
+                            placeholder="{{ $L('requestReason') }}" aria-label="{{ $L('requestReason') }}"
+                            style="width:100%;min-width:170px;background:var(--bg);color:inherit;border:1px solid var(--line);border-radius:6px;"></textarea>
+                  <button type="submit" style="font:inherit;font-size:11px;cursor:pointer;">{{ $L('requestReview') }}</button>
+                </form>
+              @endif
+            @endif
+          @endif
+          @if(($requestHistory[$c->id] ?? collect())->isNotEmpty())
+            <details style="margin-top:8px;font-size:11px;">
+              <summary>{{ $L('requestHistory') }} ({{ $num($requestHistory[$c->id]->count()) }})</summary>
+              @foreach($requestHistory[$c->id] as $entry)
+                <div style="border-top:1px solid var(--line);padding:5px 0;white-space:normal;">
+                  <bdi>{{ $entry->created_at }}</bdi> ·
+                  @if($entry->nps_at_request)<bdi>{{ $num($entry->nps_at_request) }}" (DN{{ $num($entry->dn_at_request) }})</bdi> · @endif
+                  {{ $entry->actual_schedule }} / {{ $entry->expected_schedule }}
+                  @if($entry->actual_schedule !== $c->schedule || $entry->pms_class_snapshot_id !== $line->pms_class_snapshot_id
+                      || $entry->nps_at_request !== $c->nominal_size)
+                    <div style="color:#fcd34d;">{{ $L('previousValue') }}</div>
+                  @elseif(! isset($scheduleChecks[$c->id]) || $entry->expected_schedule !== $scheduleChecks[$c->id]['expected']
+                      || (int) $entry->dn_at_request !== $scheduleChecks[$c->id]['dn'])
+                    <div style="color:#fcd34d;">{{ $L('unverifiedPmsClaim') }}</div>
+                  @endif
+                  @if($entry->proposed_remedy === 'INTERNAL_TAPER_PROPOSED')
+                    <div>{{ $L('taperProposal') }}</div>
+                  @endif
+                  <div>{{ $entry->reason }}</div>
+                  @if($entry->decision_id !== null)
+                    <div style="color:#fcd34d;">{{ $L('reviewRecorded') }}</div>
+                  @else
+                    <div style="color:#fcd34d;">{{ $L('reviewPending') }}</div>
+                  @endif
+                  @foreach($reportHistory[$entry->id] ?? [] as $report)
+                    <div>{{ $report->kind }} ·
+                      @if($report->origin === 'IN_SYSTEM')
+                        {{ $L('internalDraft') }}
+                      @else
+                        {{ $L('externalMetadata') }} · <bdi>{{ $report->report_number }}</bdi>
+                        <details style="margin:4px 0 8px 12px;">
+                          <summary>{{ $L('reportDetails') }}</summary>
+                          <div>{{ $L('reportNumber') }}: <bdi>{{ $report->report_number }}</bdi></div>
+                          @if($report->report_revision !== null)
+                            <div>{{ $L('reportRevision') }}: <bdi>{{ $report->report_revision }}</bdi></div>
+                          @endif
+                          <div>{{ $L('reportIssuer') }}: {{ $report->reported_issuer }}</div>
+                          <div>{{ $L('reportSigner') }}: {{ $report->reported_signer }}</div>
+                          <div>{{ $L('reportCapacity') }}: {{ $report->reported_signer_capacity }}</div>
+                          <div>{{ $L('reportIssuedAt') }}: <bdi>{{ substr((string) $report->reported_issued_at, 0, 10) }}</bdi></div>
+                          <div>{{ $L('reportSignedAt') }}: <bdi>{{ substr((string) $report->reported_signed_at, 0, 10) }}</bdi></div>
+                          <div>{{ $L('reportRegister') }}: <bdi>{{ $report->external_register_ref }}</bdi></div>
+                          <div>{{ $L('reportRecordedAt') }}: <bdi>{{ $report->created_at }}</bdi></div>
+                          <div>{{ $L('reportRecorder') }}: <bdi>{{ $report->recorded_by }}</bdi></div>
+                        </details>
+                      @endif
+                    </div>
+                  @endforeach
+                  @if($canCapture && $c->company_id === $user->company_id && $line->company_id === $user->company_id)
+                    @if($entry->nps_at_request !== null && $entry->nps_at_request === $c->nominal_size
+                        && isset($scheduleChecks[$c->id])
+                        && (int) $entry->dn_at_request === $scheduleChecks[$c->id]['dn']
+                        && $entry->expected_schedule === $scheduleChecks[$c->id]['expected']
+                        && $entry->actual_schedule === $c->schedule && $entry->pms_class_snapshot_id === $line->pms_class_snapshot_id)
+                      <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/model/reports/{{ $entry->id }}/draft?{{ http_build_query($q) }}" style="margin-top:6px;">
+                        @csrf
+                        <select name="kind" aria-label="TQ/NCR"><option value="TQ">TQ</option><option value="NCR">NCR</option></select>
+                        <button type="submit">{{ $L('captureDraft') }}</button>
+                      </form>
+                    @endif
+                    <details style="margin-top:6px;">
+                      <summary>{{ $L('captureExternal') }}</summary>
+                      <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/model/reports/{{ $entry->id }}/external?{{ http_build_query($q) }}" style="display:grid;gap:5px;max-width:330px;margin-top:5px;">
+                        @csrf
+                        <select name="kind" aria-label="TQ/NCR"><option value="TQ">TQ</option><option value="NCR">NCR</option></select>
+                        <input name="report_number" required maxlength="160" placeholder="{{ $L('reportNumber') }}" aria-label="{{ $L('reportNumber') }}">
+                        <input name="report_revision" maxlength="64" placeholder="{{ $L('reportRevision') }}" aria-label="{{ $L('reportRevision') }}">
+                        <input name="reported_issuer" required maxlength="200" placeholder="{{ $L('reportIssuer') }}" aria-label="{{ $L('reportIssuer') }}">
+                        <input name="reported_signer" required maxlength="200" placeholder="{{ $L('reportSigner') }}" aria-label="{{ $L('reportSigner') }}">
+                        <input name="reported_signer_capacity" required maxlength="200" placeholder="{{ $L('reportCapacity') }}" aria-label="{{ $L('reportCapacity') }}">
+                        <label>{{ $L('reportIssuedAt') }} <input type="date" name="reported_issued_at" required></label>
+                        <label>{{ $L('reportSignedAt') }} <input type="date" name="reported_signed_at" required></label>
+                        <input name="external_register_ref" required maxlength="512" placeholder="{{ $L('reportRegister') }}" aria-label="{{ $L('reportRegister') }}">
+                        <button type="submit">{{ $L('captureExternal') }}</button>
+                      </form>
+                    </details>
+                  @endif
+                </div>
+              @endforeach
+            </details>
+          @endif
+        </td>
         <td style="font-size:12px;">
           @foreach($c->ports as $p)
             {{-- Open vs connected must be legible at a glance, and colour
@@ -207,7 +368,7 @@
         </td>
       </tr>
     @empty
-      <tr><td colspan="6" style="color:var(--muted);">{{ $L('none') }}</td></tr>
+      <tr><td colspan="7" style="color:var(--muted);">{{ $L('none') }}</td></tr>
     @endforelse
     </tbody>
   </table>

@@ -1,0 +1,1257 @@
+{
+ "refId": "valve-construction",
+ "version": "1.11.0",
+ "source": "Standard titles and scope statements. API 594-2022, 599-2025, 600-2021, 602-2015, 603-2025, 608-2020, 609-2021, 623-2021, API Spec 6D-2021 and ISO 15761-2020 are HELD and verified against purchased copies; the three BS entries are still unchecked claims.",
+ "note": "How a manual valve is BUILT, as distinct from how it is DIMENSIONED. A PMS valve line normally carries both: 'API 600' (construction) and 'ASME B16.10' (face to face). This pack answers one question the body row cannot - is this construction standard the right one for this valve type at this size. It deliberately does NOT carry trim (materials.ref.json group VALVE_TRIM) or operators (actuators.ref.json, manual half), because both already exist and a second copy would be a second answer.",
+ "conventions": {
+  "scopeIsAClaim": "npsMin / npsMax come from the scope clause on the front page of each standard, read from the title and industry usage rather than from the standard itself. That is exactly the situation the allowable-stress round created the verified flag for: the value is held, it is reported, and no finding built on it may be presented as a standard's requirement until someone has the document in hand.",
+  "valveTypesAreTheTemplateQualifiers": "Every code in valveTypes must be a qualifier the VALVE component template offers. This pack does not get to invent valve types the rest of the platform has never heard of - the same rule the trim group and the actuator pack are held to.",
+  "bodyGroupsAreProductForms": "bodyGroups names material-library GROUPS, which are product forms, not metallurgy. API 600 is a cast bolted-bonnet valve and API 602 is its forged small-bore counterpart; that difference is the clearest reason the two standards exist, so it is recorded. Null means the standard does not turn on it.",
+  "severalStandardsMayCoverOneType": "A gate valve may legitimately be built to API 600, API 603, API 6D, BS 1414 or ISO 15761 depending on service and size. This pack narrows a dropdown and catches a contradiction; it never picks.",
+  "sourceQualityMatters": "Owning a standard is not the same as being able to read it. API 600-2021 arrived as a 109 dpi SCAN with no text layer: its prose OCRs cleanly and its numeric tables do not. So an entry carries sourceQuality as well as verified - TEXT means the figures can be transcribed, SCANNED_IMAGE means the prose can be trusted and the tables cannot. A wall thickness read off a bad scan is worse than no wall thickness.",
+  "aVerifiedEntryRecordsWhatItCorrected": "When a guess turns out wrong the old value is kept in correctedFromGuess. That is the whole return on the verified:false discipline: it shows which findings the platform was raising wrongly, and for how long.",
+  "bodyGroupsIsNotAlwaysTheRightQuestion": "bodyGroups asks which PRODUCT FORM a standard permits - cast, forged. Three standards have now been read and none of them turns on that: API 600, 602 and 603 all say \"cast or forged\". API 603 restricts something else entirely - Table 4 gives the body as \"As selected from ASME B16.34, Group 2 and Group 3\", which is a MATERIAL GROUP constraint and a far sharper one. bodyMaterialGroups carries it, and it resolves through valve-pt-ratings, which holds all 50 B16.34 groups.",
+  "scopeCanDependOnEndType": "API 608 is the first standard here whose SIZE and CLASS depend on the END TYPE: flanged and butt-welding run NPS 1/2 to 24, socket-welding and threaded stop at NPS 2; and flanged stops at Class 600 while the other three reach Class 800. A single npsMin/npsMax/pressureClasses triple cannot say that, so endTypeScopes carries it and the flat fields hold the union for consumers that only need a rough filter.",
+  "designVariantsAreNamedByTheConstructionStandard": "API 598 tests a FLOATING ball valve differently from a TRUNNION MOUNTED one and refuses to answer for a bare \"BALL\". API 608 clause 1.4 is where that vocabulary comes from: it covers \"floating (seat-supported) ball (Figure C.1) and trunnion ball valve designs (Figure C.2)\". The construction pack now supplies the two names the testing pack was asking for.",
+  "notEveryValveHasAnAsmeClass": "API 609 Category A butterfly valves are rated by the MANUFACTURER at a cold working pressure, not by ASME class - clause 1.2 a). They carry a class 125 or 150 flange BOLTING PATTERN, which looks like a class and is not one. ratingBasis records the difference, because a consumer that reads a Class 150 shell rating for a Category A valve has invented a figure the standard never claimed.",
+  "theFaceToFaceSourceCanDependOnTheVariant": "API 594 clause 1 splits check valves in two and gives them DIFFERENT dimension sources: a Type A valve takes its short face-to-face from API 594 Tables 2 and 3, a Type B valve takes it from ASME B16.10. The platform holds B16.10 and not API 594 Tables 2/3, so a Type A check valve would silently be given a Type B length. faceToFaceSource records which standard governs, so the gap is visible.",
+  "notEveryStandardNumbersItsTrim": "API 600, 623 and 594 each print a numbered trim table. API 599 does not print one at all - a plug valve’s seat, sleeve and plug facing are agreed on the purchase order under clause 6. A \"trim number\" dropdown for plug valves offers a vocabulary the standard has not got.",
+  "aSpecificationIsNotAStandard": "API 6D is a SPECIFICATION, not a standard: it covers design, manufacturing, materials, welding, quality control, assembly, testing, marking, documentation and process controls in one document, where API 600 covers a valve type. Naming it on a PMS row says less about the valve and more about the quality regime - and its Annex C face-to-face tables are NORMATIVE, so it is also a dimension source.",
+  "pressureDesignationIsNotAlwaysAnAsmeClass": "ISO 15761 rates the same valve in TWO parallel systems: ASME Class 150-2500 and PN 16/25/40/63/100/250/400. The platform has no PN vocabulary at all - every pack here keys pressure on an ASME class number. Declared through pnDesignations rather than dropped, because a European PMS writes PN 40 and the platform would have nowhere to put it. Note ISO 15761’s own remark: Class 800 \"has no equivalent PN designation\", so the two systems do not even map one to one."
+ },
+ "standards": [
+  {
+   "code": "API 600",
+   "title": {
+    "en": "Steel Gate Valves - Flanged and Butt-welding Ends, Bolted Bonnets",
+    "fa": "شیرهای کشویی فولادی با کلاهک پیچی برای صنایع نفت و گاز"
+   },
+   "valveTypes": [
+    "GATE"
+   ],
+   "bodyGroups": [
+    "CASTINGS",
+    "FORGINGS"
+   ],
+   "npsMin": 1,
+   "npsMax": 42,
+   "note": {
+    "en": "The default gate valve of the industry. Clause 1 covers DN 25 to 1050 (NPS 1 to 42) in classes 150 to 2500, with a bolted bonnet, outside screw and yoke, a rising stem and a non-rising handwheel. The body may be cast OR forged.",
+    "fa": "شیر کشویی متعارف صنعت. بند ۱ سایز DN 25 تا 1050 (NPS 1 تا 42) و کلاس‌های ۱۵۰ تا ۲۵۰۰ را پوشش می‌دهد، با کلاهک پیچی، یوک بیرونی، ساقهٔ بالارونده و فلکهٔ ثابت. بدنه می‌تواند ریختگی یا فورج باشد."
+   },
+   "verified": true,
+   "sourceQuality": "TEXT",
+   "editionYear": 2021,
+   "correctedFromGuess": {
+    "bodyGroups": {
+     "was": [
+      "CASTINGS"
+     ],
+     "now": [
+      "CASTINGS",
+      "FORGINGS"
+     ],
+     "evidence": "Table D.1 lists the Group 1.1 body material as \"C-Si A105 or A216-WCB\" - a forging and a casting in one row - and 7.3 speaks of \"the shell of a cast or forged, carbon or alloy steel valve\". The guess would have raised BODY_FORM_AGAINST_STANDARD on every legitimate A105 forged gate valve."
+    },
+    "npsMin": {
+     "was": 2,
+     "now": 1,
+     "evidence": "Clause 1 lists DN 25 upward, which is NPS 1. The guess that small bore falls to API 602 was reasonable and wrong: it would have put every NPS 1 to 1 1/2 API 600 gate valve out of scope."
+    },
+    "npsMax": {
+     "was": null,
+     "now": 42,
+     "evidence": "Clause 1 stops at DN 1050 (NPS 42). An open-ended maximum would have accepted an NPS 48 gate valve that API 600 does not cover."
+    }
+   },
+   "pressureClasses": [
+    "150",
+    "300",
+    "600",
+    "900",
+    "1500",
+    "2500"
+   ],
+   "designFeatures": [
+    "BOLTED_BONNET",
+    "OUTSIDE_SCREW_AND_YOKE",
+    "RISING_STEM",
+    "NON_RISING_HANDWHEEL",
+    "SINGLE_OR_DOUBLE_GATE",
+    "WEDGE_OR_PARALLEL_SEATING",
+    "METALLIC_SEATING_SURFACES"
+   ],
+   "endTypes": [
+    "FLANGED",
+    "BUTT_WELDING"
+   ],
+   "verifiedFrom": "API Standard 600, 14th edition, 2021 - clause 1, clause 7.3, Table 8, Table 9 and Table D.1",
+   "tablesNotTranscribed": {
+    "tables": [
+     "Table 1 minimum wall thickness for body and bonnet",
+     "Table 2 minimum inside diameter DN 800-1050",
+     "Table 3 minimum wear travel and maximum stem projection",
+     "Table 4 minimum stem diameter",
+     "Tables 5 and 6 nominal radial width of packing",
+     "Table 7 materials for parts",
+     "Tables D.1 to D.4 body/bonnet/cover material and bolting combinations"
+    ],
+    "reason": "A readable copy arrived, so Table 8 (trim materials) and Table 9 (alternative trim numbers) are now transcribed into the material library. The tables above are dimensional and bolting data that no consumer asks for yet; they are left until something needs them, not because they cannot be read.",
+    "whatWouldFixIt": "Nothing - the copy is readable. These are simply not built yet."
+   }
+  },
+  {
+   "code": "API 602",
+   "title": {
+    "en": "Gate, Globe, and Check Valves for Sizes DN 100 (NPS 4) and Smaller for the Petroleum and Natural Gas Industries",
+    "fa": "شیرهای کشویی، کف‌فلزی و یک‌طرفه در اندازه ۱۰۰ میلی‌متر و کمتر"
+   },
+   "valveTypes": [
+    "GATE",
+    "GLOBE",
+    "CHECK"
+   ],
+   "bodyGroups": [
+    "FORGINGS",
+    "CASTINGS"
+   ],
+   "npsMin": 0.25,
+   "npsMax": 4,
+   "note": {
+    "en": "The compact small-bore valve: gate, globe and check, DN 8 to 100 (NPS 1/4 to 4), classes 150/300/600/800/1500. CLASS 800 IS ITS SIGNATURE - clause 1 calls it \"not a listed class designation, but an intermediate class number widely used for socket welding and threaded end compact valves\". Socket weld and threaded ends stop at NPS 2 1/2; flanged ends exist at every class EXCEPT 800.",
+    "fa": "شیر جمع‌وجور سایز کوچک: کشویی، کف‌فلزی و یک‌طرفه، از ۱/۴ تا ۴ اینچ، کلاس‌های ۱۵۰/۳۰۰/۶۰۰/۸۰۰/۱۵۰۰. کلاس ۸۰۰ امضای همین استاندارد است."
+   },
+   "verified": true,
+   "sourceQuality": "TEXT",
+   "editionYear": 2015,
+   "correctedFromGuess": {
+    "bodyGroups": {
+     "was": [
+      "FORGINGS"
+     ],
+     "now": [
+      "FORGINGS",
+      "CASTINGS"
+     ],
+     "evidence": "Table 1a lists Group 1.1 castings A216 WCB alongside the forgings A105 and A350, and Tables 1b/1c list A351 CF8M, A352 LCC and the rest. The folklore that API 600 is cast and API 602 is forged is now wrong at BOTH ends - each standard permits both."
+    },
+    "npsMin": {
+     "was": null,
+     "now": 0.25,
+     "evidence": "Clause 1 starts at DN 8 (NPS 1/4). An absent lower bound reads as \"the standard does not turn on size\", which would have accepted an API 602 valve at any size below 4 inch including ones it excludes."
+    }
+   },
+   "pressureClasses": [
+    "150",
+    "300",
+    "600",
+    "800",
+    "1500"
+   ],
+   "designFeatures": [
+    "OUTSIDE_SCREW_AND_YOKE",
+    "INSIDE_SCREW_RISING_STEM",
+    "BOLTED_BONNET",
+    "WELDED_BONNET",
+    "PRESSURE_SEAL_BONNET"
+   ],
+   "endTypes": [
+    "SOCKET_WELDING",
+    "THREADED",
+    "FLANGED",
+    "BUTT_WELDING"
+   ],
+   "verifiedFrom": "API Standard 602, 10th edition, May 2015 - clause 1, clause 4.1.3 and Tables 1a-1c",
+   "tablesNotTranscribed": {
+    "tables": [
+     "Tables 3 and 4 flow passageway diameters",
+     "Table 5 minimum wall thickness",
+     "Table 6 bonnet extension and bellows thickness",
+     "Table 7 butt-welding end diameters",
+     "Table 8 wear travel",
+     "Tables 9 and 10 minimum stem diameter",
+     "Table 11 packing height",
+     "Table 12 trim materials and hardness",
+     "Table 13 alternative CNs",
+     "Table 14 materials for parts other than trim"
+    ],
+    "reason": "Dimensional and trim data with no consumer yet. The API 602 trim chart (Table 12, keyed by CN rather than by API 600 trim number) is the next one worth building, and it is a different vocabulary from API 600 Table 8 - not a synonym list.",
+    "whatWouldFixIt": "Nothing - the copy is readable. Not built yet."
+   }
+  },
+  {
+   "code": "API 603",
+   "title": {
+    "en": "Corrosion-resistant, Bolted Bonnet Gate Valves - Flanged and Butt-welding Ends",
+    "fa": "شیرهای کشویی مقاوم به خوردگی با کلاهک پیچی"
+   },
+   "valveTypes": [
+    "GATE"
+   ],
+   "bodyGroups": [
+    "CASTINGS",
+    "FORGINGS"
+   ],
+   "npsMin": 0.5,
+   "npsMax": 24,
+   "note": {
+    "en": "The corrosion-resistant gate valve: NPS 1/2 to 24, classes 150/300/600 only, full port, bolted bonnet, OS&Y. It is API 600 re-cut for Group 2 and Group 3 materials - which is why it stops at Class 600 and at NPS 24 where API 600 runs to 2500 and NPS 42. Clause 7.2 mandates API 598 testing.",
+    "fa": "شیر کشویی مقاوم به خوردگی: ۱/۲ تا ۲۴ اینچ، فقط کلاس‌های ۱۵۰/۳۰۰/۶۰۰، پورت کامل. بند ۷.۲ آزمون طبق API 598 را الزامی می‌کند."
+   },
+   "verified": true,
+   "sourceQuality": "TEXT",
+   "editionYear": 2025,
+   "correctedFromGuess": {
+    "bodyGroups": {
+     "was": [
+      "CASTINGS"
+     ],
+     "now": [
+      "CASTINGS",
+      "FORGINGS"
+     ],
+     "evidence": "Clause 7.3 speaks of \"the shell of a cast or forged valve\". THIRD standard read, third single-product-form claim to collapse. The field was asking the wrong question for this standard - see bodyMaterialGroups for the constraint API 603 actually imposes."
+    },
+    "npsMin": {
+     "was": null,
+     "now": 0.5,
+     "evidence": "Clause 1 lists DN 15 upward, which is NPS 1/2."
+    },
+    "npsMax": {
+     "was": null,
+     "now": 24,
+     "evidence": "Clause 1 stops at DN 600 (NPS 24). An open bound would have accepted an NPS 36 corrosion-resistant gate valve that API 603 does not cover - API 600 is the one that runs to NPS 42."
+    }
+   },
+   "bodyMaterialGroups": [
+    "2",
+    "3"
+   ],
+   "bodyMaterialGroupsNote": {
+    "en": "ASME B16.34 Group 2 (austenitic stainless) and Group 3 (nickel alloys), per Table 4. This is what \"corrosion-resistant\" means in the title, stated as a checkable constraint: a Group 1 carbon or low-alloy body is outside API 603 however it was made.",
+    "fa": "گروه ۲ (زنگ‌نزن آستنیتی) و گروه ۳ (آلیاژهای نیکل) از ASME B16.34، طبق جدول ۴. معنای «مقاوم به خوردگی» در عنوان، به‌صورت قیدی قابل بررسی."
+   },
+   "pressureClasses": [
+    "150",
+    "300",
+    "600"
+   ],
+   "designFeatures": [
+    "BOLTED_BONNET",
+    "OUTSIDE_SCREW_AND_YOKE",
+    "RISING_STEM",
+    "NON_RISING_HANDWHEEL",
+    "SINGLE_OR_DOUBLE_GATE",
+    "WEDGE_OR_PARALLEL_SEALING",
+    "METALLIC_SEATING_SURFACES",
+    "FULL_PORT"
+   ],
+   "endTypes": [
+    "FLANGED",
+    "BUTT_WELDING"
+   ],
+   "testedTo": "API 598",
+   "trimVocabulary": {
+    "sameAs": "API600",
+    "trimNumbers": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "5",
+     "5A",
+     "6",
+     "7",
+     "8",
+     "8A",
+     "9",
+     "10",
+     "11",
+     "12",
+     "13",
+     "14",
+     "15",
+     "16",
+     "17",
+     "18",
+     "19",
+     "19A",
+     "19B",
+     "19C"
+    ],
+    "note": "Table 5 uses the API 600 trim numbers, but only 24 of the 30 - 5B and the 20/20A/20B/20C/21 hardfaced nickel family are absent. Table 6 offers only three substitutions (10 to 12 or 16, 13 to 14, 12 to 16) where API 600 Table 9 offers six: the 13Cr-based swaps do not apply to a corrosion-resistant valve."
+   },
+   "verifiedFrom": "API Standard 603, 2025 - clause 1, clause 7.2, clause 7.3, Tables 4, 5 and 6",
+   "tablesNotTranscribed": {
+    "tables": [
+     "Table 1 minimum shell/bonnet wall thickness and minimum stem diameter",
+     "Table 2 wear travel and stem projection",
+     "Table 3 packing box dimensions",
+     "Table 5 seating surface, stem and weld-deposit materials and hardness"
+    ],
+    "reason": "Dimensional data with no consumer yet. Table 5 duplicates the API 600 Table 8 vocabulary for 24 of its 30 trims, and the trim chart is already transcribed from API 600 - re-transcribing it here would create a second answer to one question.",
+    "whatWouldFixIt": "Nothing - readable. Not built yet."
+   }
+  },
+  {
+   "code": "API 623",
+   "title": {
+    "en": "Steel Globe Valves - Flanged and Butt-welding Ends, Bolted Bonnets",
+    "fa": "شیرهای کف‌فلزی فولادی با سر فلنجی و جوشی، کلاهک پیچی"
+   },
+   "valveTypes": [
+    "GLOBE"
+   ],
+   "bodyGroups": null,
+   "npsMin": 2,
+   "npsMax": 24,
+   "note": {
+    "en": "The globe valve, and the widest set of body configurations here: bolted AND pressure seal bonnet, rotating and nonrotating rising stems, rising and nonrising handwheels, straight / y-pattern / right-angle, and stop-check. NPS 2 to 24, classes 150 to 2500.",
+    "fa": "شیر کف‌فلزی، با گسترده‌ترین پیکربندی بدنه در این مجموعه: کلاهک پیچی و مهروموم فشاری، الگوی مستقیم و Y و زاویه‌ای، و نوع stop-check."
+   },
+   "verified": true,
+   "sourceQuality": "TEXT",
+   "editionYear": 2021,
+   "correctedFromGuess": {
+    "bodyGroups": {
+     "was": [
+      "CASTINGS"
+     ],
+     "now": null,
+     "evidence": "Table 7: \"Body and bonnet - As selected from ASME B16.34, Group 1, Group 2, and Group 3.\" No product-form restriction at all. FOURTH genuine collapse of a single-product-form claim. Clauses 7.3 and 7.4 do speak only of castings, but they are about INSPECTING a casting when one is used (MSS SP-55) - not a restriction to them."
+    },
+    "npsMin": {
+     "was": null,
+     "now": 2,
+     "evidence": "Clause 1 starts at NPS 2 (DN 50). Both bounds were open on the guess, which reads as \"the standard does not turn on size\"."
+    },
+    "npsMax": {
+     "was": null,
+     "now": 24,
+     "evidence": "Clause 1 stops at NPS 24 (DN 600), where API 600 runs to NPS 42 - the globe standard is the smaller of the pair."
+    }
+   },
+   "bodyMaterialGroups": [
+    "1",
+    "2",
+    "3"
+   ],
+   "bodyMaterialGroupsNote": {
+    "en": "All three ASME B16.34 groups, per Table 7 - which is to say no restriction. Recorded anyway because the CONTRAST is the point: API 603 is the same valve family limited to Groups 2 and 3, and that limit is what the word \"corrosion-resistant\" in its title buys.",
+    "fa": "هر سه گروه B16.34 طبق جدول ۷ — یعنی بدون محدودیت. ثبت شد چون تضادش با API 603 (فقط گروه ۲ و ۳) نکتهٔ اصلی است."
+   },
+   "pressureClasses": [
+    "150",
+    "300",
+    "600",
+    "900",
+    "1500",
+    "2500"
+   ],
+   "designFeatures": [
+    "BOLTED_BONNET",
+    "PRESSURE_SEAL_BONNET",
+    "OUTSIDE_SCREW_AND_YOKE",
+    "ROTATING_RISING_STEM",
+    "NONROTATING_RISING_STEM",
+    "RISING_HANDWHEEL",
+    "NONRISING_HANDWHEEL",
+    "STRAIGHT_PATTERN",
+    "Y_PATTERN",
+    "RIGHT_ANGLE",
+    "STOP_CHECK",
+    "METALLIC_SEATING_SURFACES"
+   ],
+   "endTypes": [
+    "FLANGED",
+    "BUTT_WELDING"
+   ],
+   "testedTo": "API 598",
+   "trimVocabulary": {
+    "sameAs": "API600",
+    "trimNumbers": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "5",
+     "5A",
+     "6",
+     "7",
+     "8",
+     "8A",
+     "9",
+     "10",
+     "11",
+     "12",
+     "13",
+     "14",
+     "15",
+     "16",
+     "17",
+     "18",
+     "19",
+     "19A",
+     "19B",
+     "19C"
+    ],
+    "alternatives": {
+     "2": [
+      "10"
+     ],
+     "5A": [
+      "5"
+     ],
+     "8A": [
+      "8"
+     ],
+     "10": [
+      "12",
+      "16"
+     ],
+     "13": [
+      "14"
+     ],
+     "12": [
+      "16"
+     ]
+    },
+    "note": "Table 8 carries the same 24 trim numbers as API 603 - the API 600 set without 5B and without the 20/20A/20B/20C/21 hardfaced nickel family. Table 9 is NOT the same list as API 600 Table 9: it drops 8 to 5 and adds 2 to 10, which API 600 does not offer. A substitution table is per standard, not per trim number."
+   },
+   "verifiedFrom": "API Standard 623, 2021 - clause 1, Tables 7, 8 and 9",
+   "tablesNotTranscribed": {
+    "tables": [
+     "Table 1 body and bonnet wall thickness",
+     "Table 2 bonnet neck extension",
+     "Table 3 postweld heat treatment",
+     "Table 4 minimum seat diameter",
+     "Table 5 minimum stem diameter",
+     "Table 6 packing width",
+     "Table 8 seating surface, stem and backseat materials"
+    ],
+    "reason": "Table 8 carries the same 24 trim numbers as the API 600 chart already transcribed, but the two tables have NOT been compared cell by cell. The trim codes and the Table 9 substitutions are taken from API 623; the material properties behind each code are inherited from API 600 and stay verified:false until someone reads both tables side by side.",
+    "whatWouldFixIt": "A deliberate cell-by-cell comparison of API 600 Table 8 with API 623 Table 8."
+   }
+  },
+  {
+   "code": "API 594",
+   "title": {
+    "en": "Check Valves: Flanged, Lug, Wafer, and Butt-welding",
+    "fa": "شیرهای یک‌طرفه: فلنجی، لاگ، ویفری و جوشی"
+   },
+   "valveTypes": [
+    "CHECK"
+   ],
+   "bodyGroups": null,
+   "npsMin": 2,
+   "npsMax": 48,
+   "note": {
+    "en": "The check valve, in two types with DIFFERENT dimension sources: Type A is dimensioned by API 594 itself, Type B by ASME B16.10. NPS 2 to 48. Its classes come from three flange standards, and it is the only standard here that admits cast iron bodies. It states NO seat hardness anywhere.",
+    "fa": "شیر یک‌طرفه در دو نوع با منابع ابعادی متفاوت: نوع A از خودِ API 594 و نوع B از ASME B16.10. کلاس‌هایش از سه استاندارد فلنج می‌آید."
+   },
+   "verified": true,
+   "sourceQuality": "TEXT",
+   "editionYear": 2022,
+   "correctedFromGuess": {
+    "npsMin": {
+     "was": null,
+     "now": 2,
+     "evidence": "Clause 1 starts at DN 50 (NPS 2); lift-type check valves are excluded."
+    },
+    "npsMax": {
+     "was": null,
+     "now": 48,
+     "evidence": "Clause 1 stops at DN 1200 (NPS 48), well past the NPS 24 of API 603."
+    }
+   },
+   "pressureClasses": [
+    "125",
+    "150",
+    "250",
+    "300",
+    "600",
+    "900",
+    "1500",
+    "2500"
+   ],
+   "pressureClassSources": {
+    "B16.34": [
+     "150",
+     "300",
+     "600",
+     "900",
+     "1500",
+     "2500"
+    ],
+    "B16.1": [
+     "125",
+     "250"
+    ],
+    "B16.42": [
+     "150",
+     "300"
+    ],
+    "note": "THREE flange standards, not one. Classes 125 and 250 are GRAY IRON classes from ASME B16.1 and 150/300 for DUCTILE IRON come from B16.42; only the steel classes are B16.34. A consumer that resolves every class through B16.34 will find no rating curve for 125 or 250 and should not invent one."
+   },
+   "designVariants": [
+    "TYPE_A",
+    "TYPE_B"
+   ],
+   "designVariantsNote": {
+    "en": "Clause 1. TYPE A has SHORT face-to-face per API 594 itself; body pattern wafer, lugged wafer or double flanged; obturator single or dual plate, swing disc or pivoting disc; body materials include GRAY AND DUCTILE IRON as well as ASME B16.34 materials. TYPE B is long or short pattern with face-to-face per ASME B16.10; flanged or butt-welding ends; swing or pivoting disc only; B16.34 materials only - no iron.",
+    "fa": "بند ۱. نوع A طول کوتاه طبق خودِ API 594 دارد و بدنه‌اش می‌تواند چدنی باشد؛ نوع B طول را از ASME B16.10 می‌گیرد و فقط متریال B16.34."
+   },
+   "variantScopes": [
+    {
+     "variant": "TYPE_A",
+     "ratingBasis": "ASME_CLASS",
+     "npsMin": 2,
+     "npsMax": 48,
+     "pressureClasses": [
+      "125",
+      "150",
+      "250",
+      "300",
+      "600",
+      "900",
+      "1500",
+      "2500"
+     ],
+     "faceToFaceSource": "API 594 Tables 2 and 3",
+     "bodyMaterials": "Gray and ductile irons, plus ASME B16.34 materials",
+     "note": "Short pattern. Wafer, lugged wafer or double flanged."
+    },
+    {
+     "variant": "TYPE_B",
+     "ratingBasis": "ASME_CLASS",
+     "npsMin": 2,
+     "npsMax": 48,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600",
+      "900",
+      "1500",
+      "2500"
+     ],
+     "faceToFaceSource": "ASME B16.10",
+     "bodyMaterials": "ASME B16.34 materials only",
+     "note": "Long or short pattern. Flanged or butt-welding ends."
+    }
+   ],
+   "endTypes": [
+    "WAFER",
+    "LUG",
+    "DOUBLE_FLANGED",
+    "BUTT_WELDING"
+   ],
+   "excludes": "Lift-type check valves are explicitly outside this standard (clause 1).",
+   "testedTo": "API 598",
+   "verifiedFrom": "API Standard 594, 2022 - clause 1 and Table 4",
+   "tablesNotTranscribed": {
+    "tables": [
+     "Table 1 minimum body-wall thickness",
+     "Table 2 face-to-face for Type A wafer and lug",
+     "Table 3 alternative face-to-face for Type A double-flanged"
+    ],
+    "reason": "Tables 2 and 3 are THE face-to-face source for Type A check valves and the platform does not hold them - valve-face-to-face carries B16.10, which governs Type B only. This is a known gap, not a deferral: a Type A check valve currently resolves to a Type B length.",
+    "whatWouldFixIt": "Transcribe API 594 Tables 2 and 3 into valve-face-to-face, keyed by variant."
+   }
+  },
+  {
+   "code": "API 608",
+   "title": {
+    "en": "Metal Ball Valves - Flanged, Threaded, and Welding Ends",
+    "fa": "شیرهای توپی فلزی: فلنجی، رزوه‌ای و جوشی"
+   },
+   "valveTypes": [
+    "BALL"
+   ],
+   "bodyGroups": null,
+   "npsMin": 0.25,
+   "npsMax": 24,
+   "note": {
+    "en": "The metal ball valve. Size and class BOTH depend on the end type (clause 1.1/1.2), it covers floating and trunnion designs alike (1.4), and its rating is the lesser of shell and seat (4.1) - which for a PTFE seat is the seat, by a wide margin.",
+    "fa": "شیر توپی فلزی. سایز و کلاس هر دو به نوع سر وابسته‌اند؛ هر دو طرح شناور و ترانیون را پوشش می‌دهد؛ و رِیتینگش کمینهٔ پوسته و نشیمن است."
+   },
+   "verified": true,
+   "sourceQuality": "TEXT",
+   "editionYear": 2020,
+   "correctedFromGuess": {
+    "npsMax": {
+     "was": null,
+     "now": 24,
+     "evidence": "Clause 1.1: flanged and butt-welding ends run DN 15 to DN 600 (NPS 1/2 to 24). Socket-welding and threaded stop at DN 50 (NPS 2) - see endTypeScopes, which the flat bounds cannot express."
+    }
+   },
+   "pressureClasses": [
+    "150",
+    "300",
+    "600",
+    "800"
+   ],
+   "endTypeScopes": [
+    {
+     "endType": "FLANGED",
+     "npsMin": 0.5,
+     "npsMax": 24,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600"
+     ]
+    },
+    {
+     "endType": "BUTT_WELDING",
+     "npsMin": 0.5,
+     "npsMax": 24,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600",
+      "800"
+     ]
+    },
+    {
+     "endType": "SOCKET_WELDING",
+     "npsMin": 0.25,
+     "npsMax": 2,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600",
+      "800"
+     ]
+    },
+    {
+     "endType": "THREADED",
+     "npsMin": 0.25,
+     "npsMax": 2,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600",
+      "800"
+     ]
+    }
+   ],
+   "endTypes": [
+    "FLANGED",
+    "BUTT_WELDING",
+    "SOCKET_WELDING",
+    "THREADED"
+   ],
+   "designVariants": [
+    "FLOATING",
+    "TRUNNION_MOUNTED"
+   ],
+   "designVariantsNote": {
+    "en": "Clause 1.4: \"floating (seat-supported) ball (Figure C.1) and trunnion ball valve designs (Figure C.2)\". These are the two names API 598 needs before it will say which tests a ball valve takes, and a PMS row that says only \"BALL\" has not chosen between them.",
+    "fa": "بند ۱.۴: طرح توپی شناور (نشیمن‌نگهدار) و طرح ترانیون‌دار. همان دو نامی که API 598 برای تعیین آزمون‌ها لازم دارد."
+   },
+   "boreSizes": [
+    "FULL",
+    "SINGLE_REDUCED",
+    "DOUBLE_REDUCED"
+   ],
+   "ratingRule": "Clause 4.1: the valve rating is the LESSER of the shell rating and the seat and seal rating. Clause 4.2 takes the shell from ASME B16.34 Standard Class, and Class 800 from API 602 (2016) Tables 2a-2f. Clause 4.3 and Table 1 give the seat rating, which for a soft seat is far lower - see seatRatings in valve-pt-ratings.",
+   "testedTo": "API 598",
+   "verifiedFrom": "API Standard 608, 2020 - clauses 1.1 to 1.5, 4.1 to 4.3, Tables 1 and 3",
+   "tablesNotTranscribed": {
+    "tables": [
+     "Table 2 seat ratings in psig (Table 1 in bar is transcribed)",
+     "Table 3 cylinder diameter for categorizing bore size",
+     "Table 4 butt-welding end diameters"
+    ],
+    "reason": "Table 2 is Table 1 in other units and would be a second answer. Tables 3 and 4 are dimensional data with no consumer yet.",
+    "whatWouldFixIt": "Nothing - readable. Not built yet."
+   }
+  },
+  {
+   "code": "API 609",
+   "title": {
+    "en": "Butterfly Valves: Double-flanged, Lug- and Wafer-type",
+    "fa": "شیرهای پروانه‌ای: دوفلنجه، لاگ و ویفری"
+   },
+   "valveTypes": [
+    "BUTTERFLY"
+   ],
+   "bodyGroups": null,
+   "npsMin": 2,
+   "npsMax": 60,
+   "note": {
+    "en": "The butterfly valve, and the only standard here that covers a valve with NO ASME class rating. Widest material scope of the five read: gray iron, ductile iron, bronze, steel, nickel-based and special alloys. NPS 2 to 60, classes 150/300/600 for Category B.",
+    "fa": "شیر پروانه‌ای، و تنها استانداردی اینجا که شیری بدون رِیتینگ کلاس ASME را پوشش می‌دهد. گسترده‌ترین دامنهٔ متریال از پنج استاندارد خوانده‌شده."
+   },
+   "verified": true,
+   "sourceQuality": "TEXT",
+   "editionYear": 2021,
+   "correctedFromGuess": {
+    "npsMax": {
+     "was": null,
+     "now": 60,
+     "evidence": "Clause 1.2 runs to NPS 60 in both categories. Both bounds were open, which read as \"the standard does not turn on size\"."
+    },
+    "npsMin": {
+     "was": null,
+     "now": 2,
+     "evidence": "Clause 1.2 a) and b) both start at NPS 2."
+    }
+   },
+   "pressureClasses": [
+    "150",
+    "300",
+    "600"
+   ],
+   "designVariants": [
+    "CATEGORY_A",
+    "CATEGORY_B"
+   ],
+   "designVariantsNote": {
+    "en": "Clause 1.2. CATEGORY A is a manufacturer-rated cold working pressure valve, usually concentric disc and seat, NPS 2 to 60, carrying a class 125 or 150 flange BOLTING PATTERN - which is not an ASME pressure class. CATEGORY B is ASME class and pressure-temperature rated, offset seat. API 598 note (h) sends the reader here for exactly this definition.",
+    "fa": "بند ۱.۲. دستهٔ A با فشار کاری سرد ساختهٔ سازنده رِیت می‌شود، نه با کلاس ASME؛ الگوی پیچ فلنجش کلاس ۱۲۵ یا ۱۵۰ است که کلاس فشار نیست. دستهٔ B با کلاس ASME و جدول فشار-دما رِیت می‌شود."
+   },
+   "variantScopes": [
+    {
+     "variant": "CATEGORY_A",
+     "ratingBasis": "MANUFACTURER_CWP",
+     "npsMin": 2,
+     "npsMax": 60,
+     "pressureClasses": [],
+     "boltingPatterns": [
+      "125",
+      "150"
+     ],
+     "note": "No ASME pressure class. The 125/150 figures are bolting patterns."
+    },
+    {
+     "variant": "CATEGORY_B",
+     "ratingBasis": "ASME_CLASS",
+     "npsMin": 2,
+     "npsMax": 60,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600"
+     ],
+     "boltingPatterns": [],
+     "note": "Lug and wafer: NPS 2-60 at class 150/300, NPS 3-60 at class 600. Double-flanged short and long pattern and butt-welding ends: NPS 3-60 at class 150/300/600."
+    }
+   ],
+   "endTypes": [
+    "DOUBLE_FLANGED",
+    "LUG",
+    "WAFER",
+    "BUTT_WELDING"
+   ],
+   "ratingRule": "Clause 4.4: the differential pressure rating shall not exceed the SEAT pressure rating. Table 1 gives the seat rating for CATEGORY B only - see seatRatings in valve-pt-ratings. A Category A valve has no class rating to look up.",
+   "testedTo": "API 598",
+   "verifiedFrom": "API Standard 609, 2021 - clauses 1.1 to 1.3, 4.3.2, 4.4 and Table 1",
+   "tablesNotTranscribed": {
+    "tables": [
+     "Table 2 face-to-face for Category A lug and wafer",
+     "Tables 3a/3b/3c face-to-face for Category B",
+     "Annex D disc-to-pipe clearance"
+    ],
+    "reason": "Butterfly face-to-face is already held from ASME B16.10 Table 1.3-4. Two sources for one dimension is two answers - these tables should be compared against B16.10 before either is trusted over the other, and that comparison has not been done.",
+    "whatWouldFixIt": "Readable. A deliberate cross-check against B16.10 is the next step."
+   },
+   "bodyGroupsNote": {
+    "en": "Null, and it always was - this entry never claimed a product form, so nothing was corrected here. Clause 1.1 covers gray iron, ductile iron, bronze, steel, nickel-based alloy and special alloy bodies: the widest material scope of the five standards read, with no product-form restriction at all.",
+    "fa": "تهی است و از ابتدا بود؛ اینجا چیزی تصحیح نشد. بند ۱.۱ چدن خاکستری، چدن نشکن، برنز، فولاد و آلیاژهای نیکل و ویژه را پوشش می‌دهد."
+   },
+   "npsMaxBeyondPipeSizes": {
+    "value": true,
+    "note": "API 609 reaches NPS 60 and the platform’s pipe-sizes pack stops at NPS 48. A consumer cannot resolve NPS 50 to 60 today - not because the standard is silent but because our size vocabulary is short. ASME B36.10M is what would close it. Declared rather than truncated, so the gap is visible instead of looking like a scope limit of API 609."
+   }
+  },
+  {
+   "code": "API 599",
+   "title": {
+    "en": "Metal Plug Valves - Flanged, Threaded, and Welding Ends",
+    "fa": "شیرهای سماوری فلزی: فلنجی، رزوه‌ای و جوشی"
+   },
+   "valveTypes": [
+    "PLUG"
+   ],
+   "bodyGroups": null,
+   "npsMin": 0.5,
+   "npsMax": 36,
+   "note": {
+    "en": "The plug valve: quarter-turn, including the lift plug type, NPS 1/2 to 36, classes 150 to 2500 including 800. Threaded and socket welding ends stop at NPS 2. Three-way and four-way plug valves are OUT of scope; tandem valves are in. It numbers no trims.",
+    "fa": "شیر پلاگ: ربع‌گرد، از ۱/۲ تا ۳۶ اینچ. سرهای رزوه‌ای و سوکتی در ۲ اینچ می‌ایستند. شیرهای سه‌راهه و چهارراهه خارج از دامنه‌اند."
+   },
+   "verified": true,
+   "sourceQuality": "TEXT",
+   "editionYear": 2025,
+   "correctedFromGuess": {
+    "npsMin": {
+     "was": null,
+     "now": 0.5,
+     "evidence": "Clause 1.2 and 1.3 start at DN 15 (NPS 1/2)."
+    },
+    "npsMax": {
+     "was": null,
+     "now": 36,
+     "evidence": "Clause 1.3 stops at DN 900 (NPS 36), short of API 600’s NPS 42."
+    }
+   },
+   "pressureClasses": [
+    "150",
+    "300",
+    "600",
+    "800",
+    "900",
+    "1500",
+    "2500"
+   ],
+   "pressureClassSources": {
+    "B16.34": [
+     "150",
+     "300",
+     "600",
+     "800",
+     "900",
+     "1500",
+     "2500"
+    ],
+    "B16.42": [
+     "150",
+     "300"
+    ],
+    "note": "Clause 1.5: ductile iron valves in Class 150 and 300 follow ASME B16.42 for pressure/temperature ratings, wall thickness, flange dimensions and material grade - not B16.34. THIRD standard to carry Class 800 (after API 602 and API 608)."
+   },
+   "endTypeScopes": [
+    {
+     "endType": "FLANGED",
+     "npsMin": 0.5,
+     "npsMax": 36,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600",
+      "800",
+      "900",
+      "1500",
+      "2500"
+     ]
+    },
+    {
+     "endType": "BUTT_WELDING",
+     "npsMin": 0.5,
+     "npsMax": 36,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600",
+      "800",
+      "900",
+      "1500",
+      "2500"
+     ]
+    },
+    {
+     "endType": "THREADED",
+     "npsMin": 0.5,
+     "npsMax": 2,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600",
+      "800",
+      "900",
+      "1500",
+      "2500"
+     ]
+    },
+    {
+     "endType": "SOCKET_WELDING",
+     "npsMin": 0.5,
+     "npsMax": 2,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600",
+      "800",
+      "900",
+      "1500",
+      "2500"
+     ]
+    }
+   ],
+   "endTypes": [
+    "FLANGED",
+    "BUTT_WELDING",
+    "THREADED",
+    "SOCKET_WELDING"
+   ],
+   "designVariants": [
+    "LUBRICATED",
+    "NON_LUBRICATED"
+   ],
+   "designVariantsNote": {
+    "en": "Clause 1.2: \"lubricated and non-lubricated plug valves that have two-way coaxial ports\". THIS IS THE THIRD VARIANT AXIS API 598 NEEDS: note (f) of its Table 1 says \"for lubricated plug valves, the high-pressure closure test is mandatory and the low-pressure closure test is optional\". Until now that note was text; API 599 supplies the two names behind it.",
+    "fa": "بند ۱.۲: شیرهای پلاگ روان‌کاری‌شده و بدون روان‌کار. همان محور سومی که یادداشت (f) استاندارد API 598 به آن نیاز داشت."
+   },
+   "patterns": [
+    "SHORT",
+    "REGULAR",
+    "VENTURI",
+    "ROUND_PORT"
+   ],
+   "patternsNote": {
+    "en": "Clause 1.6: four design groups that \"in many cases have different face-to-face and end-to-end dimensions\", and \"some types of plug valves are not made to all patterns\". The short pattern exists only in Class 150 and 300 and matches the ASME B16.10 gate valve face-to-face over NPS 1 1/2 to 12 - which is exactly what valve-face-to-face already holds.",
+    "fa": "بند ۱.۶: چهار گروه طراحی با ابعاد متفاوت؛ الگوی کوتاه فقط در کلاس ۱۵۰ و ۳۰۰."
+   },
+   "excludes": "Three-way and four-way plug valves are explicitly outside this standard (clause 1.2 NOTE). Tandem plug valves - two independently operating plugs in one body - are inside it.",
+   "trimNumberSystem": false,
+   "trimVocabulary": {
+    "sameAs": null,
+    "trimNumbers": [],
+    "note": "API 599 prints NO trim number table. Clause 6 gives the shell from ASME B16.34 or a ductile iron from B16.42 and leaves seat, sleeve and plug facing to the purchase order. The PTFE-SLV and MTL codes the library held for plug valves were invented."
+   },
+   "testedTo": "API 598",
+   "verifiedFrom": "API Standard 599, 9th edition, October 2025 - clauses 1.2 to 1.6 and 6.2",
+   "tablesNotTranscribed": {
+    "tables": [
+     "Table 1 heavy-wall minimum body thickness",
+     "Tables 2a and 2b bolting materials"
+    ],
+    "reason": "Dimensional and bolting data with no consumer yet.",
+    "whatWouldFixIt": "Readable. Not built yet."
+   },
+   "bodyGroupsNote": {
+    "en": "Null, and it always was. No fifth collapse to claim here - the validator caught the attempt, for the second time. Clause 6.2.1 does state the real constraint: \"the shell shall be of materials listed in ASME B16.34 or of a ductile iron listed in ASME B16.42\" - a MATERIAL rule, not a product-form one. Four entries genuinely collapsed: API 600, 602, 603 and 623.",
+    "fa": "تهی است و از ابتدا بود؛ اینجا چیزی تصحیح نشد. بند ۶.۲.۱ قید واقعی را می‌دهد: متریال از ASME B16.34 یا چدن نشکن از B16.42."
+   }
+  },
+  {
+   "code": "API 6D",
+   "title": {
+    "en": "Specification for Pipeline and Piping Valves",
+    "fa": "شیرهای خطوط لوله و پایپینگ"
+   },
+   "valveTypes": [
+    "GATE",
+    "BALL",
+    "CHECK",
+    "PLUG",
+    "AXIAL"
+   ],
+   "bodyGroups": null,
+   "npsMin": 2,
+   "npsMax": 36,
+   "note": {
+    "en": "The pipeline family, and a SPECIFICATION rather than a standard: it covers five valve types - including AXIAL, which nothing else here knows - across design, manufacture, QC and testing. NPS 2 to 36, classes 150 to 2500 with Class 400 explicitly deleted. Also the first document here to name HYDROGEN GAS service.",
+    "fa": "خانوادهٔ خطوط انتقال، و یک «مشخصات» نه «استاندارد»: پنج نوع شیر شامل AXIAL که هیچ پک دیگری نمی‌شناسد. کلاس ۴۰۰ صریحاً حذف شده. اولین سندی که سرویس هیدروژن را نام می‌برد."
+   },
+   "verified": true,
+   "sourceQuality": "TEXT",
+   "editionYear": 2021,
+   "edition": "25th",
+   "correctedFromGuess": {
+    "valveTypes": {
+     "was": [
+      "GATE",
+      "BALL",
+      "CHECK",
+      "PLUG"
+     ],
+     "now": [
+      "GATE",
+      "BALL",
+      "CHECK",
+      "PLUG",
+      "AXIAL"
+     ],
+     "evidence": "Clause 1 covers \"axial, ball, check, gate, and plug valves\". AXIAL was added in the 25th edition and no other pack in this repo knows the type at all - not the component templates, not the actuator pack, not the trim charts."
+    },
+    "npsMin": {
+     "was": null,
+     "now": 2,
+     "evidence": "Annex C Table C.5 and its siblings start at NPS 2 (DN 50)."
+    },
+    "npsMax": {
+     "was": null,
+     "now": 36,
+     "evidence": "Annex C Table C.5 stops at NPS 36 (DN 900) for Class 150 and 300."
+    }
+   },
+   "pressureClasses": [
+    "150",
+    "300",
+    "600",
+    "900",
+    "1500",
+    "2500"
+   ],
+   "classesExplicitlyRemoved": {
+    "classes": [
+     "400"
+    ],
+    "note": "Clause 1 NOTE: \"ASME Class 400 has been removed from this specification\", and the Introduction lists it among the changes from the 24th edition. THIRD independent confirmation that Class 400 is not a valve class: ASME B16.34 never tabulated it, API 602 omits it, and 6D has now deleted it."
+   },
+   "documentKind": "SPECIFICATION",
+   "coversService": [
+    "PETROLEUM",
+    "NATURAL_GAS",
+    "HYDROGEN_GAS"
+   ],
+   "faceToFaceSource": "API 6D Annex C, Tables C.1 to C.6 (NORMATIVE)",
+   "faceToFaceNote": {
+    "en": "Annex C is normative and mandatory. Its Class 150 gate figures agree with ASME B16.10 at 17 of 19 sizes, the other two being the same inch figure rounded differently - which is what B16.10 note (14) means when it says those data are \"extracted from API 6D\". See corroboration in valve-face-to-face.",
+    "fa": "پیوست C الزامی است. ارقام گیت کلاس ۱۵۰ آن با ASME B16.10 در ۱۷ از ۱۹ سایز یکسان است و دو مورد باقی فقط گردکردن همان عدد اینچی‌اند."
+   },
+   "testedTo": null,
+   "verifiedFrom": "API Specification 6D, 25th edition 2021 - clause 1, Introduction, Annex C Table C.5",
+   "tablesNotTranscribed": {
+    "tables": [
+     "Table 1 nominal size and minimum bore",
+     "Annex C Tables C.1 to C.4 and C.6 face-to-face for axial, ball, check and plug",
+     "Annex I NDE and quality specification levels",
+     "Annex M hydrogen requirements"
+    ],
+    "reason": "Annex C is a second, normative dimension source alongside ASME B16.10. Its Class 150 gate column was compared and agrees, but the axial, ball, check and plug tables have not been - and a pipeline valve may be dimensioned by either document depending on what the PMS cites. Annex M is the hydrogen regime and has no consumer yet.",
+    "whatWouldFixIt": "Compare Annex C Tables C.1-C.4 and C.6 against valve-face-to-face, then transcribe what differs."
+   },
+   "valveTypesBeyondTemplate": {
+    "types": [
+     "AXIAL"
+    ],
+    "note": "API 6D 25th edition added AXIAL valves and NOTHING else in this repo knows the type - not the VALVE component template qualifiers, not the actuator pack, not a trim chart, not a face-to-face row outside 6D’s own Annex C. Declared rather than quietly added: putting a new qualifier on the VALVE template changes the PMS body, the MTO and every dropdown that reads it, and that is a decision to take deliberately rather than as a side effect of reading a standard."
+   }
+  },
+  {
+   "code": "BS 1414",
+   "title": {
+    "en": "Steel wedge gate valves for the petroleum, petrochemical and allied industries",
+    "fa": "شیرهای کشویی گوه‌ای فولادی برای صنایع نفت و پتروشیمی"
+   },
+   "valveTypes": [
+    "GATE"
+   ],
+   "bodyGroups": [
+    "CASTINGS"
+   ],
+   "npsMin": null,
+   "npsMax": null,
+   "note": {
+    "en": "The British counterpart of API 600, still specified on projects that inherited a European client specification.",
+    "fa": "معادل بریتانیایی API 600؛ هنوز در پروژه‌هایی که مشخصات کارفرمای اروپایی دارند دیده می‌شود."
+   },
+   "verified": false,
+   "sourceQuality": "NOT_HELD"
+  },
+  {
+   "code": "BS 1868",
+   "title": {
+    "en": "Steel check valves (flanged and butt-welding ends) for the petroleum, petrochemical and allied industries",
+    "fa": "شیرهای یک‌طرفهٔ فولادی (فلنجی و جوشی) برای صنایع نفت و پتروشیمی"
+   },
+   "valveTypes": [
+    "CHECK"
+   ],
+   "bodyGroups": [
+    "CASTINGS"
+   ],
+   "npsMin": null,
+   "npsMax": null,
+   "note": {
+    "en": "Swing check valves. Named explicitly in ADR-008 section 11.9.",
+    "fa": "شیر یک‌طرفهٔ لولایی. در بند ۱۱٫۹ از ADR-008 صراحتاً نام برده شده است."
+   },
+   "verified": false,
+   "sourceQuality": "NOT_HELD"
+  },
+  {
+   "code": "BS 1873",
+   "title": {
+    "en": "Steel globe and globe stop and check valves for the petroleum, petrochemical and allied industries",
+    "fa": "شیرهای کف‌فلزی و کف‌فلزی یک‌طرفهٔ فولادی برای صنایع نفت و پتروشیمی"
+   },
+   "valveTypes": [
+    "GLOBE"
+   ],
+   "bodyGroups": [
+    "CASTINGS"
+   ],
+   "npsMin": null,
+   "npsMax": null,
+   "note": {
+    "en": "The globe sibling of BS 1868, and the pair a British-specification project cites together.",
+    "fa": "همتای گلوب برای BS 1868؛ پروژه‌های با مشخصات بریتانیایی این دو را با هم می‌آورند."
+   },
+   "verified": false,
+   "sourceQuality": "NOT_HELD"
+  },
+  {
+   "code": "ISO 15761",
+   "title": {
+    "en": "Petroleum and natural gas industries - Steel gate, globe and check valves for sizes DN 100 and smaller",
+    "fa": "شیرهای کشویی، کف‌فلزی و یک‌طرفهٔ فولادی در اندازهٔ ۱۰۰ میلی‌متر و کمتر"
+   },
+   "valveTypes": [
+    "GATE",
+    "GLOBE",
+    "CHECK"
+   ],
+   "bodyGroups": null,
+   "npsMin": 0.25,
+   "npsMax": 4,
+   "note": {
+    "en": "The ISO twin of API 602: compact gate, globe and check valves, NPS 1/4 to 4. It rates them in ASME Class AND in PN, uses the CN trim system rather than API 600 trim numbers, and takes flanges from EN 1092-1 as well as ASME B16.5. Where API 600 prohibits free-machining 13Cr outright, ISO 15761 permits it on request under a trim number plus 100.",
+    "fa": "همتای ISO برای API 602: شیرهای جمع‌وجور کشویی، کف‌فلزی و یک‌طرفه تا ۴ اینچ. هم با کلاس ASME و هم با PN رِیت می‌کند و از نظام CN استفاده می‌کند نه شماره‌های تریم API 600."
+   },
+   "verified": true,
+   "sourceQuality": "TEXT",
+   "editionYear": 2020,
+   "correctedFromGuess": {
+    "bodyGroups": {
+     "was": [
+      "FORGINGS"
+     ],
+     "now": null,
+     "evidence": "Clause 5.4.4.2: \"Body end flanges and bonnet flanges shall be CAST OR FORGED integral with the body.\" FIFTH genuine collapse of a single-product-form claim, after API 600, 602, 603 and 623 - and the last one standing among the verified entries."
+    },
+    "npsMin": {
+     "was": null,
+     "now": 0.25,
+     "evidence": "Clause 1 starts at DN 8 (NPS 1/4), as its API 602 twin does."
+    }
+   },
+   "pressureClasses": [
+    "150",
+    "300",
+    "600",
+    "800",
+    "1500",
+    "2500"
+   ],
+   "pnDesignations": [
+    "16",
+    "25",
+    "40",
+    "63",
+    "100",
+    "250",
+    "400"
+   ],
+   "pnDesignationsNote": {
+    "en": "Clause 1 rates these valves in TWO parallel systems - ASME Class and PN. The platform holds no PN vocabulary: pipe-sizes, flange-pt-ratings, valve-pt-ratings and the PMS all key pressure on an ASME class number. A European sheet writing PN 40 has nowhere to go today. And the mapping is not one to one: clause 1 says Class 800 \"has no equivalent PN designation\".",
+    "fa": "بند ۱ این شیرها را در دو نظام موازی رِیت می‌کند: کلاس ASME و PN. پلتفرم هیچ واژگان PN ندارد. ضمناً نگاشت یک‌به‌یک نیست: کلاس ۸۰۰ معادل PN ندارد."
+   },
+   "designVariants": null,
+   "endTypes": [
+    "FLANGED",
+    "BUTT_WELDING",
+    "SOCKET_WELDING",
+    "THREADED"
+   ],
+   "endTypeScopes": [
+    {
+     "endType": "SOCKET_WELDING",
+     "npsMin": 0.25,
+     "npsMax": 2.5,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600",
+      "800",
+      "1500",
+      "2500"
+     ]
+    },
+    {
+     "endType": "THREADED",
+     "npsMin": 0.25,
+     "npsMax": 2.5,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600",
+      "800",
+      "1500",
+      "2500"
+     ]
+    },
+    {
+     "endType": "FLANGED",
+     "npsMin": 0.25,
+     "npsMax": 4,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600",
+      "1500",
+      "2500"
+     ]
+    },
+    {
+     "endType": "BUTT_WELDING",
+     "npsMin": 0.25,
+     "npsMax": 4,
+     "pressureClasses": [
+      "150",
+      "300",
+      "600",
+      "800",
+      "1500",
+      "2500"
+     ]
+    }
+   ],
+   "designFeatures": [
+    "OUTSIDE_SCREW_AND_YOKE",
+    "INSIDE_SCREW_RISING_STEM",
+    "BOLTED_BONNET",
+    "WELDED_BONNET",
+    "THREADED_BONNET_SEAL_WELD",
+    "UNION_NUT_BONNET",
+    "EXTENDED_BODY"
+   ],
+   "trimNumberSystem": true,
+   "trimVocabulary": {
+    "sameAs": "API602",
+    "system": "CN",
+    "trimNumbers": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "5",
+     "5A",
+     "6",
+     "7",
+     "8",
+     "8A",
+     "9",
+     "10",
+     "11",
+     "11A",
+     "12",
+     "12A",
+     "13",
+     "14",
+     "14A",
+     "15",
+     "16",
+     "17",
+     "18"
+    ],
+    "note": "Clause 6.1: \"The trim combination number (CN) identifies both the stem material and the associated seating surface material.\" This is the SAME vocabulary API 602 Table 12 uses and a DIFFERENT one from the API 600 trim numbers - the CN set here includes 11A, 12A and 14A, which no API 600 chart has. Free-machining grades take the base number PLUS 100 (clause 6.1.2): CN101, 104, 105, 105A, 106, 107, 108, 108A.",
+    "freeMachiningRule": "Clause 6.1.2: free-machining 13Cr grades are not listed and may be used only when the purchaser specifies them, identified by the trim number plus 100. Hardfacing shall not be applied to them unless specified. API 600 simply PROHIBITS free-machining 13Cr (Table 8 note b) - two standards, two answers to one question."
+   },
+   "testedTo": null,
+   "verifiedFrom": "ISO 15761:2020 - clause 1, clause 5.4.4.2, clause 6.1 and Table 13",
+   "tablesNotTranscribed": {
+    "tables": [
+     "Table 12 minimum uncompressed packing height",
+     "Table 13 basic trim materials (CN system)",
+     "Annex F trim / body / bolting association"
+    ],
+    "reason": "Table 13 is a SECOND trim vocabulary - the CN system, shared with API 602 and different from the API 600 trim numbers the library holds. Transcribing it means adding a parallel chart, and Annex F ties each CN to a body and bolting combination, so the two must be built together or the association is lost.",
+    "whatWouldFixIt": "Build the CN chart and Annex F together, as one vocabulary with its associations."
+   }
+  }
+ ]
+}

@@ -146,3 +146,25 @@ Before locking: what does the engineering team look like — existing C#/.NET pe
 ---
 
 *End of document — ADR-EPCC-003*
+
+## Local sandbox PHP CLI (2026-10-14, development tooling only)
+
+The Linux repository workspace has a reproducible, SHA-256-verified native
+PHP 8.4 CLI installer (`scripts/install-local-php.sh`). The installed binary
+is ignored at `.local/php-native/bin/php`; it supports local syntax checks and
+framework-free conformance tests. This does **not** change the Laravel stack
+choice or its PostgreSQL/RLS acceptance criterion: this particular upstream
+binary lacks `pdo_pgsql`, so Laravel integration tests still require the CI
+runtime or Windows Laragon with the required extensions. See
+`docs/LOCAL-PHP-CLI-EN.md`. Do not treat an SQLite test run as equivalent.
+
+## Sandbox Laravel dependency installation (2026-10-14)
+
+The locked Laravel 13.31.0 production tree can be installed locally from
+GitHub source with `scripts/install-local-laravel.sh`, without using SQLite.
+This is a dependency-install milestone, NOT an acceptance of a partially
+functional development runtime: the sandbox PHP 8.4 static binary lacks
+PostgreSQL and XML extensions, and a DB-backed page fails. CI's full PHP,
+Composer and PostgreSQL environment, or the owner's Laragon installation,
+remains mandatory for complete development/verification. See
+`docs/LOCAL-LARAVEL-EN.md` for exact scope and provenance.

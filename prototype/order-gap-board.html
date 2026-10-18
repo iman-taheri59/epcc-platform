@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>بورد شکاف سفارش — EPCC Suite</title>
+<style>
+:root{
+  --bg:#f4f7fb;--surface:#fff;--surface-2:#eef3f8;--ink:#102033;--muted:#65758b;
+  --line:#d9e2ec;--brand:#155eef;--brand-dark:#0b3b9e;--ok:#087443;--ok-bg:#e4f7ed;
+  --warn:#a15c00;--warn-bg:#fff4d6;--bad:#b42318;--bad-bg:#ffebe9;--over:#5b21b6;--over-bg:#f1ebff;
+  --shadow:0 12px 30px rgba(16,32,51,.08);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;min-width:320px;background:var(--bg);color:var(--ink);font-family:Tahoma,"Segoe UI",sans-serif;line-height:1.65}
+button{font:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #7ab5ff;outline-offset:2px}
+.app{max-width:820px;margin:0 auto;padding:0 14px 40px}
+.topbar{position:sticky;top:0;z-index:10;margin:0 -14px;padding:10px 14px;background:rgba(244,247,251,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px}
+.brand{min-width:0;flex:1}.brand strong{display:block;font-size:16px;line-height:1.3}.brand small{display:block;color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lang{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:7px 10px;font-size:12px;font-weight:700}
+.project{margin-top:18px;color:var(--muted);font-size:12px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}.project code,.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;direction:ltr;display:inline-block;color:var(--brand);font-size:11px}.sep{color:#9aa9ba}
+h1{font-size:25px;line-height:1.3;margin:8px 0 4px}.subtitle{margin:0;color:var(--muted);font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px}.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:var(--shadow)}.kpi small{display:block;color:var(--muted);font-size:11px}.kpi b{display:block;font-size:23px;line-height:1.25;margin-top:3px}.kpi.bad b{color:var(--bad)}.kpi.ok b{color:var(--ok)}.kpi.over b{color:var(--over)}.kpi.warn b{color:var(--warn)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow);margin-top:14px;overflow:hidden}.card-head{padding:14px 15px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.card-head h2{font-size:16px;line-height:1.4;margin:0}.card-head p{margin:3px 0 0;color:var(--muted);font-size:11px}
+.filters{display:flex;gap:7px;overflow-x:auto;padding:11px 15px;border-bottom:1px solid var(--line);scrollbar-width:none}.filters::-webkit-scrollbar{display:none}.filter{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:6px 11px;font-size:11px;font-weight:700}.filter.active{background:#102033;color:#fff;border-color:#102033}
+.rows{padding:10px}.row{border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 0 9px;background:#fff}.row:last-child{margin-bottom:0}.row.shortage{border-color:#f2b8b5;background:#fffafa}.row.overplan{border-color:#cabffd;background:#fcfaff}.row.unmatched{border-color:#f2c56c;background:#fffdf6}
+.row-top{display:flex;gap:9px;align-items:flex-start;justify-content:space-between}.row-title{min-width:0}.row-title strong{display:block;font-size:14px;line-height:1.45}.row-title small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.status{display:inline-flex;align-items:center;white-space:nowrap;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700}.status.ok{background:var(--ok-bg);color:var(--ok)}.status.bad{background:var(--bad-bg);color:var(--bad)}.status.over{background:var(--over-bg);color:var(--over)}.status.warn{background:var(--warn-bg);color:var(--warn)}
+.row-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.meta{background:var(--surface-2);border-radius:9px;padding:7px 8px;min-width:0}.meta span{display:block;color:var(--muted);font-size:10px}.meta b{display:block;font-size:12px;overflow-wrap:anywhere}
+.note-line{margin-top:9px;padding:8px 9px;border-radius:9px;font-size:11px}.note-line.warn{background:var(--warn-bg);color:var(--warn)}.note-line.over{background:var(--over-bg);color:var(--over)}.note-line.bad{background:var(--bad-bg);color:var(--bad)}.note-line.muted{background:var(--surface-2);color:var(--muted)}
+.empty{padding:24px 14px;text-align:center;color:var(--muted);font-size:12px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;padding:12px 15px;color:var(--muted);font-size:11px}.legend span{display:inline-flex;align-items:center;gap:5px}.legend i{width:8px;height:8px;border-radius:50%;display:inline-block}.legend .red{background:#dc5047}.legend .green{background:#20a464}.legend .purple{background:#7c5cd6}.legend .amber{background:#e0a11f}
+.note{margin-top:15px;color:var(--muted);font-size:11px;line-height:1.8}.note strong{color:var(--ink)}
+[hidden]{display:none!important}
+@media(min-width:650px){.app{padding-inline:24px}.topbar{margin-inline:-24px;padding-inline:24px}.kpis{grid-template-columns:repeat(5,minmax(0,1fr))}.row-meta{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <div class="brand"><strong data-i="brand">پلتفرم EPCC</strong><small data-i="preview">پیش‌نمایش موبایلی · بورد شکاف سفارش</small></div>
+    <button class="lang" id="langBtn" type="button" aria-label="Switch language">English</button>
+  </header>
+
+  <div class="project"><code>PH-14</code><span class="sep">·</span><span data-i="project">پارس جنوبی فاز ۱۴ — یوتیلیتی</span><span class="sep">·</span><span data-i="discipline">پایپینگ</span></div>
+  <h1 data-i="title">بورد شکاف سفارش</h1>
+  <p class="subtitle" data-i="subtitle">مقایسهٔ مقدار ناخالص پذیرفته‌شدهٔ MTO با مقدار مؤثر سفارش‌های خرید — بدون تسهیم، بدون حدس علت</p>
+
+  <section class="kpis" aria-label="Gap summary">
+    <div class="kpi"><small data-i="materials">متریال‌ها</small><b id="materialCount">۴</b></div>
+    <div class="kpi bad"><small data-i="shortages">کسری سفارش</small><b id="shortageCount">۲</b></div>
+    <div class="kpi ok"><small data-i="covered">پوشش کامل</small><b id="coveredCount">۱</b></div>
+    <div class="kpi over"><small data-i="overplan">بیش از برنامه</small><b id="overCount">۱</b></div>
+    <div class="kpi warn"><small data-i="unmatchedKpi">شناسایی‌نشده</small><b id="unmatchedCount">۱</b></div>
+  </section>
+
+  <section class="card" aria-labelledby="rowsHeading">
+    <div class="card-head"><div><h2 id="rowsHeading" data-i="rowsHeading">وضعیت به ازای متریال</h2><p data-i="rowsHint">gross از آخرین بازنگری پذیرفته‌شده؛ مؤثر = فقط سفارش‌های صادرشده/در حال اجرا</p></div></div>
+    <div class="filters" role="tablist" aria-label="Gap filters">
+      <button class="filter active" type="button" data-filter="all" data-i="all">همه</button>
+      <button class="filter" type="button" data-filter="shortage" data-i="onlyShortage">فقط کسری‌ها</button>
+      <button class="filter" type="button" data-filter="covered" data-i="onlyCovered">فقط پوشش کامل</button>
+      <button class="filter" type="button" data-filter="overplan" data-i="onlyOver">فقط بیش از برنامه</button>
+      <button class="filter" type="button" data-filter="unmatched" data-i="onlyUnmatched">فقط شناسایی‌نشده‌ها</button>
+    </div>
+    <div class="rows" id="rows"></div>
+    <div class="legend">
+      <span><i class="red"></i><span data-i="legendShort">کسری: مؤثر کمتر از ناخالص پذیرفته‌شده</span></span>
+      <span><i class="green"></i><span data-i="legendCovered">پوشش کامل: برابر</span></span>
+      <span><i class="purple"></i><span data-i="legendOver">بیش از برنامه: هرگز کسری منفی نیست</span></span>
+      <span><i class="amber"></i><span data-i="legendUnmatched">بدون هویت دقیق در کتابخانهٔ متریال</span></span>
+    </div>
+  </section>
+
+  <p class="note"><strong data-i="prototypeNote">یادداشت پیش‌نمایش:</strong> <span data-i="noteText">این صفحه نمونهٔ زبانِ صفحه برای Slice 6 است؛ داده‌ها ساختگی‌اند و مجوز جدیدی پیاده نشده. تعریف شکاف: ناخالص پذیرفته‌شده منهای مقدار مؤثر سفارش‌ها، بدون درصد تسامح و بدون هیچ برآورد خودکار تسهیم یا علت. نیازمندی‌ها در ADR-015 ثبت شده‌اند.</span></p>
+</main>
+<script>
+'use strict';
+const I18N={
+  fa:{brand:'پلتفرم EPCC',preview:'پیش‌نمایش موبایلی · بورد شکاف سفارش',project:'پارس جنوبی فاز ۱۴ — یوتیلیتی',discipline:'پایپینگ',title:'بورد شکاف سفارش',subtitle:'مقایسهٔ مقدار ناخالص پذیرفته‌شدهٔ MTO با مقدار مؤثر سفارش‌های خرید — بدون تسهیم، بدون حدس علت',materials:'متریال‌ها',shortages:'کسری سفارش',covered:'پوشش کامل',overplan:'بیش از برنامه',unmatchedKpi:'شناسایی‌نشده',rowsHeading:'وضعیت به ازای متریال',rowsHint:'gross از آخرین بازنگری پذیرفته‌شده؛ مؤثر = فقط سفارش‌های صادرشده/در حال اجرا',all:'همه',onlyShortage:'فقط کسری‌ها',onlyCovered:'فقط پوشش کامل',onlyOver:'فقط بیش از برنامه',onlyUnmatched:'فقط شناسایی‌نشده‌ها',legendShort:'کسری: مؤثر کمتر از ناخالص پذیرفته‌شده',legendCovered:'پوشش کامل: برابر',legendOver:'بیش از برنامه: هرگز کسری منفی نیست',legendUnmatched:'بدون هویت دقیق در کتابخانهٔ متریال',prototypeNote:'یادداشت پیش‌نمایش:',noteText:'این صفحه نمونهٔ زبانِ صفحه برای Slice 6 است؛ داده‌ها ساختگی‌اند و مجوز جدیدی پیاده نشده. تعریف شکاف: ناخالص پذیرفته‌شده منهای مقدار مؤثر سفارش‌ها، بدون درصد تسامح و بدون هیچ برآورد خودکار تسهیم یا علت. نیازمندی‌ها در ADR-015 ثبت شده‌اند.',gross:'مقدار ناخالص (پذیرفته‌شده)',ordered:'مقدار مؤثر سفارش',gap:'شکاف',scope:'اسکوپ تخصیص‌یافته',stShortage:'کسری سفارش',stCovered:'پوشش کامل',stOver:'بیش از برنامه',stUnmatched:'شناسایی‌نشده',draftExcluded:'پیش‌نویس سفارش محاسبه نشده است (فقط صادرشده/در حال اجرا).',cancelledExcluded:'سفارش لغوشده محاسبه نشده است.',unallocated:'از مقدار مؤثر هنوز به هیچ اسکوپی تخصیص نیافته است.',noPo:'هنوز هیچ سفارش صادرشده‌ای ندارد.',unmatchedText:'کد آیتم در کتابخانهٔ متریال هویت دقیق ندارد؛ در سطل شناسایی‌نشده نگه داشته شده، نه حدس زده شده.',perUnit:'واحد'},
+  en:{brand:'EPCC Platform',preview:'Mobile preview · Order gap board',project:'South Pars Phase 14 — Utilities',discipline:'Piping',title:'Order gap board',subtitle:'Accepted gross MTO quantities vs effective PO quantities — no proration, no cause inferred',materials:'Materials',shortages:'Shortages',covered:'Covered',overplan:'Over plan',unmatchedKpi:'Unmatched',rowsHeading:'Status per material',rowsHint:'gross from the latest accepted revision; effective = issued/in-force orders only',all:'All',onlyShortage:'Shortages only',onlyCovered:'Covered only',onlyOver:'Over-plan only',onlyUnmatched:'Unmatched only',legendShort:'Shortage: effective below accepted gross',legendCovered:'Covered: equal',legendOver:'Over plan: never a negative shortage',legendUnmatched:'No exact identity in the Material Library',prototypeNote:'Preview note:',noteText:'This screen is the screen-language prototype for Slice 6; data is synthetic and no new permissions are implemented. Gap definition: accepted gross minus effective ordered quantity, with zero tolerance and no automatic proration or cause inference. Requirements are recorded in ADR-015.',gross:'Accepted gross',ordered:'Effective ordered',gap:'Gap',scope:'Allocated scope',stShortage:'Shortage',stCovered:'Covered',stOver:'Over plan',stUnmatched:'Unmatched',draftExcluded:'Draft PO is not counted (issued/in-force only).',cancelledExcluded:'Cancelled PO is not counted.',unallocated:'Of the effective quantity, part is not yet allocated to any scope.',noPo:'No issued order yet.',unmatchedText:'The item code has no exact identity in the Material Library; kept in the unmatched bucket, never guessed.',perUnit:'unit'},
+};
+const ROWS=[
+  {state:'shortage',code:'PIP-CS-6-SCH40',nameFa:'لوله فولادی کربنی ۶ اینچ، رده ۴۰',nameEn:'6 in carbon steel pipe, SCH 40',unit:'M',grossFa:'۱۲۰',grossEn:'120',ordFa:'۹۰',ordEn:'90',gapFa:'۳۰',gapEn:'−30',scopeFa:'SS-2201 · ۹۰ از ۹۰',scopeEn:'SS-2201 · 90 of 90',note:'draft'},
+  {state:'covered',code:'VLV-GT-6-150',nameFa:'شیر دروازه‌ای ۶ اینچ، کلاس ۱۵۰',nameEn:'6 in gate valve, ASME 150',unit:'EA',grossFa:'۴',grossEn:'4',ordFa:'۴',ordEn:'4',gapFa:'۰',gapEn:'0',scopeFa:'SS-2201 · ۴ از ۴',scopeEn:'SS-2201 · 4 of 4',note:'none'},
+  {state:'overplan',code:'PIP-CS-2-SCH80',nameFa:'لوله فولادی کربنی ۲ اینچ، رده ۸۰',nameEn:'2 in carbon steel pipe, SCH 80',unit:'M',grossFa:'۶۰',grossEn:'60',ordFa:'۷۲',ordEn:'72',gapFa:'۱۲',gapEn:'+12',scopeFa:'SS-2201 · ۴۸ از ۷۲',scopeEn:'SS-2201 · 48 of 72',note:'unallocated'},
+  {state:'shortage',code:'FLT-WN-6-150',nameFa:'فلنج گردن‌جوشی ۶ اینچ، کلاس ۱۵۰',nameEn:'6 in weld-neck flange, ASME 150',unit:'EA',grossFa:'۲۴',grossEn:'24',ordFa:'۰',ordEn:'0',gapFa:'۲۴',gapEn:'−24',scopeFa:'—',scopeEn:'—',note:'nopo'},
+  {state:'unmatched',code:'GSKT-SPW-6-150-X',nameFa:'واشر مارپیچ ۶ اینچ (کد نامعتبر در کتابخانه)',nameEn:'Spiral-wound gasket 6 in (no exact catalogue identity)',unit:'EA',grossFa:'—',grossEn:'—',ordFa:'۴۰',ordEn:'40',gapFa:'—',gapEn:'—',scopeFa:'—',scopeEn:'—',note:'unmatched'},
+];
+let lang='fa', filter='all';
+const $=id=>document.getElementById(id);
+const tr=k=>I18N[lang][k]||I18N.en[k]||k;
+const v=(row,k)=>lang==='fa'?row[k+'Fa']||row[k]:row[k+'En']||row[k];
+function statusOf(row){
+  if(row.state==='shortage')return{cls:'bad',key:'stShortage'};
+  if(row.state==='covered')return{cls:'ok',key:'stCovered'};
+  if(row.state==='overplan')return{cls:'over',key:'stOver'};
+  return{cls:'warn',key:'stUnmatched'};
+}
+function noteOf(row){
+  if(row.note==='draft')return{cls:'muted',key:'draftExcluded'};
+  if(row.note==='unallocated')return{cls:'over',key:'unallocated'};
+  if(row.note==='nopo')return{cls:'bad',key:'noPo'};
+  if(row.note==='unmatched')return{cls:'warn',key:'unmatchedText'};
+  return null;
+}
+function render(){
+  const wrap=$('rows');wrap.innerHTML='';
+  const visible=ROWS.filter(r=>filter==='all'||r.state===filter);
+  if(!visible.length){const e=document.createElement('div');e.className='empty';e.dataset.i='empty';e.textContent=lang==='fa'?'موردی در این وضعیت نیست':'Nothing in this state';wrap.appendChild(e);return;}
+  visible.forEach(row=>{
+    const st=statusOf(row),note=noteOf(row);
+    const el=document.createElement('div');
+    el.className='row '+row.state;
+    el.innerHTML='<div class="row-top"><div class="row-title"><strong>'+(lang==='fa'?row.nameFa:row.nameEn)+'</strong><small><span class="mono">'+row.code+'</span> · '+row.unit+' '+tr('perUnit')+'</small></div><span class="status '+st.cls+'">'+tr(st.key)+'</span></div>'+
+      '<div class="row-meta">'+
+      '<div class="meta"><span>'+tr('gross')+'</span><b class="mono">'+v(row,'gross')+'</b></div>'+
+      '<div class="meta"><span>'+tr('ordered')+'</span><b class="mono">'+v(row,'ord')+'</b></div>'+
+      '<div class="meta"><span>'+tr('gap')+'</span><b class="mono">'+v(row,'gap')+'</b></div>'+
+      '<div class="meta"><span>'+tr('scope')+'</span><b class="mono">'+v(row,'scope')+'</b></div>'+
+      '</div>'+
+      (note?'<div class="note-line '+note.cls+'">'+tr(note.key)+'</div>':'');
+    wrap.appendChild(el);
+  });
+}
+function applyLanguage(){
+  document.documentElement.lang=lang;document.documentElement.dir=lang==='fa'?'rtl':'ltr';
+  document.querySelectorAll('[data-i]').forEach(el=>{const t=tr(el.dataset.i);if(t!==el.dataset.i)el.textContent=t;});
+  $('langBtn').textContent=lang==='fa'?'English':'فارسی';
+  $('langBtn').setAttribute('aria-label',lang==='fa'?'Switch language':'تغییر زبان');
+  render();
+}
+$('langBtn').addEventListener('click',()=>{lang=lang==='fa'?'en':'fa';applyLanguage();});
+document.querySelector('.filters').addEventListener('click',e=>{
+  const btn=e.target.closest('.filter');if(!btn)return;
+  filter=btn.dataset.filter;
+  document.querySelectorAll('.filter').forEach(f=>f.classList.toggle('active',f===btn));
+  render();
+});
+applyLanguage();
+</script>
+</body>
+</html>

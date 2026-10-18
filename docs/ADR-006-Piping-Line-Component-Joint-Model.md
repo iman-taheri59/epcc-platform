@@ -242,7 +242,7 @@ get a register full of zeros.
 | `fitted_by_code`, `fitted_at` | both mandatory on entering FITTED; **code is a string, not a `users` FK** (§10.3) |
 | `isometric_sheet_no` | §10.6 |
 | `port_a_id`, `port_b_id` | **`CHECK (port_a_id < port_b_id)`** + `UNIQUE(port_a_id, port_b_id)` |
-| `joint_type` | BUTT_WELD / SOCKET_WELD / FLANGED / SCREWED / … derived from the two end types |
+| `joint_type` | BUTT_WELD / SOCKET_WELD / FLANGED / SCREWED / … derived from the two end types. **2026-10-12 (P-21/R-2):** branch welds need first-class types `BRANCH_STUB_IN` / `BRANCH_STUB_ON` — and they also break the two-port premise below; see §13 and proposal P-22 |
 | `nominal_size`, `schedule`, `thickness` | **derived and frozen** at creation from the ports |
 | `shop_field` | PCF `CATEGORY FABRICATION` ⇒ SHOP, `ERECTION` ⇒ FIELD |
 | `spool_id` | PCF `SPOOL-IDENTIFIER`, nullable |
@@ -628,3 +628,40 @@ rather than to the office, and it needs only phases 1–3.
 
 **Nothing is implemented.** The five questions in §11 are narrower than the previous set and
 none of them blocks phase 1 — say the word and I will start there while they are settled.
+
+> **Correction — 2026-10-11:** the sentence above is stale. Phases 0/1/1b/2/3 **are
+> implemented and shipped** (see the status block at the top of this document and HANDOFF
+> §5r/§5s/§5u/§5v). It is kept only as the historical end of the original proposal.
+
+## 13. Forward requirement — branch welds and the two-port premise (2026-10-12, findings R-2/P-22)
+
+The joint schema above assumes every joint connects **two component ports**.
+The branch-table decision in ADR-008 §9.1 breaks that premise: a P2P
+stub-in/stub-on weld joins the branch pipe's end-port to a point on the
+header pipe's **wall**, which has no port. Requirements recorded, design
+decision open (proposal P-22): the joint model must gain first-class
+branch-weld types (`BRANCH_STUB_IN` / `BRANCH_STUB_ON`, proposal P-21) AND
+a way to reference a wall connection — research (2026-10-12,
+`docs/RESEARCH-PLANT3D-PCF-P2P-BRANCHES-EN.md`) shows the PCF-native idiom
+is the **tap connection** (branch end-point on the header wall, resolved by
+projection; Plant 3D calls the weld a "tap weld"), so the leaning is now a
+frozen header reference on the joint rather than a synthesised wall port
+(proposal P-22). Decides together with ADR-008 build phase 3 wiring and the
+welding-phase (roadmap P5) design.
+
+### 2026-10-13 owner workflow correction (pending enforcement)
+
+Piping classes are upstream register/master data: **register the project's
+class before registering its lines**. Line entry should select a pre-existing
+same-project class rather than create one as a side effect. The existing
+nullable `piping_class_id` and legacy-import behavior predate this correction;
+the published-versus-draft selection threshold and treatment of historical
+unmapped lines remain open questions in ADR-027. Do not claim the current
+line-create API or database constraint already enforces this requirement.
+
+**Decision update, 2026-10-13:** the owner requires a PUBLISHED same-project
+PMS class before either manually created or imported lines enter the register.
+Unmapped legacy lines are rejected until mapped; do not invent a class or
+interpret an unparseable line number as an exemption. This requirement is
+accepted but NOT yet enforced in code/DB. See ADR-027 for rollout and
+existing-row preflight.

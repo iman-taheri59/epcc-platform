@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Support\CdeState;
 use App\Services\ReviewCycle;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -21,7 +22,12 @@ use Illuminate\Validation\ValidationException;
  */
 final class DocumentRegister
 {
-    public function __construct(private readonly ReviewCycle $review)
+    public function __construct(
+        private readonly ReviewCycle $review,
+        private readonly PmsRevisionSnapshotService $pmsSnapshots,
+        private readonly PmsRevisionDraftReview $pmsDraftReview,
+        private readonly PmsApprovedRevisionBaseline $pmsBaseline,
+    )
     {
     }
 
@@ -69,6 +75,13 @@ final class DocumentRegister
         return DB::transaction(function () use ($project, $user, $data): Document {
             $discipline = strtoupper($data['discipline']);
             $docType = strtoupper($data['doc_type']);
+            // PMS is a piping engineering document, not a class row or a
+            // generic specification with an inferred discipline.
+            if ($docType === 'PMS' && $discipline !== 'PIPING') {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'discipline' => 'A PMS document belongs to the PIPING discipline.',
+                ]);
+            }
 
             $document = Document::create([
                 'project_id' => $project->id,
@@ -166,15 +179,34 @@ final class DocumentRegister
             $this->review->assertPublishable($revision, $lang);
         }
 
-        return DB::transaction(function () use ($revision, $to, $suitability, $user): DocumentRevision {
-            $revision->update([
+        return DB::transaction(function () use ($document, $revision, $to, $suitability, $user): DocumentRevision {
+            // Serialize approval with class attachment; a class must not be
+            // added between the membership scan and snapshot publication.
+            if ($document->doc_type === 'PMS' && CdeState::isApproved($to, $suitability)) {
+                Document::whereKey($document->id)->lockForUpdate()->firstOrFail();
+            }
+            $fresh = DocumentRevision::whereKey($revision->id)->lockForUpdate()->firstOrFail();
+            if ($fresh->cde_state !== $revision->cde_state) {
+                throw ValidationException::withMessages(['state' => 'Revision state changed concurrently; please retry.']);
+            }
+            if ($to === CdeState::SHARED && $fresh->cde_state === CdeState::WIP) {
+                $this->pmsDraftReview->assertShareable($document, $fresh);
+            }
+            if ($to === CdeState::PUBLISHED && CdeState::isApproved($to, $suitability)) {
+                $this->pmsDraftReview->assertPublishable($document, $fresh);
+            }
+            $fresh->update([
                 'cde_state' => $to,
                 'suitability' => $suitability,
                 'issued_by' => $user->id,
                 'issued_at' => now(),
             ]);
 
-            return $revision->refresh();
+            if ($document->doc_type === 'PMS' && CdeState::isApproved($to, $suitability)) {
+                $this->pmsSnapshots->capture($document, $fresh);
+            }
+
+            return $fresh->refresh();
         });
     }
 
@@ -233,6 +265,27 @@ final class DocumentRegister
             ]);
 
             $document->update(['current_revision_id' => $next->id]);
+
+            // Seed the NEXT revision's independent WIP working copies from
+            // the last issued snapshots. Never mutate the published class or
+            // previous issue-time snapshot; draft publication is a later step.
+            if ($document->doc_type === 'PMS' && $document->discipline === 'PIPING' && $current !== null) {
+                // A B-coded intervening revision has NO approved snapshots;
+                // seed from the latest A-family issue, not blindly from B.
+                $snapshots = $this->pmsBaseline->before($document, $next);
+                foreach ($snapshots as $snapshot) {
+                    DB::table('pms_class_revision_drafts')->insert([
+                        'id' => (string) Str::uuid(),
+                        'project_id' => $document->project_id,
+                        'company_id' => $document->company_id,
+                        'pms_document_id' => $document->id,
+                        'document_revision_id' => $next->id,
+                        'piping_class_id' => $snapshot->piping_class_id,
+                        'specification' => $snapshot->specification,
+                        'created_at' => now(), 'updated_at' => now(),
+                    ]);
+                }
+            }
 
             return $next;
         });

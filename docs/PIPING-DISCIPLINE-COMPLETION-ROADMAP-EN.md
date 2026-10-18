@@ -59,7 +59,7 @@ According to `HANDOFF.md` and the current code:
 | Unit preferences | Built |
 | Components / ports | Built |
 | Joints / compatibility / dia-inch | Built |
-| PMS rules | Designed in ADR-008, not built |
+| PMS rules | **Built (ADR-008 phases 1–2, 2026-10-11): classes, rules + EXCLUDE constraint, publish gate, branch table + specificity resolver — awaiting runtime verification** |
 | Equipment / nozzles | Designed in ADR-010, not built |
 | Fit-up | Designed in ADR-006, not built |
 | Supports/spools | Designed, not built |
@@ -103,6 +103,11 @@ Outputs:
 
 ### Phase P1 — PMS and branch table
 
+> **Status 2026-10-11: IMPLEMENTED — awaiting runtime verification.** All six
+> outputs below landed in migration `2026_10_11_120000_create_piping_classes_and_rules`,
+> `PipingClassService`, and `PipingClassTest` (ADR-008 §9). Wiring into
+> component attach / joint compatibility is ADR-008 build phase 3, still open.
+
 Based on ADR-008:
 
 - `piping_classes`
@@ -111,6 +116,11 @@ Based on ADR-008:
 - Gap detection in the publish gate
 - Branch table with specificity-wins resolution
 - Integration with component attach and joint compatibility
+- **Addendum (owner 2026-10-11, ADR-008 §9.1):** the branch outcome
+  vocabulary is closed — `TEE / WELDOLET / SOCKOLET / P2P`; `P2P`
+  (pipe-to-pipe) is a first-class outcome meaning *no component*, with
+  kinds **stub-in / stub-on** and a reinforcement pad whose thickness (mm)
+  is mandatory when the pad is required.
 
 Value: stops incorrect data before it reaches the field.
 
@@ -161,6 +171,11 @@ Needs detailed design, but the MVP minimum is:
 - Repair cycle
 - Repair rate KPI
 - Heat/material traceability to weld where feasible
+- **Branch-weld joint types (owner requirement, 2026-10-12, proposal P-21):**
+  stub-in/stub-on P2P connections are welds, not components — the joint
+  register must carry `BRANCH_STUB_IN` / `BRANCH_STUB_ON` as first-class
+  joint types so branch welds are counted and reported separately from butt
+  welds, and pad requirements stay traceable from the ADR-008 class rules.
 
 This phase must align with QA/QC and may deserve its own ADR.
 

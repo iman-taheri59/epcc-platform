@@ -66,6 +66,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install standards-pack schema validator
+        run: python3 -m pip install 'jsonschema>=4.20,<5'
+
       - name: Validate the standards packs
         run: python3 standards-packs/validate_packs.py
 
@@ -77,6 +80,14 @@ jobs:
 
       - name: Run the rule-engine conformance corpus
         run: php packages/standards-engine/conformance/run.php
+
+      - name: Run read-only material screening regression and CLI smoke
+        run: |
+          php scripts/tests/test_material_screening.php
+          php scripts/screen-material.php docs/examples/material-screening-synthetic.json > /tmp/material-screening.json
+          python3 -c "import json; r=json.load(open('/tmp/material-screening.json')); assert r['engineering_approved'] is False and r['automatic_consumption_allowed'] is False"
+          php scripts/screen-material.php docs/examples/material-screening-synthetic.json --html > /tmp/material-screening.html
+          grep -q '<!doctype html>' /tmp/material-screening.html
 
   # -------------------------------------------------------------------------
   # The jsdom harnesses over the HTML prototype. jsdom comes from the ROOT
@@ -104,6 +115,35 @@ jobs:
 
       - name: Sidebar, piping workspace and MTO acceptance previews
         run: npm run test:prototype
+
+  # Pure PCF tests run independently of migrations so a schema integration
+  # failure cannot conceal parser/admission/classification regressions.
+  pcf:
+    name: Pure PCF parser and classification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+          tools: composer:v2
+      - name: Install Composer dependencies
+        working-directory: app
+        run: composer install --no-scripts --no-interaction --no-progress --prefer-dist
+      - name: Run pure PCF tests (no database)
+        working-directory: app
+        run: |
+          set -euo pipefail
+          if ! output="$(vendor/bin/phpunit --colors=never --filter 'Pcf(Parser|Admission|BranchClassification)Test' 2>&1)"; then
+            printf '%s\n' "$output"
+            detail="$(printf '%s' "$output" | tail -c 3500 | tr '\n' ' ' | sed 's/%/%25/g; s/\r/%0D/g')"
+            echo "::error title=Pure PCF test failure::$detail"
+            exit 1
+          fi
+          printf '%s\n' "$output"
 
   # -------------------------------------------------------------------------
   # The real suite: PostgreSQL 17, RLS, and the PDF toolchain.
@@ -186,6 +226,10 @@ jobs:
           CREATE ROLE epcc LOGIN PASSWORD 'epcc_dev';
           CREATE DATABASE epcc OWNER epcc;
           CREATE DATABASE epcc_test OWNER epcc;
+          \connect epcc
+          CREATE EXTENSION IF NOT EXISTS btree_gist;
+          \connect epcc_test
+          CREATE EXTENSION IF NOT EXISTS btree_gist;
           SQL
           # Prove the posture the whole tenancy model depends on: a superuser
           # would bypass RLS and the fail-closed assertions would go red.
@@ -232,9 +276,22 @@ jobs:
         working-directory: app
         run: |
           set -euo pipefail
-          php artisan migrate:fresh --force --seed --no-interaction
-          php artisan db:seed --class=ProcurementSeeder --force --no-interaction
-          php artisan filament:assets --no-interaction
+          # GitHub annotations remain readable through the API even when the
+          # runner-log download host is unavailable in an air-gapped sandbox.
+          run_or_annotate() {
+            local output
+            if ! output="$("$@" 2>&1)"; then
+              printf '%s\n' "$output"
+              local last
+              last="$(printf '%s' "$output" | tail -c 3500 | tr '\n' ' ' | sed 's/%/%25/g; s/\r/%0D/g')"
+              echo "::error title=Database bootstrap failed::$last"
+              return 1
+            fi
+            printf '%s\n' "$output"
+          }
+          run_or_annotate php artisan migrate:fresh --force --seed --no-interaction
+          run_or_annotate php artisan db:seed --class=ProcurementSeeder --force --no-interaction
+          run_or_annotate php artisan filament:assets --no-interaction
 
       # ---- the suite ---------------------------------------------------------
       # PHPUnit directly rather than `artisan test`, for two reasons: it writes

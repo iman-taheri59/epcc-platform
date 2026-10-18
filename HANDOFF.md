@@ -1,12 +1,33 @@
 # HANDOFF — EPCC Platform
 
 **Living document. Update it at the end of every working session.**
-Last updated: **2026-10-07** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom); Slice 4/5 targeted tests are pending runtime restoration
+Last updated: **2026-10-12** · Status: **prototype + working vertical slices** · Prior baseline: **872 passed / 3202 assertions** (+83 jsdom; +19 new order-gap-board assertions); Slice 4/5 targeted tests are pending runtime restoration. **Slice 6 (PO attribution + order gap) IMPLEMENTED**, the **ADR-012 HIGH defect (P-17) FIXED** (all 33 RLS tenant policies sargable + `RlsSargabilityTest`), and **piping phase P1 (ADR-008 PMS + branch table) IMPLEMENTED** — classes/rules/EXCLUDE constraint/publish gate/specificity resolver + `PipingClassTest`; all three status **IMPLEMENTED — awaiting runtime verification** on the owner's Laragon machine (`php artisan test`), per the "proceed without waiting for tests" instruction; RLS-fix mechanism EXPLAIN-verified against sandbox PostgreSQL 16.2. ADR-015 is the standing requirements record; sandbox dev-environment slice added (preview server + `scripts/run-tests.sh`); **rules 1–5 standing** (§0); full ~11,600-line documentation review completed with dated drift fixes (P-16) and escalated open items (P-15, P-17, P-18) — see `docs/IMPROVEMENT-PROPOSALS-EN.md`
 
 This is the one file to read before touching anything. It answers: what is this,
 what works today, what is deliberately missing, what will bite you, and what to
 do next. Everything else is detail hanging off `README.md`.
 
+**Companion record:** `CHAT-TRANSFER-HANDOFF-EN.md` / `CHAT-TRANSFER-HANDOFF-FA.md`
+(repo root) carry the 2026-10-06 session-transfer handoff of the predecessor
+`arena/roadmap-reconciliation` work (MTO staging + material-catalogue lineage).
+They were fork-only files dropped by the PR #5/#6 history reconciliation and
+restored from commit `a869114` on 2026-10-12 so that record is never lost again.
+
+
+---
+
+## 0. Standing operating rules (user-mandated, 2026-10-11)
+
+Four rules the user set on 2026-10-11. They bind every session from here on;
+violating any of them is a process defect, not a style choice.
+
+| # | Rule | How it is enforced here |
+|---|---|---|
+| 1 | **Keep a handoff file and update it continuously.** | This file. Every session ends by updating the header line and appending a `## 10` session-log entry. Never let a session's findings exist only in chat. |
+| 2 | **All documentation files are written in English and kept continuously updated.** | New/updated docs land in English. The bilingual FA/EN pairing rule still holds where an FA counterpart already exists (e.g. `MTO-REQUIREMENTS-FA/EN`), but the FA copy is never the sole record, and docs that drift from the code are fixed in the same change that moves the code. |
+| 3 | **Requirements are produced and continuously updated as English ADR files.** | Every new requirement set gets an `ADR-EPCC-NNN` record (house style: status / date / depends-on / requirements / options / open questions / falsifiers), even while still PROPOSED — see ADR-015 for the Slice 6 requirements carried out of `MTO-REQUIREMENTS` §A5. When a requirement changes, amend its ADR in the same session; do not let requirements live only in chat or in prose docs. |
+| 4 | **Maintain a development environment with a real display server and test execution.** | Three tiers: **(a)** Docker — `scripts/dev-up.sh` (PHP 8.4, PostgreSQL 17, Chromium, Vazirmatn) + `scripts/dev-test.sh`; **(b)** **Laragon on the owner's Windows machine — `docs/LARAGON-DEVELOPMENT-ENVIRONMENT.md`** (no Docker needed; same restore sequence, non-superuser `epcc` role, PDF export pending P-20); **(c)** the degraded-sandbox tier — `npm install` + `bash scripts/run-tests.sh` (runs every suite the machine can run and says loudly what it skipped) + `node scripts/preview-server.mjs` (zero-dependency live preview of the air-gap-safe prototype on port 8080, `/healthz` probe) + `bash scripts/sandbox-pg.sh start` (real PostgreSQL 16.2 in-sandbox, `epcc` non-superuser, `btree_gist` compiled from source). The PHP tier cannot enter these sandboxes — every acquisition route is network-blocked (php.net, packagist, getcomposer, apt mirrors, release-assets CDN) — so Laravel work runs on tier (a) or (b); that is stated, not hidden. Rule 5 of §4 stands: the Laravel suite never runs on SQLite. |
+| 5 | **If a better alternative exists for any requirement, code or capability, say so — never stay silent.** | Every session reviews what it touched (and the adjacent code) for better options. Proposals are recorded with a status (`OPEN` / `ACCEPTED` / `REJECTED` / `BUILT`) in `docs/IMPROVEMENT-PROPOSALS-EN.md`. Cheap, safe fixes are implemented on the spot and marked `BUILT`; anything touching scope, schema or commercial terms waits for the user's decision. Silence is itself a defect: if a session genuinely finds nothing to improve, the session log says so explicitly. |
 
 ---
 
@@ -70,7 +91,11 @@ Added `accepted_mto_batches` and `accepted_mto_rows`, `MtoAcceptanceService`, an
 
 Added `engineering_estimate_rows` and `EngineeringEstimateService`. Estimates preserve source type, revision/evidence and structured provenance, can remain provisional until linked to an `accepted_mto_row_id`, and use exact material/unit identity only. Linked rows report `SHORTAGE` when net exceeds gross, with no tolerance, or `DELTA_ONLY` when gross is equal to or greater than net. No waste, contingency, or cause is inferred.
 
-Next slice: PO attribution and order gap against effective issued/in-force quantities.
+### Slice 6 — PO attribution and the order gap
+
+Added `purchase_order_items.material_item_id` (exact catalogue FK), `purchase_order_items.supersedes_id` (amendment lineage, partial unique — a line is replaced at most once) and `po_item_allocations` (explicit scope allocations, RLS-protected). Added `OrderGapService` (attribution by exact identity with unit-match validation, amend-as-new-row, allocate-with-cap, board) and `OrderGapController` + `procurement/order-gap` screen + four routes + sidebar entry (`project.ordergap`). Domain rules enforced: draft/cancelled POs count nothing (effective = `ISSUED`/`PARTIALLY_RECEIVED`), lineage heads only, zero tolerance, no proration (over-allocation refused), over-ordering is `OVER_PLAN`, unmatched lines stay in their own bucket, quantities computed as integer milli-units. `OrderGapTest` pins all of it including the non-participant RLS mirror and the HTTP screen. Status: IMPLEMENTED — awaiting runtime verification on the owner's Laragon machine (built without test execution per the 2026-10-11 instruction "فعلاً بدون انجام تست ادامه بده"; the Slices 4/5 precedent applies).
+
+Next, in order: runtime verification on Laragon (`php artisan migrate:fresh --seed` + `php artisan test`) covering Slice 6, the P-17 RLS fix and piping P1; then ADR-008 build phase 3 (wire the PMS into component attach / joint compatibility) or piping P2 (equipment/nozzles) once the three ADR-010 questions are answered.
 
 ---
 
@@ -160,8 +185,11 @@ transmit → acknowledge — **including PDF output**, which was the last gap.
 raise → assign → fix → verify → close → certificate, with the A-item gate
 refusing issue and the owner's recorded exception the only way past it.
 
-Deliberately absent: full-text/OCR search, offline sync, PDF export,
-integrations, installer, and the PROCUREMENT / HSE / SCHEDULE modules.
+Deliberately absent: full-text/OCR search, offline sync, integrations, and the
+installer. PDF export **is built** (§5f) — this list used to claim otherwise and
+was corrected 2026-10-11 (rule 2). PROCUREMENT exists as a base chain only
+(requisition → PO → inspection → warehouse → site); HSE and SCHEDULE remain
+zero-page.
 
 ---
 
@@ -1479,7 +1507,21 @@ Schema-per-project solves it and stays cheap to reach later, because every table
 `project_id`, RLS is already project-aware, and there are **zero** `DB::connection()` call sites.
 
 
-## 5o. The RLS escape hatch is a performance defect (ADR-012) — UNFIXED
+## 5o. The RLS escape hatch is a performance defect (ADR-012) — FIXED 2026-10-11, awaiting runtime verification
+
+> **Update 2026-10-11 (P-17):** the defect below is fixed by migration
+> `2026_10_11_110000_make_rls_project_scope_sargable` — every one of the 33
+> tenant policies now opens with a sargable participation semi-join
+> (`project_id IN (participated/owned projects, narrowed to the bound one)`)
+> instead of the `(GUC IS NULL OR project_id = GUC)` disjunction; membership
+> branches, WITH CHECK text, delegation and deny policies are untouched, and
+> eight `(project_id, …)` indexes were added. Verified in the sandbox against
+> PostgreSQL 16.2 (300 k rows / 200 projects): RLS-only-scoped reads drop
+> from a 153 ms whole-table seq scan to 26 ms, index plans hold once the
+> query carries the project predicate (house controllers always do), and the
+> cross-project / isolation probes all pass. `RlsSargabilityTest` pins the
+> semantics and a scale-independent plan-shape guard. The history below is
+> kept as found. Full record: ADR-012 §9.
 
 **Found 2026-09-15 at 200 projects / 2.64 M rows. Present in production code today, invisible at
 fixture scale, and it couples tenants: one customer's page slows down when an unrelated
@@ -2715,6 +2757,479 @@ repo scope on a private commercial codebase is the whole product.
 
 ## 10. Session log
 
+### 2026-10-12 — requirement recorded: branch welds are first-class joint types (P-21)
+
+Owner question: «آیا لوله‌ای که به‌عنوان انشعاب به هدر متصل می‌شود
+کامپوننت به حساب نمی‌آید؟» — answer: no, a P2P connection adds no
+component; the connection is a weld (plus optional pad material), and the
+branch pipe is line run. Follow-up instruction: «به عنوان یک نیازمندی ثبت
+کن». Recorded as **proposal P-21** (register + detail section): by the time
+the welding/joints phase (roadmap P5) is designed, the joint register must
+carry `BRANCH_STUB_IN` / `BRANCH_STUB_ON` as first-class joint types —
+branch welds counted/reported separately from butt welds, dia-inch kept
+clean of them (or deliberately weighted), pad thickness traceable from the
+ADR-008 class rule, and class-contradicting joints surfaced as deviations.
+Cross-linked in ADR-008 §9.2 and roadmap P5. Nothing built — it is queued on
+the P5 design ADR.
+
+### 2026-10-12 (cont.) — standing duty established: systematic requirements review; first piping pass
+
+Owner critique: requirements were only extended reactively — the P2P gap
+(standard PMS vocabulary, absent from every requirement doc until supplied
+by the owner) is the proof. Directive recorded: **before each build phase,
+the requirement set of the target domain is audited for gaps, contradictions
+and staleness; cheap hygiene fixed on the spot, decisions become numbered
+proposals.** First pass delivered in `docs/REQUIREMENTS-REVIEW-PIPING-EN.md`
+(findings R-1…R-8):
+
+- **R-1 FIXED** — ADR-008 §4 stale `→ component_type` definition: pointer
+  to §9.1 added.
+- **R-2 FIXED+P-22** — ADR-006 joints: no branch-weld types, and the
+  two-port model cannot express a weld on the header wall. Vocabulary
+  pointer added; §13 forward requirement written; wall-attach modelling
+  registered as decision P-22 (leaning: synthesised wall port, PCF
+  `TEE-SET-ON` style).
+- **R-3 FIXED** — ADR-009 deviation matrix gained the two P2P rows (fitting
+  present where class says P2P, and mirror); attach geometry waits on P-22.
+- **R-4 FIXED** — ADR-010 §6 gained open question 4: branch-weld dia-inch
+  (leaning: branch nominal, reported separately per P-21).
+- **R-5 P-23** — MTO requirements have zero branch-connection coverage:
+  reinforcement pads (plate) and coped stub ends. Scope decision, waits.
+- **R-6 FIXED** — FA roadmap synced (P1 status + P2P/stub/pad addendum, P5
+  branch-weld bullet).
+- **R-7/R-8 OK** — ADR-010 §4 row 008 and ADR-006 §11.2 re-checked against
+  the P2P decision; no conflict.
+
+Protocol registered in `IMPROVEMENT-PROPOSALS-EN.md` ("Standing process —
+requirements review"). Next passes: one discipline per session, oldest ADR
+first; P2 (equipment/nozzles) still blocked on ADR-010's questions.
+
+### 2026-10-12 (cont.) — research: how Plant 3D and PCF handle P2P branches
+
+Owner asked how Plant 3D / the PCF format treat a pipe-to-pipe branch.
+Researched against Autodesk support/KB/forum sources, the PCF Reference
+Guide v13, Hexagon CADWorx/ISOGEN docs, and Bentley AutoPIPE threads;
+recorded in `docs/RESEARCH-PLANT3D-PCF-P2P-BRANCHES-EN.md`. Findings:
+
+- Plant 3D: **Stub-in** is a first-class routing option (pipe-to-pipe, no
+  tee, weld directly on the line); the weld is internally a **"tap weld"**
+  with an ordinary butt-weld SKEY (WW/WS) and a **TAP** end code on the
+  branch pipe (end-type PL, cut like BW). No automatic reinforcement pad.
+- PCF: no stub-in entity exists — the idiom is the **tap connection**: the
+  branch pipe's END-POINT starts at a point on the header wall and ISOGEN
+  resolves it by projection onto the header centreline within the header's
+  end points. Set-on fittings are `TEE-SET-ON`; set-on P2P without a
+  fitting is CADWorx `OTAP` (SKEYs TTSO/TSSO) — still tap semantics. Cut
+  length is decided at iso time (ISOGEN Option Switch 2).
+- Interoperability: wall connections are the fragile part of PCF — olets
+  get mapped to welded tees by consumers, and Plant 3D stub-ins are a known
+  import failure in AutoPIPE. Importer (roadmap P7) must resolve taps by
+  projection and never require a header-side port.
+- **P-22 recommendation updated:** tap semantics — the joint carries the
+  branch-side port plus a frozen reference to the header component and the
+  connection point; not a synthesised wall port. Reinforces P-23 (pads
+  exist only in our class rules, invisible to Plant 3D/PCF).
+
+### 2026-10-12 (cont.) — ASME Section IX آپلود شد؛ شمارهٔ گروه هم از استاندارد گرفته شد (کامیت‌های `05737c7`, `4b3bd0d`)
+
+Owner uploaded ASME BPVC Section IX 2021 (branch `sec.ix-upload`,
+`ASmE SEC IX 2021.txt`). Its Table QW/QB-422 publishes BOTH the P-No and
+the Group number, so the pack now carries complete welding identity for
+every library material — the earlier note that "Group No stays
+rule-level" is superseded. Transcribed rows (pp.147–191, API 5L block
+pp.189–191) live in `SECTION9_QW422` inside the pack builder, which
+annotates every row with `group_no` and ASSERTS the extracted Table A-1
+P-No equals Section IX's (drift fails the build; verified equal on all
+57 rows). Group numbers of note: A106 C = 2, A516 70 = 2, API 5L
+X56/X60/X65 = 2, X70 = 3; the rest of the target set = 1. Rule remains:
+materials OUTSIDE the library must carry `p_no` AND `group_no` manually.
+
+### 2026-10-12 (cont.) — owner requirement: P-No و Group No برای متریال خارج از کتابخانه (commit `05737c7`)
+
+Owner: «P no. و group no. متریال هم در صورتی که در کتابخانه متریال سیستم
+وجود ندارد، باید وارد بشه». Implemented as: the Section IX P-Number is
+READ FROM THE STANDARD ITSELF — Table A-1 of B31.3-2024 prints a P-No
+column (extracted position-based like the rest of the table; values as
+printed: carbon steels "1", A335 P11 "4", P22 "5A", P5/P9 "5B", P91
+"15E", austenitics "8"), so library materials carry it automatically.
+The table publishes NO Group number, so Group No remains rule-level data.
+PIPE_MATERIAL rules now accept `p_no` (printed form, e.g. "5A") and
+`group_no` (positive integer); when a material is OUTSIDE the library
+(`s_mpa_override`), BOTH are mandatory — bilingual refusal otherwise.
+Unit tests pin the P-No anchors from the raw table rows; feature tests
+cover the mandatory rule and format refusals.
+
+### 2026-10-12 (cont.) — P-24 Step B COMPLETE: design basis, material rule, publish-gate pad validation
+
+Step B finished in three commits on top of the materials pack (`55272b2`):
+
+- `551b160` — migration `2026_10_12_120000`: `piping_classes` gains
+  `design_pressure_mpa` / `design_temperature_c` (owner decision: class
+  attributes); rule-kind CHECK extended with `PIPE_MATERIAL`. The service
+  gained `setDesignBasis()` and validates PIPE_MATERIAL values against the
+  pack — spec+grade must resolve (`A106 B`, `API5L X42 PSL2` via the ISO
+  alias table) unless `s_mpa_override` is given; PSL ambiguity refused.
+- `ae5351c` — `App\Services\BranchConnectionPadGate`: the publish gate
+  walks EVERY pack DN pair inside each branch rule's footprint, sizes each
+  pipe with its band's schedule/material/corrosion rules (effective wall
+  0.875×nominal, S(T)/E/W/Y from the B31.3-2024 pack, conservative
+  lowest-Ej default), and runs the §304.3.3 calculator: PAD cells must
+  pass with the recorded thickness (else the message quotes the required
+  minimum), NONE cells must pass bare, and uncheckable cells (para
+  304.3.1(b) limits, missing rules, out-of-table temperatures) refuse the
+  publish. Bilingual report lists each failing cell.
+- `tests/Feature/PipingPadGateTest` — 5 tests on matrices computed from
+  the packs (worst margins +17.4 / +761.9 adequate; −94.3 / −62.7
+  refused), plus missing-CA refusal and the manual-override path.
+
+Owner verification on Laragon is the remaining step for the whole P-24
+chain (Step A calculator → pack → gate). Housekeeping still open: strip
+the 12 MB PDF from the `b31.3-upload` branch (history rewrite, needs
+sign-off).
+
+### 2026-10-12 (cont.) — P-24 Step B: ASME B31.3-2024 materials reference pack built (commit `55272b2`)
+
+The owner-uploaded ASME B31.3-2024 PDF (594 pp, on the `b31.3-upload`
+branch, fetched into `.cache/`) is now the source of the platform's
+material facts for pad validation. Built and committed:
+
+- `scripts/build_b313_materials_pack.py` — position-based Table A-1 (SI,
+  pp.206–315) extractor. Bench-verified traps solved during the build:
+  the table has per-page temperature ladders (13/19/32-column sections),
+  stacked segments sharing one column grid (merged per page), line-number
+  columns repeated inside the stress block, and API 5L X-grades published
+  under ISO names (L290 = X42 … L485 = X70). Regenerable whenever a newer
+  edition is uploaded.
+- `standards-packs/reference/b313-materials.ref.json` — 57 Table A-1 rows
+  (A53 A/B, A106 A/B/C, API 5L A/B + L245…L485 PSL1/PSL2, A333 1/6, A335
+  P5/P9/P11/P22/P91, A312 TP304…TP347H, A516 55–70, A285 A/B/C) plus
+  Table 304.1.1-1 (Y), Table 302.3.5-1 (W) and the Table A-3 (Ej) subset,
+  and the 0.875 mill-tolerance factor (owner decision 2026-10-12).
+- `App\Support\Reference\MaterialReference` + `B313Material` +
+  `UnknownMaterialException` — ADR-007 file-not-table pattern: memoised,
+  every lookup throws; S(T) interpolated between columns with hard
+  refusals above the last column / above max use temperature; Ej by
+  spec+type or description fragment; Y/W with below-range semantics.
+- `tests/Unit/MaterialReferenceTest` — 17 tests anchored on Appendix H
+  (H301: API 5L Gr A S = 110 MPa @ 200 °C) and raw table rows.
+
+Every extracted value was checked row-by-row against the PDF text stream
+(some values in older editions differ — e.g. A285 C is 98.3 MPa @ 375 °C
+in the 2024 edition, A312 TP304 is 129 MPa @ 200 °C). No PHP runtime in
+the sandbox; the suite runs on the owner's Laragon tier. Next: class
+design-basis columns + pipe-material-grade rule kind (migration), then the
+publish-gate PAD validation. Still pending on GitHub: remove the 12 MB PDF
+from the `b31.3-upload` branch (history rewrite needs owner sign-off).
+
+### 2026-10-12 (cont.) — ASME B31.3 §304.3.3 pad-thickness validation (requirement P-24, Step A built)
+
+Owner requirement: pad thickness recorded in the PMS branch table must be
+validated with the ASME B31.3 para 304.3.3 area-replacement calculation
+(A1 vs A2+A3+A4, zone limits d1/d2/L4, weld credit per 328.5.4, stress
+ratio reductions). Formulas researched against the 2004 code text and
+multiple published calculators; requirement recorded in ADR-008 §9.3.
+Built now: `App\Services\BranchReinforcementCalculator` (pure service,
+`evaluate()` + `requiredPadThickness()` bisection) with
+`Tests\Unit/BranchReinforcementCalculatorTest` — fixtures from a published
+worked example (pass/fail run-wall variants, pad recovery) plus
+hand-verified cases (zone capping, narrow pad, stress ratio, 45° lateral,
+refusals). Formulas independently re-verified with a Python mirror. Step B
+(PMS wiring) queued on P-24 after runtime verification. Follow-up 2026-10-12:
+`pressureDesignThickness()` added — B31.3 eq (3a) with the t ≥ D/6 refusal,
+covered by three new tests including an end-to-end mm fixture (eq 3a →
+reinforcement check). Owner offered to upload the standard if needed.
+
+### 2026-10-12 (cont.) — Step B parameter inventory: what exists, what is missing
+
+Owner asked for the parameter audit because the branch table is per piping
+class. Audited against live code (not memory): EXISTS — OD per DN and wall
+per DN×schedule in the ADR-007 reference packs; `PIPE_SCHEDULE` and
+`CORROSION_ALLOWANCE` class rule kinds. MISSING on the class — design
+pressure/temperature (only per-line today), pipe material grade, allowable
+stress S(T), E, W, Y (B31.3 eq 3a inputs), mill-tolerance convention.
+Table + two gating owner decisions recorded in the P-24 entry and ADR-008
+§9.3: (a) class-level design conditions vs worst-line; (b) direct S/E/W/Y
+class inputs (recommended) vs a bundled ASME Table A-1 pack.
+
+### 2026-10-12 (cont.) — Step B decisions settled by the owner
+
+(a) Design pressure/temperature = **class attributes** (per-line columns
+stay for line checks). (b) Material data = **Table A-1 reference pack**
+built from the ASME B31.3 standard, which the owner will upload; manual
+entry remains as override. (c) Mill tolerance = **12.5%** (T = 0.875 ×
+nominal). Recorded in P-24 and ADR-008 §9.3. Next build steps once the
+standard arrives: extract Table A-1 for common grades, Y and W tables,
+Appendix H fixtures; then class design-basis columns + grade rule +
+publish-gate validation. Also landed before the decisions: eq (3a)
+`pressureDesignThickness()` in the calculator with three new tests
+(commit c9fbd88).
+
+### 2026-10-11 (ninth) — piping P1 built: PMS piping classes, the EXCLUDE constraint and the branch table
+
+Continued per «فعلاً بدون انجام تست ادامه بده». ADR-008 build phases 1–2
+landed as piping phase P1:
+
+- **Migration** `2026_10_11_120000_create_piping_classes_and_rules`:
+  `piping_classes` (per-project code, `dn_span` int4range, DRAFT/PUBLISHED),
+  `piping_class_rules` with the load-bearing
+  `EXCLUDE USING gist (piping_class_id WITH =, rule_kind WITH =, dn_range WITH &&)`
+  over half-open DN bands, and `piping_class_branch_rules` where overlap is
+  legal (general + narrower exceptions) and `UNIQUE` catches only the exact
+  duplicate footprint. All three tables get FORCE RLS with the sargable
+  participation preamble from the P-17 fix. The migration asserts btree_gist
+  and fails with an actionable DBA message.
+- **Service** `PipingClassService`: create/addRule/addBranchRule translating
+  exclusion/unique violations into bilingual validation errors; `publish`
+  refuses any hole via `(span − range_agg(dn_range))` per rule kind;
+  `ruleFor`/`branchFor` are `@>` lookups that THROW — `NoRuleForSizeException`
+  and `BranchLargerThanHeaderException`, never null; published classes are
+  read-only.
+- **Support** `PipingRuleKind` (seven kinds, one table), `PipingClassState`.
+- **Tests** `PipingClassTest` (9 tests) pin the ADR's own fixtures: DN100→SCH40
+  / DN80→SCH80 / uncovered throws, overlap refused, gapped publish refused
+  then accepted, published read-only, TEE/SOCKOLET/WELDOLET specificity,
+  branch-larger-than-header distinct, duplicate footprint refused, priority
+  tiebreak, non-participant RLS mirror.
+- Docs: ADR-008 status → phases 1–2 implemented + §9 record; piping roadmap
+  §3 row and P1 phase marked; statuses await `php artisan test` on Laragon.
+- **Addendum (owner decisions):** the branch outcome is now a closed
+  vocabulary — `BranchConnectionType` — with **P2P (Pipe-to-Pipe)** carrying
+  its two kinds **stub-in / stub-on** (`P2pKind`, required on P2P cells,
+  forbidden on fittings) and the owner's pad rule: `reinforcement = PAD`
+  MANDATES `pad_thickness` in millimetres (CHECK + service validation).
+  Five tests cover it; live sandbox verification caught and fixed a CHECK
+  NULL trap (`NULL IN (...)` passes a CHECK) on the way. ADR-008 §9.1
+  records all of it.
+
+Next in sequence: runtime verification on Laragon when the owner runs the
+suite; after that ADR-008 phase 3 (wire the PMS into component attach /
+joint compatibility) or piping P2 (equipment/nozzles) once the three
+ADR-010 questions are answered.
+
+### 2026-10-11 (eighth) — P-17: the ADR-012 HIGH defect fixed — all 33 tenant policies made sargable
+
+Continued per «فعلاً بدون انجام تست ادامه بده». The RLS escape hatch
+(`(GUC IS NULL OR project_id = GUC)`, §5o) was removed from **every** tenant
+policy by `2026_10_11_110000_make_rls_project_scope_sargable`:
+
+- The preamble is now one sargable semi-join: `project_id IN
+  (participated ∪ owned projects, narrowed to the bound project when one is
+  bound)`. Membership branches, WITH CHECK clauses, child-delegation
+  policies and archive/deny policies are byte-identical to before; `down()`
+  restores the defective shape from the same spec.
+- Deliberate tightening recorded per ADR-012 §6.1: the preamble admits only
+  participated/owned projects, making standing rule 7 database-enforced for
+  reads; the wider role branches (vendor/recipient/actor) only ever apply to
+  companies already on the project, so no legitimate access changes.
+- Eight `(project_id, …)` indexes added where missing (`punch_items`,
+  `subsystems`, `mc_certificates`, inspections, lots, movements,
+  `mto_staging_rows`, `gate_evaluations`).
+- **Mechanism verified live** against sandbox PostgreSQL 16.2 (300 k rows /
+  200 projects, 1-of-200 selectivity, EXPLAIN ANALYZE as the non-superuser
+  app role): the defective shape forces a 153 ms whole-table seq scan on an
+  RLS-scoped read; the sargable shape runs it in 26 ms, and index plans hold
+  whenever the query carries the project predicate (house controllers always
+  do) — cross-project (99 k rows), foreign-project (0) and foreign-company
+  (0) probes all correct.
+- `tests/Feature/RlsSargabilityTest.php`: cross-project visibility +
+  binding + non-participant isolation, write-path pinning, a
+  scale-independent plan-shape guard (no `IS NULL` disjunction may appear on
+  a fact-table scan filter), and a 60 k-row volume semantics test.
+- Docs: ADR-012 status → FIX IMPLEMENTED + §9 record; P-17 register +
+  detail updated; §5o retitled with a dated update block.
+
+Status: IMPLEMENTED — awaiting runtime verification on the owner's Laragon
+machine. Next in sequence: piping P1 (ADR-008 visual line register).
+
+### 2026-10-11 (sixth) — the owner develops on Windows + Laragon; documented as a first-class tier
+
+The owner confirmed the workstation is Windows with **Laragon** — Docker is
+not required. Added `docs/LARAGON-DEVELOPMENT-ENVIRONMENT.md`: PHP 8.4
+side-by-side in Laragon, the php.ini extension + upload-limit list mirroring
+`restore.sh`, PostgreSQL role/database creation with the non-superuser rule
+asserted, the forbidden-SQLite `.env` block, the exact artisan sequence
+(`key:generate → migrate:fresh --seed → ProcurementSeeder → filament:assets`),
+demo login (`karimi@nioc.example` / `password`), the no-parallel-test rule,
+and a troubleshooting table. One real defect surfaced by this: **P-20** —
+`PdfRenderer::binary()` resolves browsers through POSIX `command -v`, so PDF
+export is silently unavailable on Windows; recorded as a proposal, not fixed
+blindly (needs the runtime). HANDOFF §0 rule 4 now names three tiers:
+Docker (`dev-up.sh`), sandbox-degraded (preview + tests + `sandbox-pg.sh`),
+and Laragon.
+
+### 2026-10-11 (seventh) — Slice 6 built: PO attribution, amendment lineage, scope allocation and the order-gap board
+
+Per the standing instruction «فعلاً بدون انجام تست ادامه بده», Slice 6 was
+built without waiting for runtime verification (the owner will run
+`php artisan test` on Laragon). What was added:
+
+- **Migration** `2026_10_11_100000_add_po_attribution_and_order_gap`:
+  `purchase_order_items.material_item_id` FK to the Material Library,
+  `purchase_order_items.supersedes_id` self-FK with a unique index (a line
+  is superseded at most once), and `po_item_allocations` with FORCE RLS and
+  the participant policy copied from the accepted-MTO template, plus a
+  `quantity > 0` CHECK.
+- **`OrderGapService`**: `attribute()` (exact identity; unit must equal the
+  catalogue base unit — mismatch is a validation failure, never a
+  conversion), `amend()` (new row, old row untouched and readable, head
+  locked inside a row lock), `allocate()` (explicit quantities, refuses to
+  exceed the line quantity, no proration, only on attributed in-force
+  lines), and `board()` (per-material SHORTAGE / COVERED / OVER_PLAN plus
+  the UNMATCHED bucket, integer milli-unit arithmetic, lineage heads on
+  issued/in-force orders only).
+- **`OrderGapController` + routes + screen** at
+  `/projects/{code}/procurement/order-gap` (GET board; POST attribute /
+  amend / allocate), bilingual validation messages, inline `$t` view array
+  and the house shell/tabletools contract; sidebar item `project.ordergap`
+  under the `proc` module.
+- **`OrderGapTest`** (10 tests): exact attribution + unit-mismatch refusal,
+  draft-excluded until issued, cancelled-excluded, covered vs over-plan
+  with zero tolerance, amendment replaces (110 counted, not 200; old row
+  readable; double amendment refused), allocation recorded exactly with
+  over-allocation refused and draft/unattributed refused, unmatched bucket
+  never guessed, non-participant RLS mirror returns an empty board, and the
+  HTTP screen renders for a participant.
+
+Effective-state predicate: `ISSUED` or `PARTIALLY_RECEIVED` (issued and not
+cancelled) — reusing `ProcurementState::poAcceptsReceipts` semantics, no new
+state vocabulary. ADR-015 status updated to IMPLEMENTED — awaiting runtime
+verification. The prototype in `prototype/order-gap-board.html` remains the
+validated UX reference (P-06).
+
+### 2026-10-11 (fifth) — runtime provisioning: the PostgreSQL half is now in-sandbox
+
+The user chose runtime provisioning over parallel doc work. Probed every
+acquisition route empirically: **apt** (mirrors unreachable), **GitHub release
+assets** (redirect to `release-assets.githubusercontent.com` — blocked),
+**getcomposer/packagist/php.net/deb.debian.org** — all blocked; only the five
+allowlisted hosts answer. Consequence: PHP 8.4 cannot enter this sandbox
+(`php-wasm` also fails the requirement: no PHP-8.4-plus-pdo_pgsql build for
+Laravel exists there), and the Laravel tier remains Docker-only
+(`scripts/dev-up.sh`). The database half, however, is now real **here**:
+
+- `scripts/sandbox-pg.sh` provisions PostgreSQL **16.2** on 127.0.0.1:5432 from
+  the binaries bundled in the `pgserver` PyPI wheel; data in `.cache/pgdata`.
+- The wheel ships no contrib, so the script compiles **btree_gist** from the
+  official `REL_16_2` source via codeload (PGXS build, ~5 s) and creates it in
+  both databases.
+- CI discipline enforced by the script itself: role `epcc` asserted
+  `superuser=false bypassrls=false`; databases `epcc` and `epcc_test` owned by
+  it; connection over TCP verified.
+- Feature proof run **as the app role**: FORCE RLS enable + the ADR-008 shape
+  `EXCLUDE USING gist (cls WITH =, kind WITH =, dn_range WITH &&)` rejects an
+  overlapping DN band with `exclusion_violation` — the exact constraint the PMS
+  phase needs.
+- **Recorded gap:** the sandbox PG is 16.2 while compose/CI target 17. No
+  17-only feature is used by any current migration, but a new migration must
+  not adopt one silently; the Docker tier stays the reference.
+
+### 2026-10-11 (fourth) — ADR-015 open questions closed by the user
+
+All four Slice 6 decisions confirmed via structured questions and recorded as
+binding in ADR-015 §5: allocations at **subsystem level**; states
+**DRAFT/ISSUED/AMENDED/CANCELLED** with in-force as a predicate; allocation
+authority **deferred** with the MTO-acceptance policy (recorded, not implicit);
+amendments as **new row + `supersedes_id`**. P-05 closed in the proposals
+register. Slice 6 now has a complete requirements record and a validated
+screen; what remains is the build, which needs the full PHP/PostgreSQL runtime
+— the next step is restoring that environment (Docker tier).
+
+### 2026-10-11 (third) — Slice 6 screen language validated as a prototype (P-06 BUILT)
+
+Piping confirmed as the priority discipline (closed 2026-10-05 decision, not
+relitigated). Step-by-step sequence agreed with the user; this step: the
+**Order Gap Board prototype** — Slice 6's screen language built before any
+service code, per the pattern that twice caught localisation/layout defects
+early. `prototype/order-gap-board.html`: FA-first/RTL, five synthetic PH-14
+rows exercising every accepted gap state — two shortages (one with an issued
+gap and one with no PO yet), covered, over-plan with a visible unallocated
+remainder, and the unmatched-material bucket — plus the two rules people get
+wrong: the draft PO is explicitly *not* counted (issued/in-force only), and the
+unmatched row is *kept*, never guessed. Linked from the prototype sidebar
+(`nav.gap`), pinned by `prototype/test/order-gap-board.test.js` (19 assertions),
+wired into `npm run test:prototype` and `scripts/run-tests.sh`; ADR-015 gained
+§8 recording the UX validation. Full runnable suite green: pack validator +
+five jsdom harnesses. The four ADR-015 open questions go to the user next; no
+schema work starts in this sandbox (no PHP/PostgreSQL — the no-untested-RLS
+rule from ROADMAP §3.1 holds).
+
+### 2026-10-11 (second) — full documentation & requirements review pass
+
+Answered "did you review all documents and requirements?" honestly — the first
+answer was no — and then did the pass: **all ~11,600 lines under `docs/`** plus
+README, REBUILD and the pack/reference JSON set. SRS and Architecture read in
+full; every ADR's status block and key sections checked; DOCUMENTATION-AUDIT,
+coverage map, spike results, Iran-First addendum, roadmaps, UI-UX and
+product-planning docs structurally reviewed. Findings:
+
+- The audit's central warning holds: **parent-document drift is the biggest
+  non-code risk**. Dated corrections applied on the spot (recorded as P-16 in
+  `docs/IMPROVEMENT-PROPOSALS-EN.md`): SRS reconciliation banner; Architecture
+  §12 AD-1 marked historical; ADR-006's "Nothing is implemented" annotated;
+  ADR-005 dependency unblocked; **ADR-001/002 raised to Accepted-and-closed**
+  (they said "Proposed" while HANDOFF §1 and TODO §5 already treated them as
+  binding); Iran-First §10 backend-stack item marked closed.
+- Two items stay OPEN and are escalated: **P-15** deep SRS alignment
+  (release-phase tags per FR — the SRS marks nearly everything `M`, which makes
+  the Iran-first MVP un-prioritisable), and **P-17**: ADR-012's RLS escape-hatch
+  defect — the only known HIGH-severity issue in the codebase, deliberately
+  unfixed until a full-runtime session can guard it with EXPLAIN + correctness
+  tests. It should lead that session, ahead of Slice 6.
+- P-18: coverage-map recount (~15–20% wording vs the real ~40–45%) pairs with
+  P-15.
+- ADR-010's three open questions (equipment tag scope, instrument register,
+  imported-vs-allocated tags) confirmed as the blockers for piping phase P2.
+- DOCUMENTATION-AUDIT-EN §5.1–5.12 ("better requirement recommendations" —
+  BPM, visibility matrix, read-audit sampling, signatures, OCR phasing,
+  offline sync contract, SSO/MFA, BIM, pack editor, procurement depth,
+  schedule, HSE scope) are adopted as standing rule-5 input and referenced by
+  the proposals register rather than re-derived.
+
+Prototype/test state unchanged and green this session (pack validator +
+jsdom suites); no Laravel code touched.
+
+### 2026-10-11 (later) — rule 5 added; first improvement-proposals pass
+
+The user added a fifth standing rule: whenever a better alternative exists for a
+requirement, a piece of code or a capability, it must be voiced. It is recorded in
+§0 and operationalised through `docs/IMPROVEMENT-PROPOSALS-EN.md` (status-tracked).
+First pass found and **fixed on the spot**: the stale §3 line claiming PDF export
+and PROCUREMENT are absent (both exist); `test:prototype` omitting `render.test.js`
+(324-combination suite); `prototype/test/run-all.sh` missing two of the four jsdom
+suites (now a thin wrapper over `scripts/run-tests.sh`); README missing the ADR-015
+row. Verified, not just read: `PunchCategory::blocksReadyForStartUp()` is defined
+but called nowhere — the RFSU gate exists as dead code (proposal P-01). Recorded,
+not yet built: replacing the stock Laravel `app/README.md` and the Laravel-Boost
+`app/AGENTS.md` boilerplate with project-specific entry points (P-02/P-03), an
+English `TODO-EN.md` (P-04), recommended answers for the four ADR-015 open
+questions (P-05), a static Order-Gap-Board prototype screen before building
+Slice 6 (P-06), a demo-seed command for air-gap sales demos (P-07), a sandbox-tier
+CI job (P-09), and archiving the session-log table out of this file once it grows
+again (P-10). All ten proposals with rationale and status are in the proposals doc.
+
+### 2026-10-11 — standing operating rules, Slice 6 requirements ADR, sandbox dev-environment slice
+
+The user set four standing operating rules (handoff kept current; documentation in
+English and continuously updated; requirements recorded continuously as English ADRs;
+a development environment with a real display server and test execution). They are
+now permanent as **§0** above.
+
+Concretely: traced the Slice 6 requirement provenance (it lives in
+`docs/MTO-REQUIREMENTS-FA.md` / `-EN.md` §A5 and §3.2, referenced from here, README
+and TODO) and promoted it to a first-class requirements record — **ADR-015
+(PROPOSED)** — grounded in the real schema findings: `purchase_order_items` has no
+`material_item_id` FK, no amendment lineage, and no effective-state vocabulary
+(`PurchaseOrderState` exists only as a migration comment). Built the degraded-tier
+development environment this sandbox allows (no PHP/Composer/PostgreSQL/Docker):
+`scripts/run-tests.sh` runs every suite the machine can run — pack validator (venv
+under `.cache/`, PEP-668-safe), all four jsdom harnesses — and says loudly what it
+skips; `scripts/preview-server.mjs` is a zero-dependency live preview of the
+air-gap-safe prototype (0.0.0.0:8080, path-traversal blocked, `/healthz` probe).
+Verified here: all 3 standards packs + 5 reference packs valid; 324-combination
+render suite plus sidebar/piping-workspace/MTO-acceptance jsdom suites green;
+preview serving `index.html` and `piping-workspace.html`. The full Laravel/RLS
+suite remains Docker-tier (`scripts/dev-up.sh`) and was not run here.
+
 ### 2026-10-05 — external repo handoff, backlog reconciliation and MVP roadmap
 
 Cloned the private GitHub repo in a fresh Arena workspace, confirmed local and remote `main` are in
@@ -2756,6 +3271,417 @@ Runtime restoration is now fixed and repeatable in this sandbox. `restore.sh` no
 
 
 Next main slice: turned test-pack readiness from a derived placeholder into a real Laravel object. Added `piping_test_packs` with RLS/archive-freeze policies, `piping_lines.test_pack_id`, `PipingTestPack` and `PipingTestPackService`. The workspace can now create hydrotest/test packs, assign/unassign lines, show unassigned-line counts, and move packs through `DRAFT → READY → TESTED → ACCEPTED`; `READY` is blocked until the pack has at least one line and all assigned lines are released. Added HTTP coverage for pack creation, assignment, and refusing readiness while a line is not released. Full suite after this slice: **858 passed / 3166 assertions**. Note: Laravel DB tests must not be run in parallel against the same `epcc_test` database; doing so produced expected migration/drop-schema races, then sequential reruns were green.
+
+### 2026-10-12 (cont.) — P-24 flange step: ASME B16.5-2025 pressure-temperature ratings gate
+
+Owner uploads (branches `b16.5-upload`, `b16.47-upload`, `sec.II-part2`):
+ASME B16.5-2025 (274 pp), B16.47-2020 (large-diameter flanges) and Section
+II Part D 2025 Customary (1533 pp). Built and committed from B16.5:
+
+- `scripts/build_flange_ratings_pack.py` — extracts all 45 SI rating tables
+  (Tables 2-1.1 .. 2-3.19, 903 rows) with each table's material block
+  (forgings/castings/plates -> group). Build-time invariants: strictly
+  rising temperature ladders, non-increasing pressure per class (0.1-bar
+  print-rounding tolerance), contiguous class dropout, printed anchors —
+  and a cell-by-cell audit of the Group 1.1 SI table against its U.S.
+  Customary twin (every converted value must land inside the SI step
+  bracket; the dual-unit tables round independently, so equality is not
+  the standard's own semantics).
+- `standards-packs/reference/flange-ratings.ref.json` — ratings in bar /
+  deg C, classes 150..2500, material index for 35 ASTM specs
+  (A105, A350 LF2, A182 F304/F316/F11/F22/F91/F92, A216/A217/A351/A352,
+  B462 N08020, ...).
+- `App\Support\Reference\FlangeRatingReference` (ADR-007 pattern):
+  material -> group resolution and step-rating lookup; every lookup throws
+  above a ladder top or where the table retires a class (ellipsis).
+- PMS wiring: FLANGE_TYPE values are
+  `{"rating_class": 300, "spec": "A105", "grade": "F316"|null}` —
+  validated at entry (class on the B16.5 ladder, material resolvable);
+  the publish gate rates every FLANGE_TYPE cell against the class design
+  basis (`validateFlangeRatings`): design pressure (MPa -> bar) must not
+  exceed the group's rating at the design temperature. Bilingual refusals.
+- Tests: `Tests\Unit\FlangeRatingReferenceTest` (anchors incl. A105
+  Cl 150 = 19.6 bar at <=38 deg C — the 285 psig classic — and a whole-pack
+  monotonicity re-check) and `Tests\Feature\PipingFlangeRatingGateTest`
+  (under-rated refused, adequate published, unknown spec/class refused at
+  entry, above-ladder and retired-class refused at publish).
+
+Also this session: verified merge #6 (roadmap reconciliation) brought no
+content change to main (tree identical to our branch base), and restored
+the fork-only `CHAT-TRANSFER-HANDOFF-EN/FA.md` dropped by that merge
+(commit `0b1a830`). Follow-ups: B16.47 large-diameter ratings, Section II
+Part D data (Tcr/yield/density), JSON schema + CI validation for the two
+new packs, and the materials-library coverage review (owner-requested).
+Runtime verification pending on the owner's Laragon tier.
+
+### 2026-10-12 (cont.) — `workspace` branch audited: parallel session's reference library ported (commit `bf15816`)
+
+The owner published a `workspace` branch: a full export of a parallel Arena
+session (repo snapshot dated 2026-10-06, based on the same `48b1e5d` root)
+plus evidence zips and an ASME B16.9-2018 PDF. That session had built a
+mature reference library and an evolved app layer, but NOTHING of it ever
+merged to main — the export was its only surviving record.
+
+Ported verbatim into this branch (commit `bf15816`):
+- 11 reference packs — highlight: `allowable-stress` = FULL B31.3-2024
+  Table A-1 SI (798 rows / 138 specs, duplex A790/A789, EFW A671/A672,
+  nickel alloys) closing the gaps named in the materials-library audit;
+  `flange-pt-ratings` v2.0.0 (45 B16.5-2025 groups + 27 B16.47 curves,
+  derived Class 800); `flange-bolting`, `fitting-dimensions` (B16.9-2018),
+  valve packs, fluid-service, actuators, `materials` v1.8; plus
+  `component-templates` upgraded to its strict superset (+BOLT/+NUT).
+- 16 per-pack schemas and the session's 2,835-line validator (superset of
+  ours). Green this session: 3 standards packs + 16 reference packs valid.
+- Tests: the session's 21 fitting-dimensions regression probes, plus a new
+  `test_flange_ratings_cross_check.py` pinning the cross-provenance audit:
+  this branch's PDF-extracted flange pack vs the ported transcribed one =
+  4,725 shared B16.5 cells, 4,725 exact matches, zero mismatches. 22/22
+  standards tests pass.
+
+NOT ported (open, owner decision — P-25): the session's app-level work
+(different PMS architecture, MR entry, NDT requirements, engineering
+screening, fitting review) stays archived in the export. Follow-ups also
+recorded: B16.47-2025 request if its curves enter service; conform this
+branch's own packs to the ported schema convention later.
+
+### 2026-10-12 (cont.) — P-25 steps 2+3: engineering screening + fitting review ported from the parallel session
+
+Owner instruction: evaluate the parallel session's code step by step and
+reuse what matches this session's logic. Step 1 (compatibility
+assessment) landed as `docs/PARALLEL-SESSION-INTEGRATION-ASSESSMENT-EN.md`
+(commit `3bdff9b`). Steps 2 and 3 were MERGED because the screening
+evidence layer is keyed to fitting-definition rows — one functional unit.
+
+Ported verbatim (module files, 3 migrations with house-style RLS, 4 test
+files = 32 tests, 7 design documents):
+- `App\Support\Reference\FittingDimensions` — the PHP accessor over the
+  ported `fitting-dimensions` pack (ASME B16.9-2018).
+- `ProjectFittingDefinition` model + `ProjectFittingDefinitionService`
+  (append-only definitions with supersedure: revises/root/correction
+  reason, unique source index).
+- `FittingReviewService` — review policies (1-5 steps), runs, decisions,
+  built on the shared `AuthorizationPipeline` (byte-identical in both
+  sessions) and `AuthorizationDenial`.
+- `App\Services\Engineering\MaterialScreening` — read-only, versioned,
+  bilingual declaration screener for PIPE/FLANGE/VALVE/GASKET/BOLTING
+  against the ported packs ("never certifies, never edits, never
+  approves") + `MaterialScreeningEvidence` capturing sha256-fingerprinted
+  snapshots per review run.
+- Migrations `2026_09_28_140000` / `2026_09_29_090000` /
+  `2026_09_29_180000` (definitions; policies/runs/decisions; screening
+  snapshots). No collision with this branch's migrations; every imported
+  class verified present here before copying.
+- Docs: B16-9 source review/reader/size-scope/cap applicability,
+  fitting-review workflow, material screening + integration notes.
+
+NOT ported in this step (deliberately): the controller/routes/views UI
+(its own later step), finding dispositions/responses (next candidate),
+and everything in the assessment's conflict zone / deferred zones.
+Verification gate: `php artisan test` on the owner's Laragon tier.
+
+### 2026-10-12 (cont.) — P-25 step 4: material-requisition (MR) entry ported from the parallel session
+
+Owner: «بررسی کن که گام بعدی رو کامل کن». Step 4 of
+`docs/PARALLEL-SESSION-INTEGRATION-ASSESSMENT-EN.md` — the MR entry
+module — ported under the one-verifiable-step rule.
+
+**Ported (verbatim, their tree at `.cache/ws/x_ws/epcc-platform`):**
+- Services: `MaterialRequisitionEntryService`,
+  `MaterialRequisitionAccessService`, `PmsAccessService`. The PMS
+  access service is portable because their tree keeps its policy table
+  in a standalone migration (`2026_09_29_235700_create_pms_author_policies`),
+  independent of the conflicting PMS schema.
+- `ProcurementService` replaced with their strict superset (17-line
+  diff): MR docblock + a numbering bug-fix — requisition numbers now
+  come from the `projects.material_requisition_sequence` counter with
+  `firstOrFail` instead of max-of-max (concurrent-safe, no gaps reused).
+- Migrations: `2026_09_29_235700` (PMS author policies) and
+  `2026_09_30_042713_add_material_requisition_authoring` (sequence
+  column + `mr_author_policies`), both with house-style RLS
+  (append-only policy rows, per-company author policy tables).
+- `MaterialsController` replaced wholesale — the diff is additions
+  only: 3 constructor injections (incl. the already-ported
+  `ProjectFittingDefinitionService::assertAccess`), procurement screen
+  plan gate (`hasModule('proc') && allowsPack`), MR raise + author-access
+  endpoints, and a JalaliDate refactor replacing Morilog.
+- Routes: 2 POSTs (`/projects/{projectCode}/procurement/requisitions`,
+  `/projects/{projectCode}/procurement/author-access`).
+- Views: new `materials/mr-entry.blade.php`; two additive merges into
+  `materials/procurement.blade.php` (mr-entry include + item details
+  expand cell using `mr.details` / `mr.policy_basis`).
+- Lang: `mr`, `fitting_review`, `project_fittings`, `material_screening`,
+  `project_materials` (en + fa) — the last four also complete the
+  step-2+3 port whose services reference these keys; `epcc.php` taken
+  from theirs (pure superset).
+- Tests verbatim: `MaterialRequisitionEntryTest` (HTTP-level, hits
+  `/projects/PH-14/procurement/...`) + `MaterialRequisitionMigrationTest`.
+- Docs: `MATERIAL-REQUISITION-ENTRY-2026-09-30.md` + their
+  `ADR-018-Material-Management-Operational-Completion.md`. **ADR
+  numbering divergence recorded:** our tree runs ADR-001…015 (015 = PO
+  Attribution); their tree used 015–018 for different topics. Their
+  ADR-018 kept under their number because ported code cites "ADR-018"
+  and there is no filename clash; their ADR-015/016/017 docs are NOT
+  ported (filename clash with our 015) — a doc-consolidation note is
+  queued.
+
+**Verified before port:** `MaterialRequisition` / `MaterialRequisitionItem`
+models byte-identical across sessions (untouched); our `AuthSeeder`
+already seeds the plans blocks their plan gate needs (EPC-PARS = full
+plan with `proc` module); all `use App\…` imports of the copied services
+resolve in our tree; brace/paren balance clean on every copied file;
+test URLs match the added route paths.
+
+**Verification gate (owner's Laragon):**
+`php artisan migrate:fresh --force && php artisan db:seed --class=AuthSeeder && php artisan db:seed --class=EpccDemoSeeder && php artisan test --filter=MaterialRequisition`
+
+### 2026-10-12 (cont.) — P-25 step 5 assessed; standards-library port stopped at design gate
+
+Owner approved the next step («بله»). Reconciled the parallel export's
+`Standard`, `ProjectStandard`, `StandardCitation`, `StandardsLibrary`,
+`2026_09_20_100000_create_standards_library` and later document-reference
+freeze migration against this branch's `StandardsPackRepository`. Recorded
+findings and proposed choices in `docs/ADR-019-Standards-Library-Reconciliation-EN.md`.
+The file-backed numerical packs and the metadata catalogue serve different
+purposes and can coexist. However the exported migration comments on missing
+`itp_stages.reference`; citations only support `ITP_STAGE` and `printed()`
+uses absent ITP snapshot APIs; the later `source_edition` migration needs ITP
+triggers; the exported tests seed ITP. Therefore no code/migration/test was
+copied: the one-step rule requires stopping on this dependency conflict.
+Recommended owner choice: port catalogue + project adoption as an explicitly
+adapted future step, leave citation/ITP deferred; alternative: defer all.
+Publication must pin edition and snapshot. No tests executed here per owner.
+Earlier steps 2+3 and 4 still await Laragon verification.
+
+### 2026-10-12 (cont.) — P-25 step 5 option A: catalogue and project adoption
+
+Owner selected option A («گزینه اول»). Implemented the adapted standards
+catalogue (`Standard`, `ProjectStandard`, `StandardsLibrary`) with a new
+`2026_10_12_130000` migration: global identity catalogue + project-specific
+RLS applicability and edition pinning. Removed all ITP/citation dependencies
+from the parallel code and migration; no `standard_citations` or ITP host.
+Added `StandardsCatalogueTest` for identity, editions, withdrawal and RLS.
+Original parallel tests depend on ITP and cannot be ported verbatim.
+ADR-019 updated with decision and scope. `StandardsPackRepository` untouched.
+No tests run here per owner's instruction. Laragon gate:
+`php artisan migrate:fresh --force && php artisan db:seed --class=EpccDemoSeeder && php artisan db:seed --class=AuthSeeder && php artisan test --filter=StandardsCatalogueTest`.
+
+### 2026-10-12 (cont.) — P-25 step 6: PMS field-group design checkpoint
+
+Owner asked to continue while runtime tests remain pending. Wrote
+`docs/ADR-020-PMS-Field-Groups-Reconciliation-EN.md`, a proposed
+four-group reconciliation for fluid-service classification, severe-cyclic
+condition, material identity keys and NDT requirements on OUR PMS schema.
+Recommended first group: fluid service (A), subject to the owner deciding
+single vs multiple categories per class. The existing per-DN PIPE_MATERIAL
+rule should not be duplicated on the header. No migration or app logic
+changed in this step; no tests executed. Next owner decision: first group
+and its cardinality; step 7 baseline/model-import evaluation remains pending.
+
+### 2026-10-12 (cont.) — PMS fluid-service cardinality decided
+
+Owner confirmed: each piping class may refer to one fluid-service category.
+ADR-020 updated: one class-level field, not a multi-category link; severe
+cyclic stays a separate condition. Corrected the fluid-service reference
+pack prose from "SEVEN" to "SIX" to match its six enumerated codes; no
+classification records were fabricated. Before implementing the gate, decide
+how existing published classes lacking a category are handled. No PHP
+runtime tests were possible in this environment.
+
+### 2026-10-12 (cont.) — PMS fluid-service group A implemented
+
+Owner clarified that the project is in development and no important DB data
+needs migration. Added nullable class-level fluid-service category with DB
+CHECK for the six reference-pack codes, draft-only bilingual setter, and
+mandatory publish gate; existing rows not backfilled. Existing PMS fixtures
+now explicitly choose NORMAL, and a new test refuses missing classification
+and the SEVERE_CYCLIC condition as a category. ADR-020 records limitations:
+no automatic Category D eligibility or line-level consistency check claimed.
+PHP files parsed and reference JSON parsed; runtime Laravel tests require
+PHP/Laragon.
+
+### 2026-10-12 (cont.) — P-25 step 7: baseline / model import assessed
+
+After the owner confirmed that the development database contains no important
+data and asked to continue, inspected the actual archived parallel source
+from the `workspace` zip. `docs/ADR-021-Baseline-Model-Import-Reconciliation-EN.md`
+records the result: **no-go on wholesale port**. The exported baseline's
+`baseline_batches`/`engineering_items` duplicate the authority of this
+branch's immutable `accepted_mto_batches/rows`; the model importer adds
+missing PCF parsing and touches protected component/joint state. Recommended
+next isolated step is parser-only, or owner can defer step 7. No app code
+copied and no PHP tests run. Earlier Laragon gates remain open.
+
+### 2026-10-12 (cont.) — P-25 step 7 follow-up: pure PCF reader only
+
+Owner approved parser-only («پیشنهاد خودت عالیه»). Copied five pure PCF
+classes + source fixture from the archived workspace. Retained the 13
+parser tests verbatim; excluded the six vocabulary tests because this
+session's P2P stub-on/stub-in semantics conflict with the parallel
+`TEE-SET-ON` → `OLET` mapping. Did NOT port vocabulary, baseline schema,
+model-import application logic, controller or routes. ADR-021 records this
+gate and future upload bounds/unit checks. All six PHP files parsed; no
+PHP runtime available here. Laragon: `php artisan test --filter=PcfParserTest`.
+
+### 2026-10-12 (cont.) — PCF branch classification, no model writes
+
+Continued after parser-only step. ADR-022 records why parallel
+`TEE-SET-ON`/`TEE-SET-IN` → `OLET` is incompatible with the owner's P2P
+semantics. Added read-only `PcfBranchClassification` with explicit P2P
+STUB_ON/STUB_IN, TEE, WELDOLET, SOCKOLET mappings; ambiguous OLET and
+unknown tokens stay unresolved. Added pure PHPUnit test; neither the model
+importer nor the parallel vocabulary was ported. PHP tests still pending
+on Laragon.
+
+### 2026-10-12 (cont.) — PCF read-only admission boundary
+
+Added `PcfAdmission` wrapper around the verbatim PCF parser: 5 MB / 100k
+line / 20k component limits, explicit supported bore and coordinate units,
+unique unit declarations, line reference, finite coordinates and positive
+bores. Added pure PHPUnit cases for accepted and rejected inputs; ADR-023
+records the contract. No upload API or DB/model writes. PHP syntax parsed;
+Laravel tests pending on Laragon (`php artisan test --filter=PcfAdmissionTest`).
+
+### 2026-10-12 (cont.) — Cross-source baseline design checkpoint
+
+Owner requested continuation. ADR-024 reconciles the parallel immutable
+model/MTO claims with this branch's accepted MTO snapshots, without a new
+schema or duplicate authority. Found that `OrderGapService::board()` sums
+all accepted revisions for a project; successive accepted revisions of a
+scoped document can double-count gross demand. Proposed append-only
+effective-revision selection (accepted rows cannot be updated/deleted),
+explicit material identity and unit/scope mapping, and human resolution
+without automatic source precedence. Owner must choose scope/supersession
+semantics before a code change. No PHP tests run here.
+
+### 2026-10-12 (cont.) — Recovered previous MTO revision/scope decisions
+
+Owner asked whether earlier sessions had already decided the effective MTO
+revision and scope overlap. Yes: archived parallel ADR-005 §2.2 and the
+2026-10-05/06 accepted decisions, reconciled in this branch's
+`docs/MTO-REQUIREMENTS-EN.md` §§3.3–3.6, say latest accepted revision
+per document/scope for current baseline; historical immutable rows are
+not added; siblings require disjoint scope or exact-revision additive
+evidence; parent/child scopes overlap; scope/hierarchy revisions pinned.
+Gross approved MTO and net model stay separate, with no percentage
+tolerance hiding a positive shortage. Updated ADR-024 to distinguish
+these existing owner decisions from implementation details still open.
+The parallel `BaselineService` mutates SUPERSEDED and suppresses small
+disagreements; its behavior cannot simply be copied into this branch.
+No code or runtime tests in this research step.
+
+### 2026-10-12 (cont.) — Targeted documentation drift review
+
+Owner requested review of documentation against current capabilities. Audited
+MTO-REQUIREMENTS EN/FA, ADR-005, ADR-015 and ADR-024 against app source.
+Corrected historical branch/test-count wording, stale claims that PCF parser,
+PMS access and MR sequence were absent, and Slice 6's obsolete todo status.
+Explicitly flagged the current OrderGapService's all-revisions/all-scopes
+summation defect instead of claiming full multi-revision correctness;
+clarified read-only PCF is not model import. English docs updated and the
+existing FA counterpart kept in sync. No app code or runtime tests in this
+documentation step. Historical HANDOFF entries remain evidence of their
+original dates, not current feature status.
+
+### 2026-10-12 (cont.) — GitHub CI first real integration run
+
+Synchronized the session branch with its pushed HEAD without overwriting
+working files, committed subsequent changes as `d1e827c`, pushed and opened
+PR #7 as a CI-only review gate (do not merge yet). Run 38343223088:
+prototype + development-image jobs passed; standards job failed because
+CI did not install required `jsonschema` (reproduced locally without that
+package; passes with it); Laravel job failed during migrate/seed before
+PHPUnit; compose boot also failed. Runner log downloads are unavailable
+from this sandbox's network, so the CI migration step now emits a readable
+GitHub error annotation on failure. Next: rerun CI, inspect bootstrap
+annotation, fix root cause and then run the actual Laravel suite.
+
+### 2026-10-12 (cont.) — GitHub CI exposed step-2+3 schema collision
+
+PR #7 second run 38343518174: standards/rule-engine and prototype green;
+Laravel+compose blocked during migration at `2026_09_29_180000` with SQLSTATE
+42703 (`project_fitting_definitions.size_designation` absent). The ported
+screening snapshot migration expects the parallel general-material definition
+columns; our fitting table only has CAP/ELBOW dimensions. ADR-025 stops blind
+port and requests owner choice (new material declaration host vs defer general
+screening). Added independent pure-PCF CI job so parser tests can run even
+while database migration is blocked. Full Laravel suite was NOT executed.
+
+### 2026-10-12 (cont.) — Pure PCF PHPUnit 12 compatibility correction
+
+PR #7 CI run 38343989948 executed 18 pure PCF tests: 17 passed, one
+`PcfAdmissionTest` errored because PHPUnit 12 no longer recognizes the
+legacy `@dataProvider` docblock. Changed to `#[DataProvider('invalidFiles')]`
+so the 11 unsafe-input cases actually execute. Full Laravel remains blocked
+by the unrelated step-2+3 migration collision (ADR-025).
+
+### 2026-10-12 (cont.) — GitHub CI verification checkpoint
+
+PR #7 run 38344270861 after the PHPUnit 12 provider fix: standards packs
++ conformance, HTML prototype, pure PCF PHPUnit, and development image
+all PASSED. The Laravel/PostgreSQL suite and compose boot FAILED at
+`2026_09_29_180000_capture_material_screening_snapshots.php` before
+PHPUnit could start; schema collision documented in ADR-025. This is a
+real integration defect, not a test-green state. PR #7 stays open and
+unmerged pending an owner decision on general material screening vs the
+existing CAP/ELBOW fitting table.
+
+### 2026-10-12 (cont.) — Parallel branch supplied the missing screening predecessor
+
+Owner asked to inspect previous-session branch. In the `workspace` ZIP,
+found `2026_09_29_150000_extend_project_material_declarations.php` and
+`ProjectMaterialSchema.php`, both omitted by the earlier selective port.
+They supply exactly the `material_family`/`size_designation`/properties
+columns and family-aware review policy expected by migration 180000 and
+ported services. Previous ADR-025 diagnosis of an *inherent* incompatible
+schema was too strong: the immediate CI failure was an incomplete dependency
+chain. Copied those files and the original populated migration test
+byte-for-byte; no ad-hoc columns or RLS weakening. ADR-025 corrected;
+full CI rerun required, and presentation/model-import work remains out of
+scope.
+
+### 2026-10-12 (cont.) — Missing predecessor recovered; next PMS schema conflict exposed
+
+PR #7 CI run 38347536130 confirmed `2026_09_29_150000` and the
+screening snapshot migration now migrate successfully. Next failure is
+`2026_09_29_235700_create_pms_author_policies`: absent
+`pms_entry_events` (SQLSTATE 42P01). The archived 235000 predecessor
+belongs to parallel PMS schema and cannot be copied over our independent
+ADR-008 PMS; 235700 also alters absent `piping_class_notes` and installs
+an author event guard. Do not weaken authorization by simply skipping
+those guards. ADR-025 records need for a separated policy design or
+deferral. Other CI jobs (standards, prototype, pure PCF, image) pass;
+Laravel suite still has not started.
+
+### 2026-10-12 (cont.) — PMS author nomination adapted to current schema
+
+Owner approved the suggested path. Adapted migration 235700 to create only
+`pms_author_policies` and its append-only/RLS/version/actor protections plus
+fail-closed lookup, without touching absent parallel `pms_entry_events` or
+`piping_class_notes`. Added `PmsAuthorPolicyTest` (default deny, explicit
+nomination, suspension, immutable history). ADR-026 explicitly notes that
+`PipingClassService` writes are NOT YET gated by this policy; no claim of a
+fully enforced PMS authoring permission. Next GitHub CI must migrate/test;
+subsequent write-path integration is a separate step.
+
+### 2026-10-12 (cont.) — PMS policy migration green, next RLS defect fixed
+
+PR #7 run 38361131058 confirmed adapted 235700 migrates. Laravel stopped
+later at ADR-012 sargable RLS migration: generic STANDARD_CHECK referenced
+nonexistent `mto_staging_rows.company_id` (SQLSTATE 42703). Corrected the
+child policy to use parent `mto_revisions` and project/participant check,
+matching original delegation; no table or tenant column fabricated.
+Other jobs remain green. Next GitHub CI run determines whether full PHPUnit
+can finally start; no success claim until then.
+
+### 2026-10-12 (cont.) — CI database prerequisite provisioned
+
+PR #7 run 38361586890 migrated through the RLS fix and reached PMS P1,
+which correctly refused to proceed without `btree_gist`. Updated GitHub
+CI database bootstrap and Docker Compose PostgreSQL init to install the
+extension as `postgres` administrator in both epcc and epcc_test; app
+role remains non-superuser and migrations do not CREATE EXTENSION.
+Existing Docker volumes need a one-time DBA extension install (init runs
+only for fresh volumes). Full PHPUnit remains pending next run.
 
 ### 2026-09-17 (later still) — ADR-006 phase 2: components and ports
 
@@ -2852,3 +3778,1199 @@ Append one row per session. Keep it terse.
 | 2026-09-12 | **Filament v4 admin panel (§5i).** Wrote the tenancy test FIRST, and it earned its keep: with the stock middleware stack the panel showed the signed-in contractor **nothing at all** — RLS failing closed — so the "no leak" test passed on a broken screen. Only the mirror test ("still shows its own rows") could tell the two apart. Three more real defects: `->font()` pulls from Google Fonts (**air-gap violation**, now pinned by a CDN-host test), `canAccessPanel` was untested so a **deactivated account could open the admin panel** (M79), and the state column was bound to `currentRevision.state` when the attribute is `cde_state` — an **empty cell on every row** that returned 200 and was found by looking at a screenshot, not by a test (M81). Added `SetUserLocale` + the project's first `lang/` files | **363 / 1256**, **81 mutations caught** |
 | 2026-09-11 | **Corrected the meaning of `MC` (§5h).** The user asked "do you know what MC means?" — it is **مدیریت پیمان / Management Contractor**, the employer's contract administrator, not the "Mechanical Completion body" the seeder, two views, the SRS role table and the coverage map all claimed. **No test could have caught it**: a tenant type only has to be a matching string, and the role rules were already right, so the behaviour passed while the screen lied. Added `TenantType` (nine types, one place — they were loose strings in five files), a CHECK constraint on `companies.tenant_type`, and `TenantTypeTest` which pins the words themselves. Renamed the fixture company to مدیریت پیمان کاران and the role to `mc_supervisor` | **356 / 1240**, **77 mutations caught** |
 | 2026-09-11 | **Vendor transmittals as a separate stream (§5g).** Asked the four structural questions first (who records, what "separate" means, roll-up traceability, document typing) rather than guessing. Separate `VTR` series, own screen, `source_item_id` chain, two CHECK constraints, `VEN-AZAR` added to the fixture with two seeded letters. **Mutation testing found the HTTP create path was untested** — a controller ignoring the submitted `kind` filed vendor letters into the contractual series and the whole suite still passed. Narrowing the employer RLS clause surfaced a genuine leak: the owner could read supply-chain letters | **349 / 1202**, **74 mutations caught** |
+
+## 2026-10-13 CI integration checkpoint
+
+- PR #7 run 38361941268: standards, pure PCF, image and prototype green;
+  Laravel and compose red. Laravel migrated through 235700, staging RLS and
+  `btree_gist`, then failed at P1 with duplicate `piping_classes` (already
+  created by the 2026-09-15 piping-line migration). P1 now extends the existing
+  register in place and retains its RLS/archive policies and referenced IDs;
+  legacy classes have no fabricated DN coverage and cannot publish without it.
+  This correction is **not yet CI verified**. The author policy still does not
+  gate PipingClassService writes. Recheck the next CI run before declaring success.
+
+## 2026-10-13 `pre-work` branch audit
+
+The owner requested a full review and selective transfer. Inspected remote tip
+`878d34f`, its two upload commits, 1,881 tracked paths, four source archives,
+and the 1,047-path nested repository against the present branch. Detailed
+inventory and decisions: `docs/PRE-WORK-BRANCH-INTEGRATION-REVIEW-EN.md`.
+No source was copied: the material/fitting core already has a newer integrated
+version; the unique response/disposition, PMS history/NDT, baseline and ITP
+features depend on a different schema, while logs, backups and screenshots are
+not deployable source. Never bulk-merge this branch. Next possible safe slice:
+adapt its read-only material-screening CLI with a synthetic fixture and run a
+PHP regression, after resolving the current CI PMS migration failures.
+
+## 2026-10-13 selective `pre-work` recovery
+
+Brought over only the independent read-only screening CLI, its synthetic
+fixture and its standalone assertions from nested `pre-work` tip `878d34f`.
+Wired it into CI's PHP standards job and the local degraded runner; no Laravel
+schema/service was replaced. Local PHP unavailable; CI verification pending.
+See `docs/PRE-WORK-BRANCH-INTEGRATION-REVIEW-EN.md` for boundaries.
+
+- CI run 38368929870 (commit `4083be8`): the independent standards job,
+  including the recovered screening regression and JSON/HTML CLI smoke, is
+  green; prototype, pure PCF, development image and compose are also green.
+  Laravel job was still running at the last check. Prior run 38362372660 had
+  reached PHPUnit but failed on legacy `piping_classes.name_en` inserts and
+  unrelated material-reference expectation errors; do not claim the whole
+  suite is green. See GitHub Actions for the final run result.
+
+- The previous fully completed Laravel run 38362372660 reached PHPUnit:
+  legacy line/component tests failed because the P1 migration required names
+  older class creation never supplied; material-reference tests also reported
+  independent stale expectations. Added database name-fill trigger and focused
+  legacy-insert regression, still awaiting CI. Run 38368929870 was cancelled
+  by the newer push before its Laravel job completed; run 38370108973 was
+  in progress at last inspection. Do not report either cancelled run as a
+  Laravel test result.
+
+- CI run 38370511965 completed: all jobs except Laravel green. PHPUnit
+  repeatedly failed because `migrate:fresh` drops tables but does not drop the
+  standalone `epcc_piping_class_fill_names()` PostgreSQL function: its second
+  CREATE FUNCTION raised SQLSTATE 42723. Changed P1 migration to CREATE OR
+  REPLACE FUNCTION, with the trigger still bound to each newly created table;
+  this fix is awaiting CI. Three independent `MaterialReferenceTest` cases
+  also fail against pack semantics (PSL ambiguity, 816 deg C max use, W
+  coefficient), and must be resolved against reference data, not by relaxing
+  safety rules to match old test literals.
+
+- MaterialReference PHPUnit failures were stale test expectations, not a
+  reason to loosen material guards. Cross-checked the committed A-1 and
+  302.3.5 reference-pack rows: API5L L290 has both PSL1/PSL2 (explicit PSL
+  required; max use 260 C), TP304 max use 816 C even though a stress column
+  exists at 825 C, CrMo W at 524 C is 0.84, and CSEF N+T W at 510 C is 1.0.
+  Corrected only the test cases to exercise valid temperatures and explicit
+  PSL selection; CI verification pending. Never infer approval from an
+  out-of-range column or silently select a PSL.
+
+- CI run 38372294654 completed: five non-Laravel jobs green; Laravel red.
+  The repeated-migration trigger error is gone. Remaining annotations: missing
+  DI binding for FittingDimensions; two tests calling absent parallel-PMS
+  `PipingClassItem` / `PipingClassBody`; and an exact CSEF W=1.0 column at
+  510 C rejected because the interpolation routine examined its preceding
+  dashed column first. Bound the reader using the same reference directory
+  and PipeReference as other readers; fixed exact-column lookup before
+  interpolation; removed **only** the two impossible parallel-consumer tests
+  from the reader test while retaining pack and current fitting-review tests.
+  CI verification of this set pending. No missing parallel PMS table/model was
+  fabricated and no engineering applicability guard was relaxed.
+
+## 2026-10-13 CI run 38375775331
+
+Five non-Laravel jobs passed. Laravel completed with 10 annotated failures/errors:
+PipingClass publish/read-only stale object and localized gap assertion; an
+OrderGap lineage assertion outside RLS tenant scope; three HTTP screening
+snapshot requests and one fitting-review HTTP request to the absent
+`project-fittings` route; a material requisition test creating absent parallel
+`System`; a quantity-boundary response mismatch (302 vs 422); and an exact
+CSEF W temperature still rejected. The earlier exact-factor patch was
+mistakenly placed in `stressOf()` (and referenced undefined variables); moved
+it to the factor interpolator, preserving `stressOf()` checks. PMS draft
+checks now refresh state under tenant RLS instead of trusting a stale object;
+the gap test checks the actual missing interval rather than a translated kind.
+The OrderGap relation assertion now runs in tenant scope; the MR fixture uses
+the current facility-to-subsystem schema without fabricating System. These
+changes still need CI validation. The four absent-route assertions and the
+quantity response mismatch remain open. Do not weaken RLS or add phantom
+schema to satisfy them. PMS write-path policy is still not enforced.
+
+## 2026-10-13 run 38378658637 and HTTP integration
+
+CI: five non-Laravel jobs green, Laravel red. Previous fixes removed the
+OrderGap lineage failure, stale class publish bypass and exact-factor error.
+Remaining issues included missing `project-fittings` HTTP route (four tests),
+two RLS sargability fixtures lacking required facility_id, a duplicate-branch
+constraint abort that poisoned a containing tenant transaction, a P1 test
+expecting publication despite missing corrosion allowance, one MR quantity
+HTTP 302/422 mismatch, and one PDF timeout under CI load.
+
+A cohesive, authenticated fitting/material declaration + review HTTP slice was
+ported with actual tenant-bound reads, service-authorized writes, archived
+project lock and stored-vs-live screening evidence, without importing the
+parallel PMS or finding disposition subsystem. Added link on piping register.
+Other fixes: sargability fixtures now attach to a real project facility;
+rule inserts use nested transaction/savepoint so database constraint failures
+can be converted to validation errors without poisoning the tenant transaction;
+P1 test now verifies missing corrosion allowance still blocks publish rather
+than inventing it. CI validation of all these changes pending. PDF timeout and
+MR quantity response mismatch are not yet resolved. Never claim all tests
+pass until a complete run confirms it.
+
+## 2026-10-13 run 38381333457: security finding
+
+The HTTP fitting/material routes passed their previously missing-route tests;
+five non-Laravel jobs passed. Laravel found a **real RLS leak**: a PH-14-bound
+employer read its KISH-1 payment certificate because the generated policy
+combined `scope AND own OR owner` without parenthesizing the owner branch.
+Changed generator to `(scope) AND (membership body)`, affecting both migration
+directions on a fresh install; the existing RLS test pins the isolation.
+Other remaining failures: synthetic RLS fixture assumed a project facility
+exists (now create an actual facility under tenant scope), JSON EXPLAIN result
+was double-decoded as a string (now handles raw JSON), and invalid MR quantity
+`' 1'` was silently trimmed to `'1'` by global middleware (MR quantity key now
+excluded from TrimStrings, still strictly validated by service). CI pending.
+This is not evidence of a successful full suite or of complete PMS authoring.
+
+- Added an HTTP-level mirror for the newly restored fitting/material register:
+  a nonparticipant must receive 404 on GET, create and submit, while a
+  participant retains a 200 read. This closes the gap where DB/service tests
+  alone could pass while the HTTP route is accidentally exposed. CI pending.
+
+## 2026-10-13 run 38383865549: isolation passes; two fixture-count failures
+
+For commit `b0ccbf2`, standards/rule engine, PCF, prototype, development image,
+and compose all passed. Laravel ran to completion with exactly **two failures**,
+both in `RlsSargabilityTest`: tests counted all visible punch rows as if the
+demo seeder had none (10 instead of 1; 30009 instead of 30000). The tests now
+count their own `PI-SHAPE-1` / `PI-%` generated rows while still separately
+asserting no foreign `KI-%` rows leak; no RLS policy or seed was changed to
+paper over the count. The previous PH-14/KISH-1 employer scope leak and the
+new HTTP nonparticipant mirror did **not** recur in this run. CI recheck of
+the revised assertions is pending. PMS author-policy nomination still does
+not gate `PipingClassService` writes; full authoring protection remains open.
+
+## 2026-10-13 CI baseline after selective integration
+
+**Run 38386417769 for commit `d62b848`: ALL SIX CI JOBS PASSED.**
+Laravel suite (PostgreSQL + RLS), standards packs/rule engine (including the
+recovered material-screening CLI), pure PCF, HTML prototype, development
+image and compose stack succeeded. The two sargability probe-count assertions
+were the final failures in the preceding run; now they pass without weakening
+RLS. Exact PHPUnit test/assertion counts were not available: `gh run view
+--log` failed to fetch the hosted log (EOF), so no count is invented. The
+successful CI run verifies only the committed scope: the independent PMS
+nomination policy still does **not** gate PipingClassService writes, and the
+partial stale-object state re-read is not an atomic publication lock. Next
+step is a dedicated ADR/tested design for full PMS write-path enforcement and
+concurrency protection; do not declare authoring protection shipped.
+
+## 2026-10-13 PMS authorization design checkpoint
+
+Commit `9c82a34` (documentation-only) completed all six CI jobs in run
+38389653045. The code baseline is green, but the current author nomination
+is not a write gate. Audited the six PipingClassService mutators and the
+shared `piping_classes` identity with the legacy line register. ADR-027 is a
+**PROPOSED** requirement/decision record: service-only `allows()` checks
+would leave direct writes and mutation provenance unprotected; a blanket DB
+class trigger would break legacy line entry. Recommend explicit activation
+and policy-bound write provenance on the shared identity with transaction
+locks and database backstops (option C), pending owner confirmation versus a
+separate PMS class aggregate (option B). No authoring gate code or schema has
+been added. Ask the owner to choose before enforcing it; never claim the
+policy is already effective.
+
+## 2026-10-13 owner correction: class before line
+
+Owner explicitly requires piping classes to be registered before line-register
+entry. Recorded in ADR-006 and ADR-027. Current PipingLineService still permits
+nullable class references and tests create classes as fixtures; no runtime
+constraint has been changed yet. Need owner decision on whether a class must
+be PUBLISHED before line use and how to handle historical/imported lines with
+no mapped class. Do not create placeholder classes or assume the line may
+silently register its own class. Sandbox restored a base Git HEAD while keeping
+worktree files; fetched the remote branch and realigned HEAD to remote tip
+`38c8b8b` with `git reset --mixed FETCH_HEAD` (no worktree changes), then
+continued on the same tracked branch.
+
+## 2026-10-13 class-before-line decisions
+
+Owner answered both open workflow questions: line entry requires an existing
+**PUBLISHED same-project** class; historical/imported lines with no eligible
+mapping are rejected from the line register (original tags can be preserved
+after mapping). ADR-006 and ADR-027 updated. This does not select a separate
+versus shared PMS aggregate architecture, nor authorize an incomplete
+service-only author gate. Current code still allows nullable class IDs and
+DRAFT classes. Audit found fixture shortcuts in PipingLineTest,
+PipingConfigTest, ComponentModellingTest, JointTest, UnitPreferenceTest and
+PipingLineHttpTest; flipping the runtime guard alone would leave CI red. Next
+implementation slice: migration preflight/backstop + service/HTTP validation
+and published-class fixtures, with PostgreSQL positive/negative tests. No
+runtime change was made in this decision-recording step.
+
+## 2026-10-13 correction: PMS is a document, not one class
+
+Owner explicitly clarified PMS is an engineering specification document
+containing one or more piping classes. ADR-028 records the hierarchy and the
+missing document/revision links. Current P1 class/rule publication does not
+prove a governing PMS document revision was issued/approved; previous
+class-before-line decision remains, but document-state threshold and revision
+pinning need confirmation. No schema or gate was invented in response. Audit
+CDE documents/revisions before implementing the line prerequisite or authoring
+policy. Recommendation: reuse CDE for document identity, pin class rule
+snapshots to issued revisions and lines to the selected revision; never mutate
+prior issue evidence. This is PROPOSED, not shipped.
+
+## 2026-10-13 PMS document decisions reconciled with prior ADRs
+
+Owner selected: only an APPROVED PMS document revision may govern a new line;
+one class identity has one governing PMS document at a time (a document may
+contain multiple classes). Existing `CdeState::isApproved` means PUBLISHED
+with A-family suitability, not a B-family partial sign-off. Owner noted the
+revision answer is already in project docs: ADR-008 §7 #4 and ADR-009 §4.4
+require lines to remain on the class revision they were issued against;
+revisions are immutable and impact/deviation reporting exposes old lines.
+ADR-028 corrected to remove the duplicate question and explicitly tie the
+pinned class revision to its immutable PMS document revision. Current code
+still lacks document-to-class/version links and gate; no claim of enforcement.
+
+## 2026-10-13 PMS CDE registration slice
+
+Added `PMS` to the existing CDE document-type picklist and service-validated
+PIPING discipline. A new PMS starts WIP/unapproved like every other CDE
+revision; no class is auto-created, attached or approved. Focused
+DocumentRegisterTest covers number, state and wrong discipline. ADR-028
+updated. This is a real document identity but NOT the class-membership,
+version-pinning or line admissibility gate; CI pending.
+
+- **CI run 38443239928 for commit `186707a`: all six jobs green**, including
+  Laravel/PostgreSQL/RLS and the new PMS CDE registration test. This verifies
+  only typed PMS document registration/WIP state. No classes are yet linked to
+  PMS revisions, no line eligibility based on document approval is enforced,
+  and PMS author nomination still does not protect write paths.
+
+## 2026-10-13 first class-to-PMS identity binding
+
+Added migration `2026_10_13_100000_link_piping_classes_to_pms_documents.php`
+and `PmsClassDocumentService`: a DRAFT class may be attached to one owned WIP
+PIPING/PMS document in the same project under a current explicit author
+nomination, serialized with policy replacement. PostgreSQL trigger forbids
+wrong document type/project/state and reassignment. New
+`PmsClassDocumentTest` checks two classes per document, default denial,
+suspension, direct reparenting and non-PMS refusal. This is intentionally
+**not** a class-to-issued-revision snapshot or a full direct-SQL author gate;
+prior classes remain unbound. Do not enforce the line prerequisite on this
+identity alone. CI pending.
+
+- CI run 38448258557 for `0740657`: **all six jobs passed**, including the
+  PostgreSQL/RLS Laravel suite and new PmsClassDocumentTest. Verified scope is
+  WIP PMS document identity binding, not immutable class-specification
+  revisions or approved-document line admission. Direct SQL attaching an
+  otherwise valid unassigned class still bypasses the service's nomination
+  check; full authoring protection remains explicitly unbuilt.
+
+## 2026-10-13 PMS approved-revision snapshot slice
+
+New `pms_class_revision_snapshots` ties each published class header, rule
+bands and branch rules to its specific approved PMS document revision.
+`DocumentRegister::transition` creates these atomically on A-family PMS
+publication; zero classes, attached draft classes and classes without rules
+block that approval. Document locks serialize CDE approval with class
+attachment. Snapshot rows are RLS-scoped and database-immutable after insert.
+Feature test covers rejected draft, snapshot at A publication, unaffected
+stored values after live-rule edits and refused direct UPDATE. Not yet line
+eligibility, class writer SQL protection or CDE nomination gate. CI pending.
+
+- CI run 38453709184 for `1f9a943` **failed in Laravel migration setup**:
+  PostgreSQL functions survive `migrate:fresh`, so `CREATE FUNCTION
+  epcc_check_pms_snapshot()` collided on the second test (2482 downstream
+  failures). Changed it to `CREATE OR REPLACE FUNCTION` for repeatability.
+  Also added DB verification of the inserted JSONB against the live class and
+  ordered rule arrays, so a direct INSERT cannot forge snapshot contents.
+  Awaiting a new CI run; the failed run does not verify the feature tests.
+
+- CI run 38456241655 for `f860fe6`: migration collision resolved;
+  Laravel suite reported 3246 tests with zero assertion failures and one
+  annotated `PdfExportTest::test_rendering_produces_a_real_pdf` Chromium render
+  timeout (30 s); JUnit's nested suite totals show three errors. The other
+  five jobs passed. Artifact retrieval and Actions log retrieval hit blocked
+  external redirects/EOF; available check-run annotations show no PMS error.
+  Added a direct forged-snapshot INSERT regression test for the trigger and
+  scheduled another full run. Do not describe this run as green.
+
+- CI run 38460152236 on `1af325a` **passed all six jobs**, including the
+  PostgreSQL/RLS Laravel suite, approved PMS revision snapshot test and direct
+  JSONB-forgery rejection regression. Earlier PDF timeout on 38456241655 did
+  not reproduce; do not extrapolate line eligibility or full writer security.
+
+## 2026-10-14 issue-time PMS line-pin foundation
+
+Added nullable `piping_lines.pms_class_snapshot_id`, a FK and a trigger that
+checks snapshot project/class, current A-family PMS approval for first pin and
+immutable issue-time lineage. Added `PmsLineEligibility` resolver and
+supersession regression in PmsClassDocumentTest. **Not wired into line
+create/register/import/HTTP**; current register still admits missing classes
+and null pins. Never present as strict line eligibility until every write
+path and DB non-null admission backstop are complete. No old line receives an
+invented assignment. CI pending.
+
+## 2026-10-14 local PHP CLI in the repository workspace
+
+Added reproducible `scripts/install-local-php.sh` and
+`docs/LOCAL-PHP-CLI-EN.md`, with an ignored `.local/php-native/bin/php`
+installation. NativePHP upstream commit and archive SHA-256 are pinned.
+Installed native PHP 8.4.21; verified `php -v`, `php -l` for
+PmsLineEligibility and the framework-free standards-engine conformance corpus
+(**25 passed, 0 failed**). This binary has no pdo_pgsql/pgsql, so Laravel
+PostgreSQL/RLS tests still run in CI; app/vendor also remains absent. Do not
+claim a complete local Laravel environment. Laragon with PostgreSQL extensions
+remains the primary Windows runtime. CI for the earlier line-pin commit
+`f1d4ae5` completed successfully (all six jobs); the installer itself still
+needs its own verification.
+
+## 2026-10-14 repository-local Laravel install
+
+Installed locked Laravel 13.31.0 production dependencies into ignored
+`app/vendor/` with local native PHP 8.4.21 and Composer 2.6.5 PHAR pinned to a
+third-party GitHub source (see trust warning in `docs/LOCAL-LARAVEL-EN.md`).
+Added `scripts/install-local-laravel.sh`; it uses GitHub source clones in the
+network-restricted sandbox, suppresses **only** XMLReader/XMLWriter platform
+checks, disables Composer scripts/plugins, then runs Laravel package discovery.
+Verified `artisan --version`, `package:discover`, `route:list`, autoload and
+`/up` HTTP 200. Generated ignored `.env` with PostgreSQL configured rather
+than SQLite. Local PHP still lacks pdo_pgsql/pgsql and XMLReader/XMLWriter,
+`vendor/` is production-only (no PHPUnit); `/login` returned 500. Stopped
+Laravel preview to avoid a broken live app; CI remains required for DB pages
+and RLS tests. Full local environment requires different PHP build/Composer.
+
+- CI for `a945088` (run 38508213581) did not start ANY job: GitHub check
+  annotations state that account payments failed or the Actions spending limit
+  needs increasing. This is a GitHub billing/execution block, not a test
+  failure. Run 38508782336 for the Laravel installer commit `db0aa0e` was
+  queued at last check; inspect its outcome before claiming CI success.
+  Local Laravel CLI/package-discovery smoke checks succeeded, but no local
+  PostgreSQL/PHPUnit runtime exists.
+
+- Update: Laravel installer run 38508782336 (`db0aa0e`) also failed before
+  starting any job with the same GitHub billing/spending-limit annotation.
+  Its red status is infrastructure-only; no CI result for this installer.
+
+## 2026-10-14 pdo_pgsql installation attempt — BLOCKED, not installed
+
+Owner requested local `pdo_pgsql`. Confirmed the existing PHP 8.4.21 binary
+has only PDO SQLite, no `pdo_pgsql` or `pgsql`; its configure command is
+static musl with no PostgreSQL extensions. No PHPize/libpq headers; apt host
+is inaccessible and GitHub release downloads redirect to inaccessible assets.
+Do not copy a foreign .so or change DB_CONNECTION to SQLite. Existing
+Laravel vendor works for CLI metadata but DB routes remain blocked. Full PHP
+8.4 with pgsql/XML extensions (Laragon on Windows, or a trusted Linux build)
+is required; `docs/LOCAL-LARAVEL-EN.md` records verification commands.
+GitHub Actions is currently billing-blocked, so it cannot build a replacement.
+
+## 2026-10-14 PMS-approved class picker
+
+Manual line form now uses `PmsLineEligibility::eligibleClassIds` (same join as
+snapshot resolver) to list only published classes in current A-approved PMS
+revisions. Class selection is shown even when not a line-number token; if no
+class qualifies it shows a bilingual explanation and disables the form
+submit. Added HTTP regression for draft omission and expanded snapshot test
+for eligibility before approval, after approval and after supersession.
+**Not a service/DB write gate:** direct HTTP POST, service, import and SQL
+remain permissive; strict line creation is next. Local PHP 8.4 syntax check
+passed for changed PHP files, but no pdo_pgsql local and GitHub Actions is
+currently billing-blocked; PostgreSQL feature assertions not yet executed.
+
+- CI run 38515815314 on `1e38780` is red **without starting a single job**:
+  GitHub Actions annotated account billing/spending-limit failure across the
+  jobs. This is not a test result for the picker changes. PostgreSQL feature
+  tests await restored CI or a complete local PHP/PostgreSQL runtime.
+
+## 2026-10-14 visibility and CI recheck
+
+Owner changed GitHub repository visibility to public. Verified using GitHub
+repository API: `private=false`, `visibility=public` for
+`iman-taheri59/epcc-platform`. The earlier runs remain pre-start failures;
+`gh run rerun 38515847134` was refused ("workflow file may be broken").
+This documentation push requests a fresh Actions run on standard
+`ubuntu-24.04` runners, which GitHub documents as free for public repos.
+Do not infer a green test outcome until that new run completes.
+
+- Fresh public-repo run 38518232416 on `aa0369f` **started all six jobs**:
+  five jobs succeeded. The Laravel/PostgreSQL suite collected 3249 tests,
+  reported zero assertion failures and one annotated PDF export rendering
+  timeout after 30 s (`PdfExportTest::test_rendering_produces_a_real_pdf`;
+  JUnit nested totals show three errors). This is no longer the billing block;
+  it does NOT establish a green full suite. No PMS picker failure appears in
+  the check annotations, but that is not proof every picker assertion ran.
+  Avoid changing production PDF limits just to hide a slow CI runner.
+
+- Follow-up public-repo run 38520710949 on `f4b392b` **passed all six jobs**,
+  including Laravel/PostgreSQL/RLS. The prior PDF timeout did not recur. This
+  finally verifies the PMS picker slice against the full CI suite; the strict
+  line admission service/DB write gate is still outstanding. Repository API
+  again confirms `visibility=public`.
+
+## 2026-10-14 external-number PMS admission
+
+`PipingLineService::register` now calls `PmsLineEligibility::snapshotId`
+within its write transaction and persists the exact snapshot on imported or
+manually supplied-number lines. No class / draft / wrong-project /
+superseded-revision class fails before insert; a valid but nonconforming tag
+keeps its literal number only when an approved class was explicitly selected.
+PipingLineTest's synthetic PMS fixture creates a real CDE doc/revision and
+class snapshot; HTTP direct POST missing class refusal and supersession pin
+tests added. `PipingLineService::create` and DB null-pin insertion remain open
+for legacy fixtures; not the complete class-before-line rule. PHP 8.4 syntax
+checks passed; CI pending.
+
+- CI run 38525864378 on `78be477`: five jobs passed; Laravel suite red
+  (3255 tests, zero assertion failures, two annotated errors counted three
+  times by nested JUnit): the contractor-owned snapshot test tried to create
+  owner-owned numbering config and was correctly refused by RLS; an old HTTP
+  test still expected a classless external number to be admitted. Corrected
+  the fixture to create config in the owner scope and updated the legacy
+  expectation to explicit refusal. CI recheck pending; do not claim green.
+
+- CI run 38528034166 on `2e21d16` **passed all six jobs**, including
+  Laravel/PostgreSQL/RLS. Supplied-number/import registrations now reject a
+  classless or unapproved line and pin an eligible approved PMS class snapshot
+  when one is explicitly supplied; old imported tags remain verbatim. This
+  verifies the import path only. Allocated-number `create` and DB null-pin
+  inserts remain permissive, so the full owner requirement is not done.
+
+## 2026-10-14 automatic line numbering PMS gate
+
+`PipingLineService::create` now shares the approved PMS snapshot resolver with
+`register` and writes a pinned snapshot ID on each new allocated-number line.
+A missing/draft class fails before insert even if the numbering pattern omits
+its class token. Updated PipingLine, PipingConfig, HTTP, Joint and Component
+fixtures to create a real approved CDE PMS revision via a tests-only helper;
+added rejection tests and pin assertions. Synthetic fixture intentionally
+bypasses engineering publish completeness only inside tests; production
+writer still uses published class + approved PMS snapshot. Direct SQL/new
+unclassified insert remains possible because DB nullable column preserves
+historical fixtures. PHP lint succeeded; PostgreSQL CI pending.
+
+- CI run 38533755067 for `3c0cbe2`: five jobs green; Laravel suite red
+  (3255 tests, zero assertion failures; annotated UnitPreferenceTest fixture
+  errors, with two extra unannotated errors in the JUnit artifact). The unit
+  preference fixture was still creating a draft A1 class, so the new service
+  correctly refused those lines. It now uses the shared tests-only approved
+  PMS fixture before creating lines. Recheck CI before claiming this slice.
+
+- CI run 38536908956 for `1c60554`: five jobs green; Laravel reported
+  3261 tests with three nested JUnit failures arising from one HTTP
+  UnitPreferenceTest assertion. Its separate bad-unit form fixture still
+  used a draft class; the new PMS gate correctly returned a class error
+  before unit validation. Updated that fixture to an approved PMS class so
+  the test exercises the intended unit validation. CI recheck pending.
+
+- CI run 38540006442 on `7d30df6` **passed all six jobs**, including the
+  Laravel/PostgreSQL/RLS suite after updating all known class fixtures.
+  Allocated-number and supplied-number service paths now both require and
+  persist the current approved PMS class snapshot. Remaining work: audit
+  direct SQL/bulk writers and enforce non-null admission at the DB boundary
+  while preserving legitimately historical unmapped rows without inventing
+  classifications. Existing PR is still open; do not claim full gate yet.
+
+## 2026-10-14 new-line DB backstop
+
+New migration `2026_10_14_100000_require_approved_pms_pin_on_new_lines.php`
+adds an INSERT-only trigger refusing new piping lines without BOTH class ID
+and PMS snapshot ID. The existing trigger validates the exact current
+approved document/class snapshot. A database NOT NULL would break historical
+unmapped rows; the insert-only gate leaves them in place without assigning
+invented classes, while all new direct SQL/bulk/service entries fail closed.
+PipingLineTest now asserts SQLSTATE 23514 for class-without-pin raw insertion,
+23505 for real duplicate number with valid pin, and pre-migration legacy row
+survival after installing the gate. PHP lint passed; PostgreSQL CI pending.
+PMS author write gates and historic-readiness reporting remain outstanding.
+
+- CI run 38543947981 on `7bf732d` **passed all six jobs**, including
+  Laravel/PostgreSQL/RLS and the new migration/legacy-preservation tests.
+  New direct SQL and bulk inserts can no longer omit the approved PMS class
+  pin. Old unmapped rows remain unchanged; no synthetic PMS was assigned.
+  PMS author-write enforcement and visibility/reporting of unresolved
+  historical records remain separate follow-up work.
+
+## 2026-10-14 historical line classification backstop
+
+Migration `2026_10_14_110000_require_pms_pin_when_classifying_historical_lines.php`
+blocks SQL updates which change a historical null-pin line's class to a
+non-null class without also assigning its approved PMS snapshot. Existing
+rows remain editable for unrelated fields. PipingLineTest exercises both
+rejection of bare class assignment and acceptance of an explicit joint
+class+approved snapshot mapping after the previous insert-gate migration.
+PHP lint and diff checks passed; CI pending. Reporting historical unresolved
+rows and PMS authoring/lifecycle protection are still separate follow-ups.
+
+- **CI blocked after repository became private:** run 38551878338 on
+  `efd7b48` did not start test jobs. GitHub says "The job was not started
+  because recent account payments have failed or your spending limit needs
+  to be increased." This is a GitHub Actions billing/limit gate, not a test
+  result. PHP lint and `git diff --check` passed locally; no PostgreSQL
+  runtime or phpunit installation is present locally. The historical class
+  amendment migration must be rerun once the owner's Actions billing/limits
+  permit private-repository jobs. Do not claim the new slice is CI-green.
+
+## Historical PMS review visibility / AFC service gate
+
+The register now counts/labels null-pin historical lines as awaiting class
+and PMS revision review; the workspace marks them blocked and removes them
+from its ready count. `PipingLineService::confirmAfc` refuses null class or
+snapshot with localized fa/en feedback, without requiring an old pinned
+revision to remain the current document revision. The historical migration
+fixture now asserts register/workspace labels and AFC refusal. PHP lint and
+`git diff --check` pass. No PostgreSQL run yet: private-repository Actions
+billing is still blocked; do not claim database/HTTP test success. A direct
+SQL transition to AFC is not yet protected by this service-level change.
+The owner explicitly plans to make the repository public again **after
+several more steps** for database tests; do not change its visibility now.
+
+## Database transition guard for unmapped historical lines
+
+Migration `2026_10_14_120000_require_pms_pin_for_new_afc_transitions.php`
+rejects direct SQL changes into AFC_CONFIRMED or RELEASED when either class or
+PMS pin is null. It leaves unchanged issued historical rows untouched and
+allows reversal to DRAFT. Regression adds an SQL AFC transition with complete
+actor/timestamp to the historical-row migration test and expects SQLSTATE
+23514; PHP lint and diff checks passed. Database tests deferred per owner's
+plan to keep the repository private for several more steps. Full evidence
+validation on a direct SQL AFC transition is **not** provided by this trigger.
+
+## Published PMS class specification freeze
+
+Migration `2026_10_14_130000_freeze_published_pms_class_specifications.php`
+prevents SQL modifications/deletion of published class headers and all
+insert/update/delete operations on their rule and branch-rule rows. Rules
+acquire a share lock on their parent during state inspection. Both test
+fixtures now add rules while the class is DRAFT, then publish before PMS
+approval. PmsClassDocumentTest now expects 23514 on attempted SQL header
+edit, rule edit/delete and branch insertion, rather than treating mutable
+live rules as a normal way to prove snapshot immutability. PHP lint and diff
+checks pass; PostgreSQL CI deferred until the owner restores public
+visibility or provides private Actions billing. Do not claim tests pass.
+A future requirement to revise a published class's contents needs an
+explicit versioned authoring design; current service already treats
+published classes as read-only.
+
+## Same-identity PMS revision groundwork (owner accepted proposal)
+
+`2026_10_14_140000_create_pms_class_revision_drafts.php` creates an isolated
+per-revision/class JSONB working-copy table with project/company FKs, RLS,
+unique pair, immutable identity and WIP-only write trigger. `DocumentRegister`
+seeds new WIP revision drafts from the previous issued snapshots atomically
+on `issueRevision`. The PmsClassDocumentTest regression checks copy/edit in
+WIP, old snapshot unchanged, and rejection of edits after SHARED. PHP lint
+and diff checks passed. These drafts are **not** yet used to publish PMS or
+validate specification rules; no changed-content revision is usable for
+line admission. Next steps: validated author workflow and issue-time capture
+from the drafts, including range/material/branch checks, before claiming
+same-identity class revision support. Postgres tests are deferred until the
+owner returns the repo to public or enables private GitHub Actions billing.
+
+## Narrow WIP PMS draft authoring service
+
+`PmsRevisionDraftService::changePipeSchedule` lets a freshly nominated
+PMS author change the schedule of one existing PIPE_SCHEDULE rule in the
+current WIP revision's draft only. It serializes with nomination/suspension,
+checks active nomination, archive state, ownership and CDE WIP status and
+locks document/revision/draft. PmsClassDocumentTest now checks non-nominated
+owner refusal, accepted author change, immutable prior snapshot, author
+refusal after SHARED and database trigger rejection after SHARED. PHP lint
+and diff checks passed. No HTTP editor yet; edited drafts **do not** become
+approved snapshots and cannot authorize new lines. PostgreSQL CI deferred
+while private Actions remains blocked by billing. Next: schema/engineering
+validation and issue-time capture from drafts, then an authorized UI.
+
+## Whitelisted PMS draft delta
+
+`PmsRevisionDraftValidator` permits only an existing PIPE_SCHEDULE rule's
+schedule value to differ from its prior approved snapshot. Strict structural
+comparison rejects changed class/header, DN range, material or branch rules,
+removed/added values and type substitutions. The nominated-author WIP edit
+service validates the entire draft against the actual previous approved
+snapshot before writing; tests cover pure deltas and an SQL-tampered DN
+range before a service edit. PHP syntax checks and diff check passed. No
+PostgreSQL CI while private Actions billing is blocked per owner's plan.
+**Do not** treat this as a database-wide draft gate or publication support:
+raw SQL WIP edits still bypass this service validation; approval capture
+still ignores draft content. Next protect review/publication transaction.
+
+## PMS WIP-to-SHARED working-copy review gate
+
+`PmsRevisionDraftReview` checks that the next PMS revision's draft class set
+exactly equals the preceding approved snapshot set and every draft passes
+the schedule-only full-delta validator before `DocumentRegister::transition`
+moves WIP to SHARED. The check runs under the locked revision in the same
+transaction. PmsClassDocumentTest now forges a branch rule after a legitimate
+schedule edit, expects a `specification` error and WIP rollback, then
+restores the draft and shares successfully. PHP lint and diff checks pass.
+PostgreSQL CI still deferred by the owner's private-repository plan.
+**Remaining:** direct SQL CDE transitions are not protected by this
+service check; snapshot capture still ignores drafts. Do not claim revised
+schedules can authorize new lines.
+
+## Engineering review of schedule-only PMS revision drafts
+
+The WIP-to-SHARED gate now checks each proposed schedule against every DN in
+its range using PipeReference's published wall-thickness table. It reruns the
+existing B31.3 §304.3.3 pad gate using per-rule draft schedule overrides,
+without editing the frozen published class/rules. A regression proposes SCH
+40 over `[15,600)` and expects a DN550 rejection (NPS22 lacks SCH 40), then
+uses STD, which the reference pack lists for that band. PHP lint and diff
+checks passed; PostgreSQL CI remains deferred under private Actions billing.
+No new PMS snapshot captures the edited schedule yet. Do not treat a
+SHARED draft as approved or use it to authorize line registration.
+
+## Fail-closed publication of revised PMS drafts
+
+`DocumentRegister` now revalidates every draft and the engineering schedule
+checks before an A-family PMS approval, then refuses any changed working
+copy until the snapshot-capture path is capable of issuing that reviewed
+copy. A valid SHARED STD revision cannot silently publish the old live class
+rules as though they were the reviewed specification. PmsClassDocumentTest
+asserts the refusal, rollback to SHARED and unchanged snapshot count. PHP
+syntax and diff checks passed, PostgreSQL test execution deferred per owner.
+Next: database provenance guard plus immutable capture of validated revision
+copies; only then remove the temporary changed-draft publication block.
+
+## Revision-specific PMS snapshot capture (PostgreSQL test pending)
+
+Migration `2026_10_14_150000_capture_validated_pms_revision_drafts.php` adds
+PostgreSQL full-JSONB schedule-only delta comparison and replaces the
+snapshot trigger so an approved current PMS revision can capture precisely
+its matching WIP draft, sourced from the immediately preceding approved
+snapshot. No draft still means exact live-spec capture on first issue.
+`PmsRevisionSnapshotService` now inserts reviewed draft specification and
+checks complete class membership; `PmsRevisionDraftReview` repeats structural
+and engineering validation immediately before approval. Regression issues a
+STD revision after SCH 80, checks the old lines stay pinned to A and new
+line pins B, and expects 23514 on a forged DN-range snapshot. PHP lint and
+diff checks passed. **No PostgreSQL tests yet** while repository private
+Actions billing is blocked. Raw SQL mutation of CDE state/drafts could
+bypass engineering (reference-pack/pad) service checks: separately audit
+DB-only approval/author boundaries before calling this a universal gate.
+
+## Issue-time line PMS rule resolution
+
+`PmsPinnedClassSpecification` now retrieves a line's immutable snapshot by
+its pin, project and class and resolves exactly one PIPE_SCHEDULE for a DN.
+It rejects null/unmapped historical lines, missing or structurally bad
+snapshots and ambiguous/missing DN bands; it never falls back to the live
+class. Regression in PmsClassDocumentTest contrasts an A-pinned line (SCH
+80) with B-pinned line (STD) while the live published class still reads SCH
+80. PHP lint and diff checks passed, PostgreSQL CI deferred while private.
+Before any downstream line-based MTO, branch or engineering calculation is
+built, route its class-rule reads through the pin. No current production
+caller uses `PipingClassService::ruleFor` for a line; do not claim universal
+revision-aware calculations yet. DB-only CDE approval/author integrity still
+needs a separate boundary audit.
+
+## 2026-10-14 repository public; CI recheck blocked
+
+`gh repo view` reports `isPrivate=false`. The most recent Actions run
+38583348269 on `17c77af` still has zero started steps and a GitHub billing
+annotation (recent account payments failed or spending limit needs increase).
+An attempted `gh run rerun` was refused; `gh workflow run CI --ref
+arena/782120e4-epcc-platform` returned HTTP 403 (`Resource not accessible
+by integration`). A harmless retry commit `d2b143a` was pushed after
+visibility changed, but as of this check GitHub Actions has not produced a
+run for that SHA and PR #7 still reports the previous head. Do not claim
+Laravel/PostgreSQL/RLS CI passed. Owner must check GitHub Billing & plans,
+Actions allowance and PR/workflow permissions; then retry latest-head CI.
+
+As a partial local fallback, PostgreSQL 16.2 from the `pgserver` PyPI wheel
+was started on port 55432. The actual SQL function definitions from migration
+`2026_10_14_150000_capture_validated_pms_revision_drafts.php` were loaded
+successfully; `epcc_pms_schedule_only_delta` returned true for a schedule
+change and false for DN-range, material, branch and whitespace mutations.
+This is **not** the full Laravel migration/RLS/engineering suite. The local
+PHP build lacks `pdo_pgsql`, so those tests still require CI or Laragon.
+
+## Commit-time direct SQL PMS approval completeness gate
+
+`2026_10_14_160000_require_pms_snapshots_on_approved_revision.php` adds a
+DEFERRABLE INITIALLY DEFERRED row constraint trigger to document_revisions.
+For a current approved A-family PIPING/PMS revision it requires >=1 published
+class, no draft governed classes, and exactly one approved immutable snapshot
+per class at commit. This permits the existing service sequence (revision
+UPDATE then snapshot INSERTs in one TX) but rejects bare SQL approval.
+PmsClassDocumentTest now tests rejection with `SET CONSTRAINTS ... IMMEDIATE`
+inside a savepoint before normal service publication. PHP lint and diff
+checks passed. Local PostgreSQL 16.2 smoke test with a minimal schema parsed
+the real trigger and verified success with snapshot and expected failure
+`PMS_ISSUE_NEEDS_CLASS_SNAPSHOTS` without it. **Full Laravel/PostgreSQL/RLS
+CI is still NOT run**: Actions billing/permissions block persists even though
+repo is public. Forging both snapshots and document state using raw SQL could
+still evade the service-only reference-pack/pad check. Do not call this a
+universal engineering authorization gate.
+
+- **Actions resumed after public visibility:** run 38585934338 on `24c6676`
+  executed all jobs; five non-Laravel jobs passed, Laravel failed (3276 tests,
+  3 failures and 6 errors). Annotated causes include a PostgreSQL transaction
+  left aborted after an expected class-rule trigger refusal in
+  `PmsClassDocumentTest` (SQLSTATE 25P02 instead of 23514 on the next
+  assertion) and pure PHPUnit validator tests raising `ValidationException`
+  without a booted Laravel facade. Expected failing SQL writes in the PMS
+  feature test now use nested transactions/savepoints; the validator test
+  extends the Laravel test base. The artifact download returned EOF, so
+  remaining unannotated failures still need a fresh run/log. Run
+  38590891134 for `a5f45b1` was in progress when checked and predates this
+  fixture correction. Retest full PostgreSQL/RLS after push; no green claim.
+
+- **Real PostgreSQL/RLS verification resumed:** run 38591064891 for
+  `283c4ee` completed the Laravel suite **successfully** after fixing nested
+  PostgreSQL test savepoints and booting the Laravel unit test harness. Image,
+  PCF, standards and HTML jobs also succeeded. Overall workflow remains
+  **red solely because the Compose stack job did not start**: GitHub check
+  annotation says recent account payments failed or the spending limit must
+  increase. `gh run rerun 38591064891 --failed` was refused ("workflow file
+  may be broken"). This is a billing/scheduling failure, NOT a Compose
+  test failure. Owner must resolve GitHub billing/Actions limits, then
+  re-run the missed Compose job. Do not claim all six jobs green.
+
+## Skip B-suitability revisions when selecting PMS class baseline
+
+`PmsApprovedRevisionBaseline` selects the latest earlier A-family issued
+snapshot set, not necessarily the immediately preceding document revision.
+`DocumentRegister::issueRevision`, PMS draft review and nominated-author
+schedule editing share it. Migration
+`2026_10_14_170000_use_latest_approved_pms_revision_baseline.php` updates
+the existing PostgreSQL snapshot trigger's prior-issue comparison while
+preserving its strict JSONB schedule-only delta and current approved source
+checks. PmsClassDocumentTest covers A80 -> A_STD -> B1(no snapshot) -> A_STD,
+including the old line's unchanged issue-time pin. PHP lint and diff checks
+passed; CI pending. The previous 283c4ee Laravel/PostgreSQL/RLS run was
+successful, but this slice has NOT yet been verified against PostgreSQL.
+Compose job remains subject to GitHub account billing/scheduling limits.
+
+- CI run 38639634136 on `3fc043f` did **not start any test job**:
+  GitHub annotated Laravel and the other jobs with failed account payments
+  or spending-limit restrictions; Compose was skipped. The new B-coded
+  baseline migration/regression is therefore PHP-linted but **not** yet
+  PostgreSQL-verified. Run 38591064891 on `283c4ee` remains the last
+  successful Laravel/PostgreSQL/RLS suite. Owner must resolve GitHub Actions
+  billing/limits before treating this new slice as validated.
+
+## Issue-time generic + branch PMS rule resolution
+
+`PmsPinnedClassSpecification` now resolves arbitrary one-dimensional rule
+values and branch cells from a line's frozen snapshot (rather than the live
+class). Branch precedence is specificity, priority, creation time, with
+explicit refusal of ambiguous/missing/reversed or malformed input. P2P kind
+and pad data are preserved in the returned issued cell. Added pure unit
+coverage for overlap/tie behaviour and a feature assertion for the
+revision-B schedule via generic rule lookup. PHP lint and diff checks passed;
+full CI pending given intermittent account billing failures. Raw-SQL CDE
+writers remain a separate security/engineering audit item.
+
+- CI 38640300534 for `9a000e3` did not start any test job: GitHub's Laravel
+  check says recent account payments failed or the Actions spending limit
+  needs increase. The pinned-branch resolver and B-baseline regression remain
+  PHP-linted but unverified by current PostgreSQL CI. Do not interpret this
+  scheduling failure as a test failure or a pass.
+
+## Piping screens now show the issued PMS revision
+
+`PmsClassRevisionSnapshot` is a read-only Eloquent model for immutable
+issue-time class content; `PipingLine::pmsSnapshot()` and eager-loaded
+revision/document relationships drive the piping register and task-first
+workspace. Each mapped line shows its issued PMS document number and
+revision, not the document's latest revision. Null-pin historical lines
+continue to show the review warning. `PipingLineHttpTest` now asserts the
+English register and workspace show a newly created line's synthetic PMS
+number and A revision. PHP lint and diff checks passed; real PostgreSQL/RLS
+HTTP verification pending. No direct SQL/CDE writer authorization claim.
+
+- CI 38646018638 for `b7ac3eb` did not start its Laravel or other test
+  jobs: GitHub annotated the run with account payment/spending-limit
+  restrictions. The issued-revision UI regression is PHP-linted but not
+  PostgreSQL/HTTP-verified in this run. Last successful Laravel/PostgreSQL/RLS
+  check remains 38591064891 on older commit `283c4ee`.
+
+## Offline Laragon PostgreSQL/RLS verification path
+
+`scripts/verify-laragon-pms.php` is a new safe local verifier while GitHub
+Actions is billing-blocked. Default mode is READ-ONLY: checks PHP >=8.4.1,
+PDO/pgsql and other required extensions, Composer dev dependencies,
+`app/phpunit.xml` epcc_test target, the real database connection, PostgreSQL
+>=16, btree_gist and the connected role's non-superuser/NOBYPASSRLS status.
+It refuses conflicting exported DB variables; it never prints credentials.
+Explicit `--run` clears cached configuration and invokes the PMS feature
+regression then all `php artisan test`; warns that the dedicated epcc_test
+schema will be dropped/recreated, and that skipped PDF tests/Compose are not
+validated by this runner. `docs/LARAGON-DEVELOPMENT-ENVIRONMENT.md` contains
+commands. PHP lint passed; the sandbox PHP correctly fails preflight at its
+missing `pdo_pgsql`, so success on Laragon is NOT claimed here. Owner can
+send sanitized test output without sharing .env/passwords. This verifier is
+not a replacement for the absent GitHub Compose job.
+
+- CI 38647897238 on `2b03acd` did not start the Laravel or other test jobs:
+  GitHub again reported account payment/spending-limit restrictions. The
+  Laragon preflight is PHP-linted and intentionally fails on the sandbox's
+  missing `pdo_pgsql`; it has not passed on a real Laragon/PgSQL workstation.
+
+## User-supplied Linux PHP archive inspection (2026-10-15)
+
+The uploaded `PHP-8.4-Linux-x86_64-PM5.tar.txt` is a 13,801,690-byte gzip
+TAR (SHA-256 `5b9a1a8f103f7b91670336495b531d9a75c05cca3bd544251a7b63d2124bcc6c`).
+Archive metadata was inspected without executing its binary or adding it to
+Git. Its bundled `php-config` lists `--with-pdo-sqlite` and
+`--with-pdo-mysql`, but **neither** `--with-pdo-pgsql` nor `--with-pgsql`.
+The only packaged PHP extension modules are xdebug and opcache; no
+`pdo_pgsql.so`, `pgsql.so` or libpq.so appears in the archive. It is a ZTS
+PHP build with `--disable-session`, unlike the existing NTS CLI, so copying
+extensions across builds would also be unsafe. This archive cannot run the
+Laravel/PostgreSQL/RLS tests as-is. Keep it outside the repository. A
+compatible Linux PHP 8.4 build with pgsql/PDO_PGSQL and session support, or
+the owner's properly configured Laragon PHP, remains necessary.
+
+## PHP/PostgreSQL sandbox feasibility check (2026-10-15)
+
+Investigated building a Linux PHP 8.4 CLI with `pdo_pgsql` after the user's
+request. The official static-php-cli source (GitHub) DOES support pdo_pgsql,
+pgsql and session; however its release binary URL redirects to a host this
+sandbox cannot reach (HEAD failed TLS EOF), and the sandbox lacks autoconf,
+pkg-config and development headers for a from-source PHP build. The existing
+NativePHP statically linked NTS CLI cannot load a ZTS extension from the
+uploaded PM5 archive. The `pgserver` PyPI wheel IS reachable and was
+installed to ignored `.cache/pgve`: PostgreSQL 16.2 including `libpq.so` and
+`libpq-fe.h` is available, but that alone cannot add pdo_pgsql to PHP. No
+Laravel/PostgreSQL tests have run in this sandbox. Next viable route is a
+trusted ready-made Linux x86_64 PHP 8.4 CLI with pgsql, pdo_pgsql, session,
+intl, zip, gd and XML, or tests on owner's Laragon; only then start isolated
+PG 16 / epcc_test and run the preflight and suite. Do not describe this
+investigation as passing DB tests.
+
+## Piping incremental step: pinned schedule rule contract (2026-10-15)
+
+`PmsPinnedClassSpecification::ruleValueFromSpecification()` now resolves
+issue-time typed rule values without querying mutable live class rows, and
+fails closed on invalid DN, malformed, missing or overlapping rules. The
+line-bound `ruleValue()` delegates to it. Unit assertions added in
+`PmsPinnedBranchResolutionTest`. Both PHP files passed lint and `git diff
+--check` passed; the sandbox still has no `pdo_pgsql` or Composer vendor, so
+this is NOT a passing PHPUnit/DB test result. Next: wire MTO/component
+consumers to pinned specifications and run Laragon/PostgreSQL tests.
+Historical cross-company classification workflow is still undecided; the
+piping_lines RLS policy's WITH CHECK requires row.company_id == tenant,
+so a project-owner actor cannot write another company's line by default.
+Do not silently broaden this authorization.
+
+## Incremental component pin consumption (2026-10-15)
+
+`ComponentService::place()` now fills a missing PIPE schedule using
+`PmsPinnedClassSpecification::pipeSchedule($line, $size->dn)` for pinned lines;
+ports inherit the selected schedule. Explicit component schedule inputs and
+unpinned legacy modelling behaviour are unchanged. The PMS revision feature
+test now asserts an old line gets SCH 80 and a new line gets STD after an
+approved schedule-only revision, even though live class remains SCH 80.
+PHP lint and diff whitespace checks passed, not PHPUnit/PG (unavailable here).
+Remaining: decide policy for explicit schedule override; manual MTO has no
+universal line link, so do not impose a fake pin on all MTO rows.
+
+## Piping model visibility step (2026-10-15)
+
+Component modelling now eager-loads the line's pinned PMS document revision,
+displays its issue-time document number/revision or a legacy-unmapped warning,
+and shows each component's stored schedule in the model table (including
+manual overrides; this is visibility, NOT engineering approval). HTTP
+assertions added to ComponentModellingTest. PHP lint and diff check passed;
+the DB-backed HTTP test has not run locally due missing pdo_pgsql/Composer.
+Do not treat the displayed schedule as confirmation that an explicit override
+matches the issued PMS rule.
+
+## Read-only issued schedule comparison (2026-10-15)
+
+On the model page each sized PIPE component with a pinned PMS line is compared
+against its **issued** snapshot, using in-memory eager-loaded JSON (no live
+class lookup or per-component DB queries). The screen shows a match, an
+explicit difference plus expected schedule, or "cannot be checked" for a
+missing/invalid DN or snapshot rule; it NEVER labels unknown as matching.
+`pipeScheduleFromSpecification()` shares the production resolver logic with
+`pipeSchedule()`; unit and HTTP regression assertions added. This is a
+visual warning, not a rejection/authorization or full material conformity
+check. PHP lint and diff check passed; DB-backed HTTP tests await Laragon or a
+PostgreSQL-capable PHP runtime. Do not infer that overrides are approved.
+
+## Schedule-exception owner decision / first stage (2026-10-15)
+
+Owner explicitly chose an exception with reason, approver and traceable
+history rather than an unconditional rejection of mismatched PIPE schedules.
+ADR-029 records the staged contract. Migration `2026_10_15_100000` introduces
+append-only request/decision evidence, one decision per request, immutable
+reason and decision, actor separation, same-company/project/pin integrity,
+RLS and project archive write protection. Test assertions were added for
+immutable reason and blocked self-approval. **No request/review UI or
+approval service exists yet; do not count any mismatch as approved.** The
+next step is a transaction-safe service that derives expected schedule from
+the pinned snapshot and authorizes the reviewer. Cross-company sign-off
+requires a separate owner decision; existing RLS only writes own-company rows.
+PHP lint and whitespace checks passed; DB tests still unavailable locally.
+
+## Owner correction: global discrepancy triage (2026-10-15)
+
+Owner clarified that **any** discrepancy can be accepted with documented,
+fulfilled conditions of an applicable project standard or project
+specification/procedure; alternatively issue a TQ for resolution; otherwise
+issue NCR. Recorded in English ADR-030 and ADR-029 scope correction. Crucial
+safety interpretation proposed (awaiting governance decisions): issuing a TQ
+or NCR is not itself acceptance; TQ answer and NCR disposition need controlled
+review/closure, and an incomplete or unsupported citation is not acceptance.
+ADR-029's prior request/decision tables are only an unexposed audit skeleton:
+no reference/clause, conditions, TQ/NCR link, reviewer workflow or downstream
+holds exist. Do not treat an APPROVED row as effective approval. Pending owner
+answers: authority across companies, TQ answer vs disposition, affected hold
+gates, contractual reference precedence. No application code changed in this
+step; PostgreSQL tests remain pending due local pdo_pgsql absence/Actions
+billing block.
+
+## Signature when responsible party has no paid login (2026-10-15)
+
+Owner answered that the responsible line company MUST sign; depending on the
+commercial package only employer/consultant/management contractor may have
+system access. Owner also confirmed TQ answer needs a separate final
+acceptance/disposition. ADR-030 now distinguishes contractual responsibility
+from `piping_lines.company_id` (RLS recording tenant), human signatory,
+uploader and independent verifier. Proposed routes: restricted external
+signer, or project-permitted offline signed document with independently
+verified authority, provenance/hash and scope. Without a verified signature
+or formal contractual delegation, keep ON HOLD; do not impersonate an absent
+contractor or silently waive a sign-off due to plan tier. ADR-029's same-
+company decision table is insufficient and must not drive release. Questions
+remain on whether offline signatures are contractually valid, guest-signing
+commercial policy, project-specific authority matrix and blocked gates.
+Documentation step only; no signature feature exists yet, no DB tests ran.
+
+## Offline signature answer / first evidence slice (2026-10-15)
+
+Owner confirmed offline signed documents may constitute a valid signature.
+Migration `2026_10_15_110000` adds append-only, project/RLS-scoped candidate
+metadata for schedule-exception external signature and independent verification
+(signer organization/person/capacity vs licensed uploader, document number/
+revision/SHA-256/date, verifier/decision/authority basis). PostgreSQL guards
+reject uploader self-verification and mismatched request/project/tenant;
+feature assertions added but have NOT run on PostgreSQL. The metadata is NOT
+file-bound, the signer's contractual line responsibility and verifier's
+project authority are NOT checked by an application service, and no approval
+or gate is enabled. Never claim the rows alone are valid signatures. ADR-030,
+ADR-029 and improvement proposals describe remaining steps.
+
+## Two TQ/NCR provenance modes clarified (2026-10-15)
+
+Owner requires BOTH full in-system creation/signing/issuance and registration
+of already-issued/signed external TQ/NCR reports with **information only**.
+Uploading a signed file is optional, not mandatory. ADR-031 records the two
+modes, signatory/recorder/verifier distinction and current missing TQ/NCR
+workflow. Corrected ADR-030 and improvement proposals to supersede the old
+"must be file-bound" suggestion. New migration `2026_10_15_120000` allows
+schedule-specific external-signature candidate metadata with NULL file hash
+and revision (document number, signer, date remain required); feature test
+adds a metadata-only row. SQL guard against self-verification remains. No
+TQ/NCR register or in-system signature/issuance exists yet, no approval gate
+uses these candidate rows. PHP lint/whitespace checked; PostgreSQL test still
+pending. The existing `uploaded_by` column is a legacy name for metadata
+recorder when no file exists and should be renamed in a future schema step.
+
+## TQ/NCR two-mode register slice (2026-10-15)
+
+New migration `2026_10_15_130000` adds a schedule-discrepancy-linked,
+project/RLS-scoped, append-only TQ/NCR register. DB CHECK distinguishes
+IN_SYSTEM/DRAFT (no purported signature or issue number) from
+EXTERNAL_REGISTER/EXTERNAL_RECORDED (reported number, issuer, signer/capacity,
+issue and sign dates, external register reference; no file or revision
+required). The latter means information captured, NOT verified or approved.
+A feature test inserts both modes and checks incomplete/forged shapes fail.
+No HTTP workflow, internal TQ/NCR issuance or external verification exists yet;
+no approval or release gate consumes these rows. PostgreSQL tests have not
+run due missing local pdo_pgsql and billing-blocked CI. See ADR-031.
+
+## Schedule TQ/NCR provenance capture service (2026-10-15)
+
+`PipeScheduleReportService` now records only IN_SYSTEM/DRAFT or
+EXTERNAL_REGISTER/EXTERNAL_RECORDED TQ/NCR rows. It validates project/PIPING
+membership + `project.view`, the same-company schedule request, archive
+status, and mandatory external metadata, then writes inside tenant context.
+No caller can provide a state or issue/sign via this service. A feature test
+checks both paths and rejects missing external register reference; PHP lint
+and diff check passed but PostgreSQL tests remain unrun. No HTTP UI/routes,
+issuer authorization, TQ response, NCR disposition or approval gate exist.
+The `project.view` permission is an interim capture guard and must be
+replaced with distinct report-capture capability before public exposure.
+
+## Dedicated report-capture capability (2026-10-15)
+
+`PipeScheduleReportService` no longer authorizes writes with `project.view`.
+The authorization pipeline maps `engineering.*` to core; seeded demo roles
+explicitly grant `engineering.report.capture` for capture only. Tests assert
+PIPING scope denies the CIVIL-only engineer and a role reduced to
+`project.view` cannot create a report. No report issue/signature/verification
+capability is granted; no public HTTP routes exist yet. PHP lint and diff
+check passed; PostgreSQL feature tests still unrun.
+
+## Pipe-schedule discrepancy request service (2026-10-15)
+
+New `PipeScheduleExceptionRequestService::submit()` runs under tenant/RLS and
+`engineering.report.capture`, locks the pipe and its line, recomputes expected
+schedule from the issue-time PMS pin at the actual pipe DN, and stores reason,
+requester and actual value. It rejects matching/missing/unpinned pipes and
+an identical unresolved request. Added feature assertions for matching,
+new request provenance, and duplicate refusal. No public route or decision
+service; a request alone never approves work. PHP lint/diff checks pass; DB
+feature tests remain unrun. Before approval, a reviewer must recheck
+component/snapshot freshness and project-specific authority (ADR-029/030).
+
+## Model-screen discrepancy request entry (2026-10-15)
+
+ComponentController/model view now expose a POST-only, CSRF-protected
+`request-review` route and reason form for an own-company PIPE with a visible
+issued-PMS schedule difference. Controller checks project/line/component URL
+binding; `PipeScheduleExceptionRequestService` rechecks all source values,
+RLS, ownership, permission, reason and pending duplicate. Model view queries
+pending requests in one batched query and says "Review requested; not
+approved" instead of implying clearance. Capture remains allowed on released
+lines (late-discovered discrepancy) but blocked on archived projects. HTTP
+feature assertions added; PHP lint and diff check passed, PostgreSQL tests
+still not run. No TQ/NCR issue, signature or acceptance UI is present.
+
+- Follow-up hardening: the pending-request badge is now keyed by the
+  component's **current** schedule as well as its pinned PMS revision. A
+  still-open request for an old component schedule cannot suppress a new
+  review form after an edit; HTTP test covers 40 -> 60. Old request remains
+  historical evidence and must fail reviewer freshness checks (not built).
+
+## Owner question: pipe thicker than required (2026-10-15)
+
+Analysed current behavior: model page flags schedule string mismatch only;
+`PipeReference::wall` can resolve size-specific nominal wall, but no end-to-
+end minimum-wall acceptance for schedule substitutions is connected. Greater
+thickness can satisfy pressure thickness (subject to design P/T, material,
+corrosion/mechanical allowances and 12.5% mill tolerance) yet still violate
+an exact PMS schedule or introduce bore/fit-up, weld qualification, branch,
+support and hydraulic issues. ADR-029 and improvement proposals recommend
+separate PMS difference and engineering wall-adequacy statuses; PASS is not
+approval under ADR-030. Asked owner whether the PMS schedule is an exact
+mandatory value or a minimum wall. No code or DB tests in this analysis step.
+
+## Owner clarification on thicker wall (2026-10-15)
+
+Owner says ASME B31.3 permits thicker pipe/component via an internal 1:3
+taper (grinding). ADR-029 records this as a conditional **joint transition**
+route, not automatic schedule approval. For measured internal radial offset
+Δ, provisional geometric reading is axial length >=3Δ, subject to the
+project-adopted code edition/figure, WPS and engineering design. Must check
+remaining minimum wall after machining, end fit-up, inspection, material,
+branch/weight etc; line-owner signature and independent disposition still
+apply. Source review found inconsistent secondary summaries of B31.3 328.4.3
+versus other ASME code figures; do not hard-code 1:3 or cite a definitive
+paragraph until owner provides adopted edition/figure (or authoritative pack
+text is verified). No code changed and no test run for this clarification.
+
+## Fit-up inspection boundary corrected (2026-10-15)
+
+Owner clarified: remaining wall after internal grinding, taper geometry,
+connection alignment and WPS are to be checked later at **Fit-up inspection**
+by the parties specified in the project's ITP. Detailed stage requirements
+will be discussed when development reaches Fit-up. ADR-029/030 and improvement
+proposal corrected: current PMS discrepancy/request may record a proposed
+taper and conditional engineering path without as-built fit-up evidence; it
+must NOT show Fit-up accepted or use a future fit-up report as a prerequisite
+for opening the discrepancy. Engineering disposition, responsible line-company
+signature and ITP inspection/release remain distinct. No code or DB tests
+changed in this clarification step.
+
+## Proposed taper intent on schedule request (2026-10-15)
+
+Migration `2026_10_15_140000` adds append-only `proposed_remedy` default
+UNDETERMINED / INTERNAL_TAPER_PROPOSED to existing schedule requests.
+`PipeScheduleExceptionRequestService` only accepts the taper proposal when
+BOTH size-specific schedules exist and the proposed actual reference nominal
+wall is greater than the issued PMS wall, never by comparing schedule labels.
+Controller/view offer that option only for an eligible mismatch and label
+pending intent "plan only; not Fit-up acceptance". Feature test covers
+thinner refusal, thicker proposal and no decision event. Geometry, remaining
+wall after grinding, WPS and ITP verification explicitly deferred (ADR-029/
+030); no automatic approval/release. PHP lint/diff checked, DB tests unrun.
+
+## Schedule discrepancy history visibility (2026-10-15)
+
+The model screen now batches own-company request history and linked TQ/NCR
+register rows for all visible components on a line. A collapsed history shows
+captured schedules, reason/time, proposed taper intent, stale former values,
+and report provenance: internal draft **not issued** vs external metadata
+**not verified**. An ADR-029 raw decision is labelled only as a review event,
+not engineering acceptance. Tests assert history survives a 40 -> 60 schedule
+edit and both TQ draft/NCR external report labels. No release/approval gate is
+connected. PHP lint and diff check passed; PostgreSQL HTTP tests still unrun.
+
+## Report capture freshness split (2026-10-15)
+
+`PipeScheduleReportService` now locks pipe/line and rechecks actual schedule,
+issued PMS snapshot and recalculated expected schedule for a newly created
+IN_SYSTEM TQ/NCR draft. It refuses stale component state and raw-SQL forged
+expected values. EXTERNAL_REGISTER still permits retrospective metadata for
+an already issued/signed report on an old request, but no verification or
+approval results. Feature assertions cover forged expected value and 40->60
+edit: internal draft rejected, historical external registration remains
+EXTERNAL_RECORDED. PHP lint/diff checked, PostgreSQL tests still unrun.
+
+## Model-page TQ/NCR capture (2026-10-15)
+
+ComponentController now routes scoped POSTs for own-company schedule requests:
+create an in-system unissued TQ/NCR draft (only current request), or register
+already-issued external TQ/NCR metadata without file/revision. Both use the
+existing `PipeScheduleReportService` after verifying request -> component ->
+line URL binding, CSRF, capture capability and tenant scope. Internal draft
+creation serializes on request row and refuses a duplicate of same kind.
+Read-only history explicitly calls internal rows "not issued" and external
+rows "not verified"; no signature/issue/approval/disposition route exists.
+HTTP assertions cover both forms, cross-line refusal, duplicate draft and
+stale internal draft refusal. PHP lint/diff checked; PostgreSQL tests unrun.
+
+## Issue-time component size on schedule requests (2026-10-15)
+
+Migration `2026_10_15_150000` adds nullable NPS/DN pair to append-only
+schedule requests: null means legacy size unknown, NEVER backfilled from a
+mutable component. Request service captures canonical NPS/DN and dedupes
+per actual schedule **and size**. Model history shows the issued request
+size; pending status also matches current size, and size-unknown/changed
+entries are marked former/unverifiable. Internal TQ/NCR draft refuses a
+request without size or whose NPS/DN no longer matches the current pipe.
+Feature test changes NPS 6/DN150 to NPS 8/DN200 at unchanged schedule,
+asserts new request can be made and old draft rejected. No Fit-up validation
+or engineering acceptance is inferred. PHP lint/diff checks passed;
+PostgreSQL tests still unrun.
+
+## External report readback (2026-10-15)
+
+The model's report history now has a collapsed details panel for each
+external TQ/NCR: number/revision, claimed issuer/signatory/capacity, claimed
+issue/signature dates, external register reference, and separate local
+recorder ID/time. Everything remains visibly *unverified*, and Blade escapes
+external free text. Feature HTTP assertions check readback. No verification,
+issuance, disposition, signature or Fit-up acceptance is added.
+
+## External metadata validation fix (2026-10-15)
+
+`PipeScheduleReportService` trims claimed report fields before validating;
+blank required text is a ValidationException and blank optional revision is
+null. Service and HTTP tests cover whitespace-only fields, with no reliance
+on a DB CHECK failure for user input. Lint/diff passed; PostgreSQL suite
+remains unrun locally due to missing vendor/pdo_pgsql.
+
+## Capture acknowledgement (2026-10-15)
+
+The model shows a bilingual, mode-specific flash receipt following successful
+TQ/NCR capture: internal draft not issued/approved, or external metadata not
+verified. Validation failures do not receive a success receipt. The model
+announces status/errors with appropriate accessibility roles; HTTP assertions
+cover both receipts. No report issuance, acceptance or signature workflow.
+
+## Pending request expected PMS hardening (2026-10-15)
+
+A historical request whose claimed expected schedule differs from the
+current DN's issue-time pinned PMS no longer suppresses a fresh request.
+Model history warns of an unverified PMS claim and hides the internal draft
+form; report service remains the final server-side freshness check. A DB
+feature test inserts a false expected schedule by raw SQL and asserts a
+legitimate request can follow. PHP lint/diff checked; PostgreSQL tests unrun.
+
+## Verified degraded-environment run (2026-10-15)
+
+Installed local ignored npm/jsdom and Python jsonschema environments and ran
+`PATH="$PWD/.local/php-native/bin:$PATH" bash scripts/run-tests.sh` successfully:
+standards-pack validation, PHP rules conformance/material screening (including
+60 screening assertions), and five jsdom prototype suites (render: 324
+render combinations; sidebar: 19; piping workspace: 16; MTO: 15; order gap:
+19). **One suite skipped:** Laravel/PHPUnit/PostgreSQL RLS because `app/vendor`
+and `pdo_pgsql` are absent. These green results do NOT validate the recent
+schedule-request/report services, migrations, routes, or database RLS. The
+zero-dependency Node prototype server was started on `0.0.0.0:8080` as a
+live preview. It serves prototype screens, **not** the Laravel model page;
+run the latter with Laragon PHP 8.4 + PostgreSQL on a suitable workstation
+following `docs/LARAGON-DEVELOPMENT-ENVIRONMENT.md`. Do not claim DB tests
+passed based on the prototype preview.

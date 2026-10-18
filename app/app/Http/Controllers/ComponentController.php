@@ -35,6 +35,11 @@ final class ComponentController extends Controller
         private readonly ComponentService $components,
         private readonly TenantContext $tenant,
         private readonly PipeReference $reference,
+        private readonly \App\Services\PmsPinnedClassSpecification $issuedPms,
+        private readonly \App\Services\PipeScheduleExceptionRequestService $scheduleRequests,
+        private readonly \App\Services\PipeScheduleReportService $reports,
+        private readonly \App\Services\ProjectArchiveService $archives,
+        private readonly \App\Support\AuthorizationPipeline $authz,
         private readonly \App\Services\JointService $joints,
     ) {}
 
@@ -47,7 +52,7 @@ final class ComponentController extends Controller
         [$line, $rows, $open, $joints, $metrics] = $this->tenant->runAs(
             $user->company_id,
             function () use ($lineId): array {
-                $line = PipingLine::with(['subsystem', 'pipingClass'])->findOrFail($lineId);
+                $line = PipingLine::with(['subsystem', 'pipingClass', 'pmsSnapshot.documentRevision.document'])->findOrFail($lineId);
 
                 $rows = Component::with('ports')
                     ->where('piping_line_id', $line->id)
@@ -73,7 +78,86 @@ final class ComponentController extends Controller
             $project->id,
         );
 
+        // Read-only comparison against the eagerly loaded ISSUE-TIME snapshot.
+        // Missing/corrupt evidence is unknown, never silently marked conforming.
+        $scheduleChecks = [];
+        $spec = $line->pmsSnapshot?->specification;
+        if (is_array($spec)) {
+            foreach ($rows as $component) {
+                if ($component->template_code !== 'PIPE') {
+                    continue;
+                }
+                $size = $component->nominal_size !== null
+                    ? $this->reference->resolveLabel($component->nominal_size) : null;
+                if ($size === null) {
+                    continue;
+                }
+                try {
+                    $expected = $this->issuedPms->pipeScheduleFromSpecification($spec, $size->dn);
+                    $scheduleChecks[$component->id] = [
+                        'expected' => $expected,
+                        'dn' => $size->dn,
+                        'matches' => $component->schedule === $expected,
+                        'taper_eligible' => $component->schedule !== null
+                            && $this->reference->hasSchedule($size->nps, $expected)
+                            && $this->reference->hasSchedule($size->nps, $component->schedule)
+                            && $this->reference->wall($size->nps, $component->schedule)
+                                > $this->reference->wall($size->nps, $expected),
+                    ];
+                } catch (ValidationException) {
+                    // A malformed/uncovered snapshot must not receive a green badge.
+                }
+            }
+        }
+
+        // All own-company requests remain visible, including old component
+        // schedules. A decided row is history, NOT automatically an approval.
+        $requestHistory = $this->tenant->runAs($user->company_id,
+            fn () => DB::table('pipe_schedule_exception_requests as r')
+                ->leftJoin('pipe_schedule_exception_decisions as d', 'd.request_id', '=', 'r.id')
+                ->whereIn('r.component_id', $rows->pluck('id'))
+                ->where('r.company_id', $user->company_id)
+                ->orderByDesc('r.created_at')->orderByDesc('r.id')
+                ->get(['r.*', 'd.id as decision_id']),
+            $project->id,
+        );
+        $reportHistory = $this->tenant->runAs($user->company_id,
+            fn () => DB::table('pipe_schedule_discrepancy_reports')
+                ->whereIn('request_id', $requestHistory->pluck('id'))
+                ->where('company_id', $user->company_id)
+                ->orderBy('created_at')->get()
+                ->groupBy('request_id'),
+            $project->id,
+        );
+        // A still-open request for a FORMER schedule cannot mask a new one.
+        $pendingScheduleRequests = [];
+        foreach ($rows as $component) {
+            $pending = $requestHistory->first(fn ($r): bool =>
+                $r->component_id === $component->id && $r->decision_id === null
+                && $r->pms_class_snapshot_id === $line->pms_class_snapshot_id
+                && $r->nps_at_request !== null
+                && $r->nps_at_request === $component->nominal_size
+                && isset($scheduleChecks[$component->id])
+                && (int) $r->dn_at_request === $scheduleChecks[$component->id]['dn']
+                && $r->expected_schedule === $scheduleChecks[$component->id]['expected']
+                && $r->actual_schedule === $component->schedule);
+            if ($pending !== null) {
+                $pendingScheduleRequests[$component->id] = [
+                    'id' => $pending->id, 'remedy' => $pending->proposed_remedy,
+                ];
+            }
+        }
+        $canCapture = $this->archives->isWritable($project) && $this->tenant->runAs($user->company_id,
+            fn (): bool => $this->authz->allows($user, 'engineering.report.capture', $project, ['discipline' => 'PIPING']),
+            $project->id,
+        );
+
         return view('piping.model', [
+            'requestHistory' => $requestHistory->groupBy('component_id'),
+            'reportHistory' => $reportHistory,
+            'pendingScheduleRequests' => $pendingScheduleRequests,
+            'canCapture' => $canCapture,
+            'scheduleChecks' => $scheduleChecks,
             'lang' => $lang,
             'dir' => $lang === 'fa' ? 'rtl' : 'ltr',
             'user' => $user,
@@ -123,6 +207,76 @@ final class ComponentController extends Controller
         }
 
         return redirect($this->backTo($projectCode, $lineId, $lang, $request));
+    }
+
+    /** Submit a review request, not an engineering approval or TQ/NCR issue. */
+    public function requestScheduleReview(Request $request, string $projectCode, string $lineId, string $componentId): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+        $data = $request->validate([
+            'reason' => ['required', 'string', 'min:10', 'max:4000'],
+            'proposed_remedy' => ['sometimes', 'in:UNDETERMINED,INTERNAL_TAPER_PROPOSED'],
+        ]);
+
+        try {
+            $this->tenant->runAs($user->company_id, function () use ($lineId, $componentId): void {
+                $component = Component::query()->whereKey($componentId)->firstOrFail();
+                abort_if($component->piping_line_id !== $lineId, 404);
+            }, $project->id);
+            $this->scheduleRequests->submit(
+                $project, $user, $componentId, $data['reason'],
+                $data['proposed_remedy'] ?? 'UNDETERMINED',
+            );
+        } catch (ValidationException $e) {
+            return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+                ->withInput()->withErrors($e->errors());
+        }
+
+        return redirect($this->backTo($projectCode, $lineId, $lang, $request));
+    }
+
+    /** Capture provenance; neither mode issues or verifies a TQ/NCR. */
+    public function captureReport(Request $request, string $projectCode, string $lineId, string $requestId, string $mode): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+        abort_unless(in_array($mode, ['draft', 'external'], true)
+            && \Illuminate\Support\Str::isUuid($requestId), 404);
+        $data = $request->validate(['kind' => ['required', 'in:TQ,NCR']]);
+
+        try {
+            $this->tenant->runAs($user->company_id, function () use ($lineId, $requestId, $user): void {
+                $belongs = DB::table('pipe_schedule_exception_requests as r')
+                    ->join('components as c', 'c.id', '=', 'r.component_id')
+                    ->where('r.id', $requestId)
+                    ->where('r.company_id', $user->company_id)
+                    ->where('c.piping_line_id', $lineId)->exists();
+                abort_unless($belongs, 404);
+            }, $project->id);
+            if ($mode === 'draft') {
+                $this->reports->draft($project, $user, $requestId, $data['kind']);
+            } else {
+                $this->reports->registerExternal($project, $user, $requestId, $data['kind'],
+                    $request->only([
+                        'report_number', 'report_revision', 'reported_issuer', 'reported_signer',
+                        'reported_signer_capacity', 'reported_issued_at', 'reported_signed_at',
+                        'external_register_ref',
+                    ]));
+            }
+        } catch (ValidationException $e) {
+            return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+                ->withInput()->withErrors($e->errors());
+        }
+
+        return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+            ->with('status', $mode === 'draft'
+                ? ($lang === 'fa' ? 'پیش‌نویس داخلی ثبت شد؛ هنوز صادر یا تأیید نشده است.'
+                    : 'Internal draft saved; not issued or approved.')
+                : ($lang === 'fa' ? 'اطلاعات گزارش بیرونی ثبت شد؛ امضا و گزارش هنوز راستی‌آزمایی نشده‌اند.'
+                    : 'External report metadata saved; report and signature not verified.'));
     }
 
     /** Attach a new component to an open port - the modelling gesture. */

@@ -3,13 +3,13 @@
 **Date:** 2026-10-06  
 **Status:** requirements proposal and staged design; implementation status is stated per slice below.
 **Scope:** Piping first; all EPCC disciplines remain in product scope, but Piping is the deep/template discipline for the current MVP.  
-**Inputs:** uploaded package `epcc-platform-mto-docs-changes-2026-10-06.txt`, current branch `arena/roadmap-reconciliation`, existing ADRs, and prior user decisions.
+**Inputs:** uploaded package `epcc-platform-mto-docs-changes-2026-10-06.txt`, historical `arena/roadmap-reconciliation` branch, current `arena/782120e4-epcc-platform` code, existing ADRs, and prior user decisions.
 
 ---
 
 ## 1. Executive Summary
 
-The uploaded MTO documents contain important and product-relevant decisions, but they must not be copied over the current repository as wholesale replacements. Several files in the package appear to come from a different documentation/code baseline and describe some features as `BUILT` that do not exist in the current branch, such as `BaselineService`, `PcfParser`, `ModelImportService`, and multiple PMS services. This document reconciles the useful requirements from the package with the real state of the current repository.
+The uploaded MTO documents contain important and product-relevant decisions, but they must not be copied over the current repository as wholesale replacements. Several files in the package come from a different documentation/code baseline and describe a *complete* baseline/model-import module as built. This branch now has the read-only `PcfParser` and selected PMS/MR features, but still lacks `BaselineService`, operational `ModelImportService`, and the parallel PMS schema. This document reconciles the useful requirements from the package with the real state of the current repository.
 
 The next target is to make the following Piping material-planning chain reliable and testable:
 
@@ -29,9 +29,9 @@ Key principle: **an approved MTO is a gross procurement-planning quantity; a mod
 
 ## 2. Actual State of the Current Branch
 
-### 2.1 Built and reliable
+### 2.1 Present in code (runtime status varies by slice)
 
-The current branch actually contains and tests the following capabilities:
+The current branch contains the following capabilities. The test count below is historical, not a verification of subsequent changes:
 
 - Fixed Laravel/PostgreSQL runtime restoration through `restore.sh`.
 - Core RLS and multi-tenancy.
@@ -45,22 +45,22 @@ The current branch actually contains and tests the following capabilities:
   - compatibility checks;
   - task-first Laravel Piping Workspace;
   - first test-pack workflow: create pack, assign line, and transition `DRAFT → READY → TESTED → ACCEPTED`.
-- Latest full suite: `858 passed / 3166 assertions`.
+- Historical full-suite result on 2026-10-06: `858 passed / 3166 assertions`; later slices (including PCF and PMS) still await the owner’s Laragon test run.
 
-### 2.2 Claims in the uploaded package that are still not built in this branch
+### 2.2 Uploaded-package capability versus the current implementation
 
-The following must not be documented as built in this branch unless their code is imported or implemented:
+The uploaded package must not be described as wholly built. The statuses below distinguish pure parsing from operational model import:
 
 | Claimed/mentioned item | Current branch status |
 |---|---|
 | `BaselineService` | absent |
 | `baseline_batches` / `baseline_discrepancies` | absent |
-| `PcfParser` / `ModelImportService` / `model_imports` | absent |
+| `PcfParser` / `ModelImportService` / `model_imports` | pure parser, read-only admission and P2P branch classifier ported (ADR-021–023); importer and model-import tables absent; runtime tests pending |
 | quarantine for unknown imported lines | absent |
 | immutable accepted-MTO-row snapshot store | built in Slice 4: `accepted_mto_batches`, `accepted_mto_rows`, transactional acceptance, frozen labels/hash and rollback tests |
-| PMS entry/access/bulk services from the package | absent |
+| PMS entry/access/bulk services from the package | `PmsAccessService` and policy table ported; this branch has its own PMS rules and fluid-service field; parallel bulk-entry schema/services not ported |
 | NDT requirement model from the package | absent |
-| `material_requisition_sequence` from the package | absent |
+| `material_requisition_sequence` from the package | ported with MR entry (P-25 step 4); Laragon verification pending |
 
 Conclusion: the uploaded package is a **requirements/design input**, not a direct replacement for the current files.
 
@@ -529,7 +529,7 @@ This slice deliberately does not accept or mutate a staging row.
 **Built 2026-10-06 in this branch:**
 
 - `engineering_estimate_rows`, `EngineeringEstimateRow`, `EngineeringEstimateService`;
-- source types `MANUAL_ISO`, `MODEL_DERIVED`, and `PCF_IMPORT` without claiming a PCF parser;
+- source types `MANUAL_ISO`, `MODEL_DERIVED`, and `PCF_IMPORT`; a read-only PCF parser now exists but no automatic PCF-to-estimate integration exists;
 - optional link to an immutable `accepted_mto_row_id` and structured provenance;
 - `SHORTAGE` when net exceeds gross, with no percentage tolerance;
 - `DELTA_ONLY` when gross is equal to or greater than net; no cause is inferred;
@@ -537,9 +537,7 @@ This slice deliberately does not accept or mutate a staging row.
 
 ### Slice 6 — PO attribution and order gap
 
-- PO line material/scope attribution;
-- order gap board;
-- separate above-plan indicator.
+**Implemented in code, pending Laragon verification:** PO material attribution, amendment lineage, scope allocations, issued/in-force order-gap board and above-plan indicator (ADR-015). **Important limitation:** the current board sums every accepted MTO revision without effective-revision/scope overlap selection; this may double-count revised or overlapping MTOs. Do not claim its gross-demand total is reliable across multiple accepted revisions/scopes until ADR-024 is implemented and tested.
 
 ### Slice 7 — Usable material decision and physical gap
 

@@ -1,0 +1,251 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "title": "Valve actuator reference pack",
+ "type": "object",
+ "required": [
+  "refId",
+  "version",
+  "source",
+  "travels",
+  "failSafeModes",
+  "controlModes",
+  "actuators"
+ ],
+ "additionalProperties": false,
+ "properties": {
+  "refId": {
+   "const": "actuators"
+  },
+  "version": {
+   "type": "string",
+   "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+  },
+  "source": {
+   "type": "string",
+   "minLength": 10
+  },
+  "note": {
+   "type": "string"
+  },
+  "conventions": {
+   "type": "object"
+  },
+  "travels": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "required": [
+     "code",
+     "name",
+     "valveTypes",
+     "verified"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "code": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+     },
+     "name": {
+      "type": "object",
+      "required": [
+       "en",
+       "fa"
+      ],
+      "additionalProperties": false,
+      "properties": {
+       "en": {
+        "type": "string",
+        "minLength": 1
+       },
+       "fa": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     },
+     "valveTypes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+       "type": "string",
+       "pattern": "^[A-Z][A-Z0-9_]*$"
+      }
+     },
+     "note": {
+      "type": "string"
+     },
+     "verified": {
+      "type": "boolean"
+     }
+    }
+   }
+  },
+  "failSafeModes": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "required": [
+     "code",
+     "name",
+     "verified"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "code": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+     },
+     "name": {
+      "type": "object",
+      "required": [
+       "en",
+       "fa"
+      ],
+      "additionalProperties": false,
+      "properties": {
+       "en": {
+        "type": "string",
+        "minLength": 1
+       },
+       "fa": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     },
+     "note": {
+      "type": "string"
+     },
+     "verified": {
+      "type": "boolean"
+     }
+    }
+   }
+  },
+  "controlModes": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "required": [
+     "code",
+     "name",
+     "verified"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "code": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+     },
+     "name": {
+      "type": "object",
+      "required": [
+       "en",
+       "fa"
+      ],
+      "additionalProperties": false,
+      "properties": {
+       "en": {
+        "type": "string",
+        "minLength": 1
+       },
+       "fa": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     },
+     "note": {
+      "type": "string"
+     },
+     "verified": {
+      "type": "boolean"
+     }
+    }
+   }
+  },
+  "actuators": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "required": [
+     "code",
+     "name",
+     "power",
+     "travels",
+     "defaultFailSafe",
+     "supportsFailSafe",
+     "supportsModulating",
+     "verified"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "code": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+     },
+     "name": {
+      "type": "object",
+      "required": [
+       "en",
+       "fa"
+      ],
+      "additionalProperties": false,
+      "properties": {
+       "en": {
+        "type": "string",
+        "minLength": 1
+       },
+       "fa": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     },
+     "power": {
+      "enum": [
+       "MANUAL",
+       "PNEUMATIC",
+       "ELECTRIC",
+       "HYDRAULIC"
+      ]
+     },
+     "travels": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+       "type": "string",
+       "pattern": "^[A-Z][A-Z0-9_]*$"
+      }
+     },
+     "defaultFailSafe": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+     },
+     "supportsFailSafe": {
+      "type": "boolean"
+     },
+     "supportsModulating": {
+      "type": "boolean"
+     },
+     "note": {
+      "type": "string"
+     },
+     "verified": {
+      "type": "boolean"
+     }
+    }
+   }
+  }
+ }
+}

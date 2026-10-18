@@ -34,6 +34,10 @@
         'unlink'  => ['fa' => 'حذف پیوست', 'en' => 'Remove link'],
         'config'  => ['fa' => 'تنظیم شماره‌گذاری', 'en' => 'Numbering setup'],
         'model'   => ['fa' => 'مدل', 'en' => 'Model'],
+        'issuedPms'=> ['fa' => 'بازنگری PMS زمان صدور', 'en' => 'Issued PMS revision'],
+        'unmapped'=> ['fa' => 'در انتظار بررسی کلاس و بازنگری PMS', 'en' => 'Class/PMS revision review required'],
+        'nopms'  => ['fa' => 'هیچ کلاس منتشرشده‌ای در بازنگری تأییدشدهٔ جاری مدرک PMS موجود نیست؛ ثبت خط جدید تا تأیید آن ممکن نیست.',
+                      'en' => 'No published class in a currently approved PMS revision. New lines require an approved PMS first.'],
         'noreg'   => ['fa' => 'این فهرست برای پروژه تعریف نشده است؛ تا تعریف نشود شماره‌گذاری خودکار ممکن نیست.',
                       'en' => 'Not set up for this project yet - automatic numbering needs it first.'],
         'dp'      => ['fa' => 'فشار طراحی', 'en' => 'Design pressure'],
@@ -97,6 +101,7 @@
 @include('partials.topbar')
 
   <h1>{{ $L('title') }}</h1>
+  <a href="{{ route('piping.project-fittings', ['projectCode' => $project->code, 'lang' => $lang]) }}">{{ $lang === 'fa' ? 'مشخصات فیتینگ و متریال پروژه' : 'Project fitting and material specifications' }}</a>
   <div class="sub">
     <span class="mono">{{ $project->code }}</span>
     · {{ $project->name($lang) }}
@@ -114,6 +119,9 @@
     <span class="pill">{{ $L('draft') }}: {{ $num($stats['draft']) }}</span>
     <span class="pill" style="background:#78350f;color:#fde68a;border:1px solid #92400e;">{{ $L('afc') }}: {{ $num($stats['afc']) }}</span>
     <span class="pill ok">{{ $L('rel') }}: {{ $num($stats['released']) }}</span>
+    @if($stats['unmapped'] > 0)
+      <span class="pill" style="background:#7f1d1d;color:#fecaca;">{{ $L('unmapped') }}: {{ $num($stats['unmapped']) }}</span>
+    @endif
     @if($stats['external'] > 0)
       <span class="pill" style="opacity:.8;">{{ $L('ext') }}: {{ $num($stats['external']) }}</span>
     @endif
@@ -141,7 +149,8 @@
     @forelse($rows as $line)
       @php
         $b = $blockers[$line->id] ?? null;
-        $ready = $b !== null && $b['missing'] === [] && $b['unapproved'] === [];
+        $ready = $b !== null && $line->pms_class_snapshot_id !== null
+            && $b['missing'] === [] && $b['unapproved'] === [];
         $label = \App\Support\LineReleaseState::label((string) $line->release_state);
       @endphp
       <tr>
@@ -154,7 +163,18 @@
         </td>
         <td>{{ $line->subsystem?->code }}</td>
         <td>{{ $line->nominal_size ? $num($line->nominal_size).'"' : '—' }}</td>
-        <td>{{ $line->pipingClass?->code ?? '—' }}</td>
+        <td>{{ $line->pipingClass?->code ?? '—' }}
+          @if($line->pms_class_snapshot_id === null)
+            <div style="font-size:11px;color:#fca5a5;">{{ $L('unmapped') }}</div>
+          @else
+            @php $issued = $line->pmsSnapshot?->documentRevision; @endphp
+            <div style="font-size:11px;color:var(--muted);">
+              {{ $L('issuedPms') }}:
+              {{ $issued?->document?->number ?? 'PMS' }} · {{ $issued?->revision ?? '—' }}
+              @if($issued?->suitability) ({{ $issued->suitability }}) @endif
+            </div>
+          @endif
+        </td>
         <td class="mono" style="white-space:nowrap;">
           {!! $show($line->design_pressure, $line->design_pressure_unit, 'PRESSURE') !!}
         </td>
@@ -308,21 +328,19 @@
       </label>
       @endif
 
-      @if($needs('class'))
       <label style="font-size:12px;color:var(--muted);">
         {{ $L('class') }}
         @if($classes->isEmpty())
           <div style="margin-top:4px;padding:6px;border-radius:6px;border:1px dashed #92400e;background:rgba(120,53,15,.25);color:#fcd34d;font-size:11px;line-height:1.6;">
-            {{ $L('noreg') }}
+            {{ $L('nopms') }}
           </div>
         @else
-          <select name="piping_class_id" style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+          <select name="piping_class_id" required style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
             <option value="">—</option>
             @foreach($classes as $c)<option value="{{ $c->id }}">{{ $c->code }}</option>@endforeach
           </select>
         @endif
       </label>
-      @endif
 
       @if($needs('coating'))
       <label style="font-size:12px;color:var(--muted);">
@@ -368,7 +386,7 @@
         <input type="text" name="line_number" placeholder="{{ $L('autonum') }}" style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
       </label>
 
-      <button type="submit" style="padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:inherit;font:inherit;cursor:pointer;">
+      <button type="submit" @disabled($classes->isEmpty()) style="padding:7px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:inherit;font:inherit;cursor:pointer;">
         {{ $L('add') }}
       </button>
     </form>

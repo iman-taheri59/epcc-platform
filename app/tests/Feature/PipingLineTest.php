@@ -21,8 +21,10 @@ use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
+use Tests\Support\ApprovedPmsClassFixture;
 
 /**
  * ADR-006 phase 1 - the line register and the AFC gate.
@@ -85,6 +87,13 @@ final class PipingLineTest extends TestCase
         ));
     }
 
+    private function approvedPmsClass(): PipingClass
+    {
+        $class = $this->pipingClass();
+
+        return $this->asOwner(fn () => ApprovedPmsClassFixture::ensure($this->project(), $this->owner(), $class));
+    }
+
     /** Register the services/coatings the default pattern expects. */
     private function configure(): ProjectPipingConfig
     {
@@ -105,7 +114,7 @@ final class PipingLineTest extends TestCase
     private function makeLine(array $extra = []): PipingLine
     {
         $this->configure();
-        $class = $this->pipingClass();
+        $class = $this->approvedPmsClass();
         $subsystem = $this->subsystem();
         $actor = $this->owner();
 
@@ -125,6 +134,24 @@ final class PipingLineTest extends TestCase
         $this->assertSame('8-P-A1-PH-14-SS-2201-001', $line->line_number);
         $this->assertSame(1, $line->sequence);
         $this->assertSame(LineReleaseState::DRAFT, $line->release_state);
+        $this->assertNotNull($line->pms_class_snapshot_id);
+    }
+
+    public function test_a_draft_class_cannot_authorize_a_new_allocated_line(): void
+    {
+        $this->configure();
+        $draft = $this->pipingClass();
+        $subsystem = $this->subsystem();
+
+        try {
+            $this->asOwner(fn () => $this->service()->create($subsystem, $this->owner(), [
+                'nominal_size' => '8', 'service_code' => 'P', 'piping_class_id' => $draft->id,
+            ]));
+            $this->fail('A registered class alone does not prove approved PMS membership.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('piping_class_id', $e->errors());
+        }
+        $this->assertSame(0, $this->asOwner(fn () => PipingLine::count()));
     }
 
     public function test_the_sequence_increments_per_subsystem(): void
@@ -145,7 +172,7 @@ final class PipingLineTest extends TestCase
         $this->makeLine();
 
         $other = $this->subsystem('PH-14-SS-3301');
-        $class = $this->pipingClass();
+        $class = $this->approvedPmsClass();
         $actor = $this->owner();
 
         $line = $this->asOwner(fn () => $this->service()->create($other, $actor, [
@@ -168,22 +195,114 @@ final class PipingLineTest extends TestCase
 
     public function test_the_database_also_refuses_a_duplicate(): void
     {
-        // The service checks first, but the unique index is what makes a race
-        // impossible rather than unlikely.
+        // Supply a VALID PMS pin; otherwise the new admission trigger would
+        // (correctly) refuse it before the unique-number index is exercised.
         $line = $this->makeLine();
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        try {
+            $this->asOwner(fn () => DB::table('piping_lines')->insert([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'project_id' => $line->project_id,
+                'company_id' => $line->company_id,
+                'subsystem_id' => $line->subsystem_id,
+                'line_number' => $line->line_number,
+                'piping_class_id' => $line->piping_class_id,
+                'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
+                'release_state' => LineReleaseState::DRAFT,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]));
+            $this->fail('The project line-number uniqueness index must win.');
+        } catch (QueryException $e) {
+            $this->assertSame('23505', $e->getCode());
+        }
+    }
 
+    public function test_direct_sql_cannot_insert_a_new_line_without_an_approved_pms_pin(): void
+    {
+        $approved = $this->makeLine();
+        try {
+            $this->asOwner(fn () => DB::table('piping_lines')->insert([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'project_id' => $approved->project_id,
+                'company_id' => $approved->company_id,
+                'subsystem_id' => $approved->subsystem_id,
+                'line_number' => 'DIRECT-UNCLASSIFIED-2',
+                'piping_class_id' => $approved->piping_class_id,
+                // Even a real published class is not a snapshot approval.
+                'release_state' => LineReleaseState::DRAFT,
+                'created_at' => now(), 'updated_at' => now(),
+            ]));
+            $this->fail('New SQL inserts without an approved pin must be rejected.');
+        } catch (QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
+        $this->assertSame(1, $this->asOwner(fn () => PipingLine::count()));
+    }
+
+    public function test_existing_unclassified_rows_survive_the_insert_only_migration(): void
+    {
+        $project = $this->project();
+        $subsystem = $this->subsystem();
+        $actor = $this->owner();
+        $migration = require database_path('migrations/2026_10_14_100000_require_approved_pms_pin_on_new_lines.php');
+        $migration->down(); // Simulate a line that predates the new insert gate.
+        $id = (string) \Illuminate\Support\Str::uuid();
         $this->asOwner(fn () => DB::table('piping_lines')->insert([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
-            'project_id' => $line->project_id,
-            'company_id' => $line->company_id,
-            'subsystem_id' => $line->subsystem_id,
-            'line_number' => $line->line_number,
+            'id' => $id, 'project_id' => $project->id,
+            'company_id' => $actor->company_id,
+            'subsystem_id' => $subsystem->id,
+            'line_number' => 'EXISTING-UNMAPPED-001',
             'release_state' => LineReleaseState::DRAFT,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'created_at' => now(), 'updated_at' => now(),
         ]));
+        $migration->up();
+        $legacy = $this->asOwner(fn () => PipingLine::findOrFail($id));
+        try {
+            $this->asOwner(fn () => $this->service()->confirmAfc($legacy, $actor));
+            $this->fail('A historical line without a PMS pin cannot pass AFC.');
+        } catch (ValidationException $e) {
+            $this->assertStringContainsString('PMS', implode(' ', $e->errors()['release_state'] ?? []));
+        }
+        try {
+            $this->asOwner(fn () => DB::table('piping_lines')->where('id', $id)->update([
+                'release_state' => LineReleaseState::AFC_CONFIRMED,
+                'afc_confirmed_at' => now(), 'afc_confirmed_by' => $actor->id,
+            ]));
+            $this->fail('Direct SQL must not certify an unpinned historical line.');
+        } catch (QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
+        $this->assertSame(LineReleaseState::DRAFT,
+            $this->asOwner(fn () => PipingLine::findOrFail($id)->release_state));
+        $this->actingAs($actor)->get('/projects/PH-14/piping?lang=en')
+            ->assertOk()->assertSee('Class/PMS revision review required');
+        $this->actingAs($actor)->get('/projects/PH-14/piping/workspace?lang=en')
+            ->assertOk()->assertSee('Class/PMS revision review required');
+        $this->asOwner(fn () => DB::table('piping_lines')->where('id', $id)
+            ->update(['release_note' => 'Awaiting explicit class review']));
+        $this->assertSame('Awaiting explicit class review', $this->asOwner(
+            fn () => PipingLine::findOrFail($id)->release_note));
+        $this->assertNull($this->asOwner(fn () => PipingLine::findOrFail($id)->pms_class_snapshot_id));
+
+        $approved = $this->makeLine();
+        try {
+            $this->asOwner(fn () => DB::table('piping_lines')->where('id', $id)
+                ->update(['piping_class_id' => $approved->piping_class_id]));
+            $this->fail('A historical class change without PMS evidence must be rejected.');
+        } catch (QueryException $e) {
+            $this->assertSame('23514', $e->getCode());
+        }
+        $this->assertNull($this->asOwner(fn () => PipingLine::findOrFail($id)->piping_class_id));
+
+        // Explicit owner-reviewed classification: class and approved snapshot
+        // must be assigned together; the existing pin guard checks provenance.
+        $this->asOwner(fn () => DB::table('piping_lines')->where('id', $id)->update([
+            'piping_class_id' => $approved->piping_class_id,
+            'pms_class_snapshot_id' => $approved->pms_class_snapshot_id,
+        ]));
+        $this->assertSame($approved->pms_class_snapshot_id,
+            $this->asOwner(fn () => PipingLine::findOrFail($id)->pms_class_snapshot_id));
     }
 
     public function test_preview_shows_the_number_without_creating_anything(): void
@@ -206,14 +325,15 @@ final class PipingLineTest extends TestCase
     {
         // ADR-006 §10.2: import must not invent or normalise numbers.
         $this->configure();
-        $this->pipingClass();
+        $class = $this->approvedPmsClass();
         $subsystem = $this->subsystem();
         $actor = $this->owner();
 
-        $line = $this->asOwner(fn () => $this->service()->register($subsystem, $actor, '8-P-A1-PH-14-SS-2201-777'));
+        $line = $this->asOwner(fn () => $this->service()->register($subsystem, $actor, '8-P-A1-PH-14-SS-2201-777', ['piping_class_id' => $class->id]));
 
         $this->assertSame('8-P-A1-PH-14-SS-2201-777', $line->line_number);
         $this->assertNull($line->sequence, 'we did not allocate this number, so we claim no sequence');
+        $this->assertNotNull($line->pms_class_snapshot_id, 'import pins the approved PMS class revision');
     }
 
     public function test_an_imported_number_does_not_disturb_our_counter(): void
@@ -222,11 +342,11 @@ final class PipingLineTest extends TestCase
         // as our sequence, the next allocation would jump to 778 and collide
         // with the external scheme forever after.
         $this->configure();
-        $class = $this->pipingClass();
+        $class = $this->approvedPmsClass();
         $subsystem = $this->subsystem();
         $actor = $this->owner();
 
-        $this->asOwner(fn () => $this->service()->register($subsystem, $actor, '8-P-A1-PH-14-SS-2201-777'));
+        $this->asOwner(fn () => $this->service()->register($subsystem, $actor, '8-P-A1-PH-14-SS-2201-777', ['piping_class_id' => $class->id]));
 
         $next = $this->asOwner(fn () => $this->service()->create($subsystem, $actor, [
             'nominal_size' => '6', 'service_code' => 'P', 'piping_class_id' => $class->id,
@@ -241,16 +361,33 @@ final class PipingLineTest extends TestCase
         // the scheme. Refusing them would mean the register does not describe
         // the plant; what matters is that they are visible AS non-conforming.
         $this->configure();
+        $class = $this->approvedPmsClass();
         $subsystem = $this->subsystem();
         $actor = $this->owner();
 
-        $line = $this->asOwner(fn () => $this->service()->register($subsystem, $actor, 'LEGACY-TAG-001'));
+        $line = $this->asOwner(fn () => $this->service()->register($subsystem, $actor, 'LEGACY-TAG-001', ['piping_class_id' => $class->id]));
 
         $this->assertSame('LEGACY-TAG-001', $line->line_number);
         $this->assertNull($line->number_tokens, 'nothing could be parsed, and we do not pretend otherwise');
 
         $parsed = $this->asOwner(fn () => $this->service()->parse($this->project(), $subsystem, 'LEGACY-TAG-001'));
         $this->assertFalse($parsed->matched);
+    }
+
+    public function test_an_import_without_a_qualifying_class_is_refused_even_if_its_number_is_valid(): void
+    {
+        $this->configure();
+        $this->pipingClass(); // Registered but unapproved: never invent a PMS link.
+        $subsystem = $this->subsystem();
+        $actor = $this->owner();
+
+        try {
+            $this->asOwner(fn () => $this->service()->register($subsystem, $actor, '8-P-A1-PH-14-SS-2201-777'));
+            $this->fail('A parsed class token is not approval.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('piping_class_id', $e->errors());
+        }
+        $this->assertSame(0, $this->asOwner(fn () => PipingLine::count()));
     }
 
     public function test_an_empty_number_is_refused(): void

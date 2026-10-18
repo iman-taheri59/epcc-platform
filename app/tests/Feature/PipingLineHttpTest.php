@@ -20,6 +20,7 @@ use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
 use Tests\TestCase;
+use Tests\Support\ApprovedPmsClassFixture;
 
 /**
  * ADR-006 phase 1 over HTTP - the register screen and its two doors.
@@ -53,19 +54,19 @@ final class PipingLineHttpTest extends TestCase
     }
 
     /** Give the project the registers the default pattern needs. */
-    private function seedRegisters(): PipingClass
+    private function seedRegisters(bool $approved = true): PipingClass
     {
         $project = $this->project();
 
         return app(TenantContext::class)->runAs(
             $project->owner_company_id,
-            function () use ($project): PipingClass {
+            function () use ($project, $approved): PipingClass {
                 app(PipingLineService::class)->configFor($project)->update([
                     'services' => ['P', 'HC'],
                     'coatings' => ['CT1'],
                 ]);
 
-                return PipingClass::create([
+                $class = PipingClass::create([
                     'project_id' => $project->id,
                     'company_id' => $project->owner_company_id,
                     'code' => 'A1',
@@ -73,6 +74,10 @@ final class PipingLineHttpTest extends TestCase
                     'material' => 'CS',
                     'corrosion_allowance' => 3.0,
                 ]);
+
+                return $approved
+                    ? ApprovedPmsClassFixture::ensure($project, $this->owner(), $class)
+                    : $class;
             },
             $project->id,
         );
@@ -138,6 +143,36 @@ final class PipingLineHttpTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_class_picker_hides_unapproved_classes_and_explains_why_registration_is_unavailable(): void
+    {
+        $draft = $this->seedRegisters(false);
+
+        $this->actingAs($this->owner())
+            ->get('/projects/PH-14/piping?lang=en')
+            ->assertOk()
+            ->assertSee('No published class in a currently approved PMS revision.')
+            ->assertDontSee('<option value="'.$draft->id.'">', false)
+            ->assertSee('disabled', false);
+    }
+
+    public function test_import_without_an_approved_pms_class_is_a_form_error(): void
+    {
+        $this->seedRegisters();
+        $subsystem = $this->subsystem();
+
+        $this->actingAs($this->owner())
+            ->post('/projects/PH-14/piping?lang=en', [
+                'subsystem_id' => $subsystem->id,
+                'line_number' => 'LEGACY-NO-CLASS-01',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasErrors('piping_class_id');
+
+        $count = app(TenantContext::class)->runAs($this->owner()->company_id,
+            fn () => PipingLine::count(), $this->project()->id);
+        $this->assertSame(0, $count);
+    }
+
     public function test_posting_a_line_allocates_the_next_number(): void
     {
         $class = $this->seedRegisters();
@@ -159,6 +194,12 @@ final class PipingLineHttpTest extends TestCase
         );
 
         $this->assertSame(['8-P-A1-PH-14-SS-2201-001'], $numbers);
+        $this->actingAs($this->owner())->get('/projects/PH-14/piping?lang=en')
+            ->assertOk()->assertSee('Issued PMS revision')
+            ->assertSee('PH-14-PIP-PMS-A1')->assertSee('· A')->assertSee('(A1)');
+        $this->actingAs($this->owner())->get('/projects/PH-14/piping/workspace?lang=en')
+            ->assertOk()->assertSee('Issued PMS revision')
+            ->assertSee('PH-14-PIP-PMS-A1');
     }
 
     public function test_an_unregistered_value_is_a_form_error_not_a_crash(): void
@@ -194,7 +235,7 @@ final class PipingLineHttpTest extends TestCase
         $this->assertSame(0, $count, 'a refused number must not leave a half-made line behind');
     }
 
-    public function test_an_external_number_is_registered_verbatim(): void
+    public function test_an_external_number_without_class_is_rejected(): void
     {
         $subsystem = $this->subsystem();
 
@@ -203,16 +244,15 @@ final class PipingLineHttpTest extends TestCase
                 'subsystem_id' => $subsystem->id,
                 'line_number' => 'LEGACY-XYZ-0042',
             ])
-            ->assertRedirect();
+            ->assertRedirect()
+            ->assertSessionHasErrors('piping_class_id');
 
-        $line = app(TenantContext::class)->runAs(
+        $count = app(TenantContext::class)->runAs(
             $this->owner()->company_id,
-            fn () => PipingLine::first(),
+            fn () => PipingLine::count(),
             $this->project()->id,
         );
-
-        $this->assertSame('LEGACY-XYZ-0042', $line->line_number);
-        $this->assertNull($line->sequence, 'an imported number must not feed our counter');
+        $this->assertSame(0, $count);
     }
 
     /** Create a published document at the given suitability. */

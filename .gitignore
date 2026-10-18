@@ -61,3 +61,6 @@ Thumbs.db
 /.vagrant
 Homestead.yaml
 Homestead.json
+
+# Pinned local PHP CLI installer cache and binary (recreated by script).
+/.local/

@@ -13,7 +13,11 @@ Bilingual (EN/FA) modular platform for large industrial EPCC projects — oil, g
 | `docs/Architecture-and-Data-Model.md` | Architecture (ARC-EPCC-001) — module manifest contract, standards engine resolution, 6-gate authorization pipeline, canonical data model, offline sync, RTL architecture, event catalogue, tech selection |
 | `app/` | **The Laravel 13 application** — real code. **Authentication + ARC §5 six-gate authorization**, **project setup** (create a project, choose its standards pack, invite companies, staff people), **multi-project** portfolio + per-project workspaces, tenant isolation enforced by PostgreSQL RLS, bilingual FA/EN, real Jalali dates. `php artisan serve` |
 | `compose.yaml` + `scripts/dev-*.sh` | **One-command development environment** — PostgreSQL 17 and PHP 8.4 with Composer, Node 22, headless Chromium, poppler and Vazirmatn, all in containers. `scripts/dev-up.sh`, then sign in at <http://localhost:8000>. No PHP, Composer, Node or PostgreSQL needed on the host |
+| `scripts/run-tests.sh` | **Degraded-environment test runner** — for sandboxes without Docker/PHP: runs the standards-pack validator (auto-venv) and all five jsdom prototype suites, and reports loudly what it skipped and why. `bash scripts/run-tests.sh` |
+| `scripts/sandbox-pg.sh` | **Real PostgreSQL inside a Docker-less sandbox** — provisions PG 16.2 from the `pgserver` wheel with a non-superuser `epcc` role, `epcc`/`epcc_test` databases and a source-compiled `btree_gist`. `bash scripts/sandbox-pg.sh start\|status\|stop`. The PHP tier still requires the Docker image (see `docs/IMPROVEMENT-PROPOSALS-EN.md` P-19). |
+| `scripts/preview-server.mjs` | **Zero-dependency live preview server** for the air-gap-safe prototype (no CDN, no build step). `node scripts/preview-server.mjs` → <http://localhost:8080> (`/` main prototype, `/piping-workspace.html`, `/healthz`) |
 | `docs/DEVELOPMENT-ENVIRONMENT.md` | **How to run everything locally** — the container stack, what the first boot does, the four `scripts/dev-*.sh` commands, CI, troubleshooting, and the two traps that break the suite silently: exporting a Laravel variable into the container, and letting the application role be a PostgreSQL superuser |
+| `docs/LARAGON-DEVELOPMENT-ENVIRONMENT.md` | **Windows / Laragon setup (no Docker)** — PHP 8.4 in Laragon, the non-superuser `epcc` role, the forbidden-SQLite rule, `filament:assets`, demo accounts, and the P-20 note that PDF export needs POSIX tools |
 | `packages/standards-engine/` | **Framework-free PHP rule engine** (`epcc/standards-engine`). Zero Laravel dependency by design — ADR-003 Annex A §6. Evaluates pack release gates |
 | `packages/standards-engine/conformance/` | **Language-neutral conformance corpus** (25 cases, v1.2.0) + runner + mutation-testing record. The contract that lets the PHP server and the future TS offline app provably agree |
 | `docs/Spike-RLS-Results.md` | **P0 spike result** — Eloquent + PostgreSQL RLS. PASS, with five defects found and fixed (empty-GUC cast, audit actor vs subject, non-singleton context, company-only predicate ignoring project participation, nested-scope leak). §8 multi-project, **§9 Octane — CLOSED (0 leaks / 640 requests, 2.8× p50)**, **§10 PgBouncer transaction pooling — CLOSED (safe; a plain `SET` leaks across client connections)** |
@@ -24,6 +28,8 @@ Bilingual (EN/FA) modular platform for large industrial EPCC projects — oil, g
 | `docs/MTO-REQUIREMENTS-FA.md` / `docs/MTO-REQUIREMENTS-EN.md` | **Piping MTO Foundation requirements** — reconciled from the uploaded 2026-10-06 MTO docs package against the actual current branch. Material Library, MTO document/revision/staging, Slice 4 immutable accepted snapshots, and Slice 5 gross/net comparison are implemented; PO order gap and usable-material decision remain later slices. |
 | `docs/ADR-002-Defer-AWP.md` | **Decision record** — AWP methodology deferred to the international phase; the two architectural seams that keep revival at ~6–10 weeks instead of a rewrite |
 | `docs/ADR-001-AWP-Packaging.md` | **Decision record** — how AWP is decomposed and licensed: constraint engine in core, AWP methodology as a project-level add-on, model-based scoping with the BIM viewer. Includes the falsifiers that would reverse it. |
+| `docs/ADR-015-PO-Attribution-and-Order-Gap.md` | **Requirements record (IMPLEMENTED — awaiting runtime verification)** — MTO Slice 6: PO line material attribution, effective issued/in-force quantities, amendment lineage, explicit no-proration scope allocation, and the order-gap board. All open questions closed 2026-10-11; code + screen + `OrderGapTest` landed the same day (§9). |
+| `docs/IMPROVEMENT-PROPOSALS-EN.md` | **Living improvement-proposals register** — standing rule 5: better alternatives for requirements/code/capabilities, each with a status (OPEN / ACCEPTED / REJECTED / BUILT). |
 | `docs/Iran-First-Market-Addendum.md` | **Decision record (MKT-EPCC-001)** — dependency substitution table, air-gap requirements, Jalali/Nowruz calendar rules, IPS pack scope, revised commercial model and roadmap |
 | `standards-packs/schema/standards-pack.schema.json` | JSON Schema (Draft 2020-12) defining what a standards pack may contain |
 | `standards-packs/ips-iran.pack.json` | **IPS / Iran Pack v1.0.0** — IPS standards, شرایط عمومی پیمان (۴۳۱۱), تعدیل, صورت‌وضعیت, تحویل موقت/قطعی, HSE-MS. Launch default. |
@@ -49,6 +55,7 @@ Open `prototype/index.html`. It boots **Persian-first with the IPS / Iran pack a
 
 Key screens for a demo:
 - **Piping Workspace preview** — open `prototype/piping-workspace.html` directly, or use the Piping Workspace link in the prototype sidebar. Shows the new task-first UX with synthetic PH-14 data.
+- **Order Gap Board preview** — `prototype/order-gap-board.html` (or the sidebar link). The Slice 6 screen language validated before build: accepted gross vs effective ordered per material, shortage / covered / over-plan / unmatched states, draft-PO exclusion, no proration — bilingual FA/EN, 19 jsdom assertions.
 - **Laravel Piping Workspace** — after `./restore.sh` and login, open `/projects/PH-14/piping/workspace?lang=en` (or `lang=fa`). It is the first task-first workspace in the real app, derived from project line/evidence/joint/test-pack data; hydrotest packs can now be created and lines assigned there.
 - **صورت‌وضعیت / Payment Certificate** — the Iranian payment build-up with تعدیل, حسن انجام کار and advance recovery, plus an authority-limit escalation. IPS pack only.
 - **IWP Release Gate** — AWP constraint hard-block in action. AWP pack only.
@@ -61,7 +68,9 @@ Tested: 324 render combinations (3 packs × 2 languages × 6 company roles × 9 
 
 ```bash
 npm install
-npm run test:prototype
+npm run test:prototype      # jsdom prototype suites
+bash scripts/run-tests.sh   # every suite this machine can run (+ loud skip report)
+npm run preview             # live preview of the prototype on :8080
 ```
 
 ## Validating the packs

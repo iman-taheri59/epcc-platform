@@ -21,6 +21,7 @@ use Database\Seeders\EpccDemoSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
+use Tests\Support\ApprovedPmsClassFixture;
 
 /**
  * Unit preferences and the canonical mirror columns (ADR-014).
@@ -79,6 +80,7 @@ final class UnitPreferenceTest extends TestCase
                 ['project_id' => $project->id, 'code' => 'A1'],
                 ['company_id' => $project->owner_company_id, 'description_en' => 'CS 150#'],
             );
+            $class = ApprovedPmsClassFixture::ensure($project, $owner, $class);
             $sub = Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail();
 
             return $svc->create($sub, $owner, array_merge([
@@ -565,13 +567,15 @@ final class UnitPreferenceTest extends TestCase
 
         // The project pattern includes a class token, so the post has to
         // carry one or the numbering engine refuses before units are reached.
-        $class = $this->asOwner(function () use ($project) {
+        $class = $this->asOwner(function () use ($project, $owner) {
             app(PipingLineService::class)->configFor($project)->update(['services' => ['P']]);
 
-            return PipingClass::firstOrCreate(
+            $class = PipingClass::firstOrCreate(
                 ['project_id' => $project->id, 'code' => 'A1'],
                 ['company_id' => $project->owner_company_id, 'description_en' => 'CS 150#'],
             );
+
+            return ApprovedPmsClassFixture::ensure($project, $owner, $class);
         });
 
         $sub = $this->asOwner(fn () => Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail());

@@ -87,6 +87,33 @@ final class DocumentRegisterTest extends TestCase
         }, $ph14->id);
     }
 
+    public function test_pms_is_a_piping_document_with_a_wip_revision_not_an_approved_class(): void
+    {
+        $pars = $this->user('rezaei@pars.example');
+        $project = $this->project('PH-14');
+        $register = app(DocumentRegister::class);
+        $doc = app(TenantContext::class)->runAs($pars->company_id,
+            fn () => $register->register($project, $pars, [
+                'discipline' => 'PIPING', 'doc_type' => 'PMS',
+                'title_en' => 'Piping Material Specification',
+                'title_fa' => 'مشخصات متریال پایپینگ',
+            ]), $project->id);
+
+        $this->assertSame('PH-14-PIPING-PMS-0001', $doc->number);
+        $this->assertSame(CdeState::WIP, $doc->currentRevision->cde_state);
+        $this->assertNull($doc->currentRevision->suitability);
+        $this->assertFalse(CdeState::isApproved(
+            $doc->currentRevision->cde_state, $doc->currentRevision->suitability
+        ));
+
+        $this->expectException(ValidationException::class);
+        app(TenantContext::class)->runAs($pars->company_id,
+            fn () => $register->register($project, $pars, [
+                'discipline' => 'MECH', 'doc_type' => 'PMS',
+                'title_en' => 'Wrong discipline', 'title_fa' => 'رشته نادرست',
+            ]), $project->id);
+    }
+
     // ---- the CDE state machine (FR-ENG-03) -------------------------------
 
     public function test_a_new_document_starts_in_wip_with_no_suitability(): void

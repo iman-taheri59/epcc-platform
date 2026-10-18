@@ -1,6 +1,6 @@
 # ADR-EPCC-012 — Scaling with many projects: the RLS escape hatch is the bottleneck
 
-**Status:** PROPOSED — a real defect is identified and a fix is measured, but **nothing is changed yet**
+**Status:** FIX IMPLEMENTED 2026-10-11 — awaiting runtime verification (migration `2026_10_11_110000_make_rls_project_scope_sargable` + `RlsSargabilityTest`; mechanism EXPLAIN-verified against sandbox PostgreSQL 16.2, full suite runs on the owner's Laragon machine). See §9.
 **Date:** 2026-09-15
 **Depends on:** ADR-001 (tenancy + RLS), ADR-011 (one database per project — answered "no")
 **Severity:** **HIGH.** Present in production code today, invisible at fixture scale, and it gets
@@ -187,3 +187,94 @@ index maintenance and vacuum start to dominate. At 540 k rows in one project the
 Step 4 matters more than it looks: this defect was **invisible at fixture scale** — 5 subsystems and
 a handful of rows make a seq scan the correct plan. Only 200 projects and a million rows exposed it.
 Without a standing guard it will come back.
+
+---
+
+## 9. Implementation record (2026-10-11)
+
+**Status: fix IMPLEMENTED — awaiting runtime verification** (migration + tests landed; the owner's Laragon suite is the verification step).
+
+### What shipped
+
+Migration `2026_10_11_110000_make_rls_project_scope_sargable.php` rewrites
+**every** tenant policy that carried the defective preamble — 33 policies
+across the document register, transmittals, punch/QAQC, procurement,
+facilities, piping (lines/components/ports/joints/test packs), the MTO
+tables, estimates, work packages, payment certificates, gate evaluations and
+Slice 6's `po_item_allocations`. The preamble
+
+```sql
+( NULLIF(current_setting('epcc.project_id', true), '') IS NULL
+  OR t.project_id = NULLIF(current_setting('epcc.project_id', true), '')::uuid )
+```
+
+is replaced, on every one of them, by one sargable semi-join predicate:
+
+```sql
+t.project_id IN (
+    SELECT pc.project_id FROM project_company pc
+    WHERE pc.company_id = GUC_company
+      AND (bound IS NULL OR pc.project_id = bound)
+    UNION
+    SELECT p.id FROM projects p
+    WHERE p.owner_company_id = GUC_company
+      AND (bound IS NULL OR p.id = bound)
+)
+```
+
+All membership branches, WITH CHECK clauses, delegation policies
+(`*_items` following their parents) and archive/deny policies are unchanged.
+Eight missing `(project_id, …)` indexes were added (`punch_items`,
+`subsystems`, `mc_certificates`, inspections, lots, movements,
+`mto_staging_rows`, `gate_evaluations`). `down()` restores the defective
+preamble verbatim from the same spec, so the two directions cannot diverge.
+
+### Deliberate scope tightening (per §6.1)
+
+The preamble now admits only projects the company participates in or owns.
+The only reads this narrows are the wider role branches (named vendor, named
+recipient, gate actor) — and those roles are only ever granted to companies
+already on the project (the procurement service refuses a non-participant
+vendor; recipients are chosen from participants; WITH CHECK demands
+participation for writes). Standing rule 7 — scope by participation — is now
+database-enforced for reads as well.
+
+### Measured in the sandbox (PostgreSQL 16.2, 300k rows, 200 projects, company sees 1 of 200)
+
+| Query shape | Old policy | New policy |
+|---|---|---|
+| RLS-scoped aggregate (no predicate in query) | **153 ms, Seq Scan, 298 500 rows filtered** | **26 ms** (hashed semi-join filter) |
+| Query carries `WHERE project_id = :current` | index path | index path |
+| Cross-project, unbound | n/a | 99 000 rows — works |
+| Bound to a non-participated project | 0 — isolated | 0 — isolated |
+| Foreign company | 0 | 0 — isolated |
+
+The §5 projection (flat 0.1–0.2 ms) materialises when the application query
+carries the project predicate, which the house controllers already do
+(`->where('project_id', $project->id)` is universal). The preamble swap is
+what makes that path available and removes the planner-poisoning
+disjunction from queries that omit the predicate (6× faster even there).
+
+### Tests (`tests/Feature/RlsSargabilityTest.php`)
+
+1. Cross-project view returns rows from every participating project; binding
+   narrows; binding to a foreign project returns nothing — the guard that the
+   §4 "fast but broken" policy fails.
+2. Non-participant sees nothing, scoped or unscoped.
+3. WITH CHECK still refuses writes onto non-participated projects.
+4. Plan-shape guard: the `punch_items` scan filter carries no `IS NULL`
+   disjunction (scale-independent — discriminates at fixture size).
+5. Volume semantics: 30k + 30k generated rows; the bound view returns
+   exactly the bound project's rows and none of the other company's.
+
+### 2026-10-13 CI-discovered owner-scope leak
+
+CI run 38381333457 showed an employer bound to PH-14 could also read a
+certificate on its other project KISH-1. Root cause was operator precedence in
+migration `2026_10_11_110000`: policy composition used `preamble AND body`,
+while `body` for owner-readable tables contains a top-level `OR` (`own row OR
+project owner`). SQL evaluated `(preamble AND own row) OR owner`, bypassing the
+bound-project narrowing for the owner. Policy generation now composes
+`(preamble) AND (body)`; the existing `RowLevelSecurityTest` positive and
+negative mirror is the regression guard. This is a **security correction**, not
+a relaxation of company or project isolation. CI verification pending.

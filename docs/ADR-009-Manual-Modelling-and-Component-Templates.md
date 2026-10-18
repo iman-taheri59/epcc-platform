@@ -155,11 +155,21 @@ the query I flagged in ADR-006 §5.2 as "the single most useful", and it is why
 | BW end onto FL end | **INVALID** (ADR-006 §5.4) |
 | SCH 40 onto SCH 80 at equal bore | **WARNING** — legal at a spec break |
 | TEE where the class's branch table says WELDOLET | **DEVIATION** (ADR-008 §6) — recorded, not blocked |
+| any fitting where the class's branch table says **P2P** | **DEVIATION** — the class expects *no* component at this node (ADR-008 §9.1); recorded, not blocked |
+| P2P (direct pipe-to-header weld) where the class's branch table says a fitting | **DEVIATION** — mirror of the row above; phase 3 must check both directions |
 | a line left with open ends | **warning on the line**, never a hard block — a line under construction legitimately has them |
 
 The refusals are all *structural* (the UI cannot express the bad state); the warnings are all
 *engineering judgement* (the engineer may be right). That split is the same one already used for
 advisory inspection in the procurement module.
+
+> **P2P addendum (2026-10-12, findings R-3/P-22):** since ADR-008 §9.1 the
+> class outcome at a branch can be **P2P — expect NO component**. This flow
+> is port-based, so it can express the *check* (the two deviation rows
+> above) but not yet the *geometry* of a stub welded to the header wall —
+> that representation is decision P-22 and lands with ADR-008 build phase 3
+> wiring. Templates are untouched: P2P is the absence of a template, not a
+> new one.
 
 ---
 

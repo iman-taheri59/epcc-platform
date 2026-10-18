@@ -1,0 +1,18 @@
+{
+  "component_type": "PIPE",
+  "qualifier": "SEAMLESS",
+  "size_designation": "NPS 12 in",
+  "reference_standard": "ASME B36.10M-2022",
+  "material_spec": "SYNTHETIC QA — NOT AN ENGINEERING MATERIAL SPECIFICATION",
+  "declaration_reason": "Demonstrate that STD must not be replaced by SCH 40; synthetic only.",
+  "spec_number": "SYNTHETIC-SCREENING",
+  "spec_revision": "A",
+  "spec_clause": "QA-1",
+  "source_text": "داده ساختگی برای آزمون؛ مجوز طراحی یا ساخت نیست. Keep original source wording unchanged.",
+  "properties": {
+    "product_form": "SEAMLESS",
+    "schedule": "STD",
+    "wall_thickness_mm": "10.31",
+    "outside_diameter_mm": "323.8"
+  }
+}
