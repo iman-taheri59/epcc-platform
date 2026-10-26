@@ -3,7 +3,10 @@
 namespace App\Providers;
 
 use App\Support\TenantAwareUserProvider;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use App\Support\LocalisedNumberTranslator;
 use Illuminate\Translation\Translator;
@@ -62,5 +65,16 @@ class AppServiceProvider extends ServiceProvider
             $app['hash'],
             $config['model'],
         ));
+
+        /*
+         * Gate 1 credential stuffing guard: bound POST /login per IP+email.
+         * The attempt handler clears the limiter on success, so honest users
+         * are never throttled by their own login. See config('epcc.auth').
+         */
+        RateLimiter::for('login', function (Request $request) {
+            $perMinute = max(1, (int) config('epcc.auth.login_throttle_per_minute', 10));
+
+            return Limit::perMinute($perMinute)->by($request->ip().'|'.$request->input('email'));
+        });
     }
 }
