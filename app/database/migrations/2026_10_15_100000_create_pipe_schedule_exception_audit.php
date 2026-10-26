@@ -47,7 +47,8 @@ return new class extends Migration
         DB::statement("ALTER TABLE pipe_schedule_exception_decisions ADD CONSTRAINT pipe_schedule_decisions_valid CHECK (decision IN ('APPROVED', 'REJECTED') AND length(btrim(note)) >= 3)");
 
         DB::unprepared(<<<'SQL'
-            CREATE FUNCTION epcc_pipe_schedule_exception_guard() RETURNS trigger LANGUAGE plpgsql AS $$
+            -- migrate:fresh drops tables, not standalone functions. Reinstall the same guard.
+            CREATE OR REPLACE FUNCTION epcc_pipe_schedule_exception_guard() RETURNS trigger LANGUAGE plpgsql AS $$
             BEGIN
                 IF TG_OP <> 'INSERT' THEN
                     RAISE EXCEPTION 'PIPE_SCHEDULE_EXCEPTION_APPEND_ONLY' USING ERRCODE = '23514';

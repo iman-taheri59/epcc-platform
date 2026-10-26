@@ -6,24 +6,37 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\MaterialInspection;
+use App\Models\MaterialItem;
 use App\Models\MaterialLot;
 use App\Models\MaterialMovement;
 use App\Models\MaterialRequisition;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\Subsystem;
+use App\Services\InspectionAccessService;
+use App\Services\InspectionEntryService;
 use App\Services\MaterialRequisitionAccessService;
+use App\Services\MaterialRequisitionDetailsService;
 use App\Services\MaterialRequisitionEntryService;
 use App\Services\ProcurementService;
 use App\Services\ProjectFittingDefinitionService;
+use App\Services\PurchaseOrderAccessService;
+use App\Services\PurchaseOrderEntryService;
+use App\Services\PurchaseOrderExecutionAccessService;
+use App\Services\PurchaseOrderExecutionService;
+use App\Services\PurchaseOrderPricingService;
+use App\Services\PurchaseOrderSourceReviewService;
 use App\Services\WarehouseService;
 use App\Support\AuthorizationPipeline;
 use App\Support\JalaliDate;
 use App\Support\MovementType;
+use App\Support\ProcurementState;
 use App\Support\TenantContext;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -44,8 +57,16 @@ final class MaterialsController extends Controller
         private readonly TenantContext $tenant,
         private readonly AuthorizationPipeline $authz,
         private readonly ProcurementService $proc,
+        private readonly PurchaseOrderAccessService $poAccess,
+        private readonly PurchaseOrderExecutionAccessService $poExecutionAccess,
+        private readonly PurchaseOrderExecutionService $poExecution,
+        private readonly PurchaseOrderPricingService $poPricing,
+        private readonly PurchaseOrderSourceReviewService $poSourceReview,
+        private readonly PurchaseOrderEntryService $poEntry,
         private readonly WarehouseService $wh,
         private readonly MaterialRequisitionAccessService $mrAccess,
+        private readonly InspectionAccessService $inspectionAccess,
+        private readonly InspectionEntryService $inspectionEntry,
         private readonly MaterialRequisitionEntryService $mrEntry,
         private readonly ProjectFittingDefinitionService $projectAccess,
     ) {}
@@ -192,6 +213,69 @@ final class MaterialsController extends Controller
     // Procurement
     // -----------------------------------------------------------------------
 
+    public function requisition(Request $request, string $projectCode, string $requisitionId): View
+    {
+        $project = $this->resolveProject($request->user(), $projectCode);
+        $lang = $this->lang($request);
+        $data = app(MaterialRequisitionDetailsService::class)->read($project, $request->user(), $requisitionId);
+
+        return view('materials.requisition', $data + [
+            'project' => $project, 'user' => $request->user(), 'acting' => $request->user()->company,
+            'lang' => $lang, 'dir' => $lang === 'fa' ? 'rtl' : 'ltr', 'jalaliDate' => $this->today($lang),
+        ]);
+    }
+
+    /** Read-only order sheet. Every relation is loaded inside the project RLS context. */
+    public function purchaseOrder(Request $request, string $projectCode, string $orderId): View
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+        $this->projectAccess->assertAccess($project, $user);
+
+        abort_unless($user->company?->plan?->hasModule('proc') && $user->company->plan->allowsPack($project->standards_pack), 403);
+
+        $order = $this->tenant->runAs($user->company_id, fn () => PurchaseOrder::query()
+            ->where('project_id', $project->id)
+            ->with(['vendor', 'company', 'requisition',
+                'items' => fn ($q) => $q->orderBy('line_no')->orderBy('created_at')->orderBy('id'),
+                'items.subsystem', 'items.requisitionItem',
+                'lots' => fn ($q) => $q->orderBy('lot_code'),
+                'lots.movements', 'lots.purchaseOrderItem',
+                'inspections' => fn ($q) => $q->orderByDesc('sequence'),
+                'inspections.inspector'])
+            ->findOrFail($orderId), $project->id);
+
+        return view('materials.purchase-order', [
+            'lang' => $lang, 'dir' => $lang === 'fa' ? 'rtl' : 'ltr',
+            'user' => $user, 'acting' => $user->company, 'project' => $project,
+            'order' => $order, 'jalaliDate' => $this->today($lang),
+            'canRecordInspection' => $this->inspectionAccess->allows($project, $user, $order->discipline),
+        ] + $this->poPricing->context($project, $user, $order));
+    }
+
+    public function purchaseOrderSourceReview(Request $request, string $projectCode, string $orderId): View
+    {
+        $project = $this->resolveProject($request->user(), $projectCode);
+        $lang = $this->lang($request);
+        $data = $this->poSourceReview->review($project, $request->user(), $orderId);
+
+        return view('materials.po-source-review', $data + [
+            'project' => $project, 'user' => $request->user(), 'acting' => $request->user()->company,
+            'lang' => $lang, 'dir' => $lang === 'fa' ? 'rtl' : 'ltr', 'jalaliDate' => $this->today($lang),
+        ]);
+    }
+
+    public function pricePurchaseOrder(Request $request, string $projectCode, string $orderId): RedirectResponse
+    {
+        $project = $this->resolveProject($request->user(), $projectCode);
+        $request->validate(['pricing' => ['required', 'array']]);
+        $this->poPricing->price($project, $request->user(), $orderId, $request->input('pricing'));
+
+        return redirect()->route('procurement.orders.show', ['projectCode' => $projectCode, 'orderId' => $orderId, 'lang' => $this->lang($request)])
+            ->with('status', __('po_pricing.saved'));
+    }
+
     public function procurement(Request $request, string $projectCode): View
     {
         $lang = $this->lang($request);
@@ -200,20 +284,46 @@ final class MaterialsController extends Controller
         $this->projectAccess->assertAccess($project, $user);
         abort_unless($user->company?->plan?->hasModule('proc') && $user->company->plan->allowsPack($project->standards_pack), 403);
 
-        [$requisitions, $orders, $inspections, $vendors, $mrAuthorAccess, $canRaiseMr, $mrSubsystems] = $this->tenant->runAs(
+        $validated = $request->validate([
+            'material_category' => ['nullable', Rule::in([...MaterialItem::categories(), 'UNCLASSIFIED'])],
+            'mr_q' => ['nullable', 'string', 'max:120'], 'po_q' => ['nullable', 'string', 'max:120'],
+            'mr_state' => ['nullable', 'string', Rule::in(ProcurementState::MR_ALL)],
+            'po_state' => ['nullable', 'string', Rule::in(ProcurementState::PO_ALL)],
+            'mr_page' => ['nullable', 'integer', 'min:1', 'max:1000000'], 'po_page' => ['nullable', 'integer', 'min:1', 'max:1000000'],
+            'inspection_page' => ['nullable', 'integer', 'min:1', 'max:1000000'],
+        ]);
+        $categoryFilter = $validated['material_category'] ?? null;
+        $registerFilters = [];
+        foreach (['mr_q', 'po_q', 'mr_state', 'po_state'] as $key) {
+            $registerFilters[$key] = trim($validated[$key] ?? '');
+        }
+
+        [$requisitions, $orders, $inspections, $vendors, $mrAuthorAccess, $canRaiseMr, $mrSubsystems, $poAuthorAccess, $canRaisePo, $poExecutionAccess, $lateOrderCount, $inspectionAuthorAccess] = $this->tenant->runAs(
             $user->company_id,
-            function () use ($project, $user): array {
+            function () use ($project, $user, $categoryFilter, $registerFilters, $validated): array {
                 $requisitions = MaterialRequisition::with(['items.subsystem', 'company'])
-                    ->orderByDesc('sequence')
-                    ->get();
+                    ->where('project_id', $project->id)
+                    ->when($categoryFilter, fn ($q) => $categoryFilter === 'UNCLASSIFIED' ? $q->whereNull('material_category') : $q->where('material_category', $categoryFilter))
+                    ->when($registerFilters['mr_state'] !== '', fn ($q) => $q->where('state', $registerFilters['mr_state']))
+                    ->when($registerFilters['mr_q'] !== '', fn ($q) => $this->searchRegister($q, $registerFilters['mr_q']))
+                    ->orderByDesc('sequence')->orderByDesc('id')
+                    ->paginate(25, ['*'], 'mr_page', (int) ($validated['mr_page'] ?? 1))->withQueryString();
 
-                $orders = PurchaseOrder::with(['items', 'vendor', 'requisition'])
-                    ->orderByDesc('sequence')
-                    ->get();
+                $ordersQuery = PurchaseOrder::with(['items', 'vendor', 'requisition'])
+                    ->where('project_id', $project->id)
+                    ->when($categoryFilter, fn ($q) => $categoryFilter === 'UNCLASSIFIED' ? $q->whereNull('material_category') : $q->where('material_category', $categoryFilter))
+                    ->when($registerFilters['po_state'] !== '', fn ($q) => $q->where('state', $registerFilters['po_state']))
+                    ->when($registerFilters['po_q'] !== '', fn ($q) => $this->searchRegister($q, $registerFilters['po_q']))
+                    ->orderByDesc('sequence')->orderByDesc('id');
+                // Same filtered/RLS-capped result set as the PO paginator, not just its current page.
+                $lateOrderCount = (clone $ordersQuery)->whereNotNull('promised_date')->whereNotNull('forecast_date')
+                    ->whereColumn('forecast_date', '>', 'promised_date')->count();
+                $orders = $ordersQuery->paginate(25, ['*'], 'po_page', (int) ($validated['po_page'] ?? 1))->withQueryString();
 
-                $inspections = MaterialInspection::with(['company', 'purchaseOrder'])
-                    ->orderByDesc('sequence')
-                    ->get();
+                $inspections = MaterialInspection::with('company')
+                    ->where('project_id', $project->id)
+                    ->orderByDesc('sequence')->orderByDesc('id')
+                    ->paginate(25, ['*'], 'inspection_page', (int) ($validated['inspection_page'] ?? 1))->withQueryString();
 
                 $participantIds = DB::table('project_company')
                     ->where('project_id', $project->id)
@@ -224,7 +334,7 @@ final class MaterialsController extends Controller
                     ->orderBy('code')
                     ->get();
 
-                return [$requisitions, $orders, $inspections, $vendors, $this->mrAccess->dashboard($project, $user), $this->mrAccess->allows($project, $user), Subsystem::where('project_id', $project->id)->orderBy('code')->get()];
+                return [$requisitions, $orders, $inspections, $vendors, $this->mrAccess->dashboard($project, $user), $this->mrAccess->allows($project, $user), Subsystem::where('project_id', $project->id)->orderBy('code')->get(), $this->poAccess->dashboard($project, $user), $this->poAccess->allows($project, $user), $this->poExecutionAccess->dashboard($project, $user), $lateOrderCount, $this->inspectionAccess->dashboard($project, $user)];
             },
             $project->id,
         );
@@ -237,6 +347,12 @@ final class MaterialsController extends Controller
             'project' => $project,
             'requisitions' => $requisitions,
             'orders' => $orders,
+            'categoryFilter' => $categoryFilter,
+            'registerFilters' => $registerFilters,
+            'lateOrderCount' => $lateOrderCount,
+            'inspectionAuthorAccess' => $inspectionAuthorAccess,
+            'poAuthorAccess' => $poAuthorAccess, 'canRaisePo' => $canRaisePo,
+            'poExecutionAccess' => $poExecutionAccess,
             'inspections' => $inspections,
             'vendors' => $vendors,
             'mrAuthorAccess' => $mrAuthorAccess,
@@ -244,6 +360,16 @@ final class MaterialsController extends Controller
             'mrSubsystems' => $mrSubsystems,
             'jalaliDate' => $this->today($lang),
         ]);
+    }
+
+    /** Header-only literal substring search, grouped so OR cannot escape project/category/RLS scope. */
+    private function searchRegister(Builder $query, string $text): Builder
+    {
+        return $query->where(function (Builder $search) use ($text): void {
+            $search->whereRaw("strpos(lower(coalesce(number, '')), lower(?)) > 0", [$text])
+                ->orWhereRaw("strpos(lower(coalesce(title_en, '')), lower(?)) > 0", [$text])
+                ->orWhereRaw("strpos(lower(coalesce(title_fa, '')), lower(?)) > 0", [$text]);
+        });
     }
 
     public function createRequisition(Request $request, string $projectCode): RedirectResponse
@@ -254,6 +380,89 @@ final class MaterialsController extends Controller
 
         return redirect()->route('procurement', ['projectCode' => $project->code, 'lang' => $this->lang($request)])
             ->with('status', __('mr.created', ['number' => $mr->number]));
+    }
+
+    public function createPurchaseOrder(Request $request, string $projectCode): RedirectResponse
+    {
+        $project = $this->resolveProject($request->user(), $projectCode);
+        $request->validate(['po' => ['required', 'array']]);
+        $po = $this->poEntry->create($project, $request->user(), $request->input('po'), $this->lang($request));
+
+        return redirect()->route('procurement.orders.show', ['projectCode' => $project->code, 'orderId' => $po->id, 'lang' => $this->lang($request)])
+            ->with('status', __('po_entry.created', ['number' => $po->number]));
+    }
+
+    public function createPurchaseOrderFromRequisition(Request $request, string $projectCode): RedirectResponse
+    {
+        $project = $this->resolveProject($request->user(), $projectCode);
+        $request->validate(['po_source' => ['required', 'array']]);
+        $po = $this->poEntry->createFromRequisition($project, $request->user(), $request->input('po_source'), $this->lang($request));
+
+        return redirect()->route('procurement.orders.show', ['projectCode' => $project->code, 'orderId' => $po->id, 'lang' => $this->lang($request)])
+            ->with('status', __('po_source.created', ['number' => $po->number]));
+    }
+
+    public function purchaseOrderExecutionWorkspace(Request $request, string $projectCode, string $buyerId, ?string $orderId = null): View
+    {
+        $project = $this->resolveProject($request->user(), $projectCode);
+        $lang = $this->lang($request);
+        $request->validate(['category' => ['nullable', 'string', Rule::in(MaterialItem::categories())]]);
+        $data = $this->poExecution->workspace($project, $request->user(), $buyerId, $orderId, $request->query('category'));
+
+        return view('materials.po-execution', $data + [
+            'project' => $project, 'user' => $request->user(), 'acting' => $request->user()->company,
+            'lang' => $lang, 'dir' => $lang === 'fa' ? 'rtl' : 'ltr', 'jalaliDate' => $this->today($lang),
+        ]);
+    }
+
+    public function executePurchaseOrder(Request $request, string $projectCode, string $buyerId, string $orderId, string $purpose): RedirectResponse
+    {
+        $project = $this->resolveProject($request->user(), $projectCode);
+        $request->validate(['execution' => ['required', 'array']]);
+        $this->poExecution->act($project, $request->user(), $buyerId, $orderId, $purpose, $request->input('execution'));
+
+        return redirect()->route('procurement.execution.order', ['projectCode' => $projectCode, 'buyerId' => $buyerId, 'orderId' => $orderId, 'lang' => $this->lang($request)])
+            ->with('status', __('po_execution.saved_'.$purpose));
+    }
+
+    public function configurePurchaseOrderExecutionAccess(Request $request, string $projectCode): RedirectResponse
+    {
+        $project = $this->resolveProject($request->user(), $projectCode);
+        $request->validate(['execution_access' => ['required', 'array']]);
+        $this->poExecutionAccess->configure($project, $request->user(), $request->input('execution_access'));
+
+        return redirect()->route('procurement', ['projectCode' => $project->code, 'lang' => $this->lang($request)])
+            ->with('status', __('po_execution_access.saved'));
+    }
+
+    public function configurePurchaseOrderAuthors(Request $request, string $projectCode): RedirectResponse
+    {
+        $project = $this->resolveProject($request->user(), $projectCode);
+        $request->validate(['po_access' => ['required', 'array']]);
+        $this->poAccess->configure($project, $request->user(), $request->input('po_access'));
+
+        return redirect()->route('procurement', ['projectCode' => $project->code, 'lang' => $this->lang($request)])
+            ->with('status', __('po_entry.access_saved'));
+    }
+
+    public function configureInspectionAuthors(Request $request, string $projectCode): RedirectResponse
+    {
+        $project = $this->resolveProject($request->user(), $projectCode);
+        $request->validate(['inspection_access' => ['required', 'array']]);
+        $this->inspectionAccess->configure($project, $request->user(), $request->input('inspection_access'));
+
+        return redirect()->route('procurement', ['projectCode' => $projectCode, 'lang' => $this->lang($request)])
+            ->with('status', __('inspection_entry.access_saved'));
+    }
+
+    public function recordInspection(Request $request, string $projectCode, string $orderId): RedirectResponse
+    {
+        $project = $this->resolveProject($request->user(), $projectCode);
+        $request->validate(['inspection' => ['required', 'array']]);
+        $this->inspectionEntry->create($project, $request->user(), $orderId, $request->input('inspection'));
+
+        return redirect()->route('procurement.orders.show', ['projectCode' => $projectCode, 'orderId' => $orderId, 'lang' => $this->lang($request)])
+            ->with('status', __('inspection_entry.saved'));
     }
 
     public function configureRequisitionAuthors(Request $request, string $projectCode): RedirectResponse

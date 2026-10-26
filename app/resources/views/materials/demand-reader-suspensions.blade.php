@@ -1,0 +1,11 @@
+<!doctype html><html lang="{{ $lang }}" dir="{{ $dir }}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ __('demand_readers.suspension_title') }}</title>@include('partials.shell')<style>.suspend-card{max-width:1000px;padding:22px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin:18px 0;overflow-wrap:anywhere}.suspend-card label{display:block}.suspend-card textarea{width:95%;margin:10px 0}</style></head><body><div class="app">@include('partials.sidebar')<div class="wrap">@include('partials.topbar')
+<section class="suspend-card"><h1>{{ __('demand_readers.suspension_title') }}</h1><p>{{ __('demand_readers.suspension_boundary') }}</p><a href="{{ route('materials.demand-readers',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('demand_readers.title') }}</a>
+@if(session('status'))<p role="status">{{ session('status') }}</p>@endif
+@if($errors->any())<ul role="alert">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>@endif
+@if(!$writable)<p>{{ __('demand_readers.archive') }}</p>@endif</section>
+@forelse($policies as $policy)<section class="suspend-card" id="policy-{{ $policy->id }}"><h2>{{ __('demand_readers.policy_ref') }}: {{ $policy->id }}</h2><p>{{ __('demand_readers.target_ref') }}: {{ $policy->target_company_id }}</p><p>#{{ $policy->version }} · {{ $policy->created_at }}</p>
+@if($policy->suspended)<p>{{ __('demand_readers.suspended_record') }}</p>@elseif($writable)
+@php $oldId=old('suspension.policy_id');$reason=$oldId===$policy->id?old('suspension.reason',''):'';$reason=is_string($reason)?$reason:''; @endphp
+<form method="post" action="{{ route('materials.demand-reader-suspensions.store',['projectCode'=>$project->code,'lang'=>$lang]) }}">@csrf<input type="hidden" name="suspension[policy_id]" value="{{ $policy->id }}"><input type="hidden" name="suspension[version]" value="{{ $policy->version }}"><label>{{ __('demand_readers.suspension_reason') }}<textarea name="suspension[reason]" maxlength="2000" required rows="2">{{ $reason }}</textarea></label><button>{{ __('demand_readers.suspend_action') }}</button></form>
+@endif</section>@empty<section class="suspend-card">{{ __('demand_readers.no_policies') }}</section>@endforelse
+<section class="suspend-card">{{ $policies->links() }}</section></div></div></body></html>

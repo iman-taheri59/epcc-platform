@@ -1,0 +1,50 @@
+# Inspection notification — register search and filters
+
+> **Current acknowledgment addendum — 2026-10-20:** [ADR-044](ADR-044-INSPECTION-NOTIFICATION-ACKNOWLEDGMENT-EN.md) / [guide](INSPECTION-NOTIFICATION-ACKNOWLEDGMENT-EN.md). Explicit user choice: any authorized selected-recipient reader represents their company; separate original-before-cancel and exact cancellation receipts, first/company/event immutable; all original readers see company/person/time in detail/current PDF. No automatic read tracker, doc/issue/stock/result authority or private-history disclosure. Final61/1040 + separate upgrade1/5 PASS; overlapping final PDF1/22 PASS. Only acknowledgment deferral superseded; cancel-only/replacement/transport/signature boundaries preserved. Not full suite/current CI/production.
+
+> **Current lifecycle addendum — 2026-10-20:** [ADR-043](ADR-043-INSPECTION-NOTIFICATION-CANCELLATION-EN.md) / [cancellation guide](INSPECTION-NOTIFICATION-CANCELLATION-EN.md). User approved current issue grant + **cancel-only** + original-reader reason/actor/time visibility. Independent immutable event; original issued row/snapshot/private history untouched; effective CANCELLED and current PDF banner/status. Prior cancellation deferral superseded **only**; replacement/undo/reissue/acknowledgment remain deferred. Final59/884 + separate upgrade1/5 PASS; overlapping PDF1/22 PASS. No full-suite/90-case/current-CI/production pass.
+
+> **Latest UI continuation:** user-selected `filter_usability` implemented; [optional filter date/time controls](INSPECTION-NOTIFICATION-FILTER-TIME-UI-EN.md), same offset/overlap/legacy/authority contract. **26 PHP tests /404 assertions +7 Chromium scenario groups /147 checks PASS** (separate nonadditive verification). Offline current rendered fixtures, not live authenticated browser/production; no full suite. Previous register/history counts are historical.
+
+2026-10-20 · **IMPLEMENTED / TARGETED VERIFIED — NOT PRODUCTION DEPLOYED**
+[فارسی](INSPECTION-NOTIFICATION-REGISTER-FILTERS-FA.md) · [Workflow](INSPECTION-NOTIFICATION-WORKFLOW-EN.md) · [Activity windows](INSPECTION-NOTIFICATION-ACTIVITY-WINDOW-EN.md) · [Draft history](INSPECTION-NOTIFICATION-DRAFT-HISTORY-EN.md) · [ADR-042](ADR-042-ITP-INSPECTION-NOTIFICATIONS-EN.md)
+
+## Approved read-only scope
+
+User selected **`next_scope=register_filters`**. On the project inspection-notification register, use **Filter notifications** to search number/current activity reference, select DRAFT, active ISSUED or CANCELLED, and optionally filter an activity-overlap window. No new endpoint, schema/index/migration, role, write privilege, source read delegation or change to draft/issue/history/PDF is introduced.
+
+### Search and state
+
+- `notice_q`: optional trimmed UTF-8 text, max200 characters; bound literal substring search over **issued number OR current work/activity reference**. English case matching follows PostgreSQL ILIKE/collation; Persian text is matched as entered, with no spelling, digit, whitespace or Arabic/Persian letter normalization/fuzzy search claimed.
+- Percent, underscore, exclamation and backslash are **literal user text**, not wildcard/regex operators. The pattern escapes `%`, `_` and the explicit `!` escape marker, and uses parameter binding/grouped OR inside the existing project/scope/RLS query. Numeric text `0` is a real term, not an empty filter; it can also match zeros in notice numbers.
+- `notice_state`: empty/all currently visible, DRAFT, active ISSUED or CANCELLED. ISSUED excludes notices with a cancellation event; CANCELLED selects that event without modifying the historical raw ISSUED row. Filters intersect; a numbered issued notice cannot match a DRAFT-only request. Drafts have no issued number; search their current activity reference instead. Raw UUID, notes, old draft bodies, ITP text, people and commercial PO data are not searched.
+
+### Optional overlap window — explicit semantics
+
+`activity_from` / `activity_to` accept optional Gregorian date-times with seconds and explicit offsets, e.g. `2026-10-25T09:30:00+03:30`. Preserve entered strings in controls/links; normalize comparison bounds to UTC, never the browser/server assumed zone.
+
+A record matches **end >= From AND start <= To**, omitting a condition when its bound is absent. Both comparisons are **inclusive**, so touching endpoints count as overlap. One bound is allowed; equal bounds search an instant within an activity. Upper bound must not precede lower bound in absolute time; offset differences and midnight crossings are handled. This is overlap, not “entire activity contained within the filter.” It adds no duration/notice-period/hold/release/proceed rule to activity registration.
+
+Legacy notices with only a retained single inspection time remain visible to number/state/unfiltered queries. They are excluded **only when any activity-time bound is supplied**, because their activity interval is unknown; no end/default duration or point interval is fabricated. The UI explains this, and the original legacy body is not changed.
+
+### Results, navigation and invalid input
+
+- Display **matching / all currently visible notices**; both totals and25-row notice pages use the same current caller's project/RLS/discipline scope. These are ordinary separate read queries, not a certified atomic cross-query/load snapshot. Counts never switch to sender/buyer/global context.
+- Number/activity search, state and time bounds persist in notice pagination, language switch and stage-selection links. Apply/Clear omit `notice_page` to reset notice paging, while preserving current language, selected valid stage and valid independent revision/stage page positions. Source revision and ITP-stage lists/totals are not filtered by notice filters. Detail/back navigation keeps its preexisting behavior; this increment does not add an arbitrary return-URL mechanism.
+- Empty filters mean all authorized visible notices, **not** all project/tenant records. Source-company drafts stay hidden from counterparties; recipients see only selected issued notices. A configuration administrator is not automatically a notice reader. Current active user/participation/quality-pack/discipline/project checks run before filter processing/counts, unchanged.
+- Malformed arrays, invalid UTF-8, overlong terms, unknown states, impossible/missing-offset dates or reversed bounds are refused. JSON receives422 validation details. HTML receives localized422 rather than an arbitrary Referer redirect or misleading silently-unfiltered list; use Back/Clear/correct the form/URL. No filter value is used as a SQL identifier, actor or authority claim. Rendered search text is escaped. Unknown query keys are not new authority inputs.
+- GET makes no notification/history/settings/ITP/MR/PO/stock business mutation. Current note bodies are not history search; a private old reference removed before issue cannot be found through register search or history counts.
+
+## Implementation and verification
+
+`InspectionNotificationFilters` validates/normalizes only four query parameters. The existing controller index invokes it inside the existing reader context. Dashboard filters only the existing scoped notification query; original source pickers and business services remain unchanged. Register templates provide EN/FA GET controls, original-offset values and RTL-isolated counts. Existing date/time entry helpers remain separate and retain their canonical write payloads.
+
+**Final affected command:58 tests /640 assertions PASS,82.701s, zero skipped.** Eight new register feature cases +3 new filter validation cases +22 workflow +11 activity-window (including one new real legacy-schema filtering case) +4 date/time UI +10 existing input cases. Covers literal wildcards/backslash/Persian/numeric-zero/SQL-like text, current number/reference/state intersections, visible-only sender/recipient/admin counts, inclusive/one-sided/equal/offset-aware overlap, malformed filters/HTML422, independent page/context/language/clear behavior, no private-history/note search, current plan/discipline/active gates, escaped query and nonmutating GET, and unknown legacy intervals without backfill. Existing UI/workflow/input behavior still passes. No routine full suite or unaffected PDF/history suite rerun.
+
+[Evidence](evidence/2026-10-20-inspection-notification-register-filters/): final logs, source hashes, static checks and private database audit/shutdown. Initial test script had a backslash quoting error; corrected before execution. The initial search expectation for `0` forgot that actual issued numbers and `50%` also contain zero; expectation fixed to the correct literal search set, not application search weakened. After tests, only presentation markup was added to isolate the count ratio in RTL. PHP lint/fresh-cache Pint/Blade/diff are recorded separately. PHP8.4/PostgreSQL17 private app role NOSUPERUSER/NOBYPASSRLS, forced RLS retained, Unix socket only; database stopped afterward.
+
+No full-suite/current-CI/production, browser-user/all-browser, load, concurrency or new index/search-performance certification. Earlier87/1139,71/802 and other totals are historical/nonadditive. No commit/push/deployment claim. EN/FA guides, ADR-042 and current notices synchronized.
+
+## Recommendations / boundaries
+
+Literal substring matching and visible/filtered totals can scan large registers; measure real project workloads before adding justified indexes/trigram search or changing limits. No unapproved fuzzy/whole-history/cross-company search was added. Explicit legacy-time search, if wanted later, should be a separately labelled predicate—not an invented activity interval. Issued cancellation/replacement/rescheduling, recipient acknowledgment/transport, signatures, ITP approval and business hold/notice-period rules remain separate decisions; register filters grant none of them. ADR-042's five selections, draft-only editing, private append-only history, replace-time window model and ADR-041/MTO boundaries are preserved.

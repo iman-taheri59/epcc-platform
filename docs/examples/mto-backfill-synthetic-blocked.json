@@ -1,0 +1,45 @@
+{
+  "project": "SYNTHETIC-P1",
+  "batches": [
+    {
+      "id": "LEGACY-A",
+      "project": "SYNTHETIC-P1",
+      "document": "SYNTHETIC-D1",
+      "revision": "REV-LEGACY-A",
+      "state": "ACCEPTED",
+      "accepted_at_utc": "2026-10-18T10:00:00.000000Z",
+      "hierarchy": null,
+      "coverage": [
+        "SYNTHETIC-S1"
+      ],
+      "rows": [
+        {
+          "id": "ROW-LEGACY-A",
+          "scope": "SYNTHETIC-S1",
+          "quantity": "100.000",
+          "unit": "M"
+        }
+      ]
+    },
+    {
+      "id": "LEGACY-B",
+      "project": "SYNTHETIC-P1",
+      "document": "SYNTHETIC-D1",
+      "revision": "REV-LEGACY-B",
+      "state": "ACCEPTED",
+      "accepted_at_utc": "2026-10-18T10:00:00.000000Z",
+      "hierarchy": null,
+      "coverage": [
+        "SYNTHETIC-S1"
+      ],
+      "rows": [
+        {
+          "id": "ROW-LEGACY-B",
+          "scope": "SYNTHETIC-S1",
+          "quantity": "100.000",
+          "unit": "M"
+        }
+      ]
+    }
+  ]
+}

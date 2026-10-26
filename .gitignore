@@ -64,3 +64,10 @@ Homestead.json
 
 # Pinned local PHP CLI installer cache and binary (recreated by script).
 /.local/
+
+# --- Run evidence. Not source. ----------------------------------------------
+# docs/evidence/ holds machine-generated proof-of-run artifacts (phpunit
+# logs, junit XML, redacted HTTP captures, screenshots). They are large
+# (~16 MB / 1000+ files per cycle), regenerate on demand, and bloat every
+# clone and CI checkout. See docs/EVIDENCE-POLICY.md.
+docs/evidence/

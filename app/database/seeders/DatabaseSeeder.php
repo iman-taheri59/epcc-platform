@@ -19,6 +19,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Fail closed in production: these seeders create demo identities
+        // with well-known passwords. A production `migrate:fresh --seed`
+        // must be a deliberate act, not a side effect of a deploy script.
+        if (app()->environment('production') && ! config('epcc.allow_demo_seed')) {
+            throw new \RuntimeException(
+                'Refusing to seed demo identities in production. '
+                .'Set EPCC_ALLOW_DEMO_SEED=true only for a controlled demo install.'
+            );
+        }
+
         $this->call([EpccDemoSeeder::class, AuthSeeder::class, MaterialCatalogueSeeder::class]);
     }
 }

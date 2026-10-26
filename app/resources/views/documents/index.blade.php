@@ -105,6 +105,7 @@
 @include('partials.topbar')
 
   <h1>{{ $L('title') }}</h1>
+<p style="padding:12px"><a href="{{ route('inspection-notifications.index',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ $lang==='fa'?'نوتیفیکیشن بازرسی مراحل ITP':'ITP inspection notifications' }}</a></p>
   <div class="sub">
     {{ $project->name($lang) }} · <span class="mono">{{ $project->code }}</span>
     · <span class="pill pack">{{ $project->standards_pack }}</span> · {{ $jalaliDate }}

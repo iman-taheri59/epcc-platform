@@ -9,6 +9,7 @@ use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
 /** Gate 1 of the ARC §5 pipeline. */
@@ -21,13 +22,18 @@ final class AuthController extends Controller
         return view('auth.login', [
             'lang' => $lang,
             'dir' => $lang === 'fa' ? 'rtl' : 'ltr',
-            // Demo affordance: the seeded accounts, so the screen is usable
-            // without a password reset flow. Removed before production.
-            // Reading users is an identity lookup by definition: this screen
-            // is shown to someone who has no session and therefore no tenant.
-            'demoUsers' => app(TenantContext::class)->forIdentityLookup(
-                fn () => User::with('company')->where('is_active', true)->orderBy('email')->get()
-            ),
+            // Demo affordance, gated: listing the seeded accounts makes the
+            // screen usable without a password reset flow, but enumerating
+            // identities to unauthenticated callers is a disclosure leak.
+            // Enabled only when epcc.demo_login_hints is on (defaults to
+            // APP_DEBUG, so production never lists). Reading users is an
+            // identity lookup by definition: this screen is shown to someone
+            // who has no session and therefore no tenant.
+            'demoUsers' => config('epcc.demo_login_hints')
+                ? app(TenantContext::class)->forIdentityLookup(
+                    fn () => User::with('company')->where('is_active', true)->orderBy('email')->get()
+                )
+                : collect(),
         ]);
     }
 
@@ -49,6 +55,10 @@ final class AuthController extends Controller
                 'email' => __('auth.failed'),
             ]);
         }
+
+        // A proven credential must not stay throttled by its own earlier
+        // failures: clear the gate-1 limiter bucket for this IP+email pair.
+        RateLimiter::clear($request->ip().'|'.$credentials['email']);
 
         $user = Auth::user();
 

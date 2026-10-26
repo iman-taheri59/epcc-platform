@@ -192,6 +192,12 @@
             </td>
             <td>
               <div class="rowforms">
+                @php $protectedSource = $item->purchaseOrder?->author_policy_id !== null && $item->purchaseOrder?->requisition_id !== null; @endphp
+                @if($protectedSource)
+                  <p class="muted" data-source-readonly="{{ $item->id }}">{{ $fa
+                    ? 'مقدار و هویت منبع سفارش کنترل‌شدهٔ متصل به MR در شکاف سفارش قابل ویرایش نیست؛ از گردش‌کار اختصاصی تدارکات استفاده کنید.'
+                    : 'Controlled MR-linked quantity and source identity are read-only in OrderGap; use the dedicated procurement workflow.' }}</p>
+                @else
                 <form method="post" action="{{ route('procurement.order-gap.attribute', ['projectCode' => $project->code]) }}">
                   @csrf
                   <label>{{ $L('attrs') }}</label>
@@ -213,6 +219,7 @@
                   <input type="number" name="quantity" step="0.001" min="0.001" placeholder="{{ $num(number_format((float) $item->quantity, 3)) }}" required>
                   <button type="submit">{{ $L('save') }}</button>
                 </form>
+                @endif
                 <form method="post" action="{{ route('procurement.order-gap.allocate', ['projectCode' => $project->code]) }}">
                   @csrf
                   <label>{{ $L('allocate') }}</label>

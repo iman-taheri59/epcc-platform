@@ -31,6 +31,8 @@ final class PmsRevisionDraftValidatorTest extends TestCase
         $draft['rules'][0]['value']['schedule'] = '40';
         (new PmsRevisionDraftValidator())->assertScheduleOnly($before, $draft);
         (new PmsRevisionDraftValidator())->assertScheduleOnly($before, $before);
+        $this->assertSame('80', $before['rules'][0]['value']['schedule']);
+        $this->assertSame('40', $draft['rules'][0]['value']['schedule']);
     }
 
     public function test_identity_range_material_and_branch_changes_are_rejected(): void

@@ -1,6 +1,26 @@
+> **Status 2026-10-26 — single source of truth.** Dated delivery/correction
+> banners were stacked here (40 in README, 42 in HANDOFF) until no reader could
+> tell which statements were still current. They are preserved verbatim, newest
+> first, in [docs/STATUS-BULLETIN.md](docs/STATUS-BULLETIN.md). This table says
+> what is true now; the bulletin says how we got here.
+
+| Area | State |
+|---|---|
+| Piping material cycle — MR→PO separation, PO draft/pricing, MTO journal, scope admission | Implemented on `arena/piping-material-cycle-2026-10-26` (ADR-032…041) |
+| Receipt chain MRR→QC→QA→controlled GRN + physical custody/amendments | Implemented (ADR-046 + custody guides); **legacy warehouse cutover and accepted-stock control NOT done** |
+| ITP inspection notifications — draft/issue/cancel/company ack/prerequisites/bilingual PDF | Implemented (ADR-042…045) |
+| Traceability, line numbering, unit registry, demand reader | Implemented; demand-reader reinstall semantics covered by `DemandReaderTest` |
+| Tests | Domain suites green on a correctly provisioned Postgres (see `.env.example` note: worker-isolation tests require a `/tmp/epcc-*` socket host and `epcc_test`); per-slice counts live in the bulletin |
+| CI | GitHub Actions disabled (billing) since 2026-10-15 — **no branch is CI-verified**; run the suite locally |
+
 # EPCC Suite — Project Workspace
 
 Bilingual (EN/FA) modular platform for large industrial EPCC projects — oil, gas, petrochemical, power.
+
+> **Latest feature:** [Purchase order details](docs/PURCHASE-ORDER-DETAILS-EN.md) ([فارسی](docs/PURCHASE-ORDER-DETAILS-FA.md)) — click an order number in Procurement for lines/amendments, delivery dates, lots and inspections. **54 targeted tests/227 assertions PASS**. Full suite is not rerun/scheduled per change under the latest user instruction; previous1169/17146 is historical pre-feature proof. No new role/schema/write authority.
+
+> **Faster delivery cadence:** bundle useful feature work, run affected tests, keep essential docs short; full suite/recovery packaging only when justified by milestones/risk/release, not every continuation.
+
 
 ## Contents
 

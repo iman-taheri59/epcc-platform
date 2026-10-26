@@ -64,7 +64,8 @@ return new class extends Migration
             )
         SQL);
         DB::unprepared(<<<'SQL'
-            CREATE FUNCTION epcc_pipe_offline_signature_guard() RETURNS trigger LANGUAGE plpgsql AS $$
+            -- migrate:fresh drops tables, not standalone functions. Reinstall the same guard.
+            CREATE OR REPLACE FUNCTION epcc_pipe_offline_signature_guard() RETURNS trigger LANGUAGE plpgsql AS $$
             BEGIN
                 IF TG_OP <> 'INSERT' THEN
                     RAISE EXCEPTION 'PIPE_OFFLINE_SIGNATURE_APPEND_ONLY' USING ERRCODE = '23514';

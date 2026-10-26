@@ -41,9 +41,8 @@
     $num = fn ($n) => \App\Support\JalaliDate::digits((string) $n, $lang);
     $money = function ($v, $cur) use ($lang) {
         if ($v === null) { return '—'; }
-        return \App\Support\JalaliDate::digits(number_format((float) $v), $lang).' '.($cur ?? '');
+        return \App\Support\JalaliDate::digits((string) $v, $lang).' '.($cur ?? '');
     };
-    $late = $orders->filter(fn ($o) => $o->isLate());
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $lang }}" dir="{{ $dir }}">
@@ -103,6 +102,7 @@
 @include('partials.topbar')
 
   <h1>{{ $L('title') }}</h1>
+<p style="padding:12px"><a href="{{ route('inspection-notifications.index',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ $lang==='fa'?'نوتیفیکیشن بازرسی مراحل ITP':'ITP inspection notifications' }}</a></p>
   <div class="sub">
     {{ $project->name($lang) }} · <span class="mono">{{ $project->code }}</span> · {{ $L('sub') }} · {{ $jalaliDate }}
   </div>
@@ -113,32 +113,62 @@
   @endif
 
   @include('materials.mr-entry')
+  @include('materials.po-entry')
+  @include('materials.po-execution-access')
+  @include('materials.inspection-access')
+
+  <form method="get" action="{{ route('procurement', ['projectCode'=>$project->code]) }}">
+    <input type="hidden" name="lang" value="{{ $lang }}">
+    <label>{{ __('procurement_category.label') }} <select name="material_category">
+      <option value="">{{ __('procurement_category.all') }}</option>
+      @foreach(\App\Models\MaterialItem::categories() as $category)
+      <option value="{{ $category }}" @selected($categoryFilter === $category)>{{ __('procurement_category.'.$category) }}</option>
+      @endforeach
+      <option value="UNCLASSIFIED" @selected($categoryFilter === 'UNCLASSIFIED')>{{ __('procurement_category.legacy') }}</option>
+    </select></label>
+    @foreach(['mr', 'po'] as $kind)
+    <fieldset style="margin-top:12px"><legend>{{ __('procurement_register.'.$kind) }}</legend>
+      <label>{{ __('procurement_register.search') }} <input type="search" name="{{ $kind }}_q" maxlength="120" value="{{ $registerFilters[$kind.'_q'] }}" placeholder="{{ __('procurement_register.placeholder') }}"></label>
+      <label>{{ $L('state') }} <select name="{{ $kind }}_state"><option value="">{{ __('procurement_register.all_states') }}</option>
+      @foreach($kind === 'mr' ? \App\Support\ProcurementState::MR_ALL : \App\Support\ProcurementState::PO_ALL as $state)
+      <option value="{{ $state }}" @selected($registerFilters[$kind.'_state'] === $state)>{{ ($kind === 'mr' ? \App\Support\ProcurementState::mrLabel($state) : \App\Support\ProcurementState::poLabel($state))[$lang] }}</option>
+      @endforeach
+      </select></label>
+    </fieldset>
+    @endforeach
+    <button class="btn" type="submit">{{ __('procurement_category.filter') }}</button>
+    <a href="{{ route('procurement', ['projectCode'=>$project->code, 'lang'=>$lang, 'material_category'=>$categoryFilter]) }}">{{ __('procurement_register.reset') }}</a>
+  </form>
+  <p class="muted">{{ __('procurement_register.scope') }}</p>
+  <p class="muted">{{ __('procurement_register.pagination_scope') }}</p>
 
   <div class="docstats">
-    <div class="dstat"><div class="k">{{ $L('mrs') }}</div><div class="v">{{ $num($requisitions->count()) }}</div></div>
-    <div class="dstat"><div class="k">{{ $L('pos') }}</div><div class="v">{{ $num($orders->count()) }}</div></div>
-    <div class="dstat {{ $late->count() ? 'warn' : 'good' }}">
-      <div class="k">{{ $L('slip') }}</div><div class="v">{{ $num($late->count()) }}</div>
+    <div class="dstat"><div class="k">{{ $L('mrs') }}</div><div class="v">{{ $num($requisitions->total()) }}</div></div>
+    <div class="dstat"><div class="k">{{ $L('pos') }}</div><div class="v">{{ $num($orders->total()) }}</div></div>
+    <div class="dstat {{ $lateOrderCount ? 'warn' : 'good' }}">
+      <div class="k">{{ $L('slip') }}</div><div class="v">{{ $num($lateOrderCount) }}</div>
     </div>
-    <div class="dstat"><div class="k">{{ $L('insps') }}</div><div class="v">{{ $num($inspections->count()) }}</div></div>
+    <div class="dstat"><div class="k">{{ $L('insps') }}</div><div class="v">{{ $num($inspections->total()) }}</div></div>
   </div>
 
   <div class="note">{{ $L('sod') }}</div>
 
   {{-- Requisitions --}}
   <h2 style="font-size:15px;margin:18px 0 8px">{{ $L('mrs') }}</h2>
+  @include('materials.procurement-pagination', ['documents'=>$requisitions, 'kind'=>'mr'])
   @if($requisitions->isEmpty())
-    <p class="muted">{{ $L('emptyMr') }}</p>
+    <p class="muted">{{ $requisitions->total() > 0 ? __('procurement_register.empty_page') : __('procurement_register.empty_mr') }}</p>
   @else
   <table data-tt>
     <thead><tr>
-      <th>{{ $L('number') }}</th><th>{{ $L('titlec') }}</th><th>{{ $L('disc') }}</th>
+      <th>{{ $L('number') }}</th><th>{{ __('procurement_category.label') }}</th><th>{{ $L('titlec') }}</th><th>{{ $L('disc') }}</th>
       <th class="num">{{ $L('lines') }}</th><th>{{ $L('state') }}</th><th>{{ $L('acts') }}</th>
     </tr></thead>
     <tbody>
     @foreach($requisitions as $mr)
       <tr>
-        <td class="mono">{{ $mr->number }}</td>
+        <td class="mono"><a href="{{ route('procurement.requisitions.show', ['projectCode'=>$project->code, 'requisitionId'=>$mr->id, 'lang'=>$lang]) }}">{{ $mr->number }}</a></td>
+        <td>{{ $mr->material_category ? __('procurement_category.'.$mr->material_category) : __('procurement_category.legacy') }}</td>
         <td>
           {{ $mr->title($lang) }}
           @if($mr->isRejected() && $mr->rejection_reason)
@@ -150,6 +180,7 @@
           @foreach($mr->items->sortBy('line_no') as $line)
             <p><span class="mono">{{ $line->item_code }}</span> · {{ $line->description($lang) }}<br>
             <span dir="ltr">{{ $line->source_quantity ?? $line->quantity }} {{ $line->unit }}</span>
+            <br><small>{{ !$mr->material_category ? __('procurement_category.legacy') : ($line->material_item_id ? __('procurement_category.catalogue') : __('procurement_category.declared')) }}</small>
             @if($line->specification)<br>{{ $line->specification }}@endif
             @if($line->subsystem)<br>{{ $line->subsystem->code }}@endif</p>
           @endforeach
@@ -157,6 +188,7 @@
         </details></td>
         <td><span class="st {{ $mr->state }}">{{ \App\Support\ProcurementState::mrLabel($mr->state)[$lang] }}</span></td>
         <td class="acts">
+          @include('materials.po-from-mr')
           @php $act = ['DRAFT'=>'submit','SUBMITTED'=>'technical','TECHNICAL_APPROVED'=>'commercial'][$mr->state] ?? null; @endphp
           @if($act)
             <form method="POST" action="/projects/{{ $project->code }}/procurement/requisition?lang={{ $lang }}">
@@ -185,12 +217,13 @@
   {{-- Purchase orders --}}
   <h2 style="font-size:15px;margin:18px 0 8px">{{ $L('pos') }}</h2>
   <div class="note">{{ $L('exped') }}</div>
+  @include('materials.procurement-pagination', ['documents'=>$orders, 'kind'=>'po'])
   @if($orders->isEmpty())
-    <p class="muted">{{ $L('emptyPo') }}</p>
+    <p class="muted">{{ $orders->total() > 0 ? __('procurement_register.empty_page') : __('procurement_register.empty_po') }}</p>
   @else
   <table data-tt>
     <thead><tr>
-      <th>{{ $L('number') }}</th><th>{{ $L('titlec') }}</th><th>{{ $L('vendor') }}</th>
+      <th>{{ $L('number') }}</th><th>{{ __('procurement_category.label') }}</th><th>{{ $L('titlec') }}</th><th>{{ $L('vendor') }}</th>
       <th class="num">{{ $L('value') }}</th><th>{{ $L('state') }}</th>
       <th>{{ $L('promise') }}</th><th>{{ $L('fcast') }}</th><th class="num">{{ $L('slip') }}</th>
       <th>{{ $L('acts') }}</th>
@@ -198,7 +231,8 @@
     <tbody>
     @foreach($orders as $po)
       <tr>
-        <td class="mono">{{ $po->number }}</td>
+        <td class="mono"><a href="{{ route('procurement.orders.show', ['projectCode' => $project->code, 'orderId' => $po->id, 'lang' => $lang]) }}">{{ $po->number }}</a></td>
+        <td>{{ $po->material_category ? __('procurement_category.'.$po->material_category) : __('procurement_category.legacy') }}</td>
         <td>{{ $po->title($lang) }}</td>
         <td class="mono">{{ $po->vendor?->code }}</td>
         <td class="num">{{ $money($po->total_value, $po->currency) }}</td>
@@ -224,8 +258,10 @@
 
   {{-- Inspections --}}
   <h2 style="font-size:15px;margin:18px 0 8px">{{ $L('insps') }}</h2>
+  <p class="muted">{{ __('procurement_register.inspection_scope') }}</p>
+  @include('materials.procurement-pagination', ['documents'=>$inspections, 'kind'=>'inspection'])
   @if($inspections->isEmpty())
-    <p class="muted">{{ $L('emptyIn') }}</p>
+    <p class="muted">{{ $inspections->total() > 0 ? __('procurement_register.empty_page') : $L('emptyIn') }}</p>
   @else
   <table data-tt>
     <thead><tr>

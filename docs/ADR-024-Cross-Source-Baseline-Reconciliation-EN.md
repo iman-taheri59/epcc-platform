@@ -1,5 +1,8 @@
 # ADR-024 — Cross-source engineering claims without a second MTO authority
 
+> 2026-10-18 implementation update: see `ADR-024-EFFECTIVE-MTO-SELECTION-DESIGN-EN.md` for the draft journal/manifest/read contract and33 passing standalone design-prototype cases. G01 is NOT fixed in the application; no schema/role change. Prior inability-to-run statements below are historical; final application baseline is locally green1083/16385.
+
+
 Status: PROPOSED implementation; prior owner scope/revision decisions recovered (no schema change)
 Date: 2026-10-12
 Related: ADR-005, ADR-021, ADR-023, P-25

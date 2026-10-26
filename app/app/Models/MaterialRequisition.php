@@ -17,7 +17,7 @@ final class MaterialRequisition extends Model
 
     protected $fillable = [
         'project_id', 'company_id', 'number', 'sequence', 'state',
-        'title_en', 'title_fa', 'discipline', 'raised_by', 'raised_at',
+        'material_category', 'title_en', 'title_fa', 'discipline', 'raised_by', 'raised_at',
         'technical_approved_by', 'technical_approved_at',
         'commercial_approved_by', 'commercial_approved_at',
         'rejected_by', 'rejected_at', 'rejection_reason',

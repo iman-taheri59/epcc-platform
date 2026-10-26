@@ -1,0 +1,73 @@
+@startuml
+' Snapshot: 2026-10-26. Solid implemented flow; proposed/deferred stages explicitly separated.
+title Piping material lifecycle — implementation snapshot
+skinparam backgroundColor #FAFCFF
+skinparam defaultFontName DejaVu Sans
+skinparam shadowing false
+skinparam activity {
+ BackgroundColor #E8F5EE
+ BorderColor #277252
+}
+legend
+ Green: implemented in workspace; NOT deployed
+ Amber: D1–D3 issue design, awaiting approval; NOT implemented
+ Grey: deferred/separate workflow
+ Physical arrival, accepted credit, dispatch and actual consumption are different facts.
+endlegend
+start
+partition "IMPLEMENTED — Physical receipt / QC / QA" {
+ :Material controller / original nominated actor\nRecord actual arrival + custody / MRR\nMissing documents or failed inspection do not erase arrival;
+ note right
+ Independently configured custodian and four duties.
+ Issued exact PIPING PO line must independently be visible
+ before accepted posting; initially unlinked arrival is allowed.
+ No source-reading grant is inherited.
+ end note
+ :Independent receiving QC\nRecord observations on exact effective receipt basis;
+ :Independent QA acceptor\nManual decision + exact versioned evidence;
+ while (Latest QA accepted AND all acceptance gates satisfied?) is (no)
+   :HOLD / REJECTED\nRetain physical custody / quarantine\nNo accepted stock credit or ordinary consumption;
+   :Resolve missing evidence / findings\nIf source or Heat changes: original preparer + live grant,\nappend-only amendment and fresh matching QC / QA;
+   :Record required fresh QC / manual QA decision;
+ endwhile (yes)
+ note right
+ MRR preparer, QC reviewer and QA acceptor are distinct.
+ Accepted: six affirmative declarations, no open conditions,
+ matching latest clean QC, known Heat, exact visible source
+ and complete independently visible/intact pinned evidence.
+ No waiver or automatic technical acceptance.
+ end note
+}
+partition "IMPLEMENTED — Controlled GRN / separate accepted-stock ledger" {
+ :Warehouse actor with independent current post_grn grant\nConfirm WHOLE receipt and accepted location / reason;
+ while (Fresh authority / basis / evidence + exact-line ceiling\n+ no legacy source-PO lots + no duplicate posting?) is (blocked)
+  :No new GRN / no new credit\nResolve cause; legacy reconciliation is separate\nNo automatic split, override or reversal;
+  :Revalidate original caller, exact source and current posting gates;
+ endwhile (pass)
+ :ATOMIC TRANSACTION\nImmutable GRN + ONE accepted-stock credit\n+ derived posted marker;
+ note right
+ Decimal exact-line cumulative quantity <= ordered quantity.
+ Identical authorized retry returns existing record, no second credit.
+ Recorder company is preserved; no custodian impersonation.
+ No legacy MaterialLot conversion or automatic PO/MTO update.
+ Post-GRN QC / QA / source-Heat amendment is frozen pending
+ a separately governed correction / reversal workflow.
+ end note
+}
+partition "PROPOSED ONLY — D1 / D2 / D3, awaiting explicit approval" #FFF1D6 {
+ #FFF1D6:Construction requester with separate issue nomination\nExact credit / Heat / unit, destination and purpose\nRequest and approval do NOT reserve stock;
+ #FFF1D6:Independent technical release on exact request version\nCurrent condition / preservation / expiry / evidence\nUnknown required condition or open safety hold blocks dispatch;
+ note right
+ New duties/read adapters/readiness/hold model do not exist yet.
+ Proposed requester != technical reviewer != dispatcher.
+ Independent recipient nomination; recipient may be requester.
+ A historical GRN is not perpetual proof of dispatch readiness.
+ end note
+ #FFF1D6:Independently nominated warehouse dispatcher\nFresh locked complete per-credit balance / authority / readiness\nAll submitted allocations post atomically or none\nONE controlled debit at actual warehouse handover;
+ #FFF1D6:Separately nominated receiving company acknowledgment\nExact dispatched quantity / discrepancies\nReduce in-transit quantity ONLY — no second warehouse debit;
+}
+partition "DEFERRED / SEPARATELY GOVERNED" #EEF1F6 {
+ #EEF1F6:Installation / actual consumption is NOT established by dispatch or receipt\nReturns, reversals, legacy reconciliation, transfer, scrap,\nfull preservation scheduler and remnant traceability remain separate;
+}
+stop
+@enduml

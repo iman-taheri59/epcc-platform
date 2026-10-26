@@ -1,5 +1,7 @@
 # Repository-local PHP CLI (Linux sandbox)
 
+> 2026-10-18: the historical limited binary described below is no longer the only option in this workspace. A complete native PHP/PostgreSQL tier is verified; see `NATIVE-DEBIAN-RUNTIME-EN.md` and the current baseline verification report.
+
 The Linux sandbox can install **native PHP 8.4.21** into `.local/php-native/bin/php`
 without Docker or system packages. The executable is a pinned build from
 `NativePHP/php-bin` (commit `e0c212d36422e5aa1f7357ec0524d99de8ee79bf`),

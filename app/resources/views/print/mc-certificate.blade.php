@@ -72,7 +72,8 @@
      so on an issued certificate they must describe the moment it was issued —
      not today's register. See McCertificate::punchSummary(). --}}
 @php($summary = $certificate->punchSummary($items, $openA))
-<table class="meta">
+{{-- Keep each safety-count label on one line, before its numeric value. --}}
+<table class="meta punch-summary">
   <tr><td class="k">{{ $L('ptotal') }}</td><td>{{ $num($summary['total']) }}</td></tr>
   <tr><td class="k">{{ $L('pclosed') }}</td><td>{{ $num($summary['closed']) }}</td></tr>
   <tr><td class="k">{{ $L('popenA') }}</td><td>{{ $num($summary['open_blocking']) }}</td></tr>

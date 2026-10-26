@@ -1,0 +1,13 @@
+> **2026-10-19 human-surface clarification:** [OrderGap boundary](ORDER-GAP-HUMAN-BOUNDARY-EN.md) / [فارسی](ORDER-GAP-HUMAN-BOUNDARY-FA.md). Controlled MR-linked human quantity amendment/re-attribution through OrderGap is now refused. Trusted lineage primitives remain available internally, not as human editing grants. Broader legacy/manual/MTO authority redesign remains deferred.
+
+# ADR-035 — bounded approved-MR to PO draft copying
+
+2026-10-19. Implementation slice under existing independent PO DRAFT nomination (ADR-033), single-category rule (ADR-034), existing approved-MR procurement prerequisite and the owner's continuation instruction. **No new financial, issuance, MTO or role policy.** Own-buyer-only and full-copy limits below are first-surface implementation boundaries, not a decision that cross-company procurement is forbidden in the domain.
+
+Authenticated nominated PO authors may copy an APPROVED, explicitly categorized MR belonging to the same buyer company and project. Copy all 1–20 lines, preserving descriptions, code, unit, exact source quantity, material identity and subsystem. Use existing PO header/source-line FK fields for explicit provenance; no heuristic item-code matching. Source header/line locks and the project/PO-entry lock enclose the entire copy, numbering, attribution and links in one transaction. Server reads source values; posted titles/category/lines/price/quantity overrides are rejected.
+
+Do not call ProcurementService's legacy consuming conversion: the MR remains APPROVED, no quantity is reserved, no MR ORDERED transition and no issue occur. Repeated draft copies are possible, explicitly not additional approved purchases. Pricing remains unknown; future prices, partial conversion, official remaining quantities, issued-order allocation and duplicate purchase prevention require their separate workflow, not inference from a draft link.
+
+SQL verifies the initial exact full copy for human-attributed source linkage and freezes header/source-line reference reassignment. Existing amendment lineage can retain the source reference while making a successor. These are bounded provenance guards, not a universal SQL user-authorization layer or immutable replay of every source field. Existing legacy trusted primitives and legacy unclassified records are not retro-certified. Cross-company import, multiple MRs per PO, partial selection, historical reclassification and issuance are not exposed.
+
+Targeted validation/authority/isolation/no-consumption/rollback/source-guard/UI and affected-flow tests; no routine full suite/recovery. Companion: ADR-035-MR-TO-PO-DRAFT-LINK-FA.md. Execution status and limits: PO-MR-DRAFT-LINK-{EN,FA}.md when verified.

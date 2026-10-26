@@ -1,8 +1,14 @@
 <?php
 
+use App\Http\Middleware\BindTenant;
+use App\Http\Middleware\ConfigureForPreviewProxy;
+use App\Http\Middleware\PreviewSessionFallback;
+use App\Http\Middleware\PreviewUrlRewriter;
+use App\Http\Middleware\SetUserLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Http\Middleware\TrimStrings;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -22,12 +28,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Must run before StartSession, which reads the session cookie config
         // when it issues the cookie. Prepending puts it at the very front of
         // the global stack.
-        $middleware->prepend(App\Http\Middleware\ConfigureForPreviewProxy::class);
+        $middleware->prepend(ConfigureForPreviewProxy::class);
 
         // MR quantity is a source declaration, not display text. Preserve its
         // exact spelling so the strict validator can reject leading spaces
         // instead of accepting a silently trimmed quantity.
-        \Illuminate\Foundation\Http\Middleware\TrimStrings::except('mr.lines.*.quantity');
+        TrimStrings::except(['mr.lines.*.quantity', 'po.lines.*.quantity', 'po.lines.*.unit_price']);
 
         // Cookie-less preview support. Two halves, and BOTH the classes and
         // their POSITIONS are load-bearing:
@@ -47,7 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // aimed at the `web` group needs the *InGroup variants - replace()
         // fails silently, which is indistinguishable from "the fix did not
         // work".
-        $middleware->prependToGroup('web', App\Http\Middleware\PreviewSessionFallback::class);
+        $middleware->prependToGroup('web', PreviewSessionFallback::class);
         // Locale for the WHOLE web side, not just the admin panel.
         //
         // SetUserLocale was originally registered on the Filament panel alone,
@@ -63,12 +69,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Added to the group AFTER StartSession (it reads $request->user(),
         // which needs the session) but BEFORE PreviewUrlRewriter, which the
         // note above requires to stay last so it is first to see the response.
-        $middleware->appendToGroup('web', App\Http\Middleware\SetUserLocale::class);
+        $middleware->appendToGroup('web', SetUserLocale::class);
 
-        $middleware->appendToGroup('web', App\Http\Middleware\PreviewUrlRewriter::class);
+        $middleware->appendToGroup('web', PreviewUrlRewriter::class);
 
         $middleware->alias([
-            'tenant' => App\Http\Middleware\BindTenant::class,
+            'tenant' => BindTenant::class,
         ]);
 
         // The app runs behind a TLS-terminating reverse proxy in the sandbox
@@ -99,7 +105,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // user would land on a page belonging to a brand-new empty session and
         // see the fields blanked out - the original bug, from a second cause.
         $exceptions->respond(
-            fn (Response $response, Throwable $e, Request $request) => App\Http\Middleware\PreviewUrlRewriter::apply($request, $response),
+            fn (Response $response, Throwable $e, Request $request) => PreviewUrlRewriter::apply($request, $response),
         );
 
         $exceptions->shouldRenderJsonWhen(

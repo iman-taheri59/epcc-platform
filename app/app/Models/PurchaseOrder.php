@@ -22,7 +22,7 @@ final class PurchaseOrder extends Model
 
     protected $fillable = [
         'project_id', 'company_id', 'vendor_company_id', 'number', 'sequence',
-        'state', 'requisition_id', 'title_en', 'title_fa', 'total_value',
+        'state', 'requisition_id', 'material_category', 'title_en', 'title_fa', 'total_value',
         'currency', 'promised_date', 'forecast_date', 'issued_by', 'issued_at',
     ];
 

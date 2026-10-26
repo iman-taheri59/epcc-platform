@@ -46,37 +46,57 @@ final class OrderGapService
      * The unit must match the catalogue base unit — a mismatch is a
      * validation failure, not a conversion.
      *
+     * Human boundary only; does not grant new PO or MTO authority.
+     *
      * @throws ValidationException
      */
-    public function attribute(
+    public function humanAttribute(Project $project, PurchaseOrderItem $item, string $materialId, string $lang = 'fa'): PurchaseOrderItem
+    {
+        return $this->attributeItem($project, $item, $materialId, $lang, true);
+    }
+
+    /** Trusted compatibility primitive, not a human authorization endpoint. */
+    public function attribute(Project $project, PurchaseOrderItem $item, string $materialId, string $lang = 'fa'): PurchaseOrderItem
+    {
+        return $this->attributeItem($project, $item, $materialId, $lang, false);
+    }
+
+    private function attributeItem(
         Project $project,
         PurchaseOrderItem $item,
         string $materialId,
-        string $lang = 'fa',
+        string $lang,
+        bool $humanSurface,
     ): PurchaseOrderItem {
-        $this->assertHead($item, $lang);
+        return DB::transaction(function () use ($project, $item, $materialId, $lang, $humanSurface): PurchaseOrderItem {
+            $item = $this->lockItem($item, $project->id);
+            if ($humanSurface) {
+                $this->assertHumanSourceReadOnly($item->purchaseOrder, $lang);
+            }
+            $this->assertHead($item, $lang);
 
-        $material = MaterialItem::query()
-            ->forProjectCatalogue($project->id)
-            ->active()
-            ->whereKey($materialId)
-            ->first();
+            $material = MaterialItem::query()
+                ->forProjectCatalogue($project->id)
+                ->active()
+                ->whereKey($materialId)
+                ->first();
 
-        if ($material === null) {
-            $this->fail($lang, 'material_item_id',
-                'متریال با هویت دقیق در کتابخانه پیدا نشد.',
-                'No exact material identity was found in the library.');
-        }
+            if ($material === null) {
+                $this->fail($lang, 'material_item_id',
+                    'متریال با هویت دقیق در کتابخانه پیدا نشد.',
+                    'No exact material identity was found in the library.');
+            }
 
-        if (strtoupper(trim($item->unit)) !== $material->base_unit) {
-            $this->fail($lang, 'unit',
-                'واحد خط سفارش با واحد پایهٔ متریال سازگار نیست.',
-                'The PO line unit is incompatible with the material base unit.');
-        }
+            if (strtoupper(trim($item->unit)) !== $material->base_unit) {
+                $this->fail($lang, 'unit',
+                    'واحد خط سفارش با واحد پایهٔ متریال سازگار نیست.',
+                    'The PO line unit is incompatible with the material base unit.');
+            }
 
-        $item->update(['material_item_id' => $material->id]);
+            $item->update(['material_item_id' => $material->id]);
 
-        return $item->refresh();
+            return $item->refresh();
+        });
     }
 
     // ------------------------------------------------------------------
@@ -87,42 +107,50 @@ final class OrderGapService
      * Replace the quantity of a line by creating its successor. The old row
      * is untouched and stays readable; the gap reads the head only.
      *
+     * Human boundary only; does not grant new PO or MTO authority.
+     *
      * @throws ValidationException
      */
-    public function amend(
+    public function humanAmend(PurchaseOrderItem $item, float $quantity, string $lang = 'fa'): PurchaseOrderItem
+    {
+        return $this->amendItem($item, $quantity, $lang, true);
+    }
+
+    /** Trusted compatibility primitive, not a human authorization endpoint. */
+    public function amend(PurchaseOrderItem $item, float $quantity, string $lang = 'fa'): PurchaseOrderItem
+    {
+        return $this->amendItem($item, $quantity, $lang, false);
+    }
+
+    private function amendItem(
         PurchaseOrderItem $item,
         float $quantity,
-        string $lang = 'fa',
+        string $lang,
+        bool $humanSurface,
     ): PurchaseOrderItem {
-        $this->assertHead($item, $lang);
+        return DB::transaction(function () use ($item, $quantity, $lang, $humanSurface): PurchaseOrderItem {
+            $item = $this->lockItem($item, null);
+            if ($humanSurface) {
+                $this->assertHumanSourceReadOnly($item->purchaseOrder, $lang);
+            }
+            $this->assertHead($item, $lang);
 
-        if ($quantity <= 0) {
-            $this->fail($lang, 'quantity',
-                'مقدار اصلاحیه باید بزرگ‌تر از صفر باشد.',
-                'Amendment quantity must be greater than zero.');
-        }
+            if ($quantity <= 0) {
+                $this->fail($lang, 'quantity',
+                    'مقدار اصلاحیه باید بزرگ‌تر از صفر باشد.',
+                    'Amendment quantity must be greater than zero.');
+            }
 
-        $po = $item->purchaseOrder()->first();
+            $po = $item->purchaseOrder;
 
-        if ($po === null || ! in_array($po->state, [
-            ProcurementState::PO_DRAFT,
-            ProcurementState::PO_ISSUED,
-            ProcurementState::PO_PARTIALLY_RECEIVED,
-        ], true)) {
-            $this->fail($lang, 'purchase_order_id',
-                'این سفارش خرید دیگر قابل اصلاح نیست.',
-                'This purchase order can no longer be amended.');
-        }
-
-        return DB::transaction(function () use ($item, $po, $quantity): PurchaseOrderItem {
-            $lock = PurchaseOrderItem::whereKey($item->id)->lockForUpdate()->first();
-
-            // Re-check inside the lock: a concurrent amendment must lose
-            // loudly, and the unique index on supersedes_id is the backstop.
-            if ($lock === null || $lock->supersededBy()->exists()) {
-                $this->fail('en', 'supersedes_id',
-                    'این خط قبلاً اصلاح شده است.',
-                    'This line has already been superseded.');
+            if ($po === null || ! in_array($po->state, [
+                ProcurementState::PO_DRAFT,
+                ProcurementState::PO_ISSUED,
+                ProcurementState::PO_PARTIALLY_RECEIVED,
+            ], true)) {
+                $this->fail($lang, 'purchase_order_id',
+                    'این سفارش خرید دیگر قابل اصلاح نیست.',
+                    'This purchase order can no longer be amended.');
             }
 
             $nextLine = 1 + (int) PurchaseOrderItem::where('purchase_order_id', $po->id)->max('line_no');
@@ -164,44 +192,44 @@ final class OrderGapService
         float $quantity,
         string $lang = 'fa',
     ): PoItemAllocation {
-        $this->assertHead($item, $lang);
+        return DB::transaction(function () use ($project, $user, $item, $subsystemId, $quantity, $lang): PoItemAllocation {
+            $item = $this->lockItem($item, $project->id);
+            $this->assertHead($item, $lang);
 
-        if ($item->material_item_id === null) {
-            $this->fail($lang, 'material_item_id',
-                'ابتدا هویت متریال خط سفارش را مشخص کنید.',
-                'Attribute the PO line to a material before allocating scope.');
-        }
+            if ($item->material_item_id === null) {
+                $this->fail($lang, 'material_item_id',
+                    'ابتدا هویت متریال خط سفارش را مشخص کنید.',
+                    'Attribute the PO line to a material before allocating scope.');
+            }
 
-        if ($quantity <= 0) {
-            $this->fail($lang, 'quantity',
-                'مقدار تخصیص باید بزرگ‌تر از صفر باشد.',
-                'Allocation quantity must be greater than zero.');
-        }
+            if ($quantity <= 0) {
+                $this->fail($lang, 'quantity',
+                    'مقدار تخصیص باید بزرگ‌تر از صفر باشد.',
+                    'Allocation quantity must be greater than zero.');
+            }
 
-        $po = $item->purchaseOrder()->first();
+            $po = $item->purchaseOrder;
 
-        if ($po === null || ! in_array($po->state, self::EFFECTIVE_STATES, true)) {
-            $this->fail($lang, 'purchase_order_id',
-                'تخصیص فقط برای سفارش‌های صادرشده/در حال اجرا ممکن است.',
-                'Only issued/in-force orders can carry a scope allocation.');
-        }
+            if ($po === null || ! in_array($po->state, self::EFFECTIVE_STATES, true)) {
+                $this->fail($lang, 'purchase_order_id',
+                    'تخصیص فقط برای سفارش‌های صادرشده/در حال اجرا ممکن است.',
+                    'Only issued/in-force orders can carry a scope allocation.');
+            }
 
-        $subsystem = Subsystem::query()->whereKey($subsystemId)->first();
+            $subsystem = Subsystem::query()->whereKey($subsystemId)->first();
 
-        if ($subsystem === null || $subsystem->project_id !== $project->id) {
-            $this->fail($lang, 'subsystem_id',
-                'زیرسیستم در این پروژه پیدا نشد.',
-                'The subsystem was not found on this project.');
-        }
+            if ($subsystem === null || $subsystem->project_id !== $project->id) {
+                $this->fail($lang, 'subsystem_id',
+                    'زیرسیستم در این پروژه پیدا نشد.',
+                    'The subsystem was not found on this project.');
+            }
 
-        return DB::transaction(function () use ($project, $user, $item, $subsystem, $quantity, $lang): PoItemAllocation {
-            $locked = PurchaseOrderItem::whereKey($item->id)->lockForUpdate()->first();
             $allocatedMilli = (int) PoItemAllocation::where('purchase_order_item_id', $item->id)
                 ->lockForUpdate()
                 ->get()
                 ->sum(fn (PoItemAllocation $a) => $this->milli((float) $a->quantity));
 
-            $itemMilli = $locked === null ? 0 : $this->milli((float) $locked->quantity);
+            $itemMilli = $this->milli((float) $item->quantity);
 
             if ($allocatedMilli + $this->milli($quantity) > $itemMilli) {
                 $this->fail($lang, 'quantity',
@@ -396,6 +424,38 @@ final class OrderGapService
         }
 
         return ! $item->supersededBy()->exists();
+    }
+
+    /**
+     * Same acquisition order as controlled issuance: project advisory lock,
+     * project row, PO row, then item row. Never copy or validate caller state.
+     * All reads retain the original caller's RLS context; no buyer delegation.
+     */
+    private function lockItem(PurchaseOrderItem $item, ?string $expectedProject): PurchaseOrderItem
+    {
+        $visible = PurchaseOrderItem::whereKey($item->id)->firstOrFail();
+        abort_if($expectedProject !== null && $visible->project_id !== $expectedProject, 404);
+        DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?,0))', ['po-entry:'.$visible->project_id]);
+        $project = Project::whereKey($visible->project_id)->lockForUpdate()->firstOrFail();
+        app(ProjectArchiveService::class)->assertWritable($project);
+        $po = PurchaseOrder::whereKey($visible->purchase_order_id)
+            ->where('project_id', $project->id)->lockForUpdate()->firstOrFail();
+        $fresh = PurchaseOrderItem::whereKey($visible->id)
+            ->where('project_id', $project->id)->where('purchase_order_id', $po->id)
+            ->lockForUpdate()->firstOrFail();
+        $fresh->setRelation('purchaseOrder', $po);
+
+        return $fresh;
+    }
+
+    /** ADR-038: no alternate human quantity/source-identity editor for controlled MR copies. */
+    private function assertHumanSourceReadOnly(PurchaseOrder $order, string $lang): void
+    {
+        if ($order->author_policy_id !== null && $order->requisition_id !== null) {
+            $this->fail($lang, 'purchase_order_id',
+                'مقدار و هویت منبع سفارش کنترل‌شدهٔ متصل به MR در شکاف سفارش قابل ویرایش نیست؛ از گردش‌کار اختصاصی تدارکات استفاده کنید.',
+                'Controlled MR-linked quantity and source identity are read-only in OrderGap; use the dedicated procurement workflow.');
+        }
     }
 
     /** @throws ValidationException */

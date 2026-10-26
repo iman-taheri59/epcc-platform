@@ -1,3 +1,5 @@
+> **Current delivery — 2026-10-19:** [independent inspection entry](INSPECTION-ENTRY-EN.md) / [فارسی](INSPECTION-ENTRY-FA.md), [ADR-041](ADR-041-INDEPENDENT-INSPECTION-ENTRY-EN.md). **46 affected tests /558 assertions PASS**,14 new cases. Owner versioned nominations/suspension, create-only original-visible PO form, server attribution and immutable new evidence. Existing TPI/PMC/MC/OWN independence, non-PASS findings and IRN numbering retained; no default/inherited writer, PO read delegation, source/lot/financial/receipt/usable/MTO mutation. Migration190000 privately verified only; no full-suite/production claim. Older current notices/counts below are historical and nonadditive.
+
 # Remaining Requirements for Piping MTO and Material Management
 
 **Date:** 2026-10-06  
@@ -548,11 +550,11 @@ This slice deliberately does not accept or mutate a staging row.
 
 ## 8. Open Decision Questions
 
-These should be resolved one by one:
+Historical question list, reconciled 2026-10-18. Items2–3 now carry the recorded status below; remaining items are not resolved by this review. See [decision reference index](DECISION-REFERENCE-INDEX-EN.md). Do not reopen accepted decisions from this old list.
 
 1. Should the material library be two-level: global/reference + project overlay?
-2. How should MTO acceptance authority be limited until access design is finalized?
-3. Should hierarchy revisioning be implemented from the beginning, or are stable scope IDs sufficient for the first slice?
+2. **EXPLICITLY DEFERRED, not permission to invent a role.** Original question: “How should MTO acceptance authority be limited until access design is finalized?” User handoff §3 item7 and ADR-015 §5 item3 prohibit new MTO access gates without separate approval. Technical work not granting new authority may continue.
+3. **DOMAIN DECISION ACCEPTED; implementation remains incomplete.** Original question: “Should hierarchy revisioning be implemented from the beginning, or are stable scope IDs sufficient for the first slice?” ADR-018 §9.4 and this document §3.6 require stable IDs and pinned hierarchy revisions; nullable claimed pins/current mutable parents do not satisfy authoritative historical versioning.
 4. Should the first net estimate source be manual/isometric entry or the existing component model?
 5. Which material states count as usable?
 6. Should supports enter the current component-like MTO phase or be deferred?

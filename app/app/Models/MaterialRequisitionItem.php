@@ -14,7 +14,7 @@ final class MaterialRequisitionItem extends Model
     use HasUuid;
 
     protected $fillable = [
-        'project_id', 'requisition_id', 'subsystem_id', 'line_no',
+        'material_item_id', 'project_id', 'requisition_id', 'subsystem_id', 'line_no',
         'item_code', 'description_en', 'description_fa', 'unit',
         'quantity', 'specification',
     ];

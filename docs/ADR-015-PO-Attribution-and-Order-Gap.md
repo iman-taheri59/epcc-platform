@@ -1,3 +1,5 @@
+> **2026-10-19 implementation clarification:** [OrderGap locking](ORDER-GAP-LOCKING-EN.md) / [فارسی](ORDER-GAP-LOCKING-FA.md): legacy lineage semantics retained; later ADR-037/039 controlled issued-content freeze is not bypassed by R3. Targeted verification is documented separately; the original runtime-pending status below is historical. No new MTO authority.
+
 # ADR-EPCC-015 — Purchase-order attribution and the order gap (MTO Slice 6)
 
 **Status:** IMPLEMENTED — awaiting runtime verification (code, routes, screen and `OrderGapTest` landed 2026-10-11; `php artisan test` on the owner's Laragon machine is the verification step)
