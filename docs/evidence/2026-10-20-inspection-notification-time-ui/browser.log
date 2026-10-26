@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "/home/user/epcc-platform/scripts/tests/inspection_notification_time_ui.py", line 117, in <module>
-    context = browser.new_context(javascript_enabled=False)
-TypeError: Browser.new_context() got an unexpected keyword argument 'javascript_enabled'. Did you mean 'java_script_enabled'?

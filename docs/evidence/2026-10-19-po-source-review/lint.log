@@ -1,8 +1,0 @@
-No syntax errors detected in app/Services/PurchaseOrderSourceReviewService.php
-No syntax errors detected in app/Services/PurchaseOrderExecutionService.php
-No syntax errors detected in app/Http/Controllers/MaterialsController.php
-No syntax errors detected in app/Providers/ViewServiceProvider.php
-No syntax errors detected in routes/web.php
-No syntax errors detected in lang/en/po_source_review.php
-No syntax errors detected in lang/fa/po_source_review.php
-No syntax errors detected in tests/Feature/PurchaseOrderSourceReviewTest.php

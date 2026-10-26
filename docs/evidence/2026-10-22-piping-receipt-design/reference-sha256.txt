@@ -1,1 +1,0 @@
-19f2adcdc26ec887c90763948b2d0b7586d08d721490a3313359c1826696f6e9  docs/reference/EPC_Piping_Material_Receipt_Inspection_Storage_Preservation.md

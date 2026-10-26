@@ -1,3 +1,0 @@
-# Isolated atomic demand approval proof
-
-postgres.log: 29 dedicated PostgreSQL 17 protocol cases PASS; ordinary NOSUPERUSER/NOBYPASSRLS actor, five FORCE-RLS tables. See bilingual DEMAND-ATOMIC-APPROVAL guides for precise protocol-only limits, synthetic trusted inputs, non-production DML privileges, and remaining admission/visibility/inventory/app/PO gates. No application DB or PHPUnit. predecessor-unchanged.log verifies existing app/prototype sources. Private socket-only cluster stopped after verification. Do not install proof schema in the application; runner reset guard is mandatory. Archive is a dependent source/design increment, not a full runnable app or DB backup.

@@ -1,9 +1,0 @@
-{
-  "archive": "/home/user/000-piping-custody-amendments-source.tar.gz",
-  "files_verified": 190,
-  "sha256": "485a090bf7883d2ec0cb05c8f3737b482ee0b389aa06d215c1342b26d10bed56",
-  "bytes": 672120,
-  "roundtrip": "PASS",
-  "manifest_in_archive": true,
-  "verification_record_external": true
-}

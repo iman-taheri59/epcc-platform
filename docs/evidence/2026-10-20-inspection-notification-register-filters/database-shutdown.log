@@ -1,2 +1,0 @@
-pg_ctl: no server running
-pg_ctl status exit=3 (3 means no server running)

@@ -1,3 +1,0 @@
-PASS 545 application source/resource/config/test and Composer files unchanged against preceding design baseline
-PASS no added/removed application files in recorded scope
-No runtime test executed.

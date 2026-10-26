@@ -1,9 +1,0 @@
-app/app/Services/PipingReceiptAccessService.php: OK
-app/app/Http/Controllers/PipingReceiptAccessController.php: OK
-app/database/migrations/2026_10_22_100000_add_piping_receipt_author_configuration.php: OK
-app/lang/en/receipt_access.php: OK
-app/lang/fa/receipt_access.php: OK
-app/routes/web.php: OK
-app/resources/views/materials/receipt-access.blade.php: OK
-app/resources/views/materials/warehouse.blade.php: OK
-app/tests/Feature/PipingReceiptAccessTest.php: OK

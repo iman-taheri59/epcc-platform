@@ -1,8 +1,0 @@
-
-  ..........✓✓
-
-  ──────────────────────────────────────────────────────────────────── Laravel  
-    FIXED   ................................... 12 files, 2 style issues fixed  
-  ✓ tests/Feature/PurchaseOrderExecutionMigrationTest.php function_declaratio…  
-  ✓ tests/Feature/PurchaseOrderExecutionTest.php single_space_around_construc…  
-

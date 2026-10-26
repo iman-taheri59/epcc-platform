@@ -1,3 +1,0 @@
-PASS Python compile: prototype/demand-atomicity/test_postgres.py
-PASS git diff --check
-PASS private PostgreSQL smart shutdown; database system shut down

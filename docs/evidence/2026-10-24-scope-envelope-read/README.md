@@ -1,9 +1,0 @@
-# Exact-ID source-bound envelope reading —2026-10-24
-
-final-affected.log: authoritative58 application tests/371 assertions PASS125.32s (18 new read tests,22 persistence,18 authority HTTP). initial.log16/114 overlaps, not additive. Focused/affected only, no full regression.
-
-static.log: six PHP Pint/lint,Blade compile/clear,one GET route,whitespace. rls-audit.log: ordinary epcc NOSUPERUSER/NOBYPASSRLS,2 FORCE-RLS tables,invoker helpers,SELECT/INSERT-only policies and enabled immutable/insert guards. checks.log: prior services/migration/tests unchanged; old route bytes restored after removing exactly new controller import/GET;4 locale-correct CSRF-redacted HTTP captures and new guide links.
-
-Corruption test temporarily allows UPDATE/disables immutable trigger only inside transaction fixture; all DDL/data rolled back. No application privilege weakening; final audit confirms original policies/triggers. PostgreSQL helper hashes source payload internally; HTTP trace checks no direct raw source payload/CDE/stock return/query, not absence of internal DB source reads. Opinions capped20+more sentinel, not completeness certification.
-
-New route read-only exact known UUID, same company, original proposer+live propose or independent review nominee+live review, always independent reader/full binding. No owner/reader-only/record-only inheritance; opaque404 for unauthorized/hidden/missing, repeat checks not a lease. No new listing/write UI,structured declaration,positive approval/admission/effective-demand/reservation/source mutation/migration/default grant. Existing persistence/authority code unchanged. Captures are synthetic HTTP fixtures,not browser screenshots or production-CSRF certification. No full regression/CI/deploy/commit/push/customer data. Private socket-only PG stopped after verification; dependent archive excludes runtime/vendor/DB.

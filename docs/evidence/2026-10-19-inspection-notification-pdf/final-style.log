@@ -1,7 +1,0 @@
-
-  ......⨯
-
-  ──────────────────────────────────────────────────────────────────── Laravel  
-    FAIL   ............................................ 7 files, 1 style issue  
-  ⨯ app/tests/Feature/InspectionNotificationPdfTest.php method_argument_space…  
-

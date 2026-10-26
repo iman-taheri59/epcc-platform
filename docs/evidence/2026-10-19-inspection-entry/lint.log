@@ -1,9 +1,0 @@
-No syntax errors detected in app/app/Services/InspectionAccessService.php
-No syntax errors detected in app/app/Services/InspectionEntryService.php
-No syntax errors detected in app/app/Services/WarehouseService.php
-No syntax errors detected in app/app/Http/Controllers/MaterialsController.php
-No syntax errors detected in app/routes/web.php
-No syntax errors detected in app/database/migrations/2026_10_19_190000_add_independent_inspection_entry.php
-No syntax errors detected in app/lang/en/inspection_entry.php
-No syntax errors detected in app/lang/fa/inspection_entry.php
-No syntax errors detected in app/tests/Feature/InspectionEntryTest.php

@@ -1,4 +1,0 @@
-PASS 83 current source/document files roundtrip verified
-PASS 8 source hashes embedded
-PASS root copy identical
-SHA256 af06e227a7dc46d4e48cdfcc7a7a1b56cfd9eb0c936d54a1744873d5fe9b012d

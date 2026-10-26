@@ -1,9 +1,0 @@
-/bin/bash: line 38: php: command not found
-
-  ✓✓
-
-  ──────────────────────────────────────────────────────────────────── Laravel  
-    FIXED   .................................... 2 files, 2 style issues fixed  
-  ✓ app/app/Http/Controllers/DocumentController.php fully_qualified_strict_ty…  
-  ✓ app/tests/Feature/CdeReadDisciplineTest.php  class_attributes_separation,…  
-

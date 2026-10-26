@@ -1,8 +1,0 @@
-
-  ..
-
-  ──────────────────────────────────────────────────────────────────── Laravel  
-    PASS   ........................................................... 2 files  
-
-No syntax errors detected in app/app/Http/Controllers/DocumentController.php
-No syntax errors detected in app/tests/Feature/CdeReadDisciplineTest.php

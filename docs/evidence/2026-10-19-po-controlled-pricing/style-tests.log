@@ -1,8 +1,0 @@
-
-  ✓✓
-
-  ──────────────────────────────────────────────────────────────────── Laravel  
-    FIXED   .................................... 2 files, 2 style issues fixed  
-  ✓ tests/Feature/PurchaseOrderPricingMigrationTest.php single_space_around_c…  
-  ✓ tests/Feature/PurchaseOrderPricingTest.php single_space_around_construct,…  
-

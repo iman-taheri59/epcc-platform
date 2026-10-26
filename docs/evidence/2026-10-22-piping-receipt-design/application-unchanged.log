@@ -1,3 +1,0 @@
-PASS 545 application files/Composer manifests unchanged; no additions/removals in recorded scope
-PASS reference byte-identical to original upload
-Documentation checks, not runtime tests.

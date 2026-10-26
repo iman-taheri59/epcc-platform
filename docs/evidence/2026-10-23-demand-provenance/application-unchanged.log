@@ -1,8 +1,0 @@
-UNCHANGED app/app/Services/PipingTraceabilityService.php
-UNCHANGED app/app/Http/Controllers/PipingTraceabilityController.php
-UNCHANGED app/tests/Feature/PipingTraceabilityTest.php
-UNCHANGED app/lang/en/piping_traceability.php
-UNCHANGED app/lang/fa/piping_traceability.php
-UNCHANGED app/resources/views/materials/piping-traceability.blade.php
-UNCHANGED app/resources/views/materials/piping-custody.blade.php
-UNCHANGED app/routes/web.php

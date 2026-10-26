@@ -1,9 +1,0 @@
-
-  ✓✓✓
-
-  ──────────────────────────────────────────────────────────────────── Laravel  
-    FIXED   .................................... 3 files, 3 style issues fixed  
-  ✓ tests/Feature/PurchaseOrderExecutionTest.php function_declaration, method…  
-  ✓ tests/Feature/PurchaseOrderMrAllocationMigrationTest.php function_declara…  
-  ✓ tests/Feature/PurchaseOrderMrAllocationTest.php      method_argument_space  
-

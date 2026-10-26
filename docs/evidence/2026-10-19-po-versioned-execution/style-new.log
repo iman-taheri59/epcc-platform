@@ -1,8 +1,0 @@
-
-  ✓✓.
-
-  ──────────────────────────────────────────────────────────────────── Laravel  
-    FIXED   .................................... 3 files, 2 style issues fixed  
-  ✓ app/Services/PurchaseOrderExecutionService.php method_argument_space, bra…  
-  ✓ tests/Feature/PurchaseOrderExecutionTest.php single_space_around_construc…  
-
