@@ -326,7 +326,21 @@ final class DemandReaderTest extends TestCase
     public function test_install_on_populated_source_does_not_seed_grants_or_change_snapshots(): void
     {
         $before = $this->asPars(fn () => DB::table('accepted_mto_rows')->orderBy('id')->get()->toJson());
-        $this->artisan('migrate:rollback', ['--step' => 1, '--force' => true])->assertExitCode(0);
+        // Targeted reinstall of the demand-reader feature. A whole-batch rollback (--step=1) is
+        // impossible on the full set: 2026_10_25_110000_add_controlled_piping_grns is forward-only
+        // by design (its down() throws). Later scope_* migrations also hold FK references to
+        // demand_reader_policies, so roll back that dependency chain first (newest to oldest),
+        // then re-run the pending set against the populated source.
+        foreach ([
+            '2026_10_25_100000_add_scope_structure_reviews',
+            '2026_10_24_120000_add_scope_structure_declarations',
+            '2026_10_24_110000_add_scope_proposal_envelopes',
+            '2026_10_24_100000_add_scope_admission_actor_policies',
+            '2026_10_23_130000_allow_recorded_demand_reader_suspension',
+            '2026_10_23_120000_add_scoped_demand_reader_policies',
+        ] as $migration) {
+            $this->artisan('migrate:rollback', ['--path' => "database/migrations/{$migration}.php", '--force' => true])->assertExitCode(0);
+        }
         $this->artisan('migrate', ['--force' => true])->assertExitCode(0);
         $this->assertSame($before, $this->asPars(fn () => DB::table('accepted_mto_rows')->orderBy('id')->get()->toJson()));
         $this->denied(fn () => $this->assess());
