@@ -346,7 +346,21 @@ final class ScopeAdmissionAuthorityTest extends TestCase
     public function test_populated_upgrade_no_default_authorities_or_observation_changes(): void
     {
         $before = $this->asPars(fn () => DB::table('mto_scope_observations')->orderBy('id')->get()->toJson());
-        $this->artisan('migrate:rollback', ['--step' => 1, '--force' => true])->assertExitCode(0);
+        // Targeted reinstall of the scope-admission actor policies. A whole-batch
+        // rollback (--step=1) is impossible on the full set: the later
+        // controlled-piping-GRN migration is forward-only by design (down() throws),
+        // and scope_proposal_envelopes/reviews plus scope_structure_* hold FK
+        // references into the actor policies. Roll back that dependency chain
+        // newest-to-oldest via --path, then re-run the pending set against the
+        // populated source.
+        foreach ([
+            '2026_10_25_100000_add_scope_structure_reviews',
+            '2026_10_24_120000_add_scope_structure_declarations',
+            '2026_10_24_110000_add_scope_proposal_envelopes',
+            '2026_10_24_100000_add_scope_admission_actor_policies',
+        ] as $migration) {
+            $this->artisan('migrate:rollback', ['--path' => "database/migrations/{$migration}.php", '--force' => true])->assertExitCode(0);
+        }
         $this->artisan('migrate', ['--force' => true])->assertExitCode(0);
         $this->assertSame($before, $this->asPars(fn () => DB::table('mto_scope_observations')->orderBy('id')->get()->toJson()));
         $this->configure();
