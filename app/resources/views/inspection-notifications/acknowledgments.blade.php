@@ -3,7 +3,8 @@
 <h2>{{ __('inspection_notifications.ack_title') }}</h2>
 <p>{{ __('inspection_notifications.ack_scope') }}</p>
 @if($acknowledgments->isEmpty())<p>{{ __('inspection_notifications.ack_none') }}</p>@else
-<table class="grid" style="width:100%;border-collapse:collapse"><thead><tr>
+{{-- Table-tools exemption (see TableToolsTest): append-only company receipt ledger rendered on screen AND inside the retained PDF (print/inspection-notification includes this partial); chronological order is the record and the PDF context has no JavaScript. --}}
+<table data-tt-exempt class="grid" style="width:100%;border-collapse:collapse"><thead><tr>
 @foreach(['event','company','actor','time'] as $column)<th style="text-align:start;border-bottom:1px solid #b8c4d5;padding:8px">{{ __('inspection_notifications.ack_'.$column) }}</th>@endforeach
 </tr></thead><tbody>
 @foreach($acknowledgments as $receipt)<tr data-ack-kind="{{ $receipt->event_kind }}">

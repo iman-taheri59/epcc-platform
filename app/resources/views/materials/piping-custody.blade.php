@@ -25,7 +25,8 @@
 @if($src)<h3>{{ __('piping_custody.source_snapshot') }}</h3><dl>@foreach($src as $key=>$value)<dt>{{ $key }}</dt><dd>{{ $value ?? '—' }}</dd>@endforeach<dt>{{ __('piping_custody.source_fingerprint') }}</dt><dd><bdi dir="ltr">{{ $record->source_fingerprint }}</bdi></dd></dl>@endif
 @else
 <h2>{{ __('piping_custody.register') }}</h2>
-<table><thead><tr>@foreach(['number','shipment_ref','quantity','unit'] as $field)<th>{{ __('piping_custody.'.$field) }}</th>@endforeach</tr></thead><tbody>
+{{-- Table-tools exemption (see TableToolsTest): this table is the shipment chooser inside the custody-record creation form, not a browsable register - filtering or sorting would hide rows the form is about to reference. --}}
+<table data-tt-exempt><thead><tr>@foreach(['number','shipment_ref','quantity','unit'] as $field)<th>{{ __('piping_custody.'.$field) }}</th>@endforeach</tr></thead><tbody>
 @forelse($records as $row)<tr><td><a href="{{ route('materials.piping-custody.show',['projectCode'=>$project->code,'receiptId'=>$row->id,'lang'=>$lang]) }}">CUST-{{ str_pad((string)$row->sequence,6,'0',STR_PAD_LEFT) }}</a></td><td>{{ $row->shipment_ref }}</td><td>{{ $row->quantity }}</td><td>{{ $row->unit }}</td></tr>@empty<tr><td colspan="4">{{ __('piping_custody.empty') }}</td></tr>@endforelse</tbody></table>
 @if($records->previousPageUrl())<a href="{{ $records->previousPageUrl() }}">{{ __('piping_custody.previous') }}</a>@endif @if($records->nextPageUrl())<a href="{{ $records->nextPageUrl() }}">{{ __('piping_custody.next') }}</a>@endif
 @if($writable)

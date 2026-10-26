@@ -26,7 +26,8 @@ $changed = array_filter(array_keys($historyFields), static fn($field)=>($before[
 <p>{{ __('inspection_notifications.draft_history_actor') }}: {{ $entry->actor_name }} · <code>{{ $entry->actor_id }}</code></p>
 <p>{{ __('inspection_notifications.draft_history_setting') }}: <code>{{ $entry->edit_setting_id }}</code></p>
 @if($changed === [])<p>{{ __('inspection_notifications.draft_history_unchanged') }}</p>@else
-<div style="overflow-x:auto"><table style="width:100%;table-layout:fixed;border-collapse:collapse"><thead><tr><th>{{ __('inspection_notifications.draft_history_field') }}</th><th>{{ __('inspection_notifications.draft_history_before') }}</th><th>{{ __('inspection_notifications.draft_history_after') }}</th></tr></thead><tbody>
+<div style="overflow-x:auto">{{-- Table-tools exemption (see TableToolsTest): field-level before/after diff of one recorded edit - row order is the field semantics - with its own server-side pagination (25-row pages). --}}
+<div style="overflow-x:auto"><table data-tt-exempt style="width:100%;table-layout:fixed;border-collapse:collapse"><thead><tr><th>{{ __('inspection_notifications.draft_history_field') }}</th><th>{{ __('inspection_notifications.draft_history_before') }}</th><th>{{ __('inspection_notifications.draft_history_after') }}</th></tr></thead><tbody>
 @foreach($changed as $field)<tr><th style="text-align:start;overflow-wrap:anywhere">{{ __('inspection_notifications.'.$historyFields[$field]) }}</th><td style="white-space:pre-wrap;overflow-wrap:anywhere;vertical-align:top">{{ $historyFormat($before[$field]??null) }}</td><td style="white-space:pre-wrap;overflow-wrap:anywhere;vertical-align:top">{{ $historyFormat($after[$field]??null) }}</td></tr>@endforeach
 </tbody></table></div>
 @endif

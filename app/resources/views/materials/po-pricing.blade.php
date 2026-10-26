@@ -9,7 +9,8 @@
 <form method="post" action="{{ route('procurement.orders.pricing',['projectCode'=>$project->code,'orderId'=>$order->id,'lang'=>$lang]) }}">@csrf
 <input type="hidden" name="pricing[content_hash]" value="{{ $pricingHash }}">
 <label>{{ __('po_pricing.currency') }} <input name="pricing[currency]" required maxlength="8" pattern="[A-Z]{3,8}" value="{{ $restoredPricing !== null ? $restoredPricing['currency'] : $order->currency }}"></label>
-<div class="po-scroll"><table><thead><tr><th>{{ $L('code') }}</th><th>{{ $L('quantity') }}</th><th>{{ $L('unit') }}</th><th>{{ $L('price') }}</th></tr></thead><tbody>
+<div class="po-scroll">{{-- Table-tools exemption (see TableToolsTest): pricing arithmetic/comparison grids - row order is the computation (same precedent as piping/config editor grids); filter/sort would corrupt what is being read and submitted. --}}
+<div class="po-scroll"><table data-tt-exempt><thead><tr><th>{{ $L('code') }}</th><th>{{ $L('quantity') }}</th><th>{{ $L('unit') }}</th><th>{{ $L('price') }}</th></tr></thead><tbody>
 @php($pricingIndex=0)
 @foreach($order->items as $priceLine)
 @if(!in_array($priceLine->id,$replacedIds,true))
@@ -26,10 +27,10 @@
 <section class="po-note"><h2>{{ __('po_pricing.history') }}</h2>
 @foreach($pricingHistory as $revision)<details><summary>{{ $num($revision->sequence) }} · {{ $revision->actor_name }} · {{ $revision->created_at }}</summary><p>{{ $revision->reason }}</p><p class="po-id"><bdi>{{ $revision->before_hash }} → {{ $revision->content_hash }}</bdi></p>@if($revision->comparison)
 <h3>{{ __('po_pricing.comparison') }}</h3><p>{{ __('po_pricing.comparison_note') }}</p>
-<div class="po-scroll"><table data-pricing-comparison="{{ $revision->id }}"><thead><tr><th></th><th>{{ __('po_pricing.before_value') }}</th><th>{{ __('po_pricing.after_value') }}</th></tr></thead><tbody>
+<div class="po-scroll"><table data-tt-exempt data-pricing-comparison="{{ $revision->id }}"><thead><tr><th></th><th>{{ __('po_pricing.before_value') }}</th><th>{{ __('po_pricing.after_value') }}</th></tr></thead><tbody>
 @foreach(['currency','total'] as $field)<tr><th>{{ __('po_pricing.'.$field) }}</th>@foreach(['before','after'] as $side)<td><bdi>{{ $revision->comparison[$side][$field] === null ? __('po_pricing.unknown_value') : $num($revision->comparison[$side][$field]) }}</bdi></td>@endforeach</tr>@endforeach
 </tbody></table></div>
-<div class="po-scroll"><table><thead><tr><th>{{ __('po_pricing.line_identity') }}</th><th>{{ __('po_pricing.before_value') }}</th><th>{{ __('po_pricing.after_value') }}</th></tr></thead><tbody>
+<div class="po-scroll"><table data-tt-exempt><thead><tr><th>{{ __('po_pricing.line_identity') }}</th><th>{{ __('po_pricing.before_value') }}</th><th>{{ __('po_pricing.after_value') }}</th></tr></thead><tbody>
 @foreach($revision->comparison['lines'] as $row)<tr><td>{{ $row['code'] }}<br><small class="po-id"><bdi>{{ $row['id'] }}</bdi></small></td>@foreach(['before','after'] as $side)<td><bdi>{{ $row[$side] === null ? __('po_pricing.unknown_value') : $num($row[$side]) }}</bdi></td>@endforeach</tr>@endforeach
 </tbody></table></div>
 @else<p>{{ __('po_pricing.comparison_unavailable') }}</p>@endif
