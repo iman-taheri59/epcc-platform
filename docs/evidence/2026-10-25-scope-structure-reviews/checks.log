@@ -1,0 +1,71 @@
+Predecessor archive entries: ['epcc-platform/app/app/Services/ScopeProposalEnvelopeService.php', 'epcc-platform/app/app/Services/ScopeStructureDeclarationService.php']
+UNCHANGED app/app/Services/ScopeStructureDeclarationService.php 1e3b463699825ca9e82527af3ee49fd8608176e5285fe19aed40d0692e1e2f58
+UNCHANGED app/app/Services/ScopeProposalEnvelopeService.php f70d877fef512c52849d84047545e4ac061660d2c11b5c45a14eac1200b022d6
+NOT IN PREDECESSOR ARCHIVE: app/Services/ScopeProposalEnvelopeReader.php
+UNCHANGED app/database/migrations/2026_10_24_120000_add_scope_structure_declarations.php 3327ca737aee2657885f17d504c34193bab93c2a5a2c8b954298cb86229a5670
+NOT IN PREDECESSOR ARCHIVE: database/migrations/2026_10_24_110000_add_scope_proposal_envelopes.php
+NOT IN PREDECESSOR ARCHIVE: routes/web.php
+LINK PASS docs/SCOPE-STRUCTURE-REVIEWS-FA.md
+LINK PASS docs/SCOPE-STRUCTURE-DECLARATIONS-EN.md
+LINK PASS docs/SCOPE-PROPOSAL-ENVELOPE-READ-EN.md
+LINK PASS docs/SCOPE-ADMISSION-AUTHORITY-EN.md
+LINK PASS docs/SCOPE-STRUCTURE-REVIEWS-EN.md
+LINK PASS docs/SCOPE-STRUCTURE-DECLARATIONS-FA.md
+LINK PASS docs/SCOPE-PROPOSAL-ENVELOPE-READ-FA.md
+LINK PASS docs/SCOPE-ADMISSION-AUTHORITY-FA.md
+
+UNCHANGED app/app/Services/ScopeProposalEnvelopeReader.php 3cd2406182aada839b7a243398073ed85ab689b5d2fa5112e61692d73b9dda38
+UNCHANGED app/app/Http/Controllers/ScopeProposalEnvelopeController.php f709cb7a67e0d7581af8747934f27fb4b1a6ab919eac8c5745039e0cb99c8ab1
+UNCHANGED app/routes/web.php c128ef2f7b0a48c15b868279ae4d4fbeb46204e4af80cef75297d25bdc48b5b7
+UNCHANGED app/tests/Feature/ScopeProposalEnvelopeReadTest.php 9bafcd1ed53cb0a90f074252deb26976fe54673830673979f88dad72f1dcd67f
+UNCHANGED app/database/migrations/2026_10_24_110000_add_scope_proposal_envelopes.php 3219275851312e5064e20b5bf43405b75b3db5b4277cb1ae880b9c44b36dc172
+--- previous:tests/Feature/ScopeStructureDeclarationTest.php
+
++++ current:tests/Feature/ScopeStructureDeclarationTest.php
+
+@@ -501,9 +501,15 @@
+
+         } catch (\RuntimeException $x) {
+             $this->assertSame('rollback declaration', $x->getMessage());
+         }$this->assertSame(0, $this->countRows('scope_structure_declarations'));
++        $reviews = require database_path('migrations/2026_10_25_100000_add_scope_structure_reviews.php');
++        $reviews->down();
+         $m = require database_path('migrations/2026_10_24_120000_add_scope_structure_declarations.php');
+-        $m->down();
+-        $m->up();
++        try {
++            $m->down();
++            $m->up();
++        } finally {
++            $reviews->up();
++        }
+         $this->assertSame($before, $this->asPars(fn () => DB::table('mto_scope_observations')->orderBy('id')->get()->toJson()));
+         $this->assertSame(0, $this->countRows('scope_structure_declarations'));
+         $this->assertFalse($this->declaration($e)['ready_to_admit']);
+ONE NEW CHILD ROLLBACK/RESTORE FIXTURE tests/Feature/ScopeStructureDeclarationTest.php
+--- previous:tests/Feature/ScopeProposalEnvelopeTest.php
+
++++ current:tests/Feature/ScopeProposalEnvelopeTest.php
+
+@@ -433,6 +433,8 @@
+
+         $this->grants();
+         $before = $this->asPars(fn () => DB::table('mto_scope_observations')->orderBy('id')->get()->toJson());
+         // Roll back the newer dependent declaration FK before testing this exact parent migration.
++        $reviews = require database_path('migrations/2026_10_25_100000_add_scope_structure_reviews.php');
++        $reviews->down();
+         $child = require database_path('migrations/2026_10_24_120000_add_scope_structure_declarations.php');
+         $child->down();
+         $m = require database_path('migrations/2026_10_24_110000_add_scope_proposal_envelopes.php');
+@@ -441,6 +443,7 @@
+
+             $m->up();
+         } finally {
+             $child->up();
++            $reviews->up();
+         }
+         $this->assertSame($before, $this->asPars(fn () => DB::table('mto_scope_observations')->orderBy('id')->get()->toJson()));
+         $this->assertSame(0, $this->countRows());
+ONE NEW CHILD ROLLBACK/RESTORE FIXTURE tests/Feature/ScopeProposalEnvelopeTest.php
+
+FINAL new guide local links PASS; predecessor archive SHA unchanged; private process private-structure-review-test-da-e04b489a stop_process status=stopped.

@@ -1,0 +1,80 @@
+{
+  "date_local": "2026-10-20",
+  "approved_choice": "next_notification_step=date_time_ui",
+  "scope": "progressive native Gregorian date/time + explicit offset controls, visible canonical value/manual/no-JS fallback, readable web lines; no schema/API/service/role/new endpoint",
+  "related_php": {
+    "tests": 53,
+    "assertions": 740,
+    "seconds": 96.84,
+    "skipped": 0,
+    "log": "final-focused.log",
+    "timing": "after UI functionality, before final RTL-hint-only isolation correction"
+  },
+  "post_rtl_hint_php_subset": {
+    "tests": 4,
+    "assertions": 81,
+    "seconds": 9.151,
+    "log": "final-ui-feature.log",
+    "nonadditive_subset": true
+  },
+  "browser": {
+    "cases": 18,
+    "assertions": 149,
+    "status": "PASS",
+    "browser": "real Chromium via Playwright",
+    "timezones": [
+      "Asia/Tehran",
+      "America/New_York",
+      "Pacific/Auckland"
+    ],
+    "scope": [
+      "en/Asia/Tehran: fresh/helpers/serialization/payload",
+      "en/Asia/Tehran: partial/clear/seconds",
+      "en/Asia/Tehran: direct entry/roundtrip/invalid",
+      "en/Asia/Tehran: original edit prefill",
+      "en/America/New_York: fresh/helpers/serialization/payload",
+      "en/America/New_York: partial/clear/seconds",
+      "en/America/New_York: direct entry/roundtrip/invalid",
+      "en/America/New_York: original edit prefill",
+      "fa/Asia/Tehran: fresh/helpers/serialization/payload",
+      "fa/Asia/Tehran: partial/clear/seconds",
+      "fa/Asia/Tehran: direct entry/roundtrip/invalid",
+      "fa/Asia/Tehran: original edit prefill",
+      "fa/America/New_York: fresh/helpers/serialization/payload",
+      "fa/America/New_York: partial/clear/seconds",
+      "fa/America/New_York: direct entry/roundtrip/invalid",
+      "fa/America/New_York: original edit prefill",
+      "no-JS: editable canonical fallback/payload",
+      "restoration: malformed value preserved for correction"
+    ],
+    "not_end_to_end_http_submission": true,
+    "fixtures": "actual Laravel-rendered synthetic pages; CSRF tokens scrubbed; offline DOM/FormData, no server mutations"
+  },
+  "static": "3-file Pint/lint PASS; Blade compile/clear PASS; git diff --check PASS; new guide links resolve",
+  "runtime": "private rebuilt PHP8.4/PostgreSQL17/Chromium, app role epcc NOSUPERUSER NOBYPASSRLS; FORCE RLS notification tables; Unix socket only",
+  "database_stopped": "pg_ctl: no server running\npg_ctl_exit=3\n",
+  "limits": "Offline real Chromium DOM/native validation/FormData, not authenticated browser E2E HTTP posting; separate PHP actual-route checks. Not complete accessibility/physical device/all-browser/load/current-CI/full-suite/production acceptance. Browser locale can format calendar/clock presentation; it never determines stored timezone. Server chronology validation unchanged.",
+  "intermediate_error": "Initial Playwright browser harness used javascript_enabled instead of java_script_enabled; corrected and rerun all browser cases. Retained log is not a passing run.",
+  "full_suite": false,
+  "production_deployed": false,
+  "source_sha256": {
+    "app/resources/views/inspection-notifications/time-field.blade.php": "923f92678311d6c209fab53d19ea399e979026eac6ecc467921878411380581e",
+    "app/resources/views/inspection-notifications/time-controls-script.blade.php": "f3ddfc7b8a122e7030da7430843bacd559a8933d7639fbec5a3b9a1d1f0c683d",
+    "app/resources/views/inspection-notifications/index.blade.php": "925613d88e1ce19f360d33ad64d7ae1a3f3e6af0e620c867d68f38566255c06c",
+    "app/resources/views/inspection-notifications/edit.blade.php": "1fc1198a75e7b2389a7a7925335cf070e92a41226e5075dbd1d20fa318c2431c",
+    "app/resources/views/inspection-notifications/schedule.blade.php": "823529f2283ed401f1332bad24658829c4f37428929679979c1af72de64a574e",
+    "app/resources/views/print/inspection-notification.blade.php": "5091e47f42b127fe15e1af2b9171739e0c827444e6af86ce96ffc3582e288008",
+    "app/lang/en/inspection_notifications.php": "01845e92a355be734d828f60dac35d1ad0ef0deb46edd9266e60485e2fb115d3",
+    "app/lang/fa/inspection_notifications.php": "fe4528544ea6721ad39f8e3ed1cd73de193dc9b96a7e63680d4447c2271c2714",
+    "app/tests/Feature/InspectionNotificationTimeUiTest.php": "464642b53ae35a164d05f63aec33a5bcf677f0324dbf743b3d3cd284f3fdda20",
+    "scripts/tests/inspection_notification_time_ui.py": "5991902098b1d54c195ce71a0e93cc23653834646ece0678d022802db652dba0"
+  },
+  "fixture_artifact_sha256": {
+    "edit-fa.html": "89438dfcc3a5583995458f60c4ba5a1a28095d16d2c798d626be5de26505d3cf",
+    "edit-en.html": "f0a347d4e41fe68946d46e23b1515ca0a998501b146cf754c7a387fcb95c6e60",
+    "time-controls-fa-mobile.png": "5d517d336ff4944f1d55b4f324dc6e4d918e589b61bbd3d5422501a81757b05d",
+    "register-en.html": "bd4ea32cf461923382bf0b6286d3f179f98eef999f7fe4ac01d6f5b564338b1d",
+    "register-fa.html": "63ade985b3e5f35a4129b4c7c3efed81065fa16c37813730c78be06c3398439d",
+    "invalid-restored-fa.html": "d6070cc251d5e3411c99ea94c31df9392284c21a8676872cb796429c0fe74484"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-19",
+  "status": "TARGETED_VERIFIED_CONTROLLED_MR_LINKED_DRAFT_PRICING_ONLY",
+  "accepted_owner_decisions": {
+    "po_draft_pricing_authority": "original_drafter_live_grant",
+    "mr_issue_allocation_scope": "full_copy_issue_allocation"
+  },
+  "implementation": {
+    "original_drafter_own_buyer_complete_pricing": true,
+    "current_draft_authority_required": true,
+    "append_only_before_after_pricing_audit": true,
+    "source_mutation": false,
+    "source_reservation": false,
+    "source_issuance_allocation": false,
+    "mr_linked_financial_approval": false,
+    "mr_linked_issuance": false,
+    "partial_purchasing": false,
+    "new_roles_or_mto_rights": false
+  },
+  "verification": {
+    "tests": 55,
+    "assertions": 487,
+    "seconds": 92.807,
+    "pass": true,
+    "new_pricing_upgrade_cases": 13,
+    "log": "related.log",
+    "lint_files": 8,
+    "lint_pass": true,
+    "pint_pass": true,
+    "diff_check_pass": true
+  },
+  "database": {
+    "role": "epcc",
+    "non_superuser": true,
+    "no_bypassrls": true,
+    "encoding": "UTF8",
+    "private_unix_socket_only": true,
+    "disposable_test_database": true,
+    "stopped_after_verification": true
+  },
+  "not_claimed": [
+    "full_suite",
+    "recovery",
+    "browser_acceptance",
+    "two_connection_contention_revocation",
+    "crash",
+    "current_CI",
+    "production_migration",
+    "deployment",
+    "commit",
+    "push",
+    "universal_sql_per_user_RBAC_or_legacy_write_audit",
+    "source_allocation_delivery"
+  ],
+  "next": "Implement the accepted full-copy atomic issue allocation/approved-source quantity ceiling and ambiguous legacy commitment reconciliation; keep MR execution blocked until verified. Do not re-ask the accepted decisions.",
+  "historical_evidence_preserved": [
+    "../2026-10-19-po-execution-authority/",
+    "../2026-10-19-po-versioned-execution/",
+    "../2026-10-19-po-mr-draft-link/"
+  ],
+  "source_sha256": {
+    "app/app/Services/PurchaseOrderPricingService.php": "e23fff09d1a0a606e626ced65691f9ddcbee2848a27881114127dd3c62a2c3ba",
+    "app/app/Http/Controllers/MaterialsController.php": "f631c5169c0c73106dd19a6ee70493e6cc602d1a9b7e47e541a0d08732b1ce06",
+    "app/routes/web.php": "6ba6bef10533f0219f6b025cfb5ed3123446f9ef87f9bba449c77670c630299b",
+    "app/database/migrations/2026_10_19_160000_add_controlled_po_draft_pricing.php": "6cfce6541d888bb8dd277f08a548502fa5a9d5fd8ec6ae73f336da01a5368305",
+    "app/lang/en/po_pricing.php": "4a32aee66d4de1dde58f4b220c6254adbd56e6944ab0143a40dec31f7cb1c55d",
+    "app/lang/fa/po_pricing.php": "1e71e32c0cb91db2b5855c5b349d40e28ddd2a84c425b028c370f6b9913992de",
+    "app/tests/Feature/PurchaseOrderPricingTest.php": "6f59c4d30fe4e9cd9df9d8c711f4775aeee5a3d9a4f9af59dbb5ccae47f6304b",
+    "app/tests/Feature/PurchaseOrderPricingMigrationTest.php": "a13509419d54791695660af4992f539298aeffb085d0b20daaa2fa9af02d1d24",
+    "app/resources/views/materials/purchase-order.blade.php": "8a95c9c109ed62ce528e2f08b9a81fda646a63e9f4591e40066122ce6cf25e05",
+    "app/resources/views/materials/po-pricing.blade.php": "120585799145cbf55c9476817cf7c906e817856fc9abacdcd5318cccf9a1574a"
+  }
+}

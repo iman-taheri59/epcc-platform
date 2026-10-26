@@ -1,0 +1,24 @@
+
+  [90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PipingGrnTest[22m [90m>[39m all citations…  [41;1m ValidationException [49;22m  
+[39;1m  A cited version is unavailable, not frozen, incomplete or fails stored-byte integrity. No new decision was saved.[39;22m
+
+  at [32m/home/user/.cache/cde-read-vendor/laravel/framework/src/Illuminate/Validation/ValidationException.php[39m:[32m70[39m
+     66▕      * @return static
+     67▕      */
+     68▕     public static function withMessages(array $messages)
+     69▕     {
+  ➜  70▕         return new static(tap(ValidatorFacade::make([], []), function ($validator) use ($messages) {
+     71▕             foreach ($messages as $key => $value) {
+     72▕                 foreach (Arr::wrap($value) as $message) {
+     73▕                     $validator->errors()->add($key, $message);
+     74▕                 }
+
+  [33m1   [39m[39;1m/home/user/.cache/cde-read-vendor/laravel/framework/src/Illuminate/Validation/ValidationException.php[39;22m:[39;1m70[39;22m
+  [33m2   [39m[39;1mapp/Services/PipingQaDecisionService.php[39;22m:[39;1m196[39;22m
+
+
+  [90mTests:[39m    [31;1m1 failed[39;22m[90m,[39m[39m [39m[32;1m6 passed[39;22m[90m,[39m[39m [2m1 pending[22m[39m[90m (45 assertions)[39m
+  [90mDuration:[39m [39m25.62s[39m
+

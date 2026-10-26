@@ -1,0 +1,32 @@
+
+  ✓✓✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   .................................... 3 files, 3 style issues fixed  
+  ✓ app/app/Services/ScopeEvidencePreflightService.php single_space_around_co…  
+  ✓ app/lang/en/scope_evidence_preflight.php blank_line_after_opening_tag, bi…  
+  ✓ app/lang/fa/scope_evidence_preflight.php blank_line_after_opening_tag, bi…  
+
+
+  ✓✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   .................................... 2 files, 2 style issues fixed  
+  ✓ app/app/Services/ScopeEvidencePreflightService.php method_argument_space,…  
+  ✓ app/tests/Feature/ScopeEvidencePreflightTest.php class_attributes_separat…  
+
+
+  ✓✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   .................................... 2 files, 2 style issues fixed  
+  ✓ app/app/Services/ScopeEvidencePreflightService.php control_structure_brac…  
+  ✓ app/tests/Feature/ScopeEvidencePreflightTest.php class_attributes_separat…  
+
+
+  ✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   ...................................... 1 file, 1 style issue fixed  
+  ✓ app/tests/Feature/ScopeEvidencePreflightTest.php fully_qualified_strict_t…  
+

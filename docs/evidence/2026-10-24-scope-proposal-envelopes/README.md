@@ -1,0 +1,9 @@
+# Source-bound unverified narrative envelopes —2026-10-24
+
+final-affected.log: authoritative57 tests/292 assertions PASS,122.57s (22 new,17 internal authority,18 authority HTTP). Focused/affected only, no full regression. All earlier test runs overlap. initial.log/migrate-testing.log: self-FK before primary key ordering; fixed to add self-FK after table creation. forward.log: migrate:fresh leaves functions, corrected to CREATE OR REPLACE. forward-2.log earlier17/76 pass. focused.log21 pass/one role-test import missing, corrected ProjectMembership import. migrate.log: unqualified env selected stale historical .env socket, failed to connect, no DB action; subsequent commands used explicit testing/private DB.
+
+static.log: five new PHP Pint/lint+whitespace. rls-audit.log: ordinary epcc role,2 FORCE-RLS tables,4 invoker functions,FK/CHECK/unique constraints. checks.log: predecessor executable hashes unchanged and new links resolve. No dossier browser/HTTP endpoint or capture, human UI/positive review/technical package/admission writer, new default grant, source mutation, effective-demand/commitment/reservation/PO/stock movement. Narrow single-scope/same-company narrative storage only; no arbitrary actor claims from client.
+
+Two ordinary PDO connections test project serialization, blocked insert55P03, first commit and stale retry23514; no claim of universal revocation linearizability. Private socket-only PG stopped after verification. No production migration/data/grant,CI/deployment/commit/push. Up empty additive tables; down destroys new envelope history, not a history-preserving production downgrade. Dependent source package excludes runtime/vendor/DB; previous archives not regenerated.
+
+Final static check initially reported a remaining Pint style issue in the new service; a second format-only normalization was applied and five-file Pint plus syntax/whitespace checks passed. No logic change or unnecessary full test repeat.

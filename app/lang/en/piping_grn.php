@@ -1,0 +1,5 @@
+<?php
+
+return ['title' => 'Controlled piping GRN / accepted-stock credit', 'boundary' => 'Whole accepted receipt only. Independent current warehouse grant, exact current QA/QC/basis and all evidence access are required. This separate controlled ledger is not legacy stock; issue/return/reversal/preservation remain inactive. No automatic PO-state or MTO/reservation update.',
+    'blocked' => 'GRN blocked: recheck current authority, accepted QA/QC/basis, complete visible and intact evidence, exact source/unit, ordered quantity, and legacy reconciliation. A posted receipt requires a separate controlled correction workflow; do not edit or repost.',
+    'post' => 'Post GRN and accepted-stock credit', 'saved' => 'Controlled GRN and one accepted-stock credit recorded.', 'location' => 'Accepted storage location', 'reason' => 'Warehouse posting reason', 'confirm' => 'I confirm the whole physical receipt quantity and its accepted storage location.', 'none' => 'No GRN posted.', 'closed' => 'Posting unavailable. No stock credit is implied by this page.', 'back' => 'Back to physical receipt', 'credit' => 'Accepted-stock credit (ordinary issue remains inactive)'];

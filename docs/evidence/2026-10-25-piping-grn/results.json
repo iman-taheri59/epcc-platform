@@ -1,0 +1,12 @@
+{
+  "new_grn_tests": 21,
+  "affected_suites": 7,
+  "final_tests_passed": 133,
+  "final_assertions": 1066,
+  "seconds": 443.78,
+  "full_regression": false,
+  "deployment": false,
+  "legacy_reconciliation": false,
+  "controlled_issue": false,
+  "git_commit_or_push": false
+}

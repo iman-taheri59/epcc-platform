@@ -1,0 +1,26 @@
+ current_user | rolsuper | rolbypassrls 
+--------------+----------+--------------
+ epcc         | f        | f
+(1 row)
+
+                 relname                 | relrowsecurity | relforcerowsecurity 
+-----------------------------------------+----------------+---------------------
+ inspection_itp_stages                   | t              | t
+ inspection_notification_acknowledgments | t              | t
+ inspection_notification_cancellations   | t              | t
+ inspection_notification_draft_history   | t              | t
+ inspection_notification_settings        | t              | t
+ inspection_notifications                | t              | t
+(6 rows)
+
+                proname                 | prosecdef 
+----------------------------------------+-----------
+ epcc_guard_notification_acknowledgment | f
+ epcc_guard_notification_cancellation   | f
+(2 rows)
+
+ listen_addresses 
+------------------
+ 
+(1 row)
+

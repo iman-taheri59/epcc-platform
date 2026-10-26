@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="/home/user/epcc-platform/app/phpunit.xml" tests="11" assertions="238" errors="0" failures="0" skipped="0" time="17.052637">
+    <testsuite name="Feature" tests="11" assertions="238" errors="0" failures="0" skipped="0" time="17.052637">
+      <testsuite name="Tests\Feature\ProcurementCategoryMigrationTest" file="/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryMigrationTest.php" tests="1" assertions="118" errors="0" failures="0" skipped="0" time="1.741410">
+        <testcase name="test_archived_populated_upgrade_preserves_preexisting_authorized_drafts_and_does_not_guess_category" file="/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryMigrationTest.php" line="22" class="Tests\Feature\ProcurementCategoryMigrationTest" classname="Tests.Feature.ProcurementCategoryMigrationTest" assertions="118" time="1.741410"/>
+      </testsuite>
+      <testsuite name="Tests\Feature\ProcurementCategoryTest" file="/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php" tests="10" assertions="120" errors="0" failures="0" skipped="0" time="15.311227">
+        <testcase name="test_category_is_required_and_uses_mto_vocabulary_not_discipline_for_both_entry_paths" file="/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php" line="83" class="Tests\Feature\ProcurementCategoryTest" classname="Tests.Feature.ProcurementCategoryTest" assertions="15" time="1.653988"/>
+        <testcase name="test_all_eight_categories_allow_separate_documents_and_repeated_same_category" file="/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php" line="100" class="Tests\Feature\ProcurementCategoryTest" classname="Tests.Feature.ProcurementCategoryTest" assertions="37" time="1.915092"/>
+        <testcase name="test_mixed_explicit_line_categories_and_mismatching_catalogue_identity_are_rejected" file="/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php" line="117" class="Tests\Feature\ProcurementCategoryTest" classname="Tests.Feature.ProcurementCategoryTest" assertions="14" time="1.490168"/>
+        <testcase name="test_valid_identity_is_persisted_and_wrong_code_unit_discipline_or_withdrawal_is_rejected" file="/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php" line="131" class="Tests\Feature\ProcurementCategoryTest" classname="Tests.Feature.ProcurementCategoryTest" assertions="13" time="1.603795"/>
+        <testcase name="test_foreign_project_identity_cannot_be_used_even_for_a_shared_participant" file="/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php" line="156" class="Tests\Feature\ProcurementCategoryTest" classname="Tests.Feature.ProcurementCategoryTest" assertions="3" time="1.380281"/>
+        <testcase name="test_bilingual_forms_register_filter_details_and_manual_basis" file="/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php" line="167" class="Tests\Feature\ProcurementCategoryTest" classname="Tests.Feature.ProcurementCategoryTest" assertions="22" time="1.728591"/>
+        <testcase name="test_catalogue_basis_is_visible_for_both_document_types" file="/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php" line="184" class="Tests\Feature\ProcurementCategoryTest" classname="Tests.Feature.ProcurementCategoryTest" assertions="5" time="1.505386"/>
+        <testcase name="test_sql_backstops_prevent_reclassification_and_wrong_category_line_attribution" file="/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php" line="196" class="Tests\Feature\ProcurementCategoryTest" classname="Tests.Feature.ProcurementCategoryTest" assertions="5" time="1.355869"/>
+        <testcase name="test_existing_trusted_approved_mr_conversion_preserves_category_and_sql_rejects_wrong_source" file="/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php" line="216" class="Tests\Feature\ProcurementCategoryTest" classname="Tests.Feature.ProcurementCategoryTest" assertions="3" time="1.400408"/>
+        <testcase name="test_category_is_preserved_when_existing_amendment_service_creates_successor" file="/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php" line="232" class="Tests\Feature\ProcurementCategoryTest" classname="Tests.Feature.ProcurementCategoryTest" assertions="3" time="1.277648"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>

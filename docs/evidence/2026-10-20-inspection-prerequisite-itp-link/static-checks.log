@@ -1,0 +1,20 @@
+
+  .......
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ........................................................... 7 files  
+
+No syntax errors detected in app/Support/InspectionNotificationPrerequisiteStage.php
+No syntax errors detected in app/Services/InspectionNotificationService.php
+No syntax errors detected in lang/en/inspection_notifications.php
+No syntax errors detected in lang/fa/inspection_notifications.php
+No syntax errors detected in tests/Unit/InspectionNotificationPrerequisiteStageTest.php
+No syntax errors detected in tests/Feature/InspectionNotificationPrerequisiteTest.php
+No syntax errors detected in tests/Feature/InspectionNotificationActivityWindowTest.php
+
+
+   INFO  Blade templates cached successfully.  
+
+
+   INFO  Compiled views cleared successfully.  
+

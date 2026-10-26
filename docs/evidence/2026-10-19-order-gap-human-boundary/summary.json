@@ -1,0 +1,84 @@
+{
+  "date": "2026-10-19",
+  "status": "TARGETED_VERIFIED_CONTROLLED_MR_HUMAN_ORDER_GAP_ESCAPE_CLOSED",
+  "references": [
+    "ADR-015",
+    "ADR-033",
+    "ADR-035",
+    "ADR-037",
+    "ADR-038",
+    "ADR-039",
+    "ADR-040"
+  ],
+  "reproduction": {
+    "confirmed_actual_HTTP_quantity_successor_before_fix": true,
+    "expected_original_line_count": 2,
+    "actual_unwanted_line_count": 3,
+    "log": "reproduction.log",
+    "production_incident_claim": false
+  },
+  "implementation": {
+    "explicit_human_attribute_amend_entry_points": true,
+    "fresh_locked_parent_source_markers": true,
+    "protected_class": "author_policy_id != null AND requisition_id != null",
+    "protected_class_all_states": true,
+    "JSON_validation_refusal_422": true,
+    "bilingual_protected_forms_hidden": true,
+    "trusted_legacy_primitives_preserved": true,
+    "accepted_original_drafter_complete_pricing_retained": true,
+    "scope_allocation_unchanged": true,
+    "new_roles_or_MTO_authority": false,
+    "new_schema_migration": false,
+    "source_mutation_reservation_reconciliation_release": false
+  },
+  "verification": {
+    "tests": 77,
+    "assertions": 764,
+    "seconds": 141.914,
+    "pass": true,
+    "log": "related.log",
+    "new_cases": 6,
+    "focused_new_cases_assertions": 82,
+    "focused_log": "focused.log",
+    "suites": [
+      "PurchaseOrderPricingTest",
+      "OrderGapTest",
+      "PurchaseOrderMrAllocationTest",
+      "PurchaseOrderExecutionTest"
+    ],
+    "seven_table_no_write_snapshot": true,
+    "existing_SQL_isolation_and_real_connection_regressions_included": true,
+    "lint_files": 4,
+    "lint_pass": true,
+    "pint_pass": true,
+    "diff_check_pass": true,
+    "full_suite_run": false,
+    "exhaustive_concurrency_certification": false
+  },
+  "database": {
+    "role": "epcc",
+    "non_superuser": true,
+    "no_bypassrls": true,
+    "encoding": "UTF8",
+    "unix_socket_only": true,
+    "disposable": true,
+    "runtime_cache_restored_this_turn": true,
+    "stopped_after_verification": true
+  },
+  "implementation_sha256": {
+    "app/app/Services/OrderGapService.php": "8caaebf99a6555f912ebc3780c3bab8af2d184959fb703baa4bb090d37d4e13d",
+    "app/app/Http/Controllers/OrderGapController.php": "9bd1e36a8887feee4b3b3b0e4ef274020ed2a1fcab19eb03efefc6f7311ae92c",
+    "app/resources/views/procurement/order-gap.blade.php": "3bd04ba84520ca73d3fb139b496a316e49115039467b113bcdb767e58520ec8c",
+    "app/tests/Feature/OrderGapTest.php": "e04dbf958a4e1d6d9379f3205e789a1068a0dd12943f86ee0fb75ddbdaa13579",
+    "app/tests/Feature/PurchaseOrderPricingTest.php": "6362a7e8f948b47e0d326d3d92b056222cbc4dbf2fa7bc57de08da616bf1c3a3"
+  },
+  "deferred": [
+    "legacy/manual OrderGap actor-authority redesign",
+    "new MTO access/admission rights",
+    "manual human draft editing workflow boundaries",
+    "controlled post-issue corrections",
+    "write-based legacy commitment reconciliation",
+    "raw SQL multi-project/revocation/crash/retry certification"
+  ],
+  "production_migration_deployment_commit_push": false
+}

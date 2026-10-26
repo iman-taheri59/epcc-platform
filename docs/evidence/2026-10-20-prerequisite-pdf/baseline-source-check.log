@@ -1,0 +1,7 @@
+app/app/Services/InspectionNotificationService.php: OK
+app/app/Support/InspectionPrerequisiteFilters.php: OK
+app/lang/en/inspection_notifications.php: OK
+app/lang/fa/inspection_notifications.php: OK
+app/resources/views/inspection-notifications/prerequisite-register.blade.php: OK
+app/tests/Unit/InspectionPrerequisiteFiltersTest.php: OK
+app/tests/Feature/InspectionPrerequisiteNoticeStateFilterTest.php: OK

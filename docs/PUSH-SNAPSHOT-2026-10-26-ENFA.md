@@ -1,0 +1,11 @@
+# Repository snapshot / تصویر وضعیت مخزن — 2026-10-26
+
+User requested all current project work on a new branch, not a direct main update. Snapshot includes accumulated implementation, bilingual decisions/guides, focused historical test evidence and current lifecycle UML. Piping issue D1–D3 remain proposals, not approved policy or implementation. GRN is implemented/workspace-tested, not a production rollout or permission to consume.
+
+Pre-push review scanned all candidate files for GitHub token/private-key/AWS-key patterns, environment files and credential-bearing URL/Bearer patterns. The only additional URL hits were documented token placeholders in HANDOFF.md, not credentials. No credential file or .env was staged; app/.env.example is the existing template. The transient root qa-migrate.log was excluded. Eleven unchanged scripts had executable bits restored to HEAD, avoiding accidental sandbox permission regressions.
+
+Historical raw evidence logs retain original bytes, ANSI output and whitespace for hash fidelity. Cached whitespace check reports those log-format artifacts and one existing blank-line whitespace warning in MtoReconciliationEvidenceTest.php; no claim that this entire accumulated snapshot passes a fresh full-suite/style run. Most recent relevant GRN affected evidence: 133 tests / 1066 assertions, plus overlapping 1/13 HTTP after formatting; design/UML changes have no new runtime test claim. No deployment, merge, force-push or release is authorized by this snapshot.
+
+کاربر انتشار تمام کارهای فعلی روی شاخه جدید را خواسته است؛ نه تغییر مستقیم main. کد، تصمیم‌ها و راهنماهای دو زبانه، شواهد آزمون‌های قبلی و UML فعلی در این تصویر قرار می‌گیرند. D1–D3 خروج همچنان پیشنهادند. اجرای GRN به معنای استقرار یا مجوز مصرف نیست.
+
+بررسی اولیه الگوهای توکن/کلید، فایل محیط و URL دارای اعتبارنامه انجام شد؛ تطبیق‌های HANDOFF صرفاً placeholder مستندات بودند. فایل محرمانه یا .env وارد commit نشده؛ لاگ موقت ریشه حذف شده از محدوده commit است. مجوز اجرایی۱۱ اسکریپت با محتوای بدون تغییر به HEAD برگردانده شد. بایت اصلی لاگ‌های تاریخی برای حفظ hash تغییر نکرده است؛ هشدار whitespace آن‌ها و یک خط سفید آزمون قدیمی به معنی ادعای موفقیت بررسی کامل سبک/آزمون کل snapshot نیست. نتیجه مرتبط اخیر GRN:۱۳۳/۱۰۶۶ و اجرای هم‌پوشان HTTP۱/۱۳؛ طراحی/UML آزمون runtime جدید ندارد. استقرار، merge، force-push یا release انجام نمی‌شود.

@@ -1,0 +1,11 @@
+epcc_test|epcc|f|f
+inspection_itp_stages|t|t
+inspection_notification_settings|t|t
+inspection_notifications|t|t
+activity_end_at|timestamp with time zone|YES
+activity_end_input|character varying|YES
+activity_start_at|timestamp with time zone|YES
+activity_start_input|character varying|YES
+scheduled_at|timestamp with time zone|YES
+scheduled_input|character varying|YES
+notification_activity_schedule

@@ -1,0 +1,27 @@
+
+  ..............
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   .......................................................... 14 files  
+
+No syntax errors detected in app/Rules/InspectionActivityEndAfterStart.php
+No syntax errors detected in app/Support/InspectionNotificationInput.php
+No syntax errors detected in app/Support/InspectionNotificationSchedule.php
+No syntax errors detected in app/Support/InspectionNotificationPrintData.php
+No syntax errors detected in app/Services/InspectionNotificationService.php
+No syntax errors detected in app/Http/Controllers/InspectionNotificationController.php
+No syntax errors detected in lang/en/inspection_notifications.php
+No syntax errors detected in lang/fa/inspection_notifications.php
+No syntax errors detected in database/migrations/2026_10_20_110000_add_inspection_notification_activity_window.php
+No syntax errors detected in tests/Feature/InspectionNotificationActivityWindowTest.php
+No syntax errors detected in tests/Feature/InspectionNotificationDraftEditTest.php
+No syntax errors detected in tests/Feature/InspectionNotificationTest.php
+No syntax errors detected in tests/Feature/InspectionNotificationPdfTest.php
+No syntax errors detected in tests/Unit/InspectionNotificationInputTest.php
+
+
+   INFO  Blade templates cached successfully.  
+
+
+   INFO  Compiled views cleared successfully.  
+

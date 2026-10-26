@@ -1,0 +1,86 @@
+[
+  {
+    "id": "D01",
+    "file": "app/app/Services/DocumentRegister.php",
+    "line": 62,
+    "matched": "->max('sequence')",
+    "classification": "static present; historical collision separately documented"
+  },
+  {
+    "id": "D02-lot",
+    "file": "app/app/Services/WarehouseService.php",
+    "line": 207,
+    "matched": "'purchase_order_id' => $po->id",
+    "classification": "header reference present in receipt lot creation"
+  },
+  {
+    "id": "D02-lot-line",
+    "file": "app/app/Services/WarehouseService.php",
+    "method": "receive",
+    "classification": "static: PO-item FK omitted in reviewed receipt method"
+  },
+  {
+    "id": "D02-site",
+    "file": "app/app/Services/WarehouseService.php",
+    "line": 471,
+    "matched": "->where('item_code', $line->item_code)",
+    "classification": "static site-delivery credit by code; not newly runtime reproduced"
+  },
+  {
+    "id": "D02-progress",
+    "file": "app/app/Services/WarehouseService.php",
+    "line": 573,
+    "matched": "$po->items()->sum('quantity')",
+    "classification": "static unbucketed quantity sum; not newly runtime reproduced"
+  },
+  {
+    "id": "D02-coverage",
+    "file": "app/app/Services/OrderGapService.php",
+    "line": 35,
+    "matched": "private const EFFECTIVE_STATES",
+    "classification": "static RECEIVED excluded; ADR-032 remains proposed"
+  },
+  {
+    "id": "D03-PO",
+    "file": "app/routes/web.php",
+    "line": 155,
+    "matched": "name('procurement.orders.create')",
+    "classification": "human route present; not new HTTP execution"
+  },
+  {
+    "id": "D03-inspection",
+    "file": "app/routes/web.php",
+    "line": 162,
+    "matched": "name('procurement.orders.inspections.create')",
+    "classification": "human route present; not new HTTP execution"
+  },
+  {
+    "id": "D03-receipt",
+    "scope": [
+      "app/app/**/*.php",
+      "app/routes/**/*.php"
+    ],
+    "classification": "no ->receive( caller found; no claim about external integrations"
+  },
+  {
+    "id": "D04",
+    "file": "app/app/Services/MtoScopeReadinessService.php",
+    "line": 18,
+    "matched": "'status' => 'UNRESOLVED'",
+    "classification": "diagnostic status; no operational selector activation"
+  },
+  {
+    "id": "D04-board",
+    "file": "app/app/Services/OrderGapService.php",
+    "line": 279,
+    "matched": "AcceptedMtoRow::query()",
+    "classification": "gross board reads accepted rows; diagnostic readiness not assumed connected"
+  },
+  {
+    "id": "D07-testpack",
+    "file": "app/routes/web.php",
+    "line": 81,
+    "matched": "name('piping.test-packs.store')",
+    "classification": "partial test-pack route present, not full hydrotest acceptance"
+  }
+]

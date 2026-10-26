@@ -1,0 +1,24 @@
+
+  [90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\ScopeEvidencePreflightTest[22m [90m>[39m independent cde… [41;1m Error [49;22m  
+[39;1m  Class "Tests\Feature\Plan" not found[39;22m
+
+  at [32mtests/Feature/ScopeEvidencePreflightTest.php[39m:[32m512[39m
+    508▕     {
+    509▕         [$d,$refs] = $this->readyCandidate();
+    510▕         $this->asPars(function () {
+    511▕             $plan = $this->reader->company->plan;
+  ➜ 512▕             Plan::whereKey($plan->id)->update(['modules' => ['core', 'proc']]);
+    513▕         });
+    514▕         Storage::shouldReceive('disk')->never();
+    515▕         $this->opaque(fn () => $this->preflight($d, $refs));
+    516▕     }
+
+  [33m1   [39m[39;1mtests/Feature/ScopeEvidencePreflightTest.php[39;22m:[39;1m512[39;22m
+  [33m2   [39m[39;1mapp/Support/TenantContext.php[39;22m:[39;1m99[39;22m
+
+
+  [90mTests:[39m    [31;1m1 failed[39;22m[90m,[39m[39m [39m[32;1m53 passed[39;22m[90m (264 assertions)[39m
+  [90mDuration:[39m [39m124.29s[39m
+

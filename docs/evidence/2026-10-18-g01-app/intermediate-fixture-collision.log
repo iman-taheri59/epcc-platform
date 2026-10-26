@@ -1,0 +1,26 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+..................F.............................................. 65 / 84 ( 77%)
+...................                                               84 / 84 (100%)
+
+Time: 01:56.039, Memory: 91.00 MB
+
+There was 1 failure:
+
+1) Tests\Feature\MtoAcceptanceJournalTest::test_new_frozen_row_must_reference_exact_batch_document_tuple
+Failed asserting that two strings are identical.
+--- Expected
++++ Actual
+@@ @@
+-'23503'
++'23505'
+
+/home/user/epcc-platform/app/tests/Feature/MtoAcceptanceJournalTest.php:124
+/home/user/epcc-platform/app/tests/Feature/MtoAcceptanceJournalTest.php:322
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+FAILURES!
+Tests: 84, Assertions: 229, Failures: 1.

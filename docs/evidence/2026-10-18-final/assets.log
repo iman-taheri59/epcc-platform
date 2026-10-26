@@ -1,0 +1,63 @@
+
+> build
+> vite build
+
+vite v8.3.4 building client environment for production...
+[plugin laravel:fonts] Optimized font fallbacks require the optional "fontaine" package. Install it, or set "optimizedFallbacks: false" on your fonts to disable the feature.
+transforming...
+✓ 3 modules transformed.
+rendering chunks...
+computing gzip size...
+public/build/manifest.json                                      1.47 kB │ gzip: 0.33 kB
+public/build/fonts-manifest.json                                5.74 kB │ gzip: 0.71 kB
+public/build/assets/instrument-sans-400-normal-DRC__1Mx.woff2  16.86 kB
+public/build/assets/instrument-sans-500-normal-Dk9ku72i.woff2  17.23 kB
+public/build/assets/instrument-sans-600-normal-B7fBEWYG.woff2  17.40 kB
+public/build/assets/instrument-sans-400-normal-D1W7dsQl.woff   21.24 kB
+public/build/assets/instrument-sans-500-normal-Z6ESRlEs.woff   21.65 kB
+public/build/assets/instrument-sans-600-normal-B9e8oLYv.woff   21.67 kB
+public/build/assets/fonts-C9MNnjVw.css                          2.35 kB │ gzip: 0.38 kB
+public/build/assets/app-DdIQ2ok1.css                           17.61 kB │ gzip: 4.33 kB
+public/build/assets/app-BvRk9kiK.js                             0.00 kB │ gzip: 0.02 kB
+
+✓ built in 396ms
+  ⇂ public/js/filament/forms/components/checkbox-list.js  
+  ⇂ public/js/filament/forms/components/code-editor.js  
+  ⇂ public/js/filament/forms/components/color-picker.js  
+  ⇂ public/js/filament/forms/components/date-time-picker.js  
+  ⇂ public/js/filament/forms/components/file-upload.js  
+  ⇂ public/js/filament/forms/components/key-value.js  
+  ⇂ public/js/filament/forms/components/markdown-editor.js  
+  ⇂ public/js/filament/forms/components/rich-editor.js  
+  ⇂ public/js/filament/forms/components/select.js  
+  ⇂ public/js/filament/forms/components/slider.js  
+  ⇂ public/js/filament/forms/components/tags-input.js  
+  ⇂ public/js/filament/forms/components/textarea.js  
+  ⇂ public/js/filament/schemas/components/actions.js  
+  ⇂ public/js/filament/schemas/components/tabs.js  
+  ⇂ public/js/filament/schemas/components/wizard.js  
+  ⇂ public/js/filament/tables/components/columns/checkbox.js  
+  ⇂ public/js/filament/tables/components/columns/select.js  
+  ⇂ public/js/filament/tables/components/columns/text-input.js  
+  ⇂ public/js/filament/tables/components/columns/toggle.js  
+  ⇂ public/js/filament/widgets/components/chart.js  
+  ⇂ public/js/filament/widgets/components/stats-overview/stat/chart.js  
+  ⇂ public/fonts/filament/filament/inter/index.css  
+  ⇂ public/fonts/filament/filament/inter/inter-cyrillic-ext-wght-normal-SP7Z6XGK.woff2  
+  ⇂ public/fonts/filament/filament/inter/inter-cyrillic-wght-normal-DR6K5BQD.woff2  
+  ⇂ public/fonts/filament/filament/inter/inter-greek-ext-wght-normal-A2J6H3EX.woff2  
+  ⇂ public/fonts/filament/filament/inter/inter-greek-wght-normal-ZABHMKQG.woff2  
+  ⇂ public/fonts/filament/filament/inter/inter-latin-ext-wght-normal-ZIT2UBIY.woff2  
+  ⇂ public/fonts/filament/filament/inter/inter-latin-wght-normal-DIHYUR35.woff2  
+  ⇂ public/fonts/filament/filament/inter/inter-vietnamese-wght-normal-VWEHJHBA.woff2  
+  ⇂ public/js/filament/actions/actions.js  
+  ⇂ public/js/filament/filament/app.js  
+  ⇂ public/js/filament/filament/echo.js  
+  ⇂ public/js/filament/notifications/notifications.js  
+  ⇂ public/js/filament/schemas/schemas.js  
+  ⇂ public/js/filament/support/support.js  
+  ⇂ public/js/filament/tables/tables.js  
+  ⇂ public/css/filament/filament/app.css  
+
+   INFO  Successfully published assets!  
+

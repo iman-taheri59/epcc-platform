@@ -45,7 +45,7 @@ use Illuminate\Validation\ValidationException;
 final class WarehouseService
 {
     /** Company types whose staff may sign an inspection. */
-    private const INSPECTOR_TYPES = [
+    public const INSPECTOR_TYPES = [
         TenantType::TPI, TenantType::PMC, TenantType::MC, TenantType::OWN,
     ];
 
@@ -169,6 +169,11 @@ final class WarehouseService
         ?Subsystem $subsystem = null,
         string $lang = 'fa',
     ): MaterialLot {
+        // Known PIPING receipts now belong exclusively to the controlled QA/GRN ledger.
+        if (PurchaseOrder::whereKey($po->id)->where('project_id', $project->id)->value('discipline') === 'PIPING') {
+            throw ValidationException::withMessages(['purchase_order' => __('piping_grn.blocked')]);
+        }
+
         if ($quantity <= 0) {
             throw ValidationException::withMessages([
                 'quantity' => $lang === 'fa' ? 'مقدار باید بزرگ‌تر از صفر باشد.' : 'Quantity must be greater than zero.',

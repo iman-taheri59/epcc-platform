@@ -1,0 +1,28 @@
+ current_user | rolsuper | rolbypassrls 
+--------------+----------+--------------
+ epcc         | f        | f
+(1 row)
+
+        relname         | relrowsecurity | relforcerowsecurity 
+------------------------+----------------+---------------------
+ demand_reader_policies | t              | t
+(1 row)
+
+             proname             | prosecdef 
+---------------------------------+-----------
+ epcc_demand_reader_insert_guard | f
+(1 row)
+
+                      conname                       | contype 
+----------------------------------------------------+---------
+ demand_reader_policies_check                       | c
+ demand_reader_policies_company_id_foreign          | f
+ demand_reader_policies_created_by_foreign          | f
+ demand_reader_policies_pkey                        | p
+ demand_reader_policies_project_id_document_id_fkey | f
+ demand_reader_policies_project_id_foreign          | f
+ demand_reader_policies_project_id_scope_id_fkey    | f
+ demand_reader_policies_target_company_id_foreign   | f
+ demand_reader_version_key                          | u
+(9 rows)
+

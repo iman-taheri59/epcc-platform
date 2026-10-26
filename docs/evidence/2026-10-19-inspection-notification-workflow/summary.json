@@ -1,0 +1,129 @@
+{
+  "date": "2026-10-19",
+  "feature": "ITP inspection notification register/draft/issue",
+  "status": "implemented-targeted-verified-not-production",
+  "decisions": {
+    "scope": "all_itp_stages",
+    "authority": "contractor_existing_permission",
+    "recipients": "explicit_project_recipients",
+    "foundation": "document_linked_stages",
+    "issuer_company": "main_contractor_only"
+  },
+  "implemented": [
+    "Explicit participating EPC main-contractor designation, not first/all EPC inference",
+    "Existing project.configure administration, not owner-only nomination; versioned named-user draft/issue resource permissions, no defaults/global role grant",
+    "Same-company doc.issue stage creation, original doc.view/source RLS and discipline; immutable exact-revision H/W/R/M stages",
+    "Create-only DRAFT then atomic one-time versioned ISSUED event with immutable snapshot",
+    "Project/sender-company IN series; legacy IRN observations unchanged",
+    "Purpose-limited company recipient inbox/detail only after issue, current membership/discipline/quality/pack entitlement",
+    "Original visible optional same-project/same-discipline PO; no source read delegation",
+    "Quality navigation and EN/FA register/details, independent25-row pagination"
+  ],
+  "final_commands": [
+    {
+      "test_selection": [
+        "InspectionNotificationTest (22)",
+        "InspectionNotificationInputTest (7)"
+      ],
+      "tests": 29,
+      "assertions": 167,
+      "seconds": 37.987,
+      "status": "PASS",
+      "log": "final-focused.log"
+    },
+    {
+      "test_selection": [
+        "SidebarNavigationTest (17, one new notification case)"
+      ],
+      "tests": 17,
+      "assertions": 83,
+      "seconds": 27.126,
+      "status": "PASS",
+      "log": "navigation.log"
+    }
+  ],
+  "final_disjoint_command_totals": {
+    "tests": 46,
+    "assertions": 250,
+    "single_full_suite_run": false
+  },
+  "related_historical_run": {
+    "tests": 66,
+    "assertions": 336,
+    "seconds": 119.884,
+    "overall": "ONE NEW CONCURRENCY-HARNESS ERROR; NOT ALL PASS",
+    "existing_completed_successfully": {
+      "InspectionEntryTest": 14,
+      "DocumentRegisterTest": 26
+    },
+    "log": "related.log",
+    "resolution": "Symfony readiness-buffer race in test synchronization fixed; exact pg_locks two-waiter barrier and new affected cases rerun. Do not add intermediate/subset counts to final totals."
+  },
+  "concurrency": [
+    "Two independent PHP/DB sessions, same actor and draft, both observed waiting on exact advisory key before release: one issued and one stale refusal",
+    "Actual service project gate FOR NO KEY UPDATE permits independent FK KEY SHARE probe while excluding archive/header changes",
+    "Late AFTER UPDATE refusal rolls back state/version/number/snapshot; retry uses first number",
+    "Not broad two-connection revocation/commit-time/crash/deadlock-free certification"
+  ],
+  "preserved": [
+    "No inspection-result authority or result creation",
+    "No PO/MR state/price/source-allocation/stock/lot/usable/receipt gate changes; ten-table snapshot",
+    "No new source document/PO SELECT policy or SECURITY DEFINER",
+    "No full ITP approval/citation/mandatory-party matrix or MTO rights"
+  ],
+  "verification": {
+    "php_lint_files": 12,
+    "pint_files": 12,
+    "blade_compiled_syntax_files": 4,
+    "whitespace": "PASS",
+    "four_new_or_updated_document_links": "PASS"
+  },
+  "database": {
+    "version": "PostgreSQL17.11",
+    "encoding": "UTF8",
+    "locale": "C",
+    "app_role": "epcc",
+    "superuser": false,
+    "bypassrls": false,
+    "createdb": "test harness only",
+    "listen_addresses": "empty (Unix socket only)",
+    "port": 5545,
+    "process_id": "private-notification-verificatio-936cf190",
+    "stopped": true,
+    "pg_ctl_status_exit": 3,
+    "note": "App role denied inspecting unix_socket_directories; private harness admin read only connection settings, no app elevation."
+  },
+  "limitations": [
+    "No production migration/deployment/commit/push/current CI/full-regression/browser/load certificate",
+    "Draft editing/delete/cancel/reissue not included",
+    "No email/SMS/push/acknowledgment or transport queue; issued is not delivered/read/attended/accepted",
+    "No full ITP approval or automatic file-stage completeness/mandatory H/W party/lead-time/waiver/proceed rules",
+    "Free-text activity reference is not certified WBS/contract/weld/test-pack assignment",
+    "Recorded CDE state is not approval; no unapproved new suitability gate",
+    "Trusted SQL role is not universal human SQL identity/signature RBAC"
+  ],
+  "documents": [
+    "docs/INSPECTION-NOTIFICATION-WORKFLOW-EN.md",
+    "docs/INSPECTION-NOTIFICATION-WORKFLOW-FA.md",
+    "docs/ADR-042-ITP-INSPECTION-NOTIFICATIONS-EN.md",
+    "docs/ADR-042-ITP-INSPECTION-NOTIFICATIONS-FA.md"
+  ],
+  "implementation_sha256": {
+    "app/database/migrations/2026_10_19_200000_add_itp_inspection_notifications.php": "89538ce11db4561ad0f70963718c1fbd69ff90e6caf0b66e3fcf9045ce40d504",
+    "app/app/Services/InspectionNotificationService.php": "9708eb93219012894de7098d332ae0d9af1338567bb576a5b6b88b3476bfa6fd",
+    "app/app/Http/Controllers/InspectionNotificationController.php": "3ee57a40391e76031554a1ca818f05ce47f1359be446a8c2fff60474473f429e",
+    "app/routes/web.php": "92706217fad9320290d35350139d11e2654d61b6370e7b0099ed866504022bf1",
+    "app/app/Support/Navigation.php": "05868f8bc647d218130ae1fbb71a12f2cf12168f1edac6bdb0486e54417d2d1c",
+    "app/lang/en/inspection_notifications.php": "ede861b2d322687b09fde788cd6cd8c82d6cfeaaf99efe30718338f6792cd5b2",
+    "app/lang/fa/inspection_notifications.php": "1280f360615263bd1583c7dc8b05ef014c2a7d7bc452e74e8fde3bc54195e30a",
+    "app/tests/Feature/InspectionNotificationTest.php": "b729e18a3b6fbdf7a600ef91f5ea7725b06cedcd38d055aaf1591d87b2106906",
+    "app/tests/Feature/SidebarNavigationTest.php": "3a5ef9f8171b2b714506c832e4467251499b86bbb4e2ebbdc7d3bc51bbbdc528",
+    "scripts/tests/inspection_notification_worker.php": "2e676e6d3dca7518f1f849fff6b2e9cb2ea5bfe465dab85e3a2dd040da9eb452",
+    "app/app/Support/InspectionNotificationInput.php": "429c2f3d917810de02abe6460efc93704848279098930b3ba45ad7c0d4da81a9",
+    "app/tests/Unit/InspectionNotificationInputTest.php": "ff64e6e646203cbe3dcb5bf087f0e664c818d3b5f81cb0659c57f849069b0f8b",
+    "app/resources/views/inspection-notifications/index.blade.php": "63e3569da8e797e33df4065c2678beae188ff5955359ec98af4146a435f45e1f",
+    "app/resources/views/inspection-notifications/show.blade.php": "8beea725460feaae0ff10dd189901887cd0c3c47b34f063eb1757d03c80e6272",
+    "app/resources/views/materials/procurement.blade.php": "a209f03c20758f425c9c0d4fc5dc5f7c355b2f0f297ada412cc59e4d02d2a3eb",
+    "app/resources/views/documents/index.blade.php": "b2f19a68c47cd45fb3e6f7d56fcf64b8d75b107dab1091e41ce6abaf959f655f"
+  }
+}

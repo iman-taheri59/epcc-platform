@@ -1,0 +1,44 @@
+
+  [90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m[31;1m⨯[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PipingTraceabilityTest[22m [90m>[39m po visibil… [41;1m QueryException [49;22m  
+[39;1m  SQLSTATE[42501]: Insufficient privilege: 7 ERROR:  new row violates row-level security policy for table "purchase_orders" (Connection: pgsql, Host: /tmp/epcc-reconciliation-full-sock-lq78n0a7, Port: 5545, Database: epcc_test, SQL: update "purchase_orders" set "vendor_company_id" = 8030c9a3-11ab-4bb4-b47f-ec2c19d090b4 where "id" = ed95e823-501a-4dab-be29-8c174d868977)[39;22m
+
+  at [32m/home/user/.cache/trace-vendor/laravel/framework/src/Illuminate/Database/Connection.php[39m:[32m857[39m
+    853▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
+    854▕                 ? UniqueConstraintViolationException::class
+    855▕                 : QueryException::class;
+    856▕ 
+  ➜ 857▕             $exception = new $exceptionType(
+    858▕                 $this->getNameWithReadWriteType(),
+    859▕                 $query,
+    860▕                 $this->prepareBindings($bindings),
+    861▕                 $e,
+
+  [33m1   [39m[39;1m/home/user/.cache/trace-vendor/laravel/framework/src/Illuminate/Database/Connection.php[39;22m:[39;1m857[39;22m
+
+  [33m2   [39m[39;1m/home/user/.cache/trace-vendor/laravel/framework/src/Illuminate/Database/Connection.php[39;22m:[39;1m626[39;22m
+  [90m    NunoMaduro\Collision\Exceptions\TestException::("SQLSTATE[42501]: Insufficient privilege: 7 ERROR:  new row violates row-level security policy for table "purchase_orders"")[39m
+
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PipingTraceabilityTest[22m [90m>[39m legacy incomplete c… [41;1m Error [49;22m  
+[39;1m  Class "Tests\Feature\PurchaseOrder" not found[39;22m
+
+  at [32mtests/Feature/PipingTraceabilityTest.php[39m:[32m400[39m
+    396▕         $mr2 = app(MaterialRequisitionEntryService::class)->create($this->project, $this->buyer, ['title_en' => 'Other MR', 'title_fa' => 'دیگر', 'discipline' => 'PIPING', 'material_category' => 'PIPE', 'lines' => [['item_code' => 'TRACE-SAME', 'description_en' => 'Other', 'description_fa' => 'دیگر', 'unit' => 'M', 'quantity' => '1']]]);
+    397▕         foreach ([[$mr->id, null, 'HEADER_ONLY'], [null, $lines[0]->requisition_item_id, 'LINE_ONLY'], [$mr2->id, $lines[0]->requisition_item_id, 'REFERENCE_CONFLICT'], [$mr->id, $lines[0]->requisition_item_id, 'LINKED'], [null, null, 'NOT_LINKED']] as $i => [$header,$line,$status]) {
+    398▕             // Trusted legacy fixtures only, NOT a new application writer or permission bypass.
+    399▕             $id = $this->scoped(function () use ($source, $header, $line, $i) {
+  ➜ 400▕                 $p = new PurchaseOrder;
+    401▕                 $p->forceFill(['project_id' => $this->project->id, 'company_id' => $this->buyer->company_id, 'vendor_company_id' => $source->vendor_company_id, 'number' => 'TRACE-LEGACY-'.$i, 'sequence' => 100 + $i, 'state' => 'DRAFT', 'requisition_id' => $header, 'discipline' => 'PIPING', 'material_category' => 'PIPE', 'title_en' => 'Legacy fixture', 'title_fa' => 'آزمایشی'])->save();
+    402▕ 
+    403▕                 return PurchaseOrderItem::create(['project_id' => $this->project->id, 'purchase_order_id' => $p->id, 'line_no' => 1, 'item_code' => 'TRACE-SAME', 'description_en' => 'Legacy fixture', 'description_fa' => 'آزمایشی', 'unit' => 'M', 'quantity' => '999', 'requisition_item_id' => $line])->id;
+    404▕             });
+
+  [33m1   [39m[39;1mtests/Feature/PipingTraceabilityTest.php[39;22m:[39;1m400[39;22m
+  [33m2   [39m[39;1m/home/user/.cache/trace-vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php[39;22m:[39;1m35[39;22m
+
+
+  [90mTests:[39m    [31;1m2 failed[39;22m[90m,[39m[39m [39m[32;1m11 passed[39;22m[90m (112 assertions)[39m
+  [90mDuration:[39m [39m37.65s[39m
+

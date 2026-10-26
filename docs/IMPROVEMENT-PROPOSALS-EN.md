@@ -1,3 +1,5 @@
+> 2026-10-18 scope-source full gate CLOSED:1112 tests/16488 assertions,0 failures/errors/skips;450 hashes unchanged. See G01-SCOPE-FULL-SUITE-EN.md. Next is trusted versioned admission/coverage; observations remain UNADMITTED, not effective selection. Older pending gate text is historical.
+
 # Improvement Proposals — EPCC Platform
 
 **Standing rule 5 (user-mandated, 2026-10-11):** whenever a better alternative
@@ -1190,3 +1192,63 @@ next verification: run Laragon preflight and the isolated `epcc_test` suite
 on the Windows primary environment (destructive `--run` only after confirming
 that database has no valuable data). CI billing is still blocked. No local
 SQLite substitute can prove PostgreSQL RLS correctness.
+
+
+### 2026-10-18: current evidence ledger and native development tier (BUILT)
+
+Separate the living capability/evidence index from historical logs. Added CURRENT-IMPLEMENTATION-LEDGER and BASELINE-VERIFICATION EN/FA documents and native Debian runtime instructions. Old absolute sandbox limitations and completion claims are marked historical. Targeted verification is not described as full-suite success.
+
+### 2026-10-18: repeatable schedule guards and UUID relations (BUILT)
+
+Three CREATE FUNCTION statements now use CREATE OR REPLACE to survive table-only fresh rebuilds; unchanged append-only guard bodies and forced RLS are checked after two rebuilds. PmsClassRevisionSnapshot explicitly uses nonincrementing string UUID identity to avoid integer eager-loading SQL. Existing component UI assertions now test actual PIPE-row value/status rather than obsolete exact markup.
+
+### 2026-10-18: lock the application frontend dependency graph (OPEN)
+
+Root package-lock locks prototype dependencies, not app/. The app frontend built with Node 22/npm 11 but has no tracked lockfile. Propose adding an app lockfile generated with the agreed toolchain and changing CI/image install to npm ci, in a dedicated reviewed change. Do not claim the current frontend build is reproducible from locked app dependencies.
+
+### 2026-10-18: preserve original PostgreSQL errors during context unwind (OPEN)
+
+The snapshot eager-loading uuid=integer error caused a nested transaction to abort; TenantContext's finally restoration then emitted SQLSTATE 25P02 and obscured the first exception. Propose a dedicated transaction/savepoint-unwind design and fault-injection regression proving both original error observability and tenant-context restoration/fail-closed behavior. Do not simply catch and ignore context-reset errors or weaken RLS. Deferred because this touches a security-critical primitive.
+
+
+### 2026-10-18: preserve MCC safety-label reading order in PDFs (BUILT)
+
+The completed1083-case serial run exposed one print-layout failure: a 34mm key cell split the English category-A label and interleaved its numeric count in pdftotext. Scope a 48mm nonwrapping label rule to the MCC punch summary only; do not widen all metadata or weaken the frozen-evidence test. Re-run PDF/certificate suites:29 tests/108 assertions passed. EN/FA synthetic browser print probes show one-line captions. No certificate data/gate semantics changed. Full final-source rerun remains required.
+
+### 2026-10-18: keep generated dependencies out of source snapshots (BUILT)
+
+Vendor was incomplete and some previous uncommitted source edits/new files were missing after restoration. Store generated dependencies under excluded .cache/vendor with app/vendor symlink (existing bootstrap supports it), retain compact evidence, and create a checksum-verified source-only diff/new-files recovery bundle outside the clone. This reduces snapshot pressure without committing binaries, credentials or customer data. Runtime recreation is still required after reset.
+
+
+### 2026-10-18: close the final-source local gate on an isolated DB (BUILT)
+
+Complete final repaired-source run:1083 tests/16385 assertions,0 failures/errors/skips,exit0. Kept443 manifest source files unchanged and used a distinct loopback5433 PG17.11 cluster on disposable tmpfs with fsync/synchronous_commit/full_page_writes ON; capped WAL128/32MB. DemoDB5432 stays separate. This avoids DB-runner overlap without lowering integrity or using SQLite; it is not production crash-durability evidence. Native runtime and source-only recovery remain rebuildable.
+
+### 2026-10-18: use pilot boundaries, not test counts, as operational readiness (BUILT planning)
+
+Added21-case synthetic pilot acceptance matrix EN/FA with existing component pointers and explicit nonexecuted gaps. In addition to known ADR-024 revision/scope selection, source review identifies completed-order predicate mismatch, missing receipt PO-item linkage, legacy code/mixed-unit/lineage totals and missing PO/inspection/receipt human entry surfaces. A green component suite does not close those scenarios. ADR-032 is PROPOSED only, with no new grant, schema or usable/inspection gate. Next recommendation: design and regress effective accepted-MTO selection under already accepted ADR-024 principles.
+
+
+### 2026-10-18: executable effective-MTO selection contract (BUILT prototype, production OPEN)
+
+Draft journal/manifest/fail-closed report design plus a dependency-free PHP prototype:33 standalone cases passed and3 deliberate mutations detected. Replaces entire same-document scope snapshots, blocks unproved overlap, uses exact admitted revision pairs and checked material/unit milli totals. Inputs remain immutable. This is not a schema, evidence-admission engine or OrderGapService fix. Fixed scope-set/version restriction is conservative prototype behavior, not a new approved product rule. No app source changed;443 baseline hashes matched and demo blob bootstrap was avoided. Next: reviewed legacy backfill/journal specification before real RLS/concurrency integration.
+
+
+### 2026-10-18: inventory-bound offline legacy-backfill review (BUILT tool/spec, production OPEN)
+
+Drafted logical migration/constraints, transaction locks, legacy-vs-new provenance, maintenance/cutover, idempotency and nondestructive rollback specification. New dependency-free planner and CLI emit BLOCKED or CANDIDATE_FOR_CONTROLLED_REVIEW, never apply-ready.26 new cases,33 prior selection-contract cases rerun,3 mutations and4 CLI probes passed. No timestamp/UUID inference, synthetic global legacy ordinal, fabricated topology, DB access or permission admission. Scope changes remain explicit disposition findings. Existing443 source hashes unchanged. Runtime reset required only PHP CLI restoration; no current app/DB availability is assumed. Next: real PG persistence constraint/RLS/rollback/concurrency proof while keeping the board switch off.
+
+
+### 2026-10-18: prove journal integrity on real PostgreSQL (BUILT bounded persistence prototype)
+
+Executable one-scope synthetic schema plus36 real-PG cases: composite source/predecessor FKs, root/branch/chronology guards, deferred commit completeness, immutable DML, forced RLS/owner filtering, archive guards and rollback. Five two-connection scenarios explicitly observe pg_blocking_pids before release, including both archive orderings. Three mutations detected; original schema restored green. Private disposable Unix-socket cluster with no TCP, local trust TEST ONLY, durability flags ON; not production-auth/crash proof. Existing443 source hashes unchanged, no Laravel/source schema integration. Next: bounded real-snapshot acceptance adapter + real application policy regressions; topology/admission/multi-scope/legacy and unresolved UI remain gating.
+
+
+### 2026-10-18: bind NEW chronology to real app snapshots (BUILT locally, full suite PENDING)
+
+Automatic transactional batch-trigger journal, exact source tuple FK, project clock, FORCE RLS/archives, forward-only migration and model/relation. Source service locks project->document->revision. Legacy batches receive no fabricated ordinals; historical row FK remains explicitly NOT VALID. All journal states UNRESOLVED, no board/permission/admission switch.89 related tests/240 assertions +5 real Laravel kernel contention scenarios pass; two initial test-harness issues fixed, not hidden. Source changed2 of old443 files plus3 newapp files; new manifest446. Prior1083/16385 complete green is historical only. Next action: full suite on exact new source before further app changes; full manifest/topology/admission/legacy and unresolved consumers still open.
+
+
+### 2026-10-18: close the real-journal full-suite gate without code churn (BUILT verification)
+
+One complete configured run on frozen446 source files:1098 tests/16429 assertions,0 failures/errors/skips,exit0,JUnit1238.612073s. Source and2 prior actual-worker hashes rechecked unchanged. Isolated realPG17.11/non-superuser role,private Unix socket/no TCP,integrity settings ON; no parallel DB tests, no app source edits. Independent Composer/platform,351 scoped PHP lints,standards/conformance/screening and offline33/26 passed. No new UI/Docker/CI/production durability claim. Full gate now CLOSED; next is pinned scope/topology admission/fail-closed selection, not repeating unchanged baseline. Journal remains UNRESOLVED and pilot/legacy/authority gaps remain explicit.

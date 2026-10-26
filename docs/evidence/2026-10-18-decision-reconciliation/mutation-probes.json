@@ -1,0 +1,22 @@
+[
+  {
+    "mutant": "binding-bypass",
+    "detected": true,
+    "exit_code": 255
+  },
+  {
+    "mutant": "omission-bypass",
+    "detected": true,
+    "exit_code": 255
+  },
+  {
+    "mutant": "admission-fabrication",
+    "detected": true,
+    "exit_code": 255
+  },
+  {
+    "mutant": "equality-only-header-regression",
+    "detected": true,
+    "exit_code": 255
+  }
+]

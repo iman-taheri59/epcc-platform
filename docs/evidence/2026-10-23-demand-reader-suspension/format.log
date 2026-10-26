@@ -1,0 +1,21 @@
+
+  ✓✓....
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   .................................... 6 files, 2 style issues fixed  
+  ✓ app/app/Http/Controllers/DemandReaderController.php method_argument_space…  
+  ✓ app/app/Services/DemandReaderService.php method_argument_space, unary_ope…  
+
+
+  ✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   ...................................... 1 file, 1 style issue fixed  
+  ✓ app/tests/Feature/DemandReaderSuspensionTest.php class_attributes_separat…  
+
+
+  .
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ............................................................ 1 file  
+

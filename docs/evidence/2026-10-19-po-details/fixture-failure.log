@@ -1,0 +1,64 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+.E.....                                                             7 / 7 (100%)
+
+Time: 00:09.869, Memory: 89.00 MB
+
+There was 1 error:
+
+1) Tests\Feature\PurchaseOrderDetailsTest::test_superseded_rows_and_mixed_units_are_kept_separate
+Illuminate\Database\UniqueConstraintViolationException: SQLSTATE[23505]: Unique violation: 7 ERROR:  duplicate key value violates unique constraint "purchase_order_items_purchase_order_id_line_no_unique" (Connection: pgsql, Host: /tmp/epcc-reconciliation-full-sock-lq78n0a7, Port: 5545, Database: epcc_test, SQL: insert into "purchase_order_items" ("project_id", "purchase_order_id", "line_no", "item_code", "description_en", "description_fa", "quantity", "unit", "supersedes_id", "id", "updated_at", "created_at") values (193fa75a-c229-446e-8f43-6ac5c739e485, 2fe9b6af-b331-4c1f-a597-853f9425ded7, 1, DETAIL-VALVE, Replacement, اصلاح, 3.000, EA, 1863c1b7-f87a-48ea-8b44-d61f212afcbb, ec670aff-51ee-4ac9-a5d1-96399708eb57, 2026-10-19 05:38:32, 2026-10-19 05:38:32))
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:857
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:590
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:554
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4220
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2336
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1614
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1407
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1258
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/helpers.php:393
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1257
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php:23
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2866
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2882
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderDetailsTest.php:62
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderDetailsTest.php:41
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderDetailsTest.php:62
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+Caused by
+PDOException: SQLSTATE[23505]: Unique violation: 7 ERROR:  duplicate key value violates unique constraint "purchase_order_items_purchase_order_id_line_no_unique"
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:601
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:846
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:590
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:554
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4220
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2336
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1614
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1407
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1258
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/helpers.php:393
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1257
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php:23
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2866
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2882
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderDetailsTest.php:62
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderDetailsTest.php:41
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderDetailsTest.php:62
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+ERRORS!
+Tests: 7, Assertions: 40, Errors: 1.

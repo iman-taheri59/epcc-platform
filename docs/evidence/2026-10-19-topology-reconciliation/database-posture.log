@@ -1,0 +1,30 @@
+ current_user | rolsuper | rolbypassrls | rolcreatedb 
+--------------+----------+--------------+-------------
+ epcc         | f        | f            | f
+(1 row)
+
+ fsync 
+-------
+ on
+(1 row)
+
+ synchronous_commit 
+--------------------
+ on
+(1 row)
+
+ full_page_writes 
+------------------
+ on
+(1 row)
+
+ listen_addresses 
+------------------
+ 
+(1 row)
+
+ max_wal_size 
+--------------
+ 128MB
+(1 row)
+

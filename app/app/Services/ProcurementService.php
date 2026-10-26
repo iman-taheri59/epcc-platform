@@ -344,9 +344,11 @@ final class ProcurementService
             $project, $user, $vendor, $titleEn, $titleFa, $lines,
             $requisition, $currency, $promisedDate
         ): PurchaseOrder {
-            Project::whereKey($project->id)->lockForUpdate()->first();
-
-            $seq = 1 + (int) PurchaseOrder::where('project_id', $project->id)->max('sequence');
+            $lockedProject = Project::whereKey($project->id)->lockForUpdate()->firstOrFail();
+            $seq = 1 + max((int) $lockedProject->purchase_order_sequence,
+                (int) PurchaseOrder::where('project_id', $project->id)->max('sequence'));
+            $lockedProject->purchase_order_sequence = $seq;
+            $lockedProject->save();
 
             $po = PurchaseOrder::create([
                 'project_id' => $project->id,
@@ -356,6 +358,7 @@ final class ProcurementService
                 'sequence' => $seq,
                 'state' => ProcurementState::PO_DRAFT,
                 'requisition_id' => $requisition?->id,
+                ...($requisition?->material_category !== null ? ['material_category' => $requisition->material_category] : []),
                 'title_en' => $titleEn,
                 'title_fa' => $titleFa,
                 'currency' => $currency,

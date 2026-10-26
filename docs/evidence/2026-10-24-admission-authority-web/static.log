@@ -1,0 +1,37 @@
+
+  .....⨯
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FAIL   ............................................ 6 files, 1 style issue  
+  ⨯ app/tests/Feature/ScopeAdmissionAuthorityHttpTest.php method_argument_spa…  
+
+No syntax errors detected in app/app/Services/ScopeAdmissionAuthorityService.php
+No syntax errors detected in app/app/Http/Controllers/ScopeAdmissionAuthorityController.php
+No syntax errors detected in app/routes/web.php
+No syntax errors detected in app/lang/en/scope_admission_authority.php
+No syntax errors detected in app/lang/fa/scope_admission_authority.php
+No syntax errors detected in app/tests/Feature/ScopeAdmissionAuthorityHttpTest.php
+
+
+   INFO  Blade templates cached successfully.  
+
+
+   INFO  Compiled views cleared successfully.  
+
+
+  GET|HEAD   projects/{projectCode}/materials/scope-admission-actors material…
+  POST       projects/{projectCode}/materials/scope-admission-actors material…
+  GET|HEAD   projects/{projectCode}/materials/scope-admission-diagnostics mat…
+  GET|HEAD   projects/{projectCode}/materials/scope-admission-suspensions mat…
+  POST       projects/{projectCode}/materials/scope-admission-suspensions mat…
+
+                                                            Showing [5] routes
+
+
+  ......
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ........................................................... 6 files  
+
+No syntax errors detected in app/app/Http/Controllers/ScopeAdmissionAuthorityController.php
+No syntax errors detected in app/tests/Feature/ScopeAdmissionAuthorityHttpTest.php

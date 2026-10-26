@@ -1,0 +1,120 @@
+{
+  "date": "2026-10-19",
+  "status": "IMPLEMENTED_TARGETED_VERIFIED_EXACT_MONEY_AND_INDEPENDENT_PAGINATION",
+  "accepted_sequence": [
+    "repair register amount display",
+    "independent MR and PO paging with filtered totals"
+  ],
+  "reviewed": [
+    "ADR-034 category separation/no legacy inference",
+    "PROCUREMENT-REGISTER-FILTERS-EN.md recommendations",
+    "FR-UX-04 existing tabletools contract",
+    "accepted ADR-033/035-040 authority boundaries"
+  ],
+  "implementation": {
+    "exact_stored_decimal_money_no_float_no_arithmetic": true,
+    "null_distinct_from_zero": true,
+    "recorded_currency_no_FX_conversion": true,
+    "digit_translation_only_FA": true,
+    "MR_page_parameter": "mr_page",
+    "PO_page_parameter": "po_page",
+    "per_page": 25,
+    "order": [
+      "sequence DESC",
+      "id DESC"
+    ],
+    "page_validation": {
+      "nullable": true,
+      "integer": true,
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "links_preserve_other_page_filters_category_language": true,
+    "GET_filter_form_resets_both_pages": true,
+    "out_of_range_empty_with_true_total_and_first_page_recovery": true,
+    "summary_counters_all_filtered_matches_not_current_page": true,
+    "late_count_same_filtered_PO_query_under_original_RLS": true,
+    "late_semantics": "both DATE values known AND forecast_date > promised_date, no new issued-only or as-of-today rule",
+    "existing_inspections_loading_and_count_unchanged": true,
+    "original_caller_TenantContext_RLS_and_POST_authority_unchanged": true,
+    "new_schema_index_endpoint_role_action": false
+  },
+  "verification": {
+    "tests": 41,
+    "assertions": 499,
+    "seconds": 66.891,
+    "pass": true,
+    "new_feature_tests": 8,
+    "log": "related.log",
+    "smoke_subset": {
+      "tests": 2,
+      "assertions": 65,
+      "seconds": 3.817,
+      "log": "smoke.log",
+      "included_not_additive": true
+    },
+    "suites": [
+      "ProcurementRegisterFilterTest",
+      "ProcurementCategoryTest",
+      "PurchaseOrderEntryTest"
+    ],
+    "exact_money_cases": [
+      "9999999999999999.99 EUR",
+      "12.34 EUR",
+      "0.00 EUR",
+      "unknown"
+    ],
+    "EN_FA": true,
+    "stored_money_unchanged": true,
+    "26_MR_26_PO_split_25_1_stable_UUID_tiebreak": true,
+    "all_four_page_combinations": true,
+    "filtered_late_count_with_page_null_equal_earlier_category_state_cases": true,
+    "competitor_hidden_counts_and_oversight_visible_counts": true,
+    "existing_vendor_BB2_RLS_and_archived_7_table_no_mutation_tests_included": true,
+    "SQL_LIMIT_OFFSET_and_current_page_relation_parent_bindings": true,
+    "out_of_range_first_page_recovery_and_cross_page_preservation": true,
+    "page_validation_bounds_and_types": true,
+    "lint_files": 4,
+    "lint_pass": true,
+    "pint_pass": true,
+    "diff_check_pass": true,
+    "routine_full_suite": false
+  },
+  "database": {
+    "engine": "PostgreSQL17",
+    "role": "epcc",
+    "NOSUPERUSER": true,
+    "NOBYPASSRLS": true,
+    "encoding": "UTF8",
+    "locale": "C",
+    "private_Unix_socket_only": true,
+    "stopped_after_verification": true
+  },
+  "implementation_sha256": {
+    "app/app/Http/Controllers/MaterialsController.php": "42052d82f5f4da4964ee655118a5a10a1830f68ebc115840e3377a9718fbde9d",
+    "app/resources/views/materials/procurement.blade.php": "564b9305f29d81cf2961845d8a27ef4312be7cc61f5e04d3e89ec329f6cda9ac",
+    "app/resources/views/materials/procurement-pagination.blade.php": "73bba01c9d18a146d40190232269aba779684dab08a7748e3ace2c06acd450ba",
+    "app/lang/en/procurement_register.php": "e033a94f5a827ef225c432a586667d52b8f45dd08c032cfe89c34e15c6d00861",
+    "app/lang/fa/procurement_register.php": "25a88410e75fea87d5f0aca07fecf977bdd01f29bfb26aa2ca7ace0b383e6893",
+    "app/tests/Feature/ProcurementRegisterFilterTest.php": "ce610c8e324dc0b9ceaddc563cb21b124eba073b58e6520662e35378c44d7287"
+  },
+  "not_claimed": [
+    "whole-page memory bound",
+    "20k-document performance/load certification",
+    "indexes/trigram implementation",
+    "inspection pagination",
+    "client numeric sort precision",
+    "cross-request snapshot isolation",
+    "current CI/browser acceptance",
+    "full-suite/recovery/broad concurrency",
+    "production migration/deployment/commit/push"
+  ],
+  "authority_deferrals_unchanged": [
+    "general legacy/manual/MTO authority",
+    "physical receipt",
+    "controlled post-issue amendments",
+    "official source remaining capacity",
+    "write-based legacy reconciliation",
+    "other legacy float/mixed-unit arithmetic"
+  ]
+}

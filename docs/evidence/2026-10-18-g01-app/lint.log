@@ -1,0 +1,12 @@
+No syntax errors detected in app/app/Models/AcceptedMtoBatch.php
+No syntax errors detected in app/app/Models/MtoAcceptanceJournal.php
+No syntax errors detected in app/app/Services/MtoAcceptanceService.php
+No syntax errors detected in app/database/migrations/2026_10_18_100000_record_new_mto_acceptance_order.php
+No syntax errors detected in app/tests/Feature/MtoAcceptanceJournalTest.php
+No syntax errors detected in scripts/tests/mto_journal_worker.php
+No syntax errors detected in app/app/Models/AcceptedMtoBatch.php
+No syntax errors detected in app/app/Models/MtoAcceptanceJournal.php
+No syntax errors detected in app/app/Services/MtoAcceptanceService.php
+No syntax errors detected in app/database/migrations/2026_10_18_100000_record_new_mto_acceptance_order.php
+No syntax errors detected in app/tests/Feature/MtoAcceptanceJournalTest.php
+No syntax errors detected in scripts/tests/mto_journal_worker.php

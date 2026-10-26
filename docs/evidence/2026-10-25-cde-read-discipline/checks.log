@@ -1,0 +1,181 @@
+BASELINE CONTROLLER matches prior tested source 9adae61a0a90c3141c9de21f9ca2cc886ae7fc5379d004895c23472f9c8c5291
+CONSTRUCTOR unchanged except Pint whitespace compaction; initial block extractor did not handle compact empty body, corrected audit only
+UNCHANGED METHOD store
+UNCHANGED METHOD update
+UNCHANGED METHOD upload
+UNCHANGED METHOD deleteFile
+UNCHANGED METHOD comment
+UNCHANGED METHOD dispose
+UNCHANGED METHOD resolveProject
+UNCHANGED METHOD authorize
+UNCHANGED METHOD lang
+UNCHANGED METHOD today
+UNCHANGED app/app/Support/AuthorizationPipeline.php
+UNCHANGED app/app/Support/TenantContext.php
+UNCHANGED app/app/Services/DocumentFileStore.php
+UNCHANGED app/app/Services/DocumentRegister.php
+UNCHANGED app/app/Services/ReviewCycle.php
+UNCHANGED app/app/Services/CdeEvidenceIntegrityService.php
+UNCHANGED app/resources/views/documents/review.blade.php
+UNCHANGED app/tests/Feature/DocumentFileTest.php
+UNCHANGED app/tests/Feature/DocumentRegisterTest.php
+UNCHANGED app/tests/Feature/ReviewCycleTest.php
+PRESERVED existing register view; current SHA b2f19a68c47cd45fb3e6f7d56fcf64b8d75b107dab1091e41ce6abaf959f655f differs from historical Oct18 manifest; no template edit/reset in this increment, not an Oct18 byte-invariant claim
+UNCHANGED app/Services/ScopeEvidencePreflightService.php
+UNCHANGED tests/Feature/ScopeEvidencePreflightTest.php
+UNCHANGED routes/web.php
+PREDECESSOR SOURCE ARCHIVE unchanged 2393b5a97f8653432deff533ad52b6d9108db54733784febe67efa114397ebc0
+GUIDE LINK PASS docs/CDE-READ-DISCIPLINE-FA.md
+GUIDE LINK PASS docs/SCOPE-EVIDENCE-PREFLIGHT-EN.md
+GUIDE LINK PASS docs/G01-CDE-EVIDENCE-INTEGRITY-EN.md
+GUIDE LINK PASS docs/CDE-READ-DISCIPLINE-EN.md
+GUIDE LINK PASS docs/SCOPE-EVIDENCE-PREFLIGHT-FA.md
+GUIDE LINK PASS docs/G01-CDE-EVIDENCE-INTEGRITY-FA.md
+--- pre-increment-controller
+
++++ corrected-controller
+
+@@ -8,6 +8,7 @@
+
+ use App\Models\DocumentFile;
+ use App\Models\Project;
+ use App\Models\ReviewComment;
++use App\Models\User;
+ use App\Services\DocumentFileStore;
+ use App\Services\DocumentRegister;
+ use App\Services\ReviewCycle;
+@@ -19,10 +20,12 @@
+
+ use App\Support\TenantContext;
+ use Illuminate\Http\RedirectResponse;
+ use Illuminate\Http\Request;
+-use Symfony\Component\HttpFoundation\StreamedResponse;
++use Illuminate\Support\Facades\Storage;
++use Illuminate\Support\Str;
+ use Illuminate\View\View;
+ use Morilog\Jalali\CalendarUtils;
+ use Morilog\Jalali\Jalalian;
++use Symfony\Component\HttpFoundation\StreamedResponse;
+ 
+ /**
+  * Document register / CDE (SRS FR-ENG-01/02/03/04).
+@@ -49,26 +52,33 @@
+
+         private readonly DocumentRegister $register,
+         private readonly DocumentFileStore $files,
+         private readonly ReviewCycle $review,
+-    ) {
+-    }
++    ) {}
+ 
+     /** The register for one project. */
+     public function index(Request $request, string $projectCode): View
+     {
+         $lang = $this->lang($request);
+-        $user = $request->user();
++        $user = $this->currentReader($request);
+         $project = $this->resolveProject($user, $projectCode);
+ 
+         $this->authorize($request, $user, 'doc.view', $project, $lang);
+ 
+         [$documents, $counts] = $this->tenant->runAs(
+             $user->company_id,
+-            function (): array {
++            function () use ($user, $project): array {
++                $membership = $user->membershipFor($project->id);
++                abort_unless($membership, 404);
++                $scope = $membership->discipline_scope;
++                abort_unless($scope === null || is_array($scope), 404);
+                 // `currentRevision.files` is eager-loaded INSIDE runAs():
+                 // document_files is an RLS table, so a lazy load after the
+                 // scope closes returns an empty collection - the attachments
+                 // would silently vanish from the register.
+-                $documents = Document::with([
++                $query = Document::query()->where('project_id', $project->id);
++                if (is_array($scope)) {
++                    $query->whereIn('discipline', $scope);
++                }
++                $documents = $query->with([
+                     'currentRevision.files',
+                     // Eager-loaded inside runAs() for the same reason as the
+                     // files: a lazy load after the scope closes comes back
+@@ -234,7 +244,7 @@
+
+     public function download(Request $request, string $projectCode, string $documentId, string $fileId): StreamedResponse
+     {
+         $lang = $this->lang($request);
+-        $user = $request->user();
++        $user = $this->currentReader($request);
+         $project = $this->resolveProject($user, $projectCode);
+ 
+         $this->authorize($request, $user, 'doc.view', $project, $lang);
+@@ -242,11 +252,16 @@
+
+         /** @var DocumentFile $file */
+         $file = $this->tenant->runAs(
+             $user->company_id,
+-            fn () => DocumentFile::where('document_id', $documentId)->findOrFail($fileId),
+-            $project->id,
+-        );
+-
+-        $disk = \Illuminate\Support\Facades\Storage::disk($file->disk);
++            function () use ($user, $project, $documentId, $fileId): DocumentFile {
++                $this->assertReadableDocument($user, $project, $documentId);
++                abort_unless(Str::isUuid($fileId), 404);
++
++                return DocumentFile::where('project_id', $project->id)->where('document_id', $documentId)->findOrFail($fileId);
++            },
++            $project->id,
++        );
++
++        $disk = Storage::disk($file->disk);
+ 
+         abort_unless($disk->exists($file->storage_path), 404);
+ 
+@@ -302,14 +317,15 @@
+
+     public function review(Request $request, string $projectCode, string $documentId): View
+     {
+         $lang = $this->lang($request);
+-        $user = $request->user();
++        $user = $this->currentReader($request);
+         $project = $this->resolveProject($user, $projectCode);
+ 
+         $this->authorize($request, $user, 'doc.view', $project, $lang);
+ 
+         [$document, $comments, $stats] = $this->tenant->runAs(
+             $user->company_id,
+-            function () use ($documentId): array {
++            function () use ($documentId, $user, $project): array {
++                $this->assertReadableDocument($user, $project, $documentId);
+                 $document = Document::with(['currentRevision', 'company'])->findOrFail($documentId);
+                 $revision = $document->currentRevision;
+ 
+@@ -436,6 +452,24 @@
+
+      * Mirrors the certificate screens: a project the acting company does not
+      * participate in must 404, not 403 - a 403 confirms the project exists.
+      */
++    /** Read paths must not authorize a stale caller model/loaded plan. */
++    private function currentReader(Request $request): User
++    {
++        $actor = $request->user();
++
++        return User::with('company.plan')->whereKey($actor->id)->where('company_id', $actor->company_id)->firstOrFail();
++    }
++
++    /** Minimum original-tenant/project header before files/comments/issuer metadata. */
++    private function assertReadableDocument(User $user, Project $project, string $id): void
++    {
++        abort_unless(Str::isUuid($id), 404);
++        $header = Document::where('project_id', $project->id)->whereKey($id)->first(['id', 'discipline']);
++        abort_unless($header, 404);
++        $denial = $this->authz->check($user, 'doc.view', $project, ['discipline' => $header->discipline]);
++        abort_if($denial !== null, 404);
++    }
++
+     private function resolveProject($user, string $projectCode): Project
+     {
+         $project = Project::where('code', $projectCode)->first();
+
+PRIVATE DATABASE STOPPED: private-cde-read-test-database-d893ff7f stop_process status=stopped. Final whitespace PASS.

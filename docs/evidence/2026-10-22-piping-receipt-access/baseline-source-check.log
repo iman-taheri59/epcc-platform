@@ -1,0 +1,8 @@
+app/app/Services/InspectionNotificationService.php: OK
+app/app/Http/Controllers/InspectionNotificationController.php: OK
+app/lang/en/inspection_notifications.php: OK
+app/lang/fa/inspection_notifications.php: OK
+app/resources/views/print/inspection-notification.blade.php: OK
+app/resources/views/print/inspection-notification-prerequisites.blade.php: OK
+app/resources/views/print/inspection-prerequisite-snapshot.blade.php: OK
+app/tests/Feature/InspectionPrerequisitePdfTest.php: OK

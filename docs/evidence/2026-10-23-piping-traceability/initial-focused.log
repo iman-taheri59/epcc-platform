@@ -1,0 +1,26 @@
+
+  [90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PipingTraceabilityTest[22m [90m>[39m original hidden source hid…   
+[39;1m  Expected: [39;22m[31m<!doctype html>[39m[31m<html lang="en" dir="ltr">[39m[31m<head>[39m[31m<meta charset="utf-8">[39m[31m<meta name="viewport" content="width=device-width, initial-scale=1">[39m[31m<title>[39m[31mMaterial receipt traceability gaps — PH-14[39m[31m</title>[39m[31m<script>[39m[31m\n[39m[39;1m
+  [39;22m[31m(function () {\n[39m[39;1m
+  [39;22m[31m  var d = document.documentElement;\n[39m[39;1m
+  [39;22m[90m... (519 more lines)[39m[39;1m
+
+  To contain: [39;22m[32mnot evidence of no project demand[39m
+
+  at [32mtests/Feature/PipingTraceabilityTest.php[39m:[32m280[39m
+    276▕         [$mr,$po,$lines] = $this->mrFlow(false);
+    277▕         $this->receipt = $this->linkedArrival($lines[0]->id);
+    278▕         DB::table('companies')->where('id', $this->qc->company_id)->update(['tenant_type' => 'TPI']);
+    279▕         $this->actingAs($this->qc)->get($this->traceUrl(true))->assertNotFound();
+  ➜ 280▕         $this->get($this->traceUrl())->assertOk()->assertDontSee($po->number)->assertSee('not evidence of no project demand');
+    281▕     }
+    282▕ 
+    283▕     public function test_no_nomination_inheritance_and_live_suspension(): void
+    284▕     {
+
+
+  [90mTests:[39m    [31;1m1 failed[39;22m[90m,[39m[39m [39m[32;1m10 passed[39;22m[90m (107 assertions)[39m
+  [90mDuration:[39m [39m34.59s[39m
+

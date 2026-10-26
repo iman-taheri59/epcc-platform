@@ -1,0 +1,53 @@
+PASS 1 restricted actual writer; six tables FORCE RLS; integrity settings ON
+PASS 2 missing tenant context sees no projects
+PASS 3 foreign company sees no target project
+PASS 4 project context excludes another participating project
+PASS 5 root source/manifest/event commit together
+PASS 6 successor replaces head without mutating history
+PASS 7 duplicate revision rolls back clock and entire transaction
+PASS 8 stale expected head rejected atomically
+PASS 9 failure after complete insertion rolls back source/manifest/event/clock
+PASS 10 deferred completeness rejects batch without manifest/event at COMMIT
+PASS 11 foreign project acceptance rejected without writes
+PASS 12 RLS update cannot reach foreign project clock
+PASS 13 archive denies new acceptance while history remains readable
+PASS 14 writer cannot edit archive flag
+PASS 15 privileged UPDATE/DELETE rejected by immutable trigger: batches
+PASS 16 restrictive RLS denies UPDATE/DELETE even if privilege granted: batches
+PASS 17 privileged UPDATE/DELETE rejected by immutable trigger: manifest_entries
+PASS 18 restrictive RLS denies UPDATE/DELETE even if privilege granted: manifest_entries
+PASS 19 privileged UPDATE/DELETE rejected by immutable trigger: selection_events
+PASS 20 restrictive RLS denies UPDATE/DELETE even if privilege granted: selection_events
+PASS 21 second root forbidden
+PASS 22 branching predecessor forbidden
+PASS 23 skipped local step forbidden
+PASS 24 different scope predecessor forbidden
+PASS 25 different document predecessor forbidden
+PASS 26 exact manifest scope FK enforced
+PASS 27 future predecessor/cycle cannot be inserted
+PASS 28 new source with older unused ordinal cannot succeed newer head
+PASS 29 real connection contention: two commits serialize
+PASS 30 real connection contention: rollback releases lock without orphan
+PASS 31 real connection contention: concurrent stale writer loses
+PASS 32 FORCE RLS also filters the non-bypass table owner
+PASS 33 archive write guard also covers direct clock mutation
+PASS 34 composite source FK rejects real cross-project parent even as admin
+PASS 35 archive race: archive holds project lock, waiting acceptance rejected
+PASS 36 archive race: acceptance commits before waiting archive, later writes rejected
+{
+  "status": "PASS_ISOLATED_POSTGRES_PERSISTENCE_PROOF_ONLY",
+  "tests": 36,
+  "passed": 36,
+  "failed": 0,
+  "postgres_version": "17.11 (Debian 17.11-0+deb13u1)",
+  "database": "epcc_journal_proof",
+  "transport": "private Unix socket; no TCP listener; local trust test only",
+  "fsync": "on",
+  "synchronous_commit": "on",
+  "full_page_writes": "on",
+  "source_model": "synthetic minimal source fixtures, NOT Laravel app schema",
+  "production_database_used": false,
+  "production_migration": false,
+  "laravel_integration": false,
+  "g01_production_fixed": false
+}

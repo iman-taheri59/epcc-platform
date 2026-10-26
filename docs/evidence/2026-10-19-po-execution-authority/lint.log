@@ -1,0 +1,8 @@
+No syntax errors detected in /home/user/epcc-platform/app/app/Services/PurchaseOrderExecutionAccessService.php
+No syntax errors detected in /home/user/epcc-platform/app/app/Http/Controllers/MaterialsController.php
+No syntax errors detected in /home/user/epcc-platform/app/routes/web.php
+No syntax errors detected in /home/user/epcc-platform/app/database/migrations/2026_10_19_140000_add_buyer_scoped_po_execution_policies.php
+No syntax errors detected in /home/user/epcc-platform/app/lang/en/po_execution_access.php
+No syntax errors detected in /home/user/epcc-platform/app/lang/fa/po_execution_access.php
+No syntax errors detected in /home/user/epcc-platform/app/tests/Feature/PurchaseOrderExecutionAccessTest.php
+No syntax errors detected in /home/user/epcc-platform/app/tests/Feature/PurchaseOrderExecutionMigrationTest.php

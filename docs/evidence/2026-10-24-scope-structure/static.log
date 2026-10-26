@@ -1,0 +1,21 @@
+
+  ...⨯...
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FAIL   ............................................ 7 files, 1 style issue  
+  ⨯ app/tests/Feature/ScopeStructureDeclarationTest.php  method_argument_space  
+
+No syntax errors detected in app/database/migrations/2026_10_24_120000_add_scope_structure_declarations.php
+No syntax errors detected in app/app/Services/ScopeStructureDeclarationService.php
+No syntax errors detected in app/app/Services/ScopeProposalEnvelopeService.php
+No syntax errors detected in app/tests/Feature/ScopeStructureDeclarationTest.php
+No syntax errors detected in app/tests/Feature/ScopeProposalEnvelopeTest.php
+No syntax errors detected in app/lang/en/scope_structure.php
+No syntax errors detected in app/lang/fa/scope_structure.php
+
+  .......
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ........................................................... 7 files  
+
+No syntax errors detected in app/tests/Feature/ScopeStructureDeclarationTest.php

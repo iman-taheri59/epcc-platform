@@ -1,0 +1,12 @@
+No syntax errors detected in app/database/migrations/2026_10_19_200000_add_itp_inspection_notifications.php
+No syntax errors detected in app/app/Services/InspectionNotificationService.php
+No syntax errors detected in app/app/Http/Controllers/InspectionNotificationController.php
+No syntax errors detected in app/routes/web.php
+No syntax errors detected in app/app/Support/Navigation.php
+No syntax errors detected in app/lang/en/inspection_notifications.php
+No syntax errors detected in app/lang/fa/inspection_notifications.php
+No syntax errors detected in app/tests/Feature/InspectionNotificationTest.php
+No syntax errors detected in app/tests/Feature/SidebarNavigationTest.php
+No syntax errors detected in scripts/tests/inspection_notification_worker.php
+No syntax errors detected in app/app/Support/InspectionNotificationInput.php
+No syntax errors detected in app/tests/Unit/InspectionNotificationInputTest.php

@@ -1,0 +1,98 @@
+{
+  "date": "2026-10-19",
+  "status": "IMPLEMENTED_TARGETED_VERIFIED_INSPECTION_PAGINATION",
+  "reviewed": [
+    "REGISTER-PAGINATION-MONEY-EN.md remaining inspection pagination scope",
+    "existing MaterialInspection schema/model/RLS",
+    "settled advisory inspection in ProcurementState and ADR-024"
+  ],
+  "implementation": {
+    "existing_GET_route_unchanged": true,
+    "page_parameter": "inspection_page",
+    "per_page": 25,
+    "validation": "nullable integer min1 max1000000",
+    "ordering": [
+      "sequence DESC",
+      "id DESC"
+    ],
+    "true_total_not_current_page_count": true,
+    "three_way_independent_page_navigation": true,
+    "language_and_MR_PO_filters_preserved": true,
+    "inspection_set_not_restricted_by_MR_PO_filters": true,
+    "explicit_project_predicate_original_caller_RLS": true,
+    "existing_quality_visibility": "participating project companies, NOT buyer-only",
+    "nonparticipant_access_denied": true,
+    "unused_purchaseOrder_eager_load_removed_from_register_only": true,
+    "company_eager_loaded_current_page": true,
+    "advisory_inspection_no_new_receipt_gate": true,
+    "new_endpoint_schema_role_write_authority": false
+  },
+  "verification": {
+    "tests": 40,
+    "assertions": 556,
+    "seconds": 66.378,
+    "pass": true,
+    "new_feature_tests": 4,
+    "suites": [
+      "ProcurementRegisterFilterTest",
+      "ProcurementCategoryTest",
+      "PurchaseOrderDetailsTest"
+    ],
+    "log": "related.log",
+    "focused_subset": {
+      "tests": 4,
+      "assertions": 82,
+      "seconds": 7.177,
+      "log": "focused.log",
+      "not_additive": true
+    },
+    "26_records_split_25_1_with_UUID_tiebreak": true,
+    "three_register_page_and_filter_language_preservation": true,
+    "invalid_and_out_of_range_page_recovery": true,
+    "existing_participant_RLS_visibility_retained": true,
+    "nonparticipant_RLS_zero_and_route_denied": true,
+    "real_BB2_project_isolation": true,
+    "archived_GET_eight_table_no_mutation": true,
+    "findings_HTML_escaped": true,
+    "SQL_LIMIT_OFFSET_and_unused_relation_not_loaded": true,
+    "EN_FA": true,
+    "lint_files": 4,
+    "lint_pass": true,
+    "pint_pass": true,
+    "diff_check_pass": true,
+    "routine_full_suite": false
+  },
+  "database": {
+    "role": "epcc",
+    "NOSUPERUSER": true,
+    "NOBYPASSRLS": true,
+    "encoding": "UTF8",
+    "locale": "C",
+    "Unix_socket_private_only": true,
+    "stopped_after_verification": true
+  },
+  "implementation_sha256": {
+    "app/app/Http/Controllers/MaterialsController.php": "20df12b0cf5f04e5c6d5583690485a640518c5976a74ea32fba7fa33ab403079",
+    "app/resources/views/materials/procurement.blade.php": "2a0c7e935aac893e30b861bf076a256ba6f44f5056681877a49ce5242d417b4f",
+    "app/lang/en/procurement_register.php": "c12c6a8b458c776720bcbc2cfe96245f89bce7fb340e35db441c841689f04b46",
+    "app/lang/fa/procurement_register.php": "663472db20a6ce651433eb3abdb6ff8868c6ffb2569ce2053cedb63ce8c76876",
+    "app/tests/Feature/ProcurementRegisterFilterTest.php": "ea7081f6e3c1322485a33af40ae5b6569aade2d5d9301e48db1c137b645b20e9"
+  },
+  "not_claimed": [
+    "new human inspection-write authority",
+    "receipt operation certification",
+    "whole-page memory bound",
+    "20k-document load/query-plan certification",
+    "cross-request snapshot isolation",
+    "currentCI/browser/fullsuite/recovery/broad concurrency",
+    "production migration/deployment/commit/push"
+  ],
+  "separate_deferred_work": [
+    "representative indexes/query plans",
+    "other unbounded dashboards",
+    "inspection write UI/authority",
+    "physical receipt",
+    "controlled post-issue changes",
+    "MTO authority and legacy reconciliation"
+  ]
+}

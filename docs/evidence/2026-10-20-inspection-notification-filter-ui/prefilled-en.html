@@ -1,0 +1,186 @@
+<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ITP inspection notifications</title>
+<style>body{font:15px/1.8 system-ui,sans-serif;background:#f1f5f9;color:#172033;margin:0}main{max-width:1150px;margin:24px auto;padding:24px}section{background:white;border:1px solid #d9e1ec;border-radius:12px;padding:22px;margin:20px 0}h1,h2{line-height:1.4}h2{font-size:20px}label{display:block;margin:12px 0}input,select,textarea{font:inherit;max-width:100%;padding:8px;border:1px solid #b8c4d5;border-radius:5px;box-sizing:border-box}textarea{display:block;width:100%}button,.action{background:#135e71;color:white;border:0;border-radius:5px;padding:9px 15px;cursor:pointer}a{color:#075e7b}table{width:100%;border-collapse:collapse}td,th{text-align:start;padding:9px;border-bottom:1px solid #e5eaf1;vertical-align:top;overflow-wrap:anywhere}small,.muted{color:#586579}code{direction:ltr;unicode-bidi:embed;overflow-wrap:anywhere}nav svg{width:18px;height:18px}.errors{background:#fff0ee;border-color:#e7a49d}.success{background:#e9f7ef}form{margin:15px 0}.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}</style></head><body><main>
+<a href="http://localhost:8000/projects/PH-14/inspection-notifications?lang=fa&amp;notice_q=SYNTHETIC&amp;notice_state=DRAFT&amp;activity_from=2026-10-25T09%3A30%3A45%2B03%3A30&amp;activity_to=2026-10-25T09%3A30%3A45%2B03%3A30&amp;stage=599709d2-db1c-4fee-a5ea-dcca0ad00b5d">فارسی</a>
+<h1>ITP inspection notifications — PH-14</h1><p>Notice of planned inspection, not an inspection result, attendance confirmation, approval or release. No email/SMS delivery is claimed.</p><p>A referenced CDE revision and recorded stage do not themselves certify ITP approval. Stages are append-only; full ITP approval, corrections and hold/release rules are separate.</p>
+<section><h2>Visible ITP document revisions</h2><table><tbody><tr><td>PH-14-PIPING-ITP-0001 / A / WIP</td><td><code>d869b7f0-80a3-4fce-825d-3cc88829ddab</code></td></tr></tbody></table>
+<details><summary>Register stage (same-company doc.issue required)</summary><form id="itp-stage-form" method="post" action="http://localhost:8000/projects/PH-14/inspection-notifications/stages?lang=en"><input type="hidden" name="_token" value="synthetic-test-token" autocomplete="off"><label>ITP revision UUID <input required name="stage[revision_id]" value="" size="40"></label>
+<label>Stage sequence <input required type="number" min="1" max="2147483647" name="stage[sequence]" value=""></label>
+<label>Recorded ITP point (H/W/R/M) <select required name="stage[point]"><option value="">—</option><option >H</option><option >W</option><option >R</option><option >M</option></select></label>
+<label>Notification required by this stage <select required name="stage[requires_notification]"><option value="">—</option><option value="1">✓</option><option value="0">—</option></select></label>
+<label>Description / notes — English<textarea maxlength="8000" dir="ltr" name="stage[description_en]"></textarea></label><label>Description / notes — Persian<textarea maxlength="8000" dir="rtl" name="stage[description_fa]"></textarea></label><button>Save</button></form></details>
+</section>
+<section><h2>ITP stages</h2><table><tbody><tr><td>1 / W / PIPING</td><td>Recorded stage &lt;script&gt;stage()&lt;/script&gt;</td><td><a href="http://localhost:8000/projects/PH-14/inspection-notifications?lang=en&amp;notice_q=SYNTHETIC&amp;notice_state=DRAFT&amp;activity_from=2026-10-25T09%3A30%3A45%2B03%3A30&amp;activity_to=2026-10-25T09%3A30%3A45%2B03%3A30&amp;stage=599709d2-db1c-4fee-a5ea-dcca0ad00b5d">Select stage / prepare notice</a></td></tr></tbody></table></section>
+<section><h2>Register inspection notification draft</h2><p>PH-14-PIPING-ITP-0001 / A · 1 / W</p><p>Recorded stage &lt;script&gt;stage()&lt;/script&gt;</p>
+<form id="inspection-notification-draft" method="post" action="http://localhost:8000/projects/PH-14/inspection-notifications?lang=en"><input type="hidden" name="_token" value="synthetic-test-token" autocomplete="off"><input type="hidden" name="notification[itp_revision_id]" value="d869b7f0-80a3-4fce-825d-3cc88829ddab"><input type="hidden" name="notification[itp_stage_id]" value="599709d2-db1c-4fee-a5ea-dcca0ad00b5d">
+<label>Work/activity reference (PO not required)<textarea required maxlength="1000" name="notification[work_reference]"></textarea></label>
+<p>Enter both Gregorian date-times with seconds and an explicit UTC offset, e.g. 2026-10-25T09:30:00+03:30. End must be later than start in absolute time.</p>
+<fieldset data-notification-time data-boundary="start"  style="min-width:0;margin:16px 0;padding:16px;border:1px solid #b8c4d5;border-radius:8px">
+<legend>Planned activity start</legend>
+<div data-time-helper hidden>
+<p>Choose the date and time, then enter the UTC offset explicitly. No browser time zone is applied. Explicit offset for UTC: <bdi dir="ltr">+00:00</bdi></p>
+<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:end">
+<label for="notification-start-date">Date (Gregorian) <input id="notification-start-date" data-time-date type="date" dir="ltr" min="0001-01-01" max="9999-12-31"></label>
+<label for="notification-start-clock">Time (including seconds) <input id="notification-start-clock" data-time-clock type="time" step="1" dir="ltr"></label>
+<label for="notification-start-offset">UTC offset <input id="notification-start-offset" data-time-offset type="text" dir="ltr" placeholder="+03:30" size="8" maxlength="6" spellcheck="false" autocomplete="off"></label>
+</div>
+</div>
+<label data-time-mode hidden><input data-time-manual type="checkbox"> Enter the exact value directly</label>
+<label for="notification-start-exact">Exact value submitted <input id="notification-start-exact" data-time-exact required dir="ltr" name="notification[activity_start_at]" placeholder="2026-10-25T09:30:00+03:30" size="36" maxlength="35" spellcheck="false" value=""></label>
+<output data-time-preview aria-live="polite" style="display:block;overflow-wrap:anywhere"></output>
+<noscript><p>JavaScript is unavailable: enter both exact date-time values with seconds and UTC offsets below.</p></noscript>
+</fieldset>
+<fieldset data-notification-time data-boundary="end"  style="min-width:0;margin:16px 0;padding:16px;border:1px solid #b8c4d5;border-radius:8px">
+<legend>Planned activity end</legend>
+<div data-time-helper hidden>
+<p>Choose the date and time, then enter the UTC offset explicitly. No browser time zone is applied. Explicit offset for UTC: <bdi dir="ltr">+00:00</bdi></p>
+<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:end">
+<label for="notification-end-date">Date (Gregorian) <input id="notification-end-date" data-time-date type="date" dir="ltr" min="0001-01-01" max="9999-12-31"></label>
+<label for="notification-end-clock">Time (including seconds) <input id="notification-end-clock" data-time-clock type="time" step="1" dir="ltr"></label>
+<label for="notification-end-offset">UTC offset <input id="notification-end-offset" data-time-offset type="text" dir="ltr" placeholder="+03:30" size="8" maxlength="6" spellcheck="false" autocomplete="off"></label>
+</div>
+</div>
+<label data-time-mode hidden><input data-time-manual type="checkbox"> Enter the exact value directly</label>
+<label for="notification-end-exact">Exact value submitted <input id="notification-end-exact" data-time-exact required dir="ltr" name="notification[activity_end_at]" placeholder="2026-10-25T09:30:00+03:30" size="36" maxlength="35" spellcheck="false" value=""></label>
+<output data-time-preview aria-live="polite" style="display:block;overflow-wrap:anywhere"></output>
+<noscript><p>JavaScript is unavailable: enter both exact date-time values with seconds and UTC offsets below.</p></noscript>
+</fieldset>
+<label>Inspection location<textarea required maxlength="2000" name="notification[location]"></textarea></label>
+<label>Explicit recipients — participating project companies<select required multiple size="7" name="notification[recipient_company_ids][]"><option value="7ee50d5e-b23f-42f5-bc5b-fd6a0dea8f1e" >EPC-PARS — Pars Construction &amp; Engineering</option><option value="74a6f87c-56dc-4929-b168-186b42d09c54" >EPC-SAHAND — Sahand Industrial Group</option><option value="e7fd4f1c-2215-4139-9395-1e1ccc5aecde" >MC-KARAN — Karan Contract Management</option><option value="ed33a613-5dcb-434f-b783-ef352979d198" >NIOC-AFF — NIOC Affiliate Company</option><option value="3b0a94e6-a4bd-46b8-b6b8-823a20d542ed" >PMC-TEHRAN — Tehran Consulting Engineers</option></select></label>
+<label>Optional visible PO UUID (same discipline) <input name="notification[purchase_order_id]" size="40" value=""></label>
+<label>Description / notes — English<textarea maxlength="8000" dir="ltr" name="notification[notes_en]"></textarea></label><label>Description / notes — Persian<textarea maxlength="8000" dir="rtl" name="notification[notes_fa]"></textarea></label><button>Save</button></form>
+</section>
+<section><h2>Notification register / received notices</h2><form id="inspection-notification-filters" method="get" action="http://localhost:8000/projects/PH-14/inspection-notifications">
+<h3>Filter notifications</h3>
+<input type="hidden" name="lang" value="en"><input type="hidden" name="stage" value="599709d2-db1c-4fee-a5ea-dcca0ad00b5d"><div class="fields">
+<label>Number or current work/activity reference <input type="search" name="notice_q" maxlength="200" value="SYNTHETIC"></label>
+<label>Notification state <select name="notice_state"><option value="">All visible states</option><option value="DRAFT" selected>DRAFT</option><option value="ISSUED" >ISSUED</option></select></label>
+</div>
+<fieldset data-notification-time data-boundary="filter-from"  data-time-optional  style="min-width:0;margin:16px 0;padding:16px;border:1px solid #b8c4d5;border-radius:8px">
+<legend>Overlap window — from (inclusive)</legend>
+<div data-time-helper hidden>
+<p>Choose the date and time, then enter the UTC offset explicitly. No browser time zone is applied. Explicit offset for UTC: <bdi dir="ltr">+00:00</bdi></p>
+<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:end">
+<label for="notification-filter-from-date">Date (Gregorian) <input id="notification-filter-from-date" data-time-date type="date" dir="ltr" min="0001-01-01" max="9999-12-31"></label>
+<label for="notification-filter-from-clock">Time (including seconds) <input id="notification-filter-from-clock" data-time-clock type="time" step="1" dir="ltr"></label>
+<label for="notification-filter-from-offset">UTC offset <input id="notification-filter-from-offset" data-time-offset type="text" dir="ltr" placeholder="+03:30" size="8" maxlength="6" spellcheck="false" autocomplete="off"></label>
+</div>
+</div>
+<label data-time-mode hidden><input data-time-manual type="checkbox"> Enter the exact value directly</label>
+<label for="notification-filter-from-exact">Exact value submitted <input id="notification-filter-from-exact" data-time-exact  dir="ltr" name="activity_from" placeholder="2026-10-25T09:30:00+03:30" size="36" maxlength="35" spellcheck="false" value="2026-10-25T09:30:45+03:30"></label>
+<output data-time-preview aria-live="polite" style="display:block;overflow-wrap:anywhere"></output>
+<noscript><p>JavaScript is unavailable: optionally enter either exact date-time below, including seconds and an explicit UTC offset. Leave a bound empty to omit it.</p></noscript>
+</fieldset>
+<fieldset data-notification-time data-boundary="filter-to"  data-time-optional  style="min-width:0;margin:16px 0;padding:16px;border:1px solid #b8c4d5;border-radius:8px">
+<legend>Overlap window — to (inclusive)</legend>
+<div data-time-helper hidden>
+<p>Choose the date and time, then enter the UTC offset explicitly. No browser time zone is applied. Explicit offset for UTC: <bdi dir="ltr">+00:00</bdi></p>
+<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:end">
+<label for="notification-filter-to-date">Date (Gregorian) <input id="notification-filter-to-date" data-time-date type="date" dir="ltr" min="0001-01-01" max="9999-12-31"></label>
+<label for="notification-filter-to-clock">Time (including seconds) <input id="notification-filter-to-clock" data-time-clock type="time" step="1" dir="ltr"></label>
+<label for="notification-filter-to-offset">UTC offset <input id="notification-filter-to-offset" data-time-offset type="text" dir="ltr" placeholder="+03:30" size="8" maxlength="6" spellcheck="false" autocomplete="off"></label>
+</div>
+</div>
+<label data-time-mode hidden><input data-time-manual type="checkbox"> Enter the exact value directly</label>
+<label for="notification-filter-to-exact">Exact value submitted <input id="notification-filter-to-exact" data-time-exact  dir="ltr" name="activity_to" placeholder="2026-10-25T09:30:00+03:30" size="36" maxlength="35" spellcheck="false" value="2026-10-25T09:30:45+03:30"></label>
+<output data-time-preview aria-live="polite" style="display:block;overflow-wrap:anywhere"></output>
+<noscript><p>JavaScript is unavailable: optionally enter either exact date-time below, including seconds and an explicit UTC offset. Leave a bound empty to omit it.</p></noscript>
+</fieldset>
+<div>
+</div><p>Optional Gregorian date-times with explicit offsets. Matches activities ending at/after From and starting at/before To. A single bound is allowed; equal bounds search an instant. Older single-time notices are excluded only when a time bound is used.</p>
+<button>Apply filters</button> <a id="inspection-notification-clear-filters" href="http://localhost:8000/projects/PH-14/inspection-notifications?lang=en&amp;stage=599709d2-db1c-4fee-a5ea-dcca0ad00b5d">Clear notice filters</a>
+</form>
+<p id="inspection-notification-counts">Matching notices / all notices currently visible to you: <bdi dir="ltr">1 / 1</bdi></p>
+<table><tbody><tr><td><a href="http://localhost:8000/projects/PH-14/inspection-notifications/a8bf1e0c-a0b7-4c72-a0bd-d6d012a74666?lang=en">a8bf1e0c-a0b7-4c72-a0bd-d6d012a74666</a></td><td>DRAFT / PIPING</td><td>SYNTHETIC FIELD INSPECTION / نمونهٔ آزمایشی</td><td><div><strong>Planned activity start:</strong> <span class="mono" style="display:inline-block;direction:ltr;unicode-bidi:isolate;overflow-wrap:anywhere">2026-10-25T09:30:00+03:30</span>
+<small style="display:block;direction:ltr;unicode-bidi:isolate">2026-10-25 · 09:30:00 · UTC+03:30</small></div><div><strong>Planned activity end:</strong> <span class="mono" style="display:inline-block;direction:ltr;unicode-bidi:isolate;overflow-wrap:anywhere">2026-10-25T11:30:00+03:30</span>
+<small style="display:block;direction:ltr;unicode-bidi:isolate">2026-10-25 · 11:30:00 · UTC+03:30</small></div></td></tr></tbody></table></section>
+<p>Issued notices are immutable. Draft editing, cancellation, reissue, attachments and external transport are not included in this increment.</p></main><style>[data-time-helper][hidden],[data-time-mode][hidden]{display:none!important}[data-time-exact][readonly]{background:#f1f5f9;color:#334155}[data-time-preview]{white-space:pre-wrap}</style>
+<script>
+(() => {
+    'use strict';
+    const messages = JSON.parse('{\u0022invalid\u0022:\u0022Enter a valid date-time and explicit offset in the shown format.\u0022,\u0022incomplete\u0022:\u0022Complete the date, time and UTC offset.\u0022,\u0022empty\u0022:\u0022No time bound: leave all three fields empty, or complete all three to apply this bound.\u0022}');
+    const probe = document.createElement('input');
+    probe.type = 'date';
+    if (probe.type !== 'date') return;
+    probe.type = 'time';
+    if (probe.type !== 'time') return;
+
+    // Parse numeric Gregorian components only. Never use the host's time zone,
+    // Date(string), toISOString(), or an inferred offset to serialize user input.
+    function parts(value) {
+        const m = /^(?!0000)(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})([+-])(\d{2}):(\d{2})$/.exec(value);
+        if (!m) return null;
+        const y=Number(m[1]), month=Number(m[2]), day=Number(m[3]);
+        const leap = y%4===0 && (y%100!==0 || y%400===0);
+        const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+        if (month<1 || month>12 || day<1 || day>days[month-1] || Number(m[4])>23 || Number(m[5])>59 || Number(m[6])>59 || Number(m[8])>15 || Number(m[9])>59) return null;
+        const offset=m[7]+m[8]+':'+m[9];
+        if (offset==='-00:00') return null;
+        return {date:m[1]+'-'+m[2]+'-'+m[3], clock:m[4]+':'+m[5]+':'+m[6], offset};
+    }
+
+    document.querySelectorAll('[data-notification-time]').forEach(widget => {
+        const exact=widget.querySelector('[data-time-exact]');
+        const date=widget.querySelector('[data-time-date]');
+        const clock=widget.querySelector('[data-time-clock]');
+        const offset=widget.querySelector('[data-time-offset]');
+        const manual=widget.querySelector('[data-time-manual]');
+        const preview=widget.querySelector('[data-time-preview]');
+        const controls=[date,clock,offset];
+        const optional=widget.hasAttribute('data-time-optional');
+        if (!exact || !date || !clock || !offset || !manual || !preview) return;
+        widget.querySelector('[data-time-helper]').hidden=false;
+        widget.querySelector('[data-time-mode]').hidden=false;
+
+        function show(value) {
+            const p=parts(value);
+            preview.textContent=p ? p.date+'  '+p.clock+'  UTC'+p.offset : (value ? messages.invalid : (optional && !controls.some(c => c.value) ? messages.empty : messages.incomplete));
+            preview.dir=p ? 'ltr' : document.documentElement.dir;
+            return p;
+        }
+        function load() {
+            const p=parts(exact.value);
+            date.value=p ? p.date : '';
+            clock.value=p ? p.clock : '';
+            offset.value=p ? p.offset : '';
+            show(exact.value);
+        }
+        function requirements() {
+            const any=controls.some(c => c.value !== '');
+            controls.forEach(c => { c.required=!manual.checked && (!optional || any); });
+        }
+        function applyMode() {
+            exact.readOnly=!manual.checked;
+            exact.setCustomValidity('');
+            controls.forEach(c => {c.disabled=manual.checked; c.required=false; c.setCustomValidity('');});
+            load();
+            requirements();
+            if (manual.checked && exact.value && !parts(exact.value)) exact.setCustomValidity(messages.invalid);
+        }
+        function compose() {
+            let time=clock.value;
+            if (/^\d{2}:\d{2}$/.test(time)) time+=':00';
+            const candidate=date.value+'T'+time+offset.value;
+            const p=parts(candidate);
+            // Clearing or partially editing a helper must never send the previous
+            // complete range. Required helper controls gate readonly exact input.
+            exact.value=p ? candidate : '';
+            requirements();
+            offset.setCustomValidity(offset.value && !/^[+-]\d{2}:\d{2}$/.test(offset.value) ? messages.invalid : '');
+            if (date.value && time && offset.value && !p) offset.setCustomValidity(messages.invalid);
+            show(exact.value);
+        }
+        controls.forEach(c => c.addEventListener('input',compose));
+        controls.forEach(c => c.addEventListener('change',compose));
+        exact.addEventListener('input',() => {
+            load();
+            exact.setCustomValidity(exact.value && !parts(exact.value) ? messages.invalid : '');
+        });
+        manual.addEventListener('change',applyMode);
+        // Preserve malformed restored direct input for correction; do not silently
+        // normalize it, replace it with a browser local time, or discard it on load.
+        manual.checked=Boolean(exact.value && !parts(exact.value));
+        applyMode();
+    });
+})();
+</script>
+</body></html>

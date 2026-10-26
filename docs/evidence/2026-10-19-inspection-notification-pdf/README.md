@@ -1,0 +1,3 @@
+# Issued notification PDF evidence — 2026-10-20 local
+
+Final affected run: **42 tests /501 assertions PASS**, 63.187s. Separate shared PDF: **21 /85 PASS**,46.146s. Zero skips; not full regression/production/CI. Source/artifact hashes and precise caveats in `summary.json`. Earlier intermediate logs are nonadditive; `revocation.log` records a corrected test script quoting error, `revocation-fixed.log` passes. `static-checks.log` and `final-style.log` contain a multi-path Pint report; final individual checks all pass in `final-style-per-file.log`. Real PDF and font/text/page-count samples are synthetic. Private database stopped. Guides: [English](../../INSPECTION-NOTIFICATION-WORKFLOW-EN.md) / [فارسی](../../INSPECTION-NOTIFICATION-WORKFLOW-FA.md).

@@ -55,6 +55,9 @@
   .meta td { padding: 1.6mm 0; vertical-align: top; font-size: 10pt; }
   .meta td.k { width: 34mm; color: #555; }
   .meta td.k::after { content: ':'; }
+  /* The longer safety-count label must not wrap around its value in the PDF.
+     Scope this to the MCC punch summary; other document metadata stays unchanged. */
+  .meta.punch-summary td.k { width: 48mm; white-space: nowrap; }
 
   h2 { font-size: 11.5pt; margin: 6mm 0 2.5mm; border-bottom: 1px solid #bbb; padding-bottom: 1.5mm; }
 

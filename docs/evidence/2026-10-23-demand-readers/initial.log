@@ -1,0 +1,78 @@
+
+  [90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m[31;1m⨯[39;22m[31;1m⨯[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m[90;1m.[39;22m[90;1m.[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\DemandReaderTest[22m [90m>[39m identity a… [41;1m AssertionFailedError [49;22m  
+[39;1m  Expected deny[39;22m
+
+  at [32mtests/Feature/DemandReaderTest.php[39m:[32m167[39m
+    163▕     private function denied(callable $f): void
+    164▕     {
+    165▕         try {
+    166▕             $f();
+  ➜ 167▕             $this->fail('Expected deny');
+    168▕         } catch (HttpException $e) {
+    169▕             $this->assertSame(403, $e->getStatusCode());
+    170▕         }
+    171▕     }
+
+  [33m1   [39m[39;1mtests/Feature/DemandReaderTest.php[39;22m:[39;1m167[39;22m
+  [33m2   [39m[39;1mtests/Feature/DemandReaderTest.php[39;22m:[39;1m234[39;22m
+
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\DemandReaderTest[22m [90m>[39m discipline… [41;1m AssertionFailedError [49;22m  
+[39;1m  Expected deny[39;22m
+
+  at [32mtests/Feature/DemandReaderTest.php[39m:[32m167[39m
+    163▕     private function denied(callable $f): void
+    164▕     {
+    165▕         try {
+    166▕             $f();
+  ➜ 167▕             $this->fail('Expected deny');
+    168▕         } catch (HttpException $e) {
+    169▕             $this->assertSame(403, $e->getStatusCode());
+    170▕         }
+    171▕     }
+
+  [33m1   [39m[39;1mtests/Feature/DemandReaderTest.php[39;22m:[39;1m167[39;22m
+  [33m2   [39m[39;1mtests/Feature/DemandReaderTest.php[39;22m:[39;1m241[39;22m
+
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\DemandReaderTest[22m [90m>[39m company…  [41;1m ModelNotFoundException [49;22m  
+[39;1m  No query results for model [App\Models\ProjectMembership].[39;22m
+
+  at [32m/home/user/.cache/demand-reader-vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php[39m:[32m809[39m
+    805▕         if (! is_null($model = $this->first($columns))) {
+    806▕             return $model;
+    807▕         }
+    808▕ 
+  ➜ 809▕         throw (new ModelNotFoundException)->setModel(get_class($this->model));
+    810▕     }
+    811▕ 
+    812▕     /**
+    813▕      * Execute the query and get the first result or call a callback.
+
+  [33m1   [39m[39;1m/home/user/.cache/demand-reader-vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php[39;22m:[39;1m809[39;22m
+  [33m2   [39m[39;1mtests/Feature/DemandReaderTest.php[39;22m:[39;1m246[39;22m
+
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\DemandReaderTest[22m [90m>[39m policy is…  [41;1m AssertionFailedError [49;22m  
+[39;1m  Expected SQLSTATE 42501[39;22m
+
+  at [32mtests/Feature/DemandReaderTest.php[39m:[32m136[39m
+    132▕     private function assertSqlState(string $state, callable $fn): void
+    133▕     {
+    134▕         try {
+    135▕             $fn();
+  ➜ 136▕             $this->fail('Expected SQLSTATE '.$state);
+    137▕         } catch (\PDOException $e) {
+    138▕             $this->assertSame($state, $e->errorInfo[0]);
+    139▕         }
+    140▕     }
+
+  [33m1   [39m[39;1mtests/Feature/DemandReaderTest.php[39;22m:[39;1m136[39;22m
+  [33m2   [39m[39;1mtests/Feature/DemandReaderTest.php[39;22m:[39;1m283[39;22m
+
+
+  [90mTests:[39m    [31;1m4 failed[39;22m[90m,[39m[39m [39m[32;1m11 passed[39;22m[90m (27 assertions)[39m
+  [90mDuration:[39m [39m24.66s[39m
+

@@ -1,0 +1,95 @@
+{
+  "date": "2026-10-19",
+  "status": "TARGETED_VERIFIED_FULL_COPY_MR_PO_ISSUE_ALLOCATION",
+  "accepted_owner_decisions": [
+    "separate_financial_and_issue",
+    "explicit_target_buyer",
+    "original_drafter_live_grant",
+    "full_copy_issue_allocation"
+  ],
+  "implementation": {
+    "mr_linked_financial_approval": true,
+    "mr_linked_three_person_issuance": true,
+    "atomic_exact_source_line_allocation": true,
+    "full_copy_only": true,
+    "controlled_pricing_revision_required": true,
+    "same_po_and_source_version_required": true,
+    "append_only_buyer_project_scoped_ledger": true,
+    "legacy_ambiguity_blocks": true,
+    "enrolled_source_legacy_bypass_guard": true,
+    "source_mutation": false,
+    "draft_or_finance_source_reservation": false,
+    "partial_purchasing": false,
+    "automatic_cancellation_release": false,
+    "legacy_reconciliation_write_endpoint": false,
+    "new_roles_or_mto_rights": false
+  },
+  "corrected_prior_defect": "Deferred issue constraints now rebind only the immutable event buyer/project and restore caller context, fixing cross-company issuer commits without weakening generic RLS. Linked and manual counterparty issuers verified.",
+  "verification": {
+    "tests": 108,
+    "assertions": 746,
+    "seconds": 190.431,
+    "pass": true,
+    "new_allocation_workflow_cases": 19,
+    "new_upgrade_cases": 1,
+    "new_manual_cross_company_regression": 1,
+    "log": "related.log",
+    "php_lint_files": 12,
+    "lint_pass": true,
+    "pint_pass": true,
+    "diff_check_pass": true,
+    "specific_two_connection_scenario": {
+      "verified": true,
+      "test": "test_two_real_connections_serialize_issue_then_reject_released_competing_source_quantity",
+      "connections": "Two independent actual PostgreSQL PDO sessions, application role epcc",
+      "sequence": "A holds uncommitted issue; B lock_timeout=150ms returns55P03; B rolls back; A commits; B retries and receives PO_EXEC_MR_QUANTITY_EXCEEDED",
+      "exhaustive_concurrency_certification": false
+    }
+  },
+  "database": {
+    "role": "epcc",
+    "non_superuser": true,
+    "no_bypassrls": true,
+    "encoding": "UTF8",
+    "unix_socket_only": true,
+    "disposable": true,
+    "stopped_after_verification": true
+  },
+  "not_claimed": [
+    "full_suite",
+    "recovery",
+    "browser_acceptance",
+    "exhaustive_concurrency_revocation_crash",
+    "issue_versus_legacy_amend_race",
+    "current_CI",
+    "production_migration",
+    "deployment",
+    "commit",
+    "push",
+    "physical_receipt_certification",
+    "universal_SQL_per_user_RBAC",
+    "PKI_signatures"
+  ],
+  "next": "Read-only legacy commitment diagnostics with existing visibility; align legacy line-first locks and verify issue/amend/revocation races; controlled post-issue changes and any legacy capacity resolution need explicit semantics.",
+  "historical_evidence_untouched": [
+    "../2026-10-19-po-execution-authority/",
+    "../2026-10-19-po-versioned-execution/",
+    "../2026-10-19-po-controlled-pricing/",
+    "../2026-10-19-po-mr-draft-link/"
+  ],
+  "source_sha256": {
+    "app/app/Services/PurchaseOrderExecutionService.php": "3ce94989e0d512fe941ab9b884f8bbe36104f7455133dd35e0012746db6b6180",
+    "app/database/migrations/2026_10_19_170000_add_po_mr_issue_allocations.php": "ea890eebaf63992c8ec162a3f786e07b7f9046bc73eb2b36b1060681f69ece88",
+    "app/lang/en/po_execution.php": "5a7a19fb46c2bb3a010ea108fdd725b59b3c2e8586798aad6d4e5b39a1be125d",
+    "app/lang/fa/po_execution.php": "8e02da98662dfab6a79262dc0a187622e55dd8f3a8d683a1fb03afb17a1e1a2c",
+    "app/lang/en/po_pricing.php": "8043aa525e7a5213d7c67139591e64a0019c927d7da801eba79db037efea7b0c",
+    "app/lang/fa/po_pricing.php": "1b0eacb2311df0bf32fdcdd9a724005b8980342762524ffb9b269fee9a569836",
+    "app/lang/en/po_mr_allocation.php": "56d526de38a180089ae098de6c00eef236ea132ad29bc600d7d981fca357db7f",
+    "app/lang/fa/po_mr_allocation.php": "ce7332b354531f5e6572066e6fec3591c03000dd5d2a11c1cb41b29abce878a4",
+    "app/tests/Feature/PurchaseOrderMrAllocationTest.php": "338b290dd6c4076c322ab91d5b885a1341e8e669f150cbfd9d05669c733a7485",
+    "app/tests/Feature/PurchaseOrderMrAllocationMigrationTest.php": "d5c0f22a7b1f07247f50f8528a6f0ff6ae5054b4ab97472dfc634dabf9a7066b",
+    "app/tests/Feature/PurchaseOrderExecutionTest.php": "b04d0491fdbb418ba408256d54af0e290b7456af92bc07bc42c5fc7ec9f5e653",
+    "app/tests/Feature/PurchaseOrderPricingTest.php": "d159d8671eb0349e1ea8fc09d05eaea3698ccc3ef127a39e8c6840fbe25d3c42",
+    "app/resources/views/materials/po-execution.blade.php": "ed9d4b7df649ec63669f499858f405b7d9372bc1da5d5e22f25779975b31886f"
+  }
+}

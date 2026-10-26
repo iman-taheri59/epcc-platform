@@ -1,0 +1,11 @@
+
+  .....
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ........................................................... 5 files  
+
+No syntax errors detected in app/app/Services/DemandReaderService.php
+No syntax errors detected in app/database/migrations/2026_10_23_120000_add_scoped_demand_reader_policies.php
+No syntax errors detected in app/tests/Feature/DemandReaderTest.php
+No syntax errors detected in app/lang/en/demand_readers.php
+No syntax errors detected in app/lang/fa/demand_readers.php

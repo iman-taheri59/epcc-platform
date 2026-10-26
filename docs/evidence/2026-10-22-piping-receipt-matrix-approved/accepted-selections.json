@@ -1,0 +1,5 @@
+{
+  "receipt_acceptance_responsibility": "qc_qa_warehouse",
+  "receipt_nomination_administrator": "owner_configure_explicit",
+  "receipt_person_separation": "preparer_qc_acceptor_distinct"
+}

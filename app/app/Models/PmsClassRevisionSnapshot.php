@@ -12,6 +12,11 @@ final class PmsClassRevisionSnapshot extends Model
 {
     protected $table = 'pms_class_revision_snapshots';
 
+    // Service-assigned UUID keys must not be coerced by eager loading.
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
     public $timestamps = false;
 
     protected $guarded = ['*'];

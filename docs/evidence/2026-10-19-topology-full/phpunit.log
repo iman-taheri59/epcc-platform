@@ -1,0 +1,1339 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+.............................................................   61 / 1151 (  5%)
+........................
+>>> blobs verified ok=4 broken=0
+.....................................  122 / 1151 ( 10%)
+.............................................................  183 / 1151 ( 15%)
+.............................................................  244 / 1151 ( 21%)
+.............................................................  305 / 1151 ( 26%)
+.............................................................  366 / 1151 ( 31%)
+.............................................................  427 / 1151 ( 37%)
+.............................................................  488 / 1151 ( 42%)
+.............................................................  549 / 1151 ( 47%)
+.............................................................  610 / 1151 ( 52%)
+.............................................................  671 / 1151 ( 58%)
+.............................................................  732 / 1151 ( 63%)
+.............................................................  793 / 1151 ( 68%)
+.............................................................  854 / 1151 ( 74%)
+.............................................................  915 / 1151 ( 79%)
+.............................................................  976 / 1151 ( 84%)
+............................................................. 1037 / 1151 ( 90%)
+............................................................. 1098 / 1151 ( 95%)
+.....................................................         1151 / 1151 (100%)
+
+Time: 21:51.741, Memory: 127.00 MB
+
+Airgap Verification (Tests\Feature\AirgapVerification)
+ ✔ No shipped asset is fetched from the internet
+ ✔ No panel screen renders a reference to an external host
+ ✔ Avatars are drawn locally as inline data uris
+ ✔ Avatar colour is stable for the same name
+ ✔ The latent allowlist has no stale entries
+ ✔ Every latent entry states a reason
+ ✔ The scanner detects a planted external stylesheet
+ ✔ The scanner detects a cdn held in a config property
+ ✔ The scanner ignores namespaces and documentation links
+ ✔ Strict mode fails while any latent finding remains
+ ✔ Json output is valid and reports the verdict
+
+Authentication (Tests\Feature\Authentication)
+ ✔ Application routes require authentication
+ ✔ The login page and the stateless gate stay public
+ ✔ A valid login reaches the portfolio
+ ✔ A wrong password is refused
+ ✔ A disabled account cannot hold a session
+ ✔ The as query parameter no longer switches tenant
+ ✔ The bound tenant is the authenticated users company
+ ✔ Each user sees only their own companys projects
+ ✔ A foreign project is not reachable by url
+ ✔ The commercial firewall holds between users on one project
+ ✔ The authority limit shown is the users not the companys
+ ✔ Logout ends the session
+ ✔ An unauthenticated request binds no tenant
+
+Authorization Pipeline (Tests\Feature\AuthorizationPipeline)
+ ✔ A disabled account is refused before anything else
+ ✔ A plan without the module is refused
+ ✔ The same user is allowed a module the plan does include
+ ✔ A non member is refused at membership not at rbac
+ ✔ A role without the capability is refused
+ ✔ Wildcard capabilities grant the whole family
+ ✔ A discipline outside the users scope is refused
+ ✔ An amount above the delegated authority is refused
+ ✔ The same person cannot submit then approve
+ ✔ Every denial is audited
+ ✔ Denial messages are bilingual
+ ✔ A membership cannot be created for a non participating company
+
+Bind Tenant Middleware (Tests\Feature\BindTenantMiddleware)
+ ✔ It binds the authenticated users company
+ ✔ A different user binds a different tenant
+ ✔ An unauthenticated request binds nothing and sees nothing
+ ✔ A query parameter cannot override the bound tenant
+
+Blob Integrity (Tests\Feature\BlobIntegrity)
+ ✔ Every stored blob is present and matches its hash
+
+Branch Reinforcement Calculator (Tests\Unit\BranchReinforcementCalculator)
+ ✔ Thick run passes without reinforcement
+ ✔ Thin run fails without reinforcement
+ ✔ Pad restores the balance
+ ✔ Pad wider than zone is capped
+ ✔ Required pad thickness solves the shortfall
+ ✔ Allowable stress ratio reduces branch credit
+ ✔ Lateral branch at 45 degrees
+ ✔ Angle outside 45 to 90 is refused
+ ✔ Pad od not larger than branch is refused
+ ✔ Pressure design thickness eq 3a
+ ✔ Eq 3a refuses the thick wall regime
+ ✔ Eq 3a feeds the reinforcement check
+
+Breakdown (Tests\Feature\Breakdown)
+ ✔ A project can hold several facilities
+ ✔ Every subsystem has a facility
+ ✔ A facility can hold several areas
+ ✔ A subsystem may skip the area level
+ ✔ A facility can have no areas at all
+ ✔ Unassigned subsystems are listed for a facility that uses areas
+ ✔ The same subsystem code may repeat in another facility
+ ✔ A subsystem code is still unique inside one facility
+ ✔ Full code names the facility
+ ✔ A subsystem cannot sit in an area of another facility
+ ✔ Deleting an area keeps its subsystems
+ ✔ Deleting a facility removes its subsystems
+ ✔ Pipeline is known but not yet selectable
+ ✔ Plant is selectable
+ ✔ Only a pipeline is addressed by stationing
+ ✔ The database refuses an unknown kind
+ ✔ Kind labels are bilingual
+ ✔ The intermediate level is named per kind
+ ✔ Addressing round trips as a structure
+ ✔ Addressing defaults to an empty structure
+ ✔ Area shows its unit code when there is one
+ ✔ Every participant can read the breakdown
+ ✔ A non participant sees no facilities
+ ✔ A participant cannot write another companys facility
+ ✔ Row level security is still forced after the migration
+
+Cde Evidence Integrity (Tests\Feature\CdeEvidenceIntegrity)
+ ✔ Exact visible revision bytes are verified without admission or writes
+ ✔ Wip integrity is not publication or engineering approval
+ ✔ Archived exact revision is used not current revision
+ ✔ Same hash does not substitute file from another document
+ ✔ Outsider does not trigger storage access or leak reference
+ ✔ Wrong project reference is not resolved by id alone
+ ✔ Malformed reference is rejected before database or storage lookup
+ ✔ Wrong expected digest does not fall back to stored digest
+ ✔ Missing blob fails closed
+ ✔ Same size tampered blob fails digest check
+ ✔ Truncated blob fails size check
+ ✔ Noncanonical database path is not used
+ ✔ Remote disk is not fetched
+ ✔ Metadata mutation during stream read is detected
+ ✔ Competitor cannot read private wip revision
+ ✔ Invalid hash shape is rejected
+ ✔ Oversized record is rejected before stream access
+ ✔ Blob larger than record stops stream verification
+ ✔ Current revision id cannot replace explicit historical reference
+ ✔ Uuid case does not break content addressed path binding
+ ✔ Existing published participant visibility is preserved
+ ✔ Archived project evidence remains readable without writes
+
+Certificate Screen (Tests\Feature\CertificateScreen)
+ ✔ Tenant context is a singleton
+ ✔ Contractor sees only its own row on screen
+ ✔ Rival contractor sees only its own
+ ✔ Employer sees both and page does not error
+ ✔ Consultant sees an empty state not an error
+ ✔ Incomplete certificate is hard blocked with persian reasons
+ ✔ Audit row records actor and subject separately
+ ✔ English renders ltr
+
+Component Modelling (Tests\Feature\ComponentModelling)
+ ✔ A pipe gets two ports without being asked
+ ✔ A tee gets three ports and the third is the branch
+ ✔ A cap gets one port
+ ✔ The service exposes no way to set a port count
+ ✔ A single size component gives every port that size
+ ✔ A reducing tee is one component with a smaller branch
+ ✔ A branch larger than the run is refused
+ ✔ A reducer with two equal ends is refused
+ ✔ A reducer reduces
+ ✔ A per port override is ignored on a single size component
+ ✔ Both size spellings are stored
+ ✔ An unrecognised size is refused not silently nulled
+ ✔ Attaching inherits the parent port size
+ ✔ An attempt to override the inherited size is discarded
+ ✔ Attaching closes both ports
+ ✔ A connected port cannot be attached to twice
+ ✔ Open ends lists every unconnected port in order
+ ✔ Open ends is scoped to its own line
+ ✔ Sequence is per line and starts at one
+ ✔ Removing a component removes its ports
+ ✔ A released line cannot be modelled
+ ✔ An archived project cannot be modelled
+ ✔ An unknown template is a validation error
+ ✔ A nozzle cannot be placed on a line
+ ✔ The nozzle is not offered as placeable
+ ✔ A length is kept on a pipe and dropped on a tee
+ ✔ The database refuses a port with two owners
+ ✔ The database refuses a port with no owner
+ ✔ The database refuses a duplicate port number
+ ✔ The database refuses a half written size
+ ✔ The database refuses a duplicate sequence on a line
+ ✔ The model page renders components and open ends
+ ✔ Model page flags explicit pipe schedule difference against issued pms
+ ✔ Schedule exception audit requires reason and independent decision and is append only
+ ✔ Offline signature metadata keeps signer separate from uploader and refuses self verification
+ ✔ Tq ncr register keeps internal draft distinct from externally issued metadata
+ ✔ Report service records only internal drafts or unverified external metadata
+ ✔ Report capture needs its own capability and piping scope
+ ✔ Schedule request recomputes issued value and refuses matching or duplicate pipes
+ ✔ False expected pms request cannot mask a valid schedule discrepancy
+ ✔ Internal taper is only a proposal for a thicker reference wall
+ ✔ Model page submits schedule discrepancy reason without approving it
+ ✔ The register links to the model page
+ ✔ Placing a component over http
+ ✔ The branch box does not leak onto a reducer
+ ✔ Attaching over http closes the port
+ ✔ A bad size over http is a field error not a crash
+ ✔ One line cannot delete another lines component
+ ✔ A non participant cannot see the model page
+
+Connection Reuse (Tests\Feature\ConnectionReuse)
+ ✔ Set local does not survive its transaction
+ ✔ A plain set would leak which is why it is banned
+ ✔ Interleaved tenants on one connection never bleed
+ ✔ The singleton property is never trusted for authorization
+
+Cookieless Preview (Tests\Feature\CookielessPreview)
+ ✔ The login form carries a session token field
+ ✔ Login succeeds with the token in the body and no cookie
+ ✔ A redirect propagates the token when no cookie returned
+ ✔ Rendered links and forms carry the token
+ ✔ Dom injected links are patched client side
+ ✔ A forged token is refused
+ ✔ The token is never appended to a foreign host
+ ✔ A returned cookie takes precedence over the url
+ ✔ A failed login redirects over https and keeps the input
+ ✔ The intended url stashed for a guest is https
+ ✔ The fallback is off for a normal deployment
+
+Date Formatting (Tests\Feature\DateFormatting)
+ ✔ No hand rolled jalali conversion is left in any view
+ ✔ No filament column formats a date with the gregorian helper
+ ✔ A date is formatted in jalali with persian digits
+ ✔ A missing date renders an em dash not an empty cell
+ ✔ Digits are converted only for persian
+
+Document File (Tests\Feature\DocumentFile)
+ ✔ A file attaches to the current revision with its hash
+ ✔ The stored path is content addressed and ignores the filename
+ ✔ Identical bytes are stored once and reattaching is idempotent
+ ✔ An unlisted extension is refused
+ ✔ Svg and html are not accepted at all
+ ✔ Only safe types are ever served inline
+ ✔ The recorded mime type comes from our allow list not the client
+ ✔ Files cannot be attached to a published revision
+ ✔ A shared revision still accepts files
+ ✔ Removing a file keeps bytes that another revision still uses
+ ✔ Verify detects bytes that changed on disk
+ ✔ A viewer cannot upload
+ ✔ A download requires authentication
+ ✔ A foreign company cannot download a file
+ ✔ A pdf is served inline and a cad file is forced to download
+ ✔ The register screen lists attachments
+ ✔ A header forging filename is neutralised
+ ✔ Sizes are rendered in persian digits
+
+Document Register (Tests\Feature\DocumentRegister)
+ ✔ Document numbers are segment based and sequential
+ ✔ The sequence restarts per discipline and type
+ ✔ Pms is a piping document with a wip revision not an approved class
+ ✔ A new document starts in wip with no suitability
+ ✔ Wip cannot jump straight to published
+ ✔ Rejected work may go back from shared to wip
+ ✔ Archived is terminal
+ ✔ An illegal transition is refused by the service
+ ✔ A suitability code must match the target state
+ ✔ The http endpoint refuses an illegal transition
+ ✔ A new revision archives the previous one
+ ✔ A revision cannot supersede unpublished work
+ ✔ A contractor sees shared work but not a rivals wip
+ ✔ The employer sees every participants deliverables
+ ✔ The project scope does not leak across projects
+ ✔ A foreign project register is 404 not 403
+ ✔ The starter plan can use the document module
+ ✔ A viewer is not offered write controls
+ ✔ A viewer cannot transition a document over http
+ ✔ The register is bilingual
+ ✔ The sidebar now links documents instead of saying soon
+ ✔ A participant sees shared documents from other companies
+ ✔ Wip stays private to the originating company
+ ✔ Sharing a document makes it appear for other participants
+ ✔ A participant still cannot write to another companys document
+ ✔ A non participant sees nothing even when shared
+
+Engineering Estimate (Tests\Feature\EngineeringEstimate)
+ ✔ A positive shortage is reported without percentage tolerance
+ ✔ Gross above net is delta only not a negative shortage
+ ✔ Unlinked estimate is provisional and has no shortage claim
+ ✔ Description or wrong material cannot link an estimate
+ ✔ Non participant cannot see estimate rows
+
+Example (Tests\Unit\Example)
+ ✔ That true is true
+
+Filament Panel (Tests\Feature\FilamentPanel)
+ ✔ The panel requires authentication
+ ✔ An authenticated user reaches the dashboard
+ ✔ A deactivated account cannot open the panel
+ ✔ The document list does not leak across tenants
+ ✔ The state column renders a real value
+ ✔ The panel loads nothing from the public internet
+ ✔ The form does not expose controlled identity fields
+ ✔ The document resource cannot create or delete
+ ✔ The document create page is not routable
+ ✔ The document list still shows the users own rows
+ ✔ The punch resource is entirely read only
+ ✔ The punch register renders with its workflow vocabulary
+ ✔ A non participant sees no punch items
+ ✔ The transmittal resource is entirely read only
+ ✔ The admin list shows both streams together
+ ✔ The employer sees no vendor letters in the admin list
+ ✔ Panel dates are jalali not gregorian
+ ✔ The user resource is entirely read only
+ ✔ The user list shows colleagues and project counterparties
+ ✔ The user list does not leak a rival contractors staff
+ ✔ The user list states the company type in words
+ ✔ The subsystem resource is entirely read only
+ ✔ The register shows the mc gate state per subsystem
+ ✔ An uninspected subsystem does not claim to be complete
+ ✔ The gate counts verified items as still blocking
+ ✔ A non blocking punch item does not shut the gate
+ ✔ A draft certificate is not displayed as a neutral fact
+ ✔ Persian pages do not mix digit systems with data set #0
+ ✔ Persian pages do not mix digit systems with data set #1
+ ✔ Persian pages do not mix digit systems with data set #2
+ ✔ Persian pages do not mix digit systems with data set #3
+ ✔ Persian pages do not mix digit systems with data set #4
+ ✔ The translator converts counts but not identifiers
+ ✔ Localising digits does not corrupt identifiers
+ ✔ English pages keep latin digits
+ ✔ The subsystem register does not leak across tenants
+
+Fitting Dimensions (Tests\Feature\FittingDimensions)
+ ✔ All pack rows round trip without reinterpreting dimensions
+ ✔ Small elbows use table floor not a radius formula
+ ✔ Aliases normalise size without mutating reference data
+ ✔ Missing coverage is explicit and never zero or guessed
+ ✔ Corrupted packs fail loudly and do not cache partial rows
+
+Fitting Review (Tests\Feature\FittingReview)
+ ✔ No configuration blocks submission and approval
+ ✔ Configured ordered independent review reaches approval without mutating definition
+ ✔ Policy change does not rewrite in flight snapshot
+ ✔ Authors cannot approve and impossible independent assignment is blocked
+ ✔ Only authorized employer can configure and selectors must be valid
+ ✔ Current role and account status are rechecked on signing
+ ✔ Return ends cycle and correction preserves source revision and decisions
+ ✔ Correcting an approved record does not transfer approval
+ ✔ Corrections require ownership reason and actual change
+ ✔ Events are immutable and hidden from wrong project and nonparticipant
+ ✔ Http forms language and archived project lock
+ ✔ Database guard rejects forged author signature and out of order step
+ ✔ Original author is excluded after a colleague corrects the record
+ ✔ Http register denies nonparticipant reads and writes
+ ✔ Foreign project or foreign company cannot act on a definition
+
+Flange Rating Reference (Tests\Unit\FlangeRatingReference)
+ ✔ Material group resolution
+ ✔ Unknown flange material throws
+ ✔ Group 1 1 anchors match published table
+ ✔ Austenitic groups run to 816 degrees
+ ✔ Retired class throws instead of guessing
+ ✔ Unknown class and group throw
+ ✔ Ladder shape and class coverage
+
+Gate Screen (Tests\Feature\GateScreen)
+ ✔ Persian is the default and page is rtl
+ ✔ English switches direction
+ ✔ Toggles can actually be turned off
+ ✔ Jalali date is rendered with persian digits
+ ✔ Over authority blocks release
+
+Identity Isolation (Tests\Feature\IdentityIsolation)
+ ✔ A contractor does not see a rival contractors staff
+ ✔ Counterparties on a shared project remain visible
+ ✔ A company on no shared project sees almost nobody
+ ✔ An unbound connection sees no users at all
+ ✔ The identity hatch opens and closes
+ ✔ The hatch closes inside an enclosing transaction
+ ✔ The identity hatch closes even when the closure throws
+ ✔ A nested hatch does not close the outer one
+ ✔ A user cannot be written into another tenant
+ ✔ The employer sees the teams of its own projects
+ ✔ A real session can open the panel
+ ✔ The guard can resolve a user by id
+ ✔ Credentials can be resolved for login
+
+Joint (Tests\Feature\Joint)
+ ✔ Attaching a component creates a joint
+ ✔ The joint links the two ports that were actually joined
+ ✔ The port pair is stored in sorted order
+ ✔ The reverse pair cannot also be inserted
+ ✔ A port cannot be in two joints
+ ✔ Welded joints are numbered from one per line
+ ✔ A flanged joint gets no number and is marked not applicable
+ ✔ An unnumberable joint cannot be given a number
+ ✔ The database refuses a number on a not applicable joint
+ ✔ Numbers are never reused after a joint is deleted
+ ✔ Two joints on one line cannot share a number
+ ✔ The display number is padded but the column is not
+ ✔ A butt weld onto a flange face is refused
+ ✔ Mismatched sizes are refused
+ ✔ A schedule break warns but does not refuse
+ ✔ Std against sch40 does not warn at six inch
+ ✔ Std against sch40 does warn at twelve inch
+ ✔ A plain end may be welded to a bevelled one
+ ✔ An unknown end code is refused not ignored
+ ✔ A port with no size is refused rather than sized as zero
+ ✔ A port cannot be joined to itself
+ ✔ The wildcard end agrees with anything
+ ✔ A socket weld pair warns about unverified gender
+ ✔ An invalid pair is refused by the service not merely recorded
+ ✔ A refused join leaves both ports open
+ ✔ The warning reason is stored on the joint
+ ✔ Dia inch uses the smaller diameter
+ ✔ The adr sample totals nineteen not twenty seven
+ ✔ Dia inch is null not zero when a size is missing
+ ✔ A flanged joint contributes no dia inch
+ ✔ Line metrics total the welds with the smaller diameter
+ ✔ Marking a joint fitted records who and when
+ ✔ The database refuses fitted without evidence
+ ✔ An empty fitter code is refused
+ ✔ A fitted joint cannot be separated
+ ✔ Fitted dia inch is counted separately
+ ✔ Separating a joint reopens both ports
+ ✔ Removing a component reopens its neighbours port
+ ✔ Removing a component deletes the joints it was in
+ ✔ The open ends list grows back when a component is removed
+ ✔ A released line accepts no new joints
+ ✔ Ports on different lines cannot be joined yet
+ ✔ Shop components produce a shop joint
+ ✔ Joining a shop item to a field item is a field joint
+ ✔ The joint freezes the size it was built at
+ ✔ The joint records the wall thickness from the reference pack
+
+Line Numbering (Tests\Feature\LineNumbering)
+ ✔ It composes a number from attributes
+ ✔ The counter is padded for display only
+ ✔ An optional token is simply left out
+ ✔ Composing refuses an unregistered value
+ ✔ Composing refuses a missing mandatory value
+ ✔ Naive splitting would be wrong and the engine is not
+ ✔ It round trips
+ ✔ A longer value wins over a shorter one sharing its prefix
+ ✔ Backtracking still resolves the simple prefix case
+ ✔ An unregistered value is named not just rejected
+ ✔ An unregistered multi dash value is still recovered
+ ✔ Genuine rubbish does not match
+ ✔ A number with too few parts does not match
+ ✔ Checked and unchecked are not the same answer
+ ✔ The sequence is returned as an integer
+ ✔ A pattern needs tokens and a separator
+ ✔ Duplicate token names are refused
+ ✔ Two counters are refused
+ ✔ An optional counter is refused
+ ✔ An unknown token kind is refused
+ ✔ A pattern survives a json round trip
+ ✔ A literal token is carried through
+ ✔ A different separator works
+ ✔ The sketch describes the format for a human
+
+Login Csrf Failure (Tests\Feature\LoginCsrfFailure)
+ ✔ A bad csrf token redirects back instead of a bare 419
+ ✔ The message is readable and persian by default
+ ✔ The message is bilingual
+ ✔ The email is preserved so the form is not blank
+ ✔ The password is never flashed back
+ ✔ Csrf failures outside login stay a 419
+ ✔ The login view actually renders the error
+
+Material Library (Tests\Feature\MaterialLibrary)
+ ✔ A project overlay material item can be created
+ ✔ Upsert updates the project code instead of duplicating it
+ ✔ Descriptions are bilingual and units are controlled
+ ✔ Material catalogue is isolated by project participation
+ ✔ Alias codes are not treated as identity
+ ✔ Seed path creates synthetic piping catalogue
+
+Material Migration (Tests\Feature\MaterialMigration)
+ ✔ Populated forward migration preserves fitting history and authority
+
+Material Reference (Tests\Unit\MaterialReference)
+ ✔ A106 b stress matches table row
+ ✔ Api5l grade a anchor from appendix h301
+ ✔ Api5l x grades resolve via iso alias
+ ✔ Austenitic ladder uses 32 columns
+ ✔ Temperature above max use throws
+ ✔ Temperature above last column throws
+ ✔ Temperature past publication range throws
+ ✔ Grade with several psl levels requires choice
+ ✔ Unknown material throws
+ ✔ Section nine identity p no and group no
+ ✔ Quality factors by type
+ ✔ Quality factors by description
+ ✔ Ambiguous ej throws without narrowing
+ ✔ Y coefficient
+ ✔ W factor
+ ✔ W factor above range throws
+ ✔ Mill tolerance factor is owner decision
+ ✔ Pack identity
+
+Material Requisition Entry (Tests\Feature\MaterialRequisitionEntry)
+ ✔ Guests cannot create or configure
+ ✔ No default author or inherited pms nomination
+ ✔ Owner configures current members and history is append only
+ ✔ Configuration requires owner company and live configure capability
+ ✔ Invalid disabled foreign and empty nominees are rejected
+ ✔ Multiline draft preserves source and own company policy without approval
+ ✔ Role nomination is company scoped and revokes with membership
+ ✔ Discipline scope and disabled user block live nominee
+ ✔ Entitlement and pack are rechecked despite nomination
+ ✔ Quantity boundaries reject rounding exponents zero and non strings
+ ✔ Bounded fields bad shapes and empty lines are atomic validation errors
+ ✔ Authority fields cannot be spoofed
+ ✔ Other project subsystem and nonmember project are rejected
+ ✔ Archived project remains readable but cannot create or configure
+ ✔ Late item failure rolls back header items and number
+ ✔ Number allocation is monotone across owner and hidden epc rows
+ ✔ Policy attribution cannot be erased after creation
+ ✔ Html and invalid old input are safe and preserved
+ ✔ Twenty lines are accepted and unknown line fields are rejected
+ ✔ Persisted sources and policy reasons are html escaped
+ ✔ Person nomination does not survive project membership removal
+ ✔ Policy history is not visible in another project or without scope
+ ✔ Sql backstops refuse false source quantity and forged author basis
+ ✔ Authoring nomination does not bypass self approval rule
+
+Material Requisition Migration (Tests\Feature\MaterialRequisitionMigration)
+ ✔ Upgrade preserves legacy rows and initializes global counters without grants
+
+Material Screening Snapshot (Tests\Feature\MaterialScreeningSnapshot)
+ ✔ Submission captures exact source result and provenance without approval
+ ✔ Bilingual http uses stored evidence not forged submission payload
+ ✔ Changed reference changes live view not captured evidence
+ ✔ Correction captures new version and keeps previous evidence
+ ✔ Snapshots are immutable and tenant project scoped
+ ✔ Duplicate submission does not duplicate or replace evidence
+ ✔ Failed capture rolls back submission
+ ✔ Raw run cannot disable or omit required capture
+ ✔ Sql rejects forged source hash approval and creator
+ ✔ Empty technical properties all families are captured without becoming approval gates
+
+Material Screening Snapshot Migration (Tests\Feature\MaterialScreeningSnapshotMigration)
+ ✔ Legacy review is unchanged and cannot be retroactively given todays evidence
+
+Mto Acceptance (Tests\Feature\MtoAcceptance)
+ ✔ Accepts all acceptable rows as one immutable batch
+ ✔ A blocked row refuses the whole revision and creates no snapshot
+ ✔ Duplicate staging rows cannot be accepted even if state is tampered
+ ✔ Accepted rows freeze source labels when catalogue changes
+ ✔ Non participant cannot see accepted batches or rows
+ ✔ Accepted row model does not offer mutation path
+
+Mto Acceptance Journal (Tests\Feature\MtoAcceptanceJournal)
+ ✔ Real snapshot has exact automatic unresolved new provenance
+ ✔ Equal timestamp revisions receive distinct project ordinals
+ ✔ Rejected rows create no clock or journal
+ ✔ Outer failure rolls back actual rows journal clock and revision
+ ✔ Commit guard rejects incomplete snapshot and rolls back auto journal
+ ✔ Deferred integrity pins its source and restores nested tenant context
+ ✔ Archived real project refuses acceptance without provenance
+ ✔ Outsider reads no new provenance or clock
+ ✔ Journal model cannot be updated
+ ✔ Sql history cannot be updated or deleted and clock cannot reverse
+ ✔ Direct journal insert cannot fabricate legacy or new provenance
+ ✔ Forward only migration refuses history destroying down
+ ✔ Expansion does not fabricate ordinals for existing accepted batches
+ ✔ New frozen row must reference exact batch document tuple
+ ✔ Archived project keeps journal readable but denies clock write
+
+Mto Scope Observation (Tests\Feature\MtoScopeObservation)
+ ✔ Commit captures exact rows and digest but no admission
+ ✔ Before commit readiness does not invent observation
+ ✔ Rollback leaves no observation
+ ✔ Optional area is valid and later reparent does not rewrite snapshot
+ ✔ Cross project facility is reported without promoting to project root
+ ✔ Late raw row addition is detected not silently added to frozen coverage
+ ✔ Sql mutation and fabricated insert are refused
+ ✔ Outsider cannot read observation or use forged model to read source
+ ✔ Deferred capture restores outer owner context
+ ✔ Expansion does not backfill even existing new journal
+ ✔ Model cannot mutate observation
+ ✔ Area edge and multiple rows are captured without collapsing coverage
+ ✔ Archival preserves read only unadmitted observation
+ ✔ Down refuses to destroy observation history
+
+Mto Staging (Tests\Feature\MtoStaging)
+ ✔ An mto document and draft revision can stage rows
+ ✔ Unmatched material stays in draft with raw text preserved
+ ✔ Alias code does not resolve as material identity
+ ✔ Unit mismatch blocks the staging row
+ ✔ Duplicate mto item numbers are blocked inside one revision
+ ✔ Staging rows can link by material item id not text
+ ✔ Non participants cannot see mto staging
+ ✔ Empty revision is refused
+
+Mto Topology Reconciliation (Tests\Feature\MtoTopologyReconciliation)
+ ✔ Matching frozen edges are not authority or coverage and no writes occur
+ ✔ Optional area path is compared
+ ✔ Changed parent and unobserved proposed nodes are explicit
+ ✔ Later mutable graph reparenting is not used as history
+ ✔ Missing proposed nodes are not approved retirement
+ ✔ Missing pin stays incomplete
+ ✔ Missing scope is not inferred from nodes
+ ✔ Every binding field is exact and cross version is not mapping
+ ✔ Unknown binding field is not an approval capability
+ ✔ Invalid graphs fail without partial differences
+ ✔ Input order does not change differences or mutate inputs
+ ✔ Late row addition blocks comparison
+ ✔ Outsider with forged model attributes reads nothing
+ ✔ Missing observation before commit stays incomplete
+ ✔ Archived project keeps read only comparison
+ ✔ Kind change is a difference not scope equivalence
+ ✔ Unresolved capture parent is not filled from proposal
+
+Multi Project (Tests\Feature\MultiProject)
+ ✔ Contractor on two projects sees both
+ ✔ Contractor on one project sees only that one
+ ✔ Each employer sees only its own projects
+ ✔ Reaching a project you do not participate in is 404
+ ✔ Project scope narrows rows to that project
+ ✔ Commercial firewall still holds within a project
+ ✔ Rls refuses a foreign project even when scoped directly
+ ✔ Unscoped shows all permitted projects only
+ ✔ Cannot write into a project you do not participate in
+ ✔ Standards pack is selected per project
+ ✔ Serial numbers are unique per project not globally
+ ✔ Project scope is cleared between transactions
+ ✔ Nested run as restores the callers context
+ ✔ Gate verdicts are computed per project pack
+
+Order Gap (Tests\Feature\OrderGap)
+ ✔ Attribution is exact and rejects unit mismatch
+ ✔ Draft po counts nothing until issued
+ ✔ Cancelled po is excluded from the gap
+ ✔ Covered and over plan are distinct and zero tolerance
+ ✔ Amendment replaces the previous quantity and keeps history
+ ✔ Allocation is recorded exactly and refuses over allocation
+ ✔ Allocation requires attribution and an effective order
+ ✔ Unmatched lines stay in their bucket and are never guessed
+ ✔ A non participant company sees nothing through the board
+ ✔ The board renders for a participant
+
+Pcf Admission (Tests\Feature\PcfAdmission)
+ ✔ Accepts explicit units and line reference without database
+ ✔ Refuses unsafe inputs with data set "missing bore unit"
+ ✔ Refuses unsafe inputs with data set "missing coordinate unit"
+ ✔ Refuses unsafe inputs with data set "unknown coordinate unit"
+ ✔ Refuses unsafe inputs with data set "missing line reference"
+ ✔ Refuses unsafe inputs with data set "duplicate units"
+ ✔ Refuses unsafe inputs with data set "non-finite number"
+ ✔ Refuses unsafe inputs with data set "zero bore"
+ ✔ Refuses unsafe inputs with data set "nul byte"
+ ✔ Refuses unsafe inputs with data set "byte limit"
+ ✔ Refuses unsafe inputs with data set "line limit"
+ ✔ Refuses unsafe inputs with data set "component limit"
+
+Pcf Branch Classification (Tests\Feature\PcfBranchClassification)
+ ✔ Set on and set in are p2p without a fitting
+ ✔ Actual tee and named olets keep their identity
+ ✔ Ambiguous or unknown types are not guessed
+
+Pcf Parser (Tests\Feature\PcfParser)
+ ✔ It reads the header
+ ✔ The bore unit is read not assumed
+ ✔ Mm hundredths coordinates are scaled
+ ✔ It separates components from welds
+ ✔ A weld states shop or field
+ ✔ Keypoints carry bore and end type
+ ✔ A keypoint without a bore is accepted
+ ✔ A centre point is not a connection
+ ✔ Comments and blank lines are ignored
+ ✔ A utf8 bom does not corrupt the first keyword
+ ✔ Indented data before any block is reported
+ ✔ An indented header field is part of the header
+ ✔ Repeated attributes are all kept
+
+Pdf Export (Tests\Feature\PdfExport)
+ ✔ A missing browser fails loudly with an actionable message
+ ✔ Rendering produces a real pdf
+ ✔ Output that is not a pdf is rejected
+ ✔ A truncated pdf is rejected
+ ✔ The renderer leaves no scratch directories behind
+ ✔ A runaway document times out instead of hanging
+ ✔ Persian text survives the round trip
+ ✔ The persian font is embedded rather than substituted
+ ✔ The certificate exports as a pdf in both languages
+ ✔ The pdf states the certificate number in its filename
+ ✔ The exported certificate records the exception not a live count
+ ✔ The certificate names the person who issued it
+ ✔ An issued certificate does not rewrite its own evidence
+ ✔ A draft certificate still shows live numbers
+ ✔ Only issuing freezes the summary not merely having one
+ ✔ A non participant cannot export the certificate
+ ✔ The transmittal sheet exports as a pdf
+ ✔ The zip carries a pdf cover sheet
+ ✔ The zip still builds when no renderer exists
+ ✔ The standalone sheet endpoint has no silent fallback
+ ✔ The punch page offers the pdf for a draft certificate
+
+Pipe Reference (Tests\Feature\PipeReference)
+ ✔ It loads the full ladder from half inch to forty eight
+ ✔ Sizes are ordered ascending by dn
+ ✔ It returns the anchor rows from asme b36 10m
+ ✔ Od is not derived from nps
+ ✔ Nps 14 and above have od equal to nps
+ ✔ Dn lookup works the european way in
+ ✔ Unknown size throws rather than returning null
+ ✔ Unknown dn throws
+ ✔ Nps decimal is the only summable column
+ ✔ Decimal ordering differs from label ordering
+ ✔ Std is not an alias of schedule 40 above ten inch
+ ✔ Xs is not an alias of schedule 80 above eight inch
+ ✔ Std and xs are pinned above the divergence point
+ ✔ It returns anchor wall thicknesses
+ ✔ Absence is data and a missing combination throws
+ ✔ It never falls back between std and a numbered schedule
+ ✔ It never falls back between xs and schedule 80
+ ✔ The exception names what is available
+ ✔ Schedules for a size lists only what exists
+ ✔ Inside diameter is od minus two walls
+ ✔ Numbered schedules never get thinner as they climb
+ ✔ No wall thickness closes the bore
+ ✔ It folds the ways engineers write a size
+ ✔ It accepts persian digits
+ ✔ Resolve label accepts the decimal form
+ ✔ Resolve label returns null instead of throwing
+ ✔ Schedule lookup is case insensitive
+ ✔ It resolves a pcf bore in each declared unit
+ ✔ Misreading the bore unit would corrupt the size
+ ✔ An unsupported bore unit throws
+ ✔ End types cover the pcf vocabulary
+ ✔ A flanged connection is not a weld and is never numbered
+ ✔ Every numbered end type is weldable
+ ✔ Socket weld requires gender but butt weld does not
+ ✔ The pcf wildcard exists but is inert
+ ✔ A tee has three ports without anyone typing three
+ ✔ Tee ports carry run run branch roles
+ ✔ Equal and reducing tees are one component not two
+ ✔ A reducer is the only two port fitting with unequal ends
+ ✔ A valve is directional
+ ✔ A nozzle is a port owner not a line component
+ ✔ Terminating components have exactly one port
+ ✔ Every template default end is a known end type
+ ✔ Every template is bilingual
+ ✔ Unknown template throws
+ ✔ Every pack states its edition
+ ✔ The repository is a singleton
+ ✔ A pack is decoded once and then served from memory
+ ✔ It touches no database
+
+Pipe Schedule Migration Rebuild (Tests\Feature\PipeScheduleMigrationRebuild)
+ ✔ Fresh can rebuild schedule guards twice without weakening them
+
+Piping Class (Tests\Feature\PipingClass)
+ ✔ Legacy line register creation retains required names without inventing a span
+ ✔ Adjacent half open bands are accepted and overlap is refused
+ ✔ The same kind excludes but other kinds may share a band
+ ✔ Resolution picks the owning band or throws
+ ✔ Publish requires one valid fluid service
+ ✔ Publish refuses a gapped class and accepts a complete one
+ ✔ A published class is read only
+ ✔ Branch resolution is specificity wins
+ ✔ Pipe to pipe is a first class branch outcome
+ ✔ A reinforcement pad without thickness is refused
+ ✔ P2p kind is required for p2p and forbidden for fittings
+ ✔ A branch type outside the vocabulary is refused
+ ✔ Branch larger than header is a distinct error
+ ✔ A duplicate branch footprint is refused but priority breaks narrowness ties
+ ✔ A non participant company sees no classes
+ ✔ Design basis is recorded and refuses nonsense values
+ ✔ Publish refuses a class without design basis
+ ✔ Pipe material rule resolves against the b313 pack
+ ✔ Publish requires material and complete branch calculation inputs
+
+Piping Config (Tests\Feature\PipingConfig)
+ ✔ The owner can change the number format
+ ✔ A format without class token still requires an approved class for line creation
+ ✔ A new format applies to new lines only
+ ✔ A format with no counter is refused
+ ✔ Two counters are refused by the pattern itself
+ ✔ A duplicate token name is refused
+ ✔ The counter cannot be narrowed below what was issued
+ ✔ Widening the counter is allowed
+ ✔ Only the employer may change the format
+ ✔ An archived project refuses configuration changes
+ ✔ The owner can edit a register
+ ✔ Register values are trimmed deduplicated and sorted
+ ✔ A register value containing the separator is refused
+ ✔ A value already used in a line number cannot be removed
+ ✔ An unused value can still be removed
+ ✔ An unknown register is refused
+
+Piping Flange Rating Gate (Tests\Feature\PipingFlangeRatingGate)
+ ✔ Publish refuses an underrated flange class
+ ✔ Publish passes when the flange class covers the design basis
+ ✔ Flange rule rejects unknown material at entry
+ ✔ Flange rule rejects a class off the b16 5 ladder
+ ✔ Publish refuses design temperature above the rating ladder
+ ✔ Publish refuses a class retired at the design temperature
+
+Piping Line (Tests\Feature\PipingLine)
+ ✔ It creates a line numbered from the project pattern
+ ✔ A draft class cannot authorize a new allocated line
+ ✔ The sequence increments per subsystem
+ ✔ Each subsystem counts from one
+ ✔ A duplicate line number is refused
+ ✔ The database also refuses a duplicate
+ ✔ Direct sql cannot insert a new line without an approved pms pin
+ ✔ Existing unclassified rows survive the insert only migration
+ ✔ Preview shows the number without creating anything
+ ✔ An imported number is kept exactly as supplied
+ ✔ An imported number does not disturb our counter
+ ✔ A non conforming number is stored not rejected
+ ✔ An import without a qualifying class is refused even if its number is valid
+ ✔ An empty number is refused
+ ✔ Parsing uses the projects own registers
+ ✔ A new line is draft and not buildable
+ ✔ Afc is refused when evidence is missing
+ ✔ Afc passes with approved evidence
+ ✔ A b coded revision does not pass the gate
+ ✔ An unpublished revision does not pass the gate
+ ✔ A shared revision with an a code still fails the gate
+ ✔ Approval needs both conditions
+ ✔ An archived project refuses the afc gate
+ ✔ Release makes the line buildable
+ ✔ A draft line cannot be released directly
+ ✔ A line can be pulled back with a reason
+ ✔ Pulling a line back requires a reason
+ ✔ Evidence from another project is refused
+ ✔ Attaching the same evidence twice is idempotent
+ ✔ The database rejects an unknown release state
+ ✔ The database rejects afc without provenance
+ ✔ An archived project refuses new lines
+ ✔ The rls policy hides lines from a non participant
+ ✔ A participant can read the register
+ ✔ Every line string is bilingual
+ ✔ Release states are labelled in both languages
+
+Piping Line Http (Tests\Feature\PipingLineHttp)
+ ✔ The register renders for a participant
+ ✔ A non participant cannot reach the register
+ ✔ The workspace renders for a participant and is in the sidebar
+ ✔ The workspace is localised to persian
+ ✔ A non participant cannot reach the workspace
+ ✔ Class picker hides unapproved classes and explains why registration is unavailable
+ ✔ Import without an approved pms class is a form error
+ ✔ Posting a line allocates the next number
+ ✔ An unregistered value is a form error not a crash
+ ✔ An external number without class is rejected
+ ✔ The workspace puts blocked lines on the worklist
+ ✔ A test pack can be created and a line assigned from the workspace
+ ✔ A test pack cannot be marked ready while its line is not released
+ ✔ Evidence can be attached and the gate then passes
+ ✔ A wrongly attached document can be removed
+ ✔ Evidence cannot be detached once the line is confirmed
+ ✔ Evidence cannot be detached via another line
+ ✔ The gate still refuses over http
+
+Piping Pad Gate (Tests\Feature\PipingPadGate)
+ ✔ Publish passes when every cell is adequate
+ ✔ Publish refuses none cell where reinforcement is required
+ ✔ Publish refuses an insufficient recorded pad
+ ✔ Publish refuses when a supporting rule is missing
+ ✔ Manual s override drives the check
+
+Pms Author Policy (Tests\Feature\PmsAuthorPolicy)
+ ✔ Nomination is explicit versioned and revocable without parallel pms tables
+
+Pms Class Document (Tests\Feature\PmsClassDocument)
+ ✔ Approved revision captures immutable class rules and rejects drafts
+ ✔ Database refuses a non pms document on direct class insert
+ ✔ One wip pms can govern multiple draft classes but not be reparented or used after suspension
+
+Pms Class Revision Snapshot Key (Tests\Unit\PmsClassRevisionSnapshotKey)
+ ✔ Snapshot uuid is not coerced to an integer for eager loading
+
+Pms Pinned Branch Resolution (Tests\Unit\PmsPinnedBranchResolution)
+ ✔ Specificity then priority then creation time select the issued cell
+ ✔ Issued pipe schedule rules are resolved without live class rows
+ ✔ Ambiguous or uncovered issued cells fail closed
+
+Pms Revision Draft Validator (Tests\Unit\PmsRevisionDraftValidator)
+ ✔ Only schedule leaves can change
+ ✔ Identity range material and branch changes are rejected
+ ✔ Empty oversized and whitespace schedule are rejected
+
+Pooler Compatibility (Tests\Feature\PoolerCompatibility)
+ ✔ Tenant state is transaction scoped not session scoped
+ ✔ Rapid tenant switching stays isolated
+ ✔ No code path uses session scoped postgres features
+ ✔ Set local requires a transaction so it cannot leak
+ ✔ Transactions actually commit through the pooler
+
+Preview Proxy (Tests\Feature\PreviewProxy)
+ ✔ Redirects on the preview host are https
+ ✔ The preview host is not hardcoded
+ ✔ The platform proxy domain is also treated as preview
+ ✔ Cookies on the platform proxy domain survive the iframe
+ ✔ Session cookies survive a third party iframe
+ ✔ A normal host keeps samesite lax
+ ✔ A normal host does not get its scheme forced
+ ✔ Https is forced even without forwarded headers
+ ✔ Cookies are third party ready without forwarded headers
+ ✔ Login works over the preview host
+
+Procurement (Tests\Feature\Procurement)
+ ✔ Requisitions are numbered per project
+ ✔ A requisition starts as a draft
+ ✔ A requisition needs at least one line
+ ✔ A line needs a positive quantity
+ ✔ The raiser cannot technically approve their own requisition
+ ✔ The raiser cannot commercially approve their own requisition
+ ✔ One person cannot sign both approvals
+ ✔ The two approvals are recorded separately
+ ✔ A draft cannot skip straight to approved
+ ✔ A rejection must state a reason
+ ✔ A rejected requisition can go back to draft
+ ✔ A purchase order can only go to a vendor
+ ✔ The vendor must participate in the project
+ ✔ Only an approved requisition can become an order
+ ✔ Ordering closes the requisition
+ ✔ An unpriced order has no total rather than zero
+ ✔ A priced order totals its lines
+ ✔ A forecast does not overwrite the promised date
+ ✔ Slip is null when there is no forecast
+ ✔ A vendor sees its own order and not another vendors
+ ✔ A vendor cannot see requisitions at all
+ ✔ The employer can see requisitions
+
+Project Archive (Tests\Feature\ProjectArchive)
+ ✔ A new project is active
+ ✔ The lifecycle is reversible
+ ✔ There is no deleted state
+ ✔ Only active is writable
+ ✔ The owner can archive a project
+ ✔ Archiving records who and when
+ ✔ A non owner company cannot archive
+ ✔ The contractor cannot archive the project it works on
+ ✔ Archiving twice is refused
+ ✔ An archived project is still fully readable
+ ✔ Archived certificates and transmittals survive
+ ✔ The service refuses writes loudly
+ ✔ The refusal message tells the user what to do
+ ✔ The database blocks an insert even without the service
+ ✔ The database blocks an update even without the service
+ ✔ An archived project cannot be emptied by delete
+ ✔ Delete works again once the project is reopened
+ ✔ Other projects stay writable
+ ✔ The owner can reopen and writes work again
+ ✔ Reopening a live project is refused
+ ✔ A non owner cannot reopen
+ ✔ An archived project does not consume a licence slot
+ ✔ Reopening is refused when it would exceed the plan
+ ✔ An unlimited plan never blocks reopening
+ ✔ The database rejects an unknown state
+ ✔ The database rejects an archive without provenance
+ ✔ Pickers see only active projects by default
+ ✔ A persian user gets persian refusals
+ ✔ The locale middleware covers the web group
+ ✔ Every archive string is bilingual
+
+Project Setup (Tests\Feature\ProjectSetup)
+ ✔ Employer can open the create form
+ ✔ Employer creates a project with partners in one transaction
+ ✔ A created project is immediately openable by its creator
+ ✔ Contractor cannot reach the create form
+ ✔ Contractor cannot post a project either
+ ✔ An employer user without the capability is still refused
+ ✔ Unauthenticated visitor is sent to login
+ ✔ Pack choice is limited to what the plan entitles
+ ✔ An unentitled pack is refused even when posted directly
+ ✔ Plan project quota is enforced
+ ✔ Duplicate project code is refused
+ ✔ Lowercase project code is refused
+ ✔ Member sees the team screen for their project
+ ✔ Team screen of a foreign project is 404
+ ✔ Employer can add a colleague from their own company
+ ✔ You cannot add another companys user to a project
+ ✔ A user without project manage gets a read only team screen
+ ✔ Add member is refused for a user without project manage
+ ✔ Company participation alone does not reveal the portfolio
+ ✔ Company participation alone does not reveal a certificate
+ ✔ Granting a membership is what opens the project
+ ✔ The new project button appears only for employers
+ ✔ The project screen links to its team
+ ✔ The create form is rtl persian by default
+ ✔ The team screen is bilingual
+
+Punch List (Tests\Feature\PunchList)
+ ✔ Only category a blocks mechanical completion
+ ✔ A closed a item blocks nothing
+ ✔ The state machine refuses illegal jumps
+ ✔ A verified item is still open until it is closed
+ ✔ Raising an item numbers it per project
+ ✔ An item needs a description in both languages
+ ✔ An invalid category is refused
+ ✔ An item cannot be assigned to a company outside the project
+ ✔ Only the responsible company can report a fix
+ ✔ A fix needs a note saying what was done
+ ✔ The contractor cannot verify its own fix
+ ✔ Rejecting a fix requires a written reason
+ ✔ A rejected item goes back to the contractor
+ ✔ Only the employer can close an item
+ ✔ The certificate is refused while an a item is open
+ ✔ B and c items do not block the certificate
+ ✔ Only the employer can approve an exception
+ ✔ An exception without a reason is refused
+ ✔ An owner approved exception opens the gate and is recorded
+ ✔ The exception snapshot does not drift when items close later
+ ✔ An issued certificate cannot be changed
+ ✔ A certificate cannot be issued twice
+ ✔ One subsystem has at most one certificate
+ ✔ A non participant sees no punch items
+ ✔ Every participant sees the whole punch list
+ ✔ Closure percentage counts only closed items
+ ✔ Every state and category is bilingual
+ ✔ The register renders for every participant
+ ✔ A non participant gets 404
+ ✔ The gate refusal is shown on the page
+ ✔ Only the employer is offered the exception override
+ ✔ The page is bilingual
+ ✔ Raising an item over http works end to end
+ ✔ The full journey five runs over http
+ ✔ A viewer without the capability cannot raise an item
+
+Punch Table (Tests\Feature\PunchTable)
+ ✔ A table cell never loses its table display
+ ✔ The category reads as a latin letter in both languages
+ ✔ No persian letter is used as a category
+ ✔ The register renders latin categories in persian
+ ✔ The register header and body have the same column count
+ ✔ The blocking message names the category in latin
+
+Release Gate (Tests\Feature\ReleaseGate)
+ ✔ Engine is resolvable and framework free
+ ✔ All three packs load
+ ✔ Complete certificate clears the gate
+ ✔ Soratvaziat gate is never waivable
+ ✔ Every failure carries persian and english text
+ ✔ Awp pack still evaluates generically
+
+Review Cycle (Tests\Feature\ReviewCycle)
+ ✔ A reviewer can raise a comment on a shared document
+ ✔ The originator cannot review its own document
+ ✔ A wip document is not open for review
+ ✔ Parallel reviewers get distinct sequence numbers
+ ✔ An open blocking comment prevents publication
+ ✔ Answering the blocking comments unblocks publication
+ ✔ A non blocking comment does not prevent publication
+ ✔ The blocking message names the comments
+ ✔ Only the originator may dispose
+ ✔ Rejecting a comment requires a justification
+ ✔ Statistics report closure
+ ✔ A revision with no comments reads as fully closed
+ ✔ The blocking categories are the ones that stop work
+ ✔ Every category and disposition is bilingual
+ ✔ The comment sheet renders for a reviewer
+ ✔ The sheet offers the originator dispositions not a comment box
+ ✔ A viewer without doc review cannot post a comment
+ ✔ A non participant cannot see the sheet
+ ✔ The register shows the blocking count
+
+Rls Sargability (Tests\Feature\RlsSargability)
+ ✔ Cross project view returns rows and binding narrows them
+ ✔ A non participant sees nothing scoped or unscoped
+ ✔ The write path still pins project and participation
+ ✔ The fact table filter carries no project disjunction
+ ✔ Bound view returns only the bound projects rows at volume
+
+Row Level Security (Tests\Feature\RowLevelSecurity)
+ ✔ With no tenant bound nothing is visible
+ ✔ A contractor sees only its own certificate
+ ✔ A contractor cannot see a rival on the same project
+ ✔ The rival sees only its own
+ ✔ The employer sees every participant on its project
+ ✔ A consultant with no rows sees nothing
+ ✔ Raw unscoped sql is also filtered
+ ✔ A tenant cannot write a row belonging to another
+ ✔ Binding outside a transaction is refused
+ ✔ Context does not leak between transactions
+
+Seed Path (Tests\Feature\SeedPath)
+ ✔ The default seeder produces the working demo
+ ✔ Seeder does not suppress model events
+
+Shell Structure (Tests\Feature\ShellStructure)
+ ✔ The shell nests identically on every screen with data set "portfolio"
+ ✔ The shell nests identically on every screen with data set "certificates"
+ ✔ The shell nests identically on every screen with data set "punch"
+ ✔ The shell nests identically on every screen with data set "documents"
+ ✔ The shell nests identically on every screen with data set "transmittals"
+ ✔ The shell nests identically on every screen with data set "team"
+ ✔ The shell nests identically on every screen with data set "warehouse"
+ ✔ The shell nests identically on every screen with data set "procurement"
+ ✔ The shell nests identically on every screen with data set "new project"
+ ✔ Every screen can collapse its sidebar with data set "portfolio"
+ ✔ Every screen can collapse its sidebar with data set "certificates"
+ ✔ Every screen can collapse its sidebar with data set "punch"
+ ✔ Every screen can collapse its sidebar with data set "documents"
+ ✔ Every screen can collapse its sidebar with data set "transmittals"
+ ✔ Every screen can collapse its sidebar with data set "team"
+ ✔ Every screen can collapse its sidebar with data set "warehouse"
+ ✔ Every screen can collapse its sidebar with data set "procurement"
+ ✔ Every screen can collapse its sidebar with data set "new project"
+ ✔ The review screen nests correctly too
+ ✔ The engine playground keeps the shell when signed in
+ ✔ The engine playground still works without logging in
+ ✔ No screen leaks an unrendered blade expression
+ ✔ The content column cannot be widened by its own content
+ ✔ A wide table does not push the page off screen
+
+Sidebar Navigation (Tests\Feature\SidebarNavigation)
+ ✔ Every shell screen renders the sidebar
+ ✔ A module outside the plan is locked not hidden
+ ✔ An entitled but unbuilt module says soon not upgrade
+ ✔ A module that has shipped is no longer planned
+ ✔ A special plan unlocks every module
+ ✔ New project appears only for an employer
+ ✔ Project items appear only with a project in scope
+ ✔ The active item is exact not a prefix match
+ ✔ The sidebar is bilingual and flips direction
+ ✔ The language switch carries allowlisted params only
+ ✔ Every shell screen can collapse the sidebar
+ ✔ The toggle is outside the sidebar it toggles
+ ✔ The collapsed state is restored before first paint
+ ✔ The toggle script waits for the button to exist
+ ✔ The rail collapse uses animatable properties
+ ✔ The sidebar offers a way out on every screen
+
+Standards Catalogue (Tests\Feature\StandardsCatalogue)
+ ✔ Catalogue is idempotent and project editions are independent
+ ✔ Withdrawal blocks new adoption but preserves history
+ ✔ Project adoptions are hidden without tenant context
+
+Table Tools (Tests\Feature\TableTools)
+ ✔ The document register table is filterable and sortable
+ ✔ The certificate table is filterable and sortable
+ ✔ The team table is filterable and sortable
+ ✔ The cde column sorts by lifecycle not by label
+ ✔ Lifecycle ordinals follow the state machine
+ ✔ The money column sorts on the raw value
+ ✔ The gate column facets on the verdict not the reasons
+ ✔ The toolbar is built by script so a plain table still works
+ ✔ The script waits for the dom before wiring tables
+ ✔ Every view with a table opts into the tools
+
+Tenant Type (Tests\Feature\TenantType)
+ ✔ Mc means management contractor not mechanical completion
+ ✔ No user facing surface calls a company mechanical completion
+ ✔ The fixture company is a contract manager
+ ✔ Every seeded company has a known tenant type
+ ✔ Every type has a translated label in both languages
+ ✔ The database refuses an unknown tenant type
+ ✔ The database accepts every type the application believes in
+
+Transmittal (Tests\Feature\Transmittal)
+ ✔ Transmittal numbers are sequential per project
+ ✔ A work in progress document cannot be transmitted
+ ✔ The sender cannot be its own recipient
+ ✔ A company outside the project cannot be a recipient
+ ✔ An empty transmittal cannot be issued
+ ✔ An issued transmittal cannot be changed
+ ✔ Items record the revision as it was at issue
+ ✔ The deadline follows the purpose
+ ✔ Only a named recipient can acknowledge
+ ✔ A recipient acknowledges only for itself
+ ✔ Acknowledging twice does not overwrite the first timestamp
+ ✔ A draft cannot be acknowledged
+ ✔ Overdue is derived and finds the seeded letter
+ ✔ A third party cannot read correspondence it is not part of
+ ✔ The employer sees every issued letter but not a draft
+ ✔ A draft is invisible to its own addressees until issued
+ ✔ The zip carries the files a manifest and a cover sheet
+ ✔ The index renders for a participant
+ ✔ A recipient sees an acknowledge button and the sender does not
+ ✔ A non participant gets 404
+ ✔ A viewer cannot create a transmittal
+ ✔ Acknowledging over http does not need the issue capability
+ ✔ Every purpose is bilingual
+
+Unit Preference (Tests\Feature\UnitPreference)
+ ✔ Without any preference the default display unit is used
+ ✔ The fallback unit is always one the user could have picked
+ ✔ The project default overrides the fallback
+ ✔ A user preference overrides the project
+ ✔ Clearing a user preference returns to inheriting
+ ✔ A preference for one quantity does not affect another
+ ✔ A unit from the wrong quantity is refused
+ ✔ An unknown unit is refused
+ ✔ An unknown quantity is refused
+ ✔ Only the employer sets project defaults
+ ✔ A user may set their own units on an archived project
+ ✔ Project defaults are refused on an archived project
+ ✔ A line stores both the entered and canonical values
+ ✔ Changing a display preference does not touch stored values
+ ✔ The canonical column rounds to its declared precision
+ ✔ Lines in different units compare correctly
+ ✔ A value without a unit gets no canonical
+ ✔ Clearing a value clears its canonical
+ ✔ Updating a value recomputes its canonical
+ ✔ Design cannot be edited on an archived project
+ ✔ A released line cannot have its design edited
+ ✔ An unknown unit on a line is a validation error
+ ✔ A temperature below absolute zero is refused on a line
+ ✔ The database refuses a canonical without its unit
+ ✔ The database refuses a temperature below absolute zero
+ ✔ The register renders design conditions in the users unit
+ ✔ Posting unit preferences saves and redirects
+ ✔ Posting a mismatched unit returns an error not a crash
+ ✔ Creating a line with a bad unit is a form error
+ ✔ The menu offers only bar and psi for pressure
+ ✔ The menu offers only celsius and fahrenheit
+ ✔ A retired unit cannot be chosen
+ ✔ Kelvin cannot be chosen
+ ✔ Refusing a retired unit names the ones that work
+ ✔ A retired unit still converts
+ ✔ A line stored in a retired unit still displays
+ ✔ The creation form offers only the agreed units
+
+Unit Registry (Tests\Feature\UnitRegistry)
+ ✔ Temperature converts affinely with data set "freezing F to C"
+ ✔ Temperature converts affinely with data set "boiling F to C"
+ ✔ Temperature converts affinely with data set "the crossover"
+ ✔ Temperature converts affinely with data set "body heat"
+ ✔ Temperature converts affinely with data set "freezing C to F"
+ ✔ Temperature converts affinely with data set "boiling C to F"
+ ✔ Temperature converts affinely with data set "absolute zero K to C"
+ ✔ Temperature converts affinely with data set "ice point K to C"
+ ✔ Temperature converts affinely with data set "C to K"
+ ✔ Temperature converts affinely with data set "K to F"
+ ✔ A temperature difference uses the factor only
+ ✔ The point and difference conversions genuinely differ
+ ✔ Pressure factors match published values with data set "1 psi (NIST)"
+ ✔ Pressure factors match published values with data set "1 bar is exactly 100 kPa"
+ ✔ Pressure factors match published values with data set "1 kgf/cm2 is exactly 98.0665 kPa"
+ ✔ Pressure factors match published values with data set "1 MPa"
+ ✔ Pressure factors match published values with data set "1 mmH2O"
+ ✔ Pressure factors match published values with data set "a 150# flange at 285 psi"
+ ✔ Gauge and absolute are not silently interconverted
+ ✔ The refusal explains itself
+ ✔ Same datum pressure conversion still works
+ ✔ Quantities cannot be crossed
+ ✔ The quantity check works independently of the datum check
+ ✔ The datum check works independently of the quantity check
+ ✔ Conversions round trip with data set #0
+ ✔ Conversions round trip with data set #1
+ ✔ Conversions round trip with data set #2
+ ✔ Conversions round trip with data set #3
+ ✔ Conversions round trip with data set #4
+ ✔ Conversions round trip with data set #5
+ ✔ Conversions round trip with data set #6
+ ✔ Conversions round trip with data set #7
+ ✔ An unchanged unit is returned untouched
+ ✔ A unit is recognised however it was written with data set #0
+ ✔ A unit is recognised however it was written with data set #1
+ ✔ A unit is recognised however it was written with data set #2
+ ✔ A unit is recognised however it was written with data set #3
+ ✔ A unit is recognised however it was written with data set #4
+ ✔ A unit is recognised however it was written with data set #5
+ ✔ A unit is recognised however it was written with data set #6
+ ✔ A unit is recognised however it was written with data set #7
+ ✔ A unit is recognised however it was written with data set #8
+ ✔ A unit is recognised however it was written with data set #9
+ ✔ A unit is recognised however it was written with data set #10
+ ✔ A unit is recognised however it was written with data set #11
+ ✔ A unit is recognised however it was written with data set #12
+ ✔ A unit is recognised however it was written with data set #13
+ ✔ The inch and foot symbols do not collide
+ ✔ An unknown unit throws rather than returning null
+ ✔ The unknown unit message names the unit
+ ✔ Knows reports without throwing
+ ✔ A measurement keeps both the entered and canonical value
+ ✔ Measurements compare across units
+ ✔ Comparing different quantities returns null not zero
+ ✔ A measurement formats as entered
+ ✔ A temperature below absolute zero is refused
+ ✔ Absolute zero itself is allowed
+ ✔ The absolute zero check understands other scales
+ ✔ A legitimate cryogenic temperature passes
+ ✔ Every quantity has its canonical unit in its own list
+ ✔ The canonical unit converts to itself as one
+ ✔ Every unit is bilingual
+ ✔ Every field in the map names a real quantity
+
+Vendor Transmittal (Tests\Feature\VendorTransmittal)
+ ✔ The two streams use separate number series
+ ✔ A vendor letter does not perforate the contractual series
+ ✔ A vendor transmittal must name its vendor
+ ✔ A contractor transmittal cannot name a vendor
+ ✔ The recording company cannot be its own vendor
+ ✔ The database rejects a mismatched kind even outside the service
+ ✔ A vendor letter rolls up into a contractor letter
+ ✔ The rolled up snapshot is what the vendor actually sent
+ ✔ Rolling the same letter up twice does not duplicate documents
+ ✔ An unissued vendor letter cannot be rolled up
+ ✔ A contractor letter cannot be rolled up
+ ✔ A vendor letter cannot be the roll up target
+ ✔ An issued contractor letter cannot receive a roll up
+ ✔ The contractor register never shows vendor letters
+ ✔ The vendor register never shows contractor letters
+ ✔ The vendor register names the originating vendor
+ ✔ Both registers are reachable from the sidebar
+ ✔ The roll up endpoint forwards the documents
+ ✔ The create endpoint honours the vendor kind
+ ✔ The create endpoint returns the user to the right register
+ ✔ The vendor sheet distinguishes the vendor from the recorder
+ ✔ The employer does not see vendor letters by default
+ ✔ The employer does see a vendor letter addressed to them
+ ✔ A rolled up document does reach the employer
+
+Warehouse (Tests\Feature\Warehouse)
+ ✔ A receipt creates a lot and a movement
+ ✔ Goods cannot be received against an unissued order
+ ✔ Receiving everything marks the order fully received
+ ✔ Receiving part marks the order partially received
+ ✔ Issuing reduces the balance
+ ✔ You cannot issue more than the warehouse holds
+ ✔ Issuing exactly the balance is allowed
+ ✔ A site delivery does not deduct stock twice
+ ✔ You cannot deliver to site more than was issued
+ ✔ Material can sit in transit between issue and site
+ ✔ A mistake is corrected by a reversing movement
+ ✔ A reversal does not delete the original
+ ✔ A reversal must state a reason
+ ✔ The same movement cannot be reversed twice
+ ✔ A failed inspection does not block a receipt
+ ✔ Material that failed or was never inspected is reported
+ ✔ Never inspected counts as needing attention
+ ✔ A contractor cannot inspect its own material
+ ✔ A failed inspection must record findings
+ ✔ Traceability needs both an identifier and a certificate
+ ✔ The material certificate is a document in the register
+ ✔ Material still in the warehouse shows as a shortage
+ ✔ Issued but not yet on site is still a shortage
+ ✔ A subsystem with no material is not reported short
+ ✔ The employer can read stock
+ ✔ A non participant sees no stock
+ ✔ The sign convention lives in one place
+ ✔ Every movement type is numbered with its own prefix
+ ✔ Movement labels are bilingual
+
+OK (1151 tests, 16776 assertions)

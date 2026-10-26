@@ -1,0 +1,96 @@
+{
+  "date": "2026-10-19",
+  "status": "IMPLEMENTED_TARGETED_VERIFIED_REGISTER_FILTERS",
+  "decisions_reviewed": [
+    "ADR-034 category separation/no historical inference",
+    "existing FR-UX-04 tabletools contract",
+    "existing procurement register authority/forced-RLS and ADR-033/035-040 boundaries"
+  ],
+  "implementation": {
+    "GET_route_unchanged": "/projects/{projectCode}/procurement",
+    "new_parameters": [
+      "mr_q",
+      "po_q",
+      "mr_state",
+      "po_state"
+    ],
+    "max_query_characters": 120,
+    "search_columns": [
+      "number",
+      "title_en",
+      "title_fa"
+    ],
+    "literal_bound_substring_SQL": "strpos(lower(coalesce(column,'')),lower(?)) > 0",
+    "OR_branches_grouped_under_project_category_state": true,
+    "original_caller_RLS_only": true,
+    "independent_MR_PO_queries": true,
+    "existing_category_filter_preserved": true,
+    "reset_keeps_category_language": true,
+    "scope_note_for_server_counts_inspections_unchanged": true,
+    "new_schema_endpoint_role_or_mutation": false,
+    "pagination_added": false
+  },
+  "verification": {
+    "tests": 33,
+    "assertions": 310,
+    "seconds": 51.4,
+    "pass": true,
+    "new_feature_cases": 8,
+    "log": "related.log",
+    "suites": [
+      "ProcurementRegisterFilterTest",
+      "ProcurementCategoryTest",
+      "PurchaseOrderEntryTest"
+    ],
+    "literal_special_characters_and_SQL_like_text": true,
+    "real_foreign_BB2_project_rows": true,
+    "vendor_visible_PO_hidden_MR_and_competing_buyer_RLS": true,
+    "search_no_new_draft_grant": true,
+    "archived_read_seven_table_no_mutation": true,
+    "EN_FA_HTML_escaping_and_reset": true,
+    "blank_and_zero_query": true,
+    "invalid_types_lengths_state_vocabulary": true,
+    "superseded_initial_logs": [
+      "focused.log",
+      "focused-corrected.log"
+    ],
+    "fixture_corrections": [
+      "required Persian line description",
+      "nonempty POST to reach existing authority gate before input-detail validation"
+    ],
+    "lint_files": 4,
+    "lint_pass": true,
+    "pint_pass": true,
+    "diff_check_pass": true,
+    "routine_full_suite": false
+  },
+  "database": {
+    "role": "epcc",
+    "non_superuser": true,
+    "no_bypassrls": true,
+    "encoding": "UTF8",
+    "locale": "C",
+    "unix_socket_only": true,
+    "private": true,
+    "stopped_after_verification": true
+  },
+  "implementation_sha256": {
+    "app/app/Http/Controllers/MaterialsController.php": "b58cd8c0b1260875ab45624de5b007cfd9ce31ed0f84e628d4867875959653fe",
+    "app/resources/views/materials/procurement.blade.php": "8d57e8bff2f4cd59e34433a561d507d11ea97f3c60c09bcd02e083c9df7d36c3",
+    "app/lang/en/procurement_register.php": "bf230932f39b4dfbae5cda59e7b0023b74df48ffb62ff74446b7fd1cbc915413",
+    "app/lang/fa/procurement_register.php": "db2ddc1ce2dd8e64056ac59e46246552ee1a78e859ee2268cfe1e72e88c063d8",
+    "app/tests/Feature/ProcurementRegisterFilterTest.php": "be7f60a3a582dd29deb9e90cec46c8a46a4546a779933f4adea64b31c6386b91"
+  },
+  "explicit_follow_up_recommendations_not_implemented": [
+    "independent server pagination/count design/indexing and performance evidence",
+    "preexisting register float/integer money formatter: replace with exact decimal-string rendering and focused tests"
+  ],
+  "authority_deferrals_unchanged": [
+    "legacy/manual/MTO authority",
+    "post-issue amendments",
+    "physical receipt",
+    "write-based source reconciliation"
+  ],
+  "production_migration_deployment_commit_push": false,
+  "browser_currentCI_load_concurrency_claim": false
+}

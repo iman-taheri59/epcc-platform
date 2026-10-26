@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-22",
+  "status": "core_matrix_accepted_implementation_contract_only",
+  "accepted_selections": {
+    "receipt_acceptance_responsibility": "qc_qa_warehouse",
+    "receipt_nomination_administrator": "owner_configure_explicit",
+    "receipt_person_separation": "preparer_qc_acceptor_distinct"
+  },
+  "core_matrix_pending": false,
+  "advanced_disposition_waiver_legacy_rules_pending": true,
+  "first_increment": "owner-only nomination configuration foundation",
+  "implemented": false,
+  "application_files_unchanged": 545,
+  "runtime_tests": 0,
+  "grants_activated": false,
+  "schema_changed": false,
+  "structured_prerequisite_items": "deferred",
+  "committed": false,
+  "pushed": false,
+  "deployed": false,
+  "checked_local_links": 50
+}

@@ -13,6 +13,7 @@ use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Morilog\Jalali\Jalalian;
 
 /**
  * Order gap board (ADR-015, MTO Slice 6).
@@ -27,8 +28,7 @@ final class OrderGapController extends Controller
     public function __construct(
         private readonly TenantContext $tenant,
         private readonly OrderGapService $gaps,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request, string $projectCode): View
     {
@@ -87,7 +87,7 @@ final class OrderGapController extends Controller
 
         $this->tenant->runAs($user->company_id, function () use ($data, $project, $lang): void {
             $item = PurchaseOrderItem::whereKey($data['item_id'])->firstOrFail();
-            $this->gaps->attribute($project, $item, $data['material_item_id'], $lang);
+            $this->gaps->humanAttribute($project, $item, $data['material_item_id'], $lang);
         }, $project->id);
 
         return back()->with('status', $lang === 'fa'
@@ -108,7 +108,7 @@ final class OrderGapController extends Controller
 
         $this->tenant->runAs($user->company_id, function () use ($data, $lang): void {
             $item = PurchaseOrderItem::whereKey($data['item_id'])->firstOrFail();
-            $this->gaps->amend($item, (float) $data['quantity'], $lang);
+            $this->gaps->humanAmend($item, (float) $data['quantity'], $lang);
         }, $project->id);
 
         return back()->with('status', $lang === 'fa'
@@ -157,7 +157,7 @@ final class OrderGapController extends Controller
     private function today(string $lang): string
     {
         return $lang === 'fa'
-            ? \Morilog\Jalali\Jalalian::now()->format('Y/m/d')
+            ? Jalalian::now()->format('Y/m/d')
             : now()->format('d M Y');
     }
 }

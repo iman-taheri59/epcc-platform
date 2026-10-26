@@ -1,0 +1,12 @@
+No syntax errors detected in app/Services/PurchaseOrderExecutionService.php
+No syntax errors detected in database/migrations/2026_10_19_170000_add_po_mr_issue_allocations.php
+No syntax errors detected in lang/en/po_execution.php
+No syntax errors detected in lang/fa/po_execution.php
+No syntax errors detected in lang/en/po_pricing.php
+No syntax errors detected in lang/fa/po_pricing.php
+No syntax errors detected in lang/en/po_mr_allocation.php
+No syntax errors detected in lang/fa/po_mr_allocation.php
+No syntax errors detected in tests/Feature/PurchaseOrderMrAllocationTest.php
+No syntax errors detected in tests/Feature/PurchaseOrderMrAllocationMigrationTest.php
+No syntax errors detected in tests/Feature/PurchaseOrderExecutionTest.php
+No syntax errors detected in tests/Feature/PurchaseOrderPricingTest.php

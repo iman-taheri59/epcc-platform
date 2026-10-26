@@ -1,0 +1,20 @@
+[
+  {
+    "mutation": "ignore_inventory_drift",
+    "detected": true,
+    "exit_code": 255,
+    "failure": "PHP Fatal error:  Uncaught RuntimeException: stale inventory rejected: {\"project\":\"P1\",\"inventory_sha256\":\"4cc6e98826d9a29d6ad3412bab2031ec9ec1daa9446a8c10d731613fdff8bc98\",\"document_chains\":{\"D1\":{\"batch_order\":[\"A\",\"B\"],\"controlled_evidence_ref\":\"CONTROLLED-ORDER-RECORD\",\"reason\":\"Retained acceptance records reviewed\"}},\"status\":\"CANDIDATE_FOR_CONTROLLED_REVIEW\",\"ready_to_apply\":false,\"writes_performed\":0,\"findings\":[],\"notices\":[{\"code\":\"TIMESTAMP_TIE_NO_AUTOMATIC_WINNER\",\"subject\":\"D1\"}],\"candidate_sha256\":\"2e7315a484d1b47680d3b9bd57a20301bf813b3cd881c99b159295997a28b569\",\"limitations\":\"No evidence admission, overlap approval, RLS, signatures or database preflight. No synthetic historical global ordinal.\"} in /home/user/.cache/epcc-backfill-probes/test/mto-backfill-planner.php:23"
+  },
+  {
+    "mutation": "ignore_scope_change",
+    "detected": true,
+    "exit_code": 255,
+    "failure": "PHP Fatal error:  Uncaught RuntimeException: scope set change blocks even with order reference: {\"project\":\"P1\",\"inventory_sha256\":\"6878c1cf8d1dc850bf5167a7bd5a09a5e078efe2da76a2ddf2c84d3871285dc5\",\"document_chains\":{\"D1\":{\"batch_order\":[\"A\",\"B\"],\"controlled_evidence_ref\":\"CONTROLLED-ORDER-RECORD\",\"reason\":\"Retained acceptance records reviewed\"}},\"status\":\"CANDIDATE_FOR_CONTROLLED_REVIEW\",\"ready_to_apply\":false,\"writes_performed\":0,\"findings\":[],\"notices\":[{\"code\":\"TIMESTAMP_TIE_NO_AUTOMATIC_WINNER\",\"subject\":\"D1\"}],\"candidate_sha256\":\"d8a42f0a711f2c15b73a34f168b4cc5f40096ff5edee5759d4f45a9619bc131d\",\"limitations\":\"No evidence admission, overlap approval, RLS, signatures or database preflight. No synthetic historical global ordinal.\"} in /home/user/.cache/epcc-backfill-probes/test/mto-backfill-planner.php:23"
+  },
+  {
+    "mutation": "ignore_historical_topology",
+    "detected": true,
+    "exit_code": 255,
+    "failure": "PHP Fatal error:  Uncaught RuntimeException: current hierarchy is not historical topology proof: {\"project\":\"P1\",\"inventory_sha256\":\"dc54e115cd209c5796a30f6e60e4c6abd390596ec2387d88228bd4824c53e03b\",\"document_chains\":[],\"status\":\"BLOCKED\",\"ready_to_apply\":false,\"writes_performed\":0,\"findings\":[{\"code\":\"EXPLICIT_DOCUMENT_ORDER_REVIEW_REQUIRED\",\"subject\":\"D1\"}],\"notices\":[{\"code\":\"TIMESTAMP_TIE_NO_AUTOMATIC_WINNER\",\"subject\":\"D1\"}],\"candidate_sha256\":null,\"limitations\":\"No evidence admission, overlap approval, RLS, signatures or database preflight. No synthetic historical global ordinal.\"} in /home/user/.cache/epcc-backfill-probes/test/mto-backfill-planner.php:23"
+  }
+]

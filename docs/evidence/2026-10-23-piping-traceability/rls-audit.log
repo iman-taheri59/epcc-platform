@@ -1,0 +1,26 @@
+ current_user | rolsuper | rolbypassrls 
+--------------+----------+--------------
+ epcc         | f        | f
+(1 row)
+
+             relname              | relrowsecurity | relforcerowsecurity 
+----------------------------------+----------------+---------------------
+ material_requisition_items       | t              | t
+ material_requisitions            | t              | t
+ piping_custody_amendment_sources | t              | t
+ piping_custody_amendments        | t              | t
+ piping_custody_records           | t              | t
+ piping_qa_decisions              | t              | t
+ piping_receiving_reviews         | t              | t
+ po_execution_decisions           | t              | t
+ po_mr_allocations                | t              | t
+ purchase_order_items             | t              | t
+ purchase_orders                  | t              | t
+(11 rows)
+
+           proname           | provolatile | prosecdef 
+-----------------------------+-------------+-----------
+ epcc_piping_source_snapshot | s           | f
+ epcc_piping_receipt_policy  | s           | f
+(2 rows)
+

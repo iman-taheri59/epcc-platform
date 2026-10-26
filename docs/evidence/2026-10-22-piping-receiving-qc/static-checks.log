@@ -1,0 +1,30 @@
+
+  ...........
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   .......................................................... 11 files  
+
+No syntax errors detected in app/Services/PipingReceivingReviewService.php
+No syntax errors detected in app/Http/Controllers/PipingReceivingReviewController.php
+No syntax errors detected in database/migrations/2026_10_22_120000_add_piping_receiving_reviews.php
+No syntax errors detected in lang/en/piping_receiving_qc.php
+No syntax errors detected in lang/fa/piping_receiving_qc.php
+No syntax errors detected in lang/en/receipt_access.php
+No syntax errors detected in lang/fa/receipt_access.php
+No syntax errors detected in lang/en/piping_custody.php
+No syntax errors detected in lang/fa/piping_custody.php
+No syntax errors detected in routes/web.php
+No syntax errors detected in tests/Feature/PipingReceivingReviewTest.php
+
+
+   INFO  Blade templates cached successfully.  
+
+
+   INFO  Compiled views cleared successfully.  
+
+
+  GET|HEAD   projects/{projectCode}/materials/piping-custody/{receiptId}/receiving-qc materials.piping-receiving-qc › PipingReceivingReviewContro…
+  POST       projects/{projectCode}/materials/piping-custody/{receiptId}/receiving-qc materials.piping-receiving-qc.store › PipingReceivingReviewControl…
+
+                                                            Showing [2] routes
+

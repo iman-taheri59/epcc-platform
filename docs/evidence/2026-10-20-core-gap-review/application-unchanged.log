@@ -1,0 +1,3 @@
+PASS 545 application/source/resource/config/test/Composer files byte-identical
+PASS no added/removed files in recorded application scope
+No runtime test executed; this is a source hash comparison.

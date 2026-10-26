@@ -1,0 +1,22 @@
+ current_user | rolsuper | rolbypassrls | rolcreatedb 
+--------------+----------+--------------+-------------
+ epcc         | f        | f            | f
+(1 row)
+
+           relname            | relrowsecurity | relforcerowsecurity 
+------------------------------+----------------+---------------------
+ document_files               | t              | t
+ document_revisions           | t              | t
+ documents                    | t              | t
+ scope_structure_declarations | t              | t
+ scope_structure_reviews      | t              | t
+(5 rows)
+
+              tgname              | tgenabled 
+----------------------------------+-----------
+ scope_bound_opinion_immutable    | O
+ scope_bound_opinion_insert_guard | O
+ scope_structure_immutable        | O
+ scope_structure_insert_guard     | O
+(4 rows)
+

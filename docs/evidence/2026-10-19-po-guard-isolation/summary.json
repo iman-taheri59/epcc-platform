@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-19",
+  "status": "TARGETED_VERIFIED_HIDDEN_JOURNAL_ISSUED_CONTENT_BYPASS_FIXED",
+  "references": [
+    "ADR-015",
+    "ADR-037",
+    "ADR-038",
+    "ADR-039",
+    "ADR-040",
+    "ORDER-GAP-LOCKING-EN.md"
+  ],
+  "reproduction": {
+    "confirmed_before_fix": true,
+    "log": "reproduction.log",
+    "tests": 1,
+    "assertions": 9,
+    "expected_failure": "Hidden issue evidence must not mean mutable commercial content",
+    "production_incident_claim": false
+  },
+  "implementation": {
+    "migration": "2026_10_19_180000_fix_po_issued_guard_visibility.php",
+    "forward_only": true,
+    "trigger_only_internal_basis_helper": true,
+    "security_invoker": true,
+    "original_caller_visible_parent_cap_before_internal_scope_binding": true,
+    "temporary_buyer_and_project_binding_for_integrity_only": true,
+    "caller_context_restored_on_success_and_exception": true,
+    "old_and_new_parent_freeze": true,
+    "journal_select_policies_unchanged": true,
+    "generic_journal_read_delegation": false,
+    "new_roles_MTO_authority_or_HTTP_routes": false,
+    "historical_row_rewrite_or_backfill": false,
+    "controlled_post_issue_amendment_enabled": false
+  },
+  "verification": {
+    "tests": 71,
+    "assertions": 658,
+    "seconds": 118.633,
+    "pass": true,
+    "log": "related.log",
+    "new_cases": 6,
+    "new_cases_focused_tests": 6,
+    "new_cases_focused_assertions": 130,
+    "new_cases_focused_log": "focused.log",
+    "affected_suites": [
+      "PurchaseOrderExecutionTest",
+      "PurchaseOrderMrAllocationTest",
+      "OrderGapTest",
+      "PurchaseOrderSourceReviewTest"
+    ],
+    "archived_populated_upgrade_preserves_six_tables": true,
+    "success_exception_scope_restore_and_visibility_caps": true,
+    "existing_targeted_real_connection_schedules_included": true,
+    "lint_files": 2,
+    "lint_pass": true,
+    "pint_pass": true,
+    "diff_check_pass": true,
+    "full_suite_run": false,
+    "exhaustive_concurrency_certification": false
+  },
+  "database": {
+    "role": "epcc",
+    "non_superuser": true,
+    "no_bypassrls": true,
+    "encoding": "UTF8",
+    "unix_socket_only": true,
+    "disposable": true,
+    "runtime_cache_restored_this_turn": true,
+    "stopped_after_verification": true
+  },
+  "implementation_sha256": {
+    "app/database/migrations/2026_10_19_180000_fix_po_issued_guard_visibility.php": "d5ab831d4e29e8c9f39c1c0eaf17913ae7d1ec69bcc83fd1289aa397c9fd1ef2",
+    "app/tests/Feature/PurchaseOrderExecutionTest.php": "8976aba06fdbbc782067bc5bc047f739d1ceb4c10b94121ef1c0cb23623d94c8"
+  },
+  "deferred": [
+    "legacy/draft OrderGap write-authority review against accepted price-only model",
+    "post-issue corrections design",
+    "write-based legacy commitment reconciliation",
+    "new MTO access/admission authority",
+    "raw-SQL multi-project revocation crash/retry certification"
+  ],
+  "production_migration_deployment_commit_push": false
+}

@@ -1,0 +1,58 @@
+PASS two actual acceptances commit
+PASS first actual acceptance rolls back
+PASS same actual revision accepted once
+PASS actual archive wins before acceptance
+PASS actual acceptance precedes archive
+{
+  "status": "PASS_REAL_LARAVEL_SERVICE_CONTENTION",
+  "scenarios": 5,
+  "passed": 5,
+  "failed": 0,
+  "service": "MtoAcceptanceService / ProjectArchiveService; separate PHP application kernels",
+  "database": "epcc_test",
+  "synthetic_seed_only": true,
+  "selection_state": "UNRESOLVED",
+  "g01_effective_selection_fixed": false,
+  "results": [
+    {
+      "scenario": "two actual acceptances commit",
+      "passed": true,
+      "verified_blocking": true,
+      "first": "committed",
+      "second": "operation_done",
+      "committed_new_acceptances": 2
+    },
+    {
+      "scenario": "first actual acceptance rolls back",
+      "passed": true,
+      "verified_blocking": true,
+      "first": "rolled_back",
+      "second": "operation_done",
+      "committed_new_acceptances": 1
+    },
+    {
+      "scenario": "same actual revision accepted once",
+      "passed": true,
+      "verified_blocking": true,
+      "first": "committed",
+      "second": "rejected",
+      "committed_new_acceptances": 1
+    },
+    {
+      "scenario": "actual archive wins before acceptance",
+      "passed": true,
+      "verified_blocking": true,
+      "first": "committed",
+      "second": "rejected",
+      "committed_new_acceptances": 0
+    },
+    {
+      "scenario": "actual acceptance precedes archive",
+      "passed": true,
+      "verified_blocking": true,
+      "first": "committed",
+      "second": "operation_done",
+      "committed_new_acceptances": 1
+    }
+  ]
+}

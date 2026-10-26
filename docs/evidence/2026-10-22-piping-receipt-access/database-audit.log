@@ -1,0 +1,21 @@
+ current_user | rolsuper | rolbypassrls | rolcreatedb | socket_only 
+--------------+----------+--------------+-------------+-------------
+ epcc         | f        | f            | t           | t
+(1 row)
+
+            relname             | relrowsecurity | relforcerowsecurity 
+--------------------------------+----------------+---------------------
+ piping_receipt_author_policies | t              | t
+(1 row)
+
+           polname            | polcmd 
+------------------------------+--------
+ piping_receipt_policy_insert | a
+ piping_receipt_policy_read   | r
+(2 rows)
+
+             proname              | prosecdef 
+----------------------------------+-----------
+ epcc_guard_piping_receipt_policy | f
+(1 row)
+

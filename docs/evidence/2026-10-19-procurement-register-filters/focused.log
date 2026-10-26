@@ -1,0 +1,149 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+EEEEEEEE                                                            8 / 8 (100%)
+
+Time: 00:13.570, Memory: 73.00 MB
+
+There were 8 errors:
+
+1) Tests\Feature\ProcurementRegisterFilterTest::test_number_english_persian_and_independent_queries_search_only_headers
+Illuminate\Validation\ValidationException: The lines.0.description_fa field is required.
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:600
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:88
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:40
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:502
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:364
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:71
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:53
+
+2) Tests\Feature\ProcurementRegisterFilterTest::test_category_and_state_intersections_cannot_be_escaped_by_title_or_branches
+Illuminate\Validation\ValidationException: The lines.0.description_fa field is required.
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:600
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:88
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:40
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:502
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:364
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:71
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:53
+
+3) Tests\Feature\ProcurementRegisterFilterTest::test_percent_underscore_backslash_and_sql_like_quotes_are_literal_bound_search_text
+Illuminate\Validation\ValidationException: The lines.0.description_fa field is required.
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:600
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:88
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:40
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:502
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:364
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:71
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:53
+
+4) Tests\Feature\ProcurementRegisterFilterTest::test_invalid_query_shapes_lengths_and_state_vocabularies_are_rejected
+Illuminate\Validation\ValidationException: The lines.0.description_fa field is required.
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:600
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:88
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:40
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:502
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:364
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:71
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:53
+
+5) Tests\Feature\ProcurementRegisterFilterTest::test_search_preserves_competing_buyer_and_vendor_rls_without_write_delegation
+Illuminate\Validation\ValidationException: The lines.0.description_fa field is required.
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:600
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:88
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:40
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:502
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:364
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:71
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:53
+
+6) Tests\Feature\ProcurementRegisterFilterTest::test_actual_other_project_titles_cannot_escape_current_project_scope
+Illuminate\Validation\ValidationException: The lines.0.description_fa field is required.
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:600
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:88
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:40
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:502
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:364
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:71
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:53
+
+7) Tests\Feature\ProcurementRegisterFilterTest::test_filtered_gets_leave_archived_documents_and_evidence_unchanged
+Illuminate\Validation\ValidationException: The lines.0.description_fa field is required.
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:600
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:88
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:40
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:502
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:364
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:71
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:53
+
+8) Tests\Feature\ProcurementRegisterFilterTest::test_filter_controls_are_escaped_bilingual_and_reset_keeps_category_and_language
+Illuminate\Validation\ValidationException: The lines.0.description_fa field is required.
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:600
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:88
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:40
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:502
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:364
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php:35
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:71
+/home/user/epcc-platform/app/tests/Feature/ProcurementRegisterFilterTest.php:53
+
+ERRORS!
+Tests: 8, Assertions: 0, Errors: 8.

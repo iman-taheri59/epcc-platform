@@ -1,0 +1,19 @@
+
+  ⨯....
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FAIL   ............................................ 5 files, 1 style issue  
+  ⨯ app/app/Services/ScopeProposalEnvelopeService.php  method_argument_space,…  
+
+No syntax errors detected in app/app/Services/ScopeProposalEnvelopeService.php
+No syntax errors detected in app/database/migrations/2026_10_24_110000_add_scope_proposal_envelopes.php
+No syntax errors detected in app/tests/Feature/ScopeProposalEnvelopeTest.php
+No syntax errors detected in app/lang/en/scope_proposals.php
+No syntax errors detected in app/lang/fa/scope_proposals.php
+
+  .....
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ........................................................... 5 files  
+
+No syntax errors detected in app/app/Services/ScopeProposalEnvelopeService.php

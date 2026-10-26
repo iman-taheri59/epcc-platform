@@ -1,0 +1,75 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+....................................................E..........  63 / 101 ( 62%)
+......................................                          101 / 101 (100%)
+
+Time: 02:38.554, Memory: 93.00 MB
+
+There was 1 error:
+
+1) Tests\Feature\MtoReconciliationEvidenceTest::test_visible_batch_does_not_grant_visibility_of_another_company_private_evidence
+Illuminate\Database\UniqueConstraintViolationException: SQLSTATE[23505]: Unique violation: 7 ERROR:  duplicate key value violates unique constraint "documents_project_id_number_unique" (Connection: pgsql, Host: /tmp/epcc-topology-sock-v4vh9mdo, Port: 5545, Database: epcc_test, SQL: insert into "documents" ("project_id", "company_id", "number", "discipline", "doc_type", "sequence", "title_en", "title_fa", "id", "updated_at", "created_at") values (9089966d-dc80-4076-bcd5-e7c3075c61fc, 38a15604-b0d4-48ee-af20-1379c81cb9eb, PH-14-CIVIL-DWG-0001, CIVIL, DWG, 1, Synthetic dependency, مدرک آزمایشی, e0e90711-e4d1-4f26-806c-e9b885096b0d, 2026-10-19 03:58:51, 2026-10-19 03:58:51))
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:857
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:590
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:554
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4220
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2336
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1614
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1407
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1258
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/helpers.php:393
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1257
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php:23
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2866
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2882
+/home/user/epcc-platform/app/app/Services/DocumentRegister.php:86
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:502
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:364
+/home/user/epcc-platform/app/app/Services/DocumentRegister.php:75
+/home/user/epcc-platform/app/tests/Feature/MtoReconciliationEvidenceTest.php:172
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/MtoReconciliationEvidenceTest.php:171
+/home/user/epcc-platform/app/tests/Feature/MtoReconciliationEvidenceTest.php:350
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+Caused by
+PDOException: SQLSTATE[23505]: Unique violation: 7 ERROR:  duplicate key value violates unique constraint "documents_project_id_number_unique"
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:601
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:846
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:590
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:554
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4220
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2336
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1614
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1407
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1258
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/helpers.php:393
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1257
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php:23
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2866
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:2882
+/home/user/epcc-platform/app/app/Services/DocumentRegister.php:86
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php:502
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php:364
+/home/user/epcc-platform/app/app/Services/DocumentRegister.php:75
+/home/user/epcc-platform/app/tests/Feature/MtoReconciliationEvidenceTest.php:172
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/MtoReconciliationEvidenceTest.php:171
+/home/user/epcc-platform/app/tests/Feature/MtoReconciliationEvidenceTest.php:350
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+ERRORS!
+Tests: 101, Assertions: 799, Errors: 1.

@@ -1,0 +1,12 @@
+{
+  "documents": [
+    "docs/DECISION-REFERENCE-INDEX-EN.md",
+    "docs/DECISION-REFERENCE-INDEX-FA.md",
+    "docs/ADR-024-SCOPE-ADMISSION-CONTRACT-EN.md",
+    "docs/ADR-024-SCOPE-ADMISSION-CONTRACT-FA.md",
+    "docs/MTO-REQUIREMENTS-EN.md",
+    "docs/MTO-REQUIREMENTS-FA.md"
+  ],
+  "local_targets_checked": 49,
+  "missing": 0
+}

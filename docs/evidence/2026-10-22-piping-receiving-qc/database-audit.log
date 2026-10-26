@@ -1,0 +1,22 @@
+ current_user | rolsuper | rolbypassrls | rolcreatedb | socket_only | current_setting 
+--------------+----------+--------------+-------------+-------------+-----------------
+ epcc         | f        | f            | t           | t           | UTF8
+(1 row)
+
+         relname          | relrowsecurity | relforcerowsecurity 
+--------------------------+----------------+---------------------
+ piping_receiving_reviews | t              | t
+(1 row)
+
+            polname             | polcmd 
+--------------------------------+--------
+ piping_receiving_review_insert | a
+ piping_receiving_review_read   | r
+(2 rows)
+
+              proname               | prosecdef 
+------------------------------------+-----------
+ epcc_guard_piping_receiving_review | f
+ epcc_piping_custody_fingerprint    | f
+(2 rows)
+

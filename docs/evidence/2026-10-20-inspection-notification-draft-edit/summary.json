@@ -1,0 +1,39 @@
+{
+  "date_local": "2026-10-20",
+  "approved_choice": "draft_only",
+  "scope": "fixed-source same-company DRAFT content edits with existing independent draft grant, version check, latest edit metadata only",
+  "verification": {
+    "tests": 58,
+    "assertions": 631,
+    "seconds": 87.559,
+    "skipped": 0,
+    "new_edit_cases": 16,
+    "previous_workflow_cases": 22,
+    "previous_pdf_cases": 13,
+    "previous_input_cases": 7,
+    "log": "final-focused.log"
+  },
+  "migration": "forward-only; nullable last-edit metadata and new state/version-compatible constraints; replaces existing guard; historical migration untouched",
+  "audit_limit": "last editor/time/settings only, not full draft revisions",
+  "concurrency": "one exact-key two-worker edit-vs-issue schedule, one success/one refusal; no universal concurrency certification",
+  "runtime": "private rebuilt PHP8.4, PostgreSQL17, Chromium; epcc NOSUPERUSER NOBYPASSRLS; FORCE RLS for all three notification tables; Unix socket only",
+  "database_stopped": "pg_ctl: no server running\npg_ctl_exit=3\n",
+  "full_suite": false,
+  "production_deployed": false,
+  "current_ci_checked": false,
+  "static_checks": "9-file Pint test PASS, PHP lint PASS, Blade cache/clear PASS, git diff --check PASS",
+  "intermediate_errors": "retained logs: vendor move required composer dump-autoload; compact dynamic arrow capture fixed with explicit array variables; archived project expected422 not409; missing test imports fixed. Final command passes.",
+  "source_sha256": {
+    "app/app/Services/InspectionNotificationService.php": "70c01de3b187e06b98a9a1f518cb3cc9cf7102b8747b33fbc95aa5641f7d791e",
+    "app/app/Support/InspectionNotificationInput.php": "57cbbc1fb4c6895754872ae62842e943a18184f924a36a919d8f674d24963196",
+    "app/app/Http/Controllers/InspectionNotificationController.php": "8646e9b68bd91b7d8acbc705e7d795a7be18736d07d88d37eade20cc9e03d895",
+    "app/routes/web.php": "c90bef1ee100b2ccb79e38f8a0d61fcde1e711ab9061340f4d91d27e9cd8913d",
+    "app/resources/views/inspection-notifications/edit.blade.php": "f3907c83a5de2ec9eedc0ca1413e5c8558063de685410adb17ba54c7e48010e7",
+    "app/resources/views/inspection-notifications/show.blade.php": "d6602810b01e63ed13777267daf55cdd53b5ba8d5675cd3b0fb1b5990c3df656",
+    "app/lang/en/inspection_notifications.php": "6e87c270371a6d7b38f54d7c2790c8abf0bdc926b2347e7798b3f45e8f2178cf",
+    "app/lang/fa/inspection_notifications.php": "d1a5febc8c1d6d80a52f14b9ee3f6e501bdeef250b651c667d11861020a8e194",
+    "app/database/migrations/2026_10_20_100000_allow_inspection_notification_draft_edits.php": "175bf985ba60a09ca66766d79bb0792f0610dcd03412f1a43590d77e6a64285b",
+    "app/tests/Feature/InspectionNotificationDraftEditTest.php": "b48c520d3b7627262bbed09ca61a1f81cf85623ba4cd90e027bb9bdc8fa06589",
+    "scripts/tests/inspection_notification_worker.php": "504d9890fd7fd984f5b01c44e378c92cb262ff671e51d25cce20756d3e7f71ee"
+  }
+}

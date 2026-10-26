@@ -1,0 +1,62 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+........EE.                                                       11 / 11 (100%)
+
+Time: 00:20.206, Memory: 79.00 MB
+
+There were 2 errors:
+
+1) Tests\Feature\PurchaseOrderSourceReviewTest::test_vendor_sees_only_its_existing_orders_not_mr_or_other_vendor_commitments
+Illuminate\Database\QueryException: SQLSTATE[23502]: Not null violation: 7 ERROR:  null value in column "id" of relation "project_company" violates not-null constraint
+DETAIL:  Failing row contains (null, 45730697-658e-4960-9495-8e987423a35f, 5dccc413-0e99-49b7-b13d-f6ede5528ac8, null, null, null). (Connection: pgsql, Host: /tmp/epcc-reconciliation-full-sock-lq78n0a7, Port: 5545, Database: epcc_test, SQL: insert into "project_company" ("project_id", "company_id") values (45730697-658e-4960-9495-8e987423a35f, 5dccc413-0e99-49b7-b13d-f6ede5528ac8))
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:857
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:590
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:554
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4220
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderSourceReviewTest.php:300
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderSourceReviewTest.php:80
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderSourceReviewTest.php:298
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+Caused by
+PDOException: SQLSTATE[23502]: Not null violation: 7 ERROR:  null value in column "id" of relation "project_company" violates not-null constraint
+DETAIL:  Failing row contains (null, 45730697-658e-4960-9495-8e987423a35f, 5dccc413-0e99-49b7-b13d-f6ede5528ac8, null, null, null).
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:601
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:846
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:590
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:554
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4220
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderSourceReviewTest.php:300
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderSourceReviewTest.php:80
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderSourceReviewTest.php:298
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+2) Tests\Feature\PurchaseOrderSourceReviewTest::test_report_pagination_is_bounded_and_keeps_language
+Illuminate\Validation\ValidationException: فقط از روی درخواست خرید تأییدشده می‌توان سفارش صادر کرد.
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/ValidationException.php:70
+/home/user/epcc-platform/app/app/Services/ProcurementService.php:336
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderSourceReviewTest.php:186
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderSourceReviewTest.php:80
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderSourceReviewTest.php:186
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderSourceReviewTest.php:323
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+ERRORS!
+Tests: 11, Assertions: 80, Errors: 2.

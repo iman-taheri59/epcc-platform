@@ -1,0 +1,15 @@
+
+
+An error occurred inside PHPUnit.
+
+Message:  syntax error, unexpected identifier "epcc"
+Location: /home/user/epcc-platform/app/tests/Feature/InspectionNotificationPdfTest.php:352
+
+#0 /home/user/epcc-platform/.cache/vendor/phpunit/phpunit/src/Runner/TestSuiteLoader.php(49): PHPUnit\Runner\TestSuiteLoader->loadSuiteClassFile()
+#1 /home/user/epcc-platform/.cache/vendor/phpunit/phpunit/src/TextUI/Configuration/TestSuiteBuilder.php(119): PHPUnit\Runner\TestSuiteLoader->load()
+#2 /home/user/epcc-platform/.cache/vendor/phpunit/phpunit/src/TextUI/Configuration/TestSuiteBuilder.php(58): PHPUnit\TextUI\Configuration\TestSuiteBuilder->testSuiteFromPath()
+#3 /home/user/epcc-platform/.cache/vendor/phpunit/phpunit/src/TextUI/Application.php(389): PHPUnit\TextUI\Configuration\TestSuiteBuilder->build()
+#4 /home/user/epcc-platform/.cache/vendor/phpunit/phpunit/src/TextUI/Application.php(196): PHPUnit\TextUI\Application->buildTestSuite()
+#5 /home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#6 /home/user/epcc-platform/.cache/vendor/bin/phpunit(122): include('...')
+#7 {main}

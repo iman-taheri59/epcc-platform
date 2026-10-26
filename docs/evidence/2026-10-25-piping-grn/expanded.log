@@ -1,0 +1,25 @@
+
+  [31;1m⨯[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PipingGrnTest[22m [90m>[39m whole accepted receip… [41;1m PDOException [49;22m  
+[39;1m  SQLSTATE[23514]: Check violation: 7 ERROR:  PIPING_GRN_INCOMPLETE_CREDIT
+CONTEXT:  PL/pgSQL function epcc_finalize_piping_grn() line 4 at RAISE[39;22m
+
+  at [32m/home/user/.cache/cde-read-vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php[39m:[32m54[39m
+     50▕ 
+     51▕             try {
+     52▕                 if ($this->transactions === 1) {
+     53▕                     $this->fireConnectionEvent('committing');
+  ➜  54▕                     $this->getPdo()->commit();
+     55▕                 }
+     56▕ 
+     57▕                 $this->transactions = max(0, $this->transactions - 1);
+     58▕             } catch (Throwable $e) {
+
+  [33m1   [39m[39;1m/home/user/.cache/cde-read-vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php[39;22m:[39;1m54[39;22m
+  [33m2   [39m[39;1mapp/Support/TenantContext.php[39;22m:[39;1m94[39;22m
+
+
+  [90mTests:[39m    [31;1m1 failed[39;22m[90m,[39m[39m [2m14 pending[22m[39m[90m (1 assertions)[39m
+  [90mDuration:[39m [39m4.28s[39m
+

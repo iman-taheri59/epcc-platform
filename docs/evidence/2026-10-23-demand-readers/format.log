@@ -1,0 +1,23 @@
+
+  ✓.✓✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   .................................... 4 files, 3 style issues fixed  
+  ✓ app/app/Services/DemandReaderService.php unary_operator_spaces, braces_po…  
+  ✓ app/lang/en/demand_readers.php                blank_line_after_opening_tag  
+  ✓ app/lang/fa/demand_readers.php                blank_line_after_opening_tag  
+
+
+  .✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   ..................................... 2 files, 1 style issue fixed  
+  ✓ app/tests/Feature/DemandReaderTest.php class_attributes_separation, singl…  
+
+
+  ✓.
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   ..................................... 2 files, 1 style issue fixed  
+  ✓ app/tests/Feature/DemandReaderTest.php class_attributes_separation, singl…  
+

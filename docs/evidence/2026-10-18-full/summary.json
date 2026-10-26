@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-18",
+  "baseline_sha": "0c54c7f84d1e343bf1d58833977ac0834dcfdcc0",
+  "branch": "arena/baseline-verification-2026-10-18",
+  "includes_uncommitted_changes": true,
+  "full_suite_before_pdf_fix": {
+    "tests": 1083,
+    "assertions": 16380,
+    "errors": 0,
+    "failures": 1,
+    "skipped": 0
+  },
+  "full_suite_exit_code": 1,
+  "sole_failure": {
+    "class": "Tests\\Feature\\PdfExportTest",
+    "test": "test_an_issued_certificate_does_not_rewrite_its_own_evidence",
+    "cause": "34mm label column wraps English text and interleaves value in PDF text extraction"
+  },
+  "repair": {
+    "scope": "MCC punch summary print layout only",
+    "label_width_mm": 48,
+    "white_space": "nowrap",
+    "failing_test_unchanged": true
+  },
+  "related_suite_after_fix": {
+    "tests": 29,
+    "assertions": 108,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0
+  },
+  "related_suite_exit_code": 0,
+  "full_suite_rerun_on_final_source": false,
+  "status": "All failures identified by completed full run resolved; related tests green; final full rerun required before merge certification",
+  "non_db_checks": "passed",
+  "composer_validation_and_platform_requirements": "passed",
+  "php_linted_files": 359,
+  "browser_smoke_http200": 8,
+  "browser_page_errors": 0,
+  "application_role": {
+    "name": "epcc",
+    "superuser": false,
+    "bypassrls": false
+  },
+  "remote_changed": false
+}

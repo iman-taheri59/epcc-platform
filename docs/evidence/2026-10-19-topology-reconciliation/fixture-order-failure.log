@@ -1,0 +1,29 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+................................................................. 65 / 83 ( 78%)
+..F...............                                                83 / 83 (100%)
+
+Time: 02:01.171, Memory: 91.00 MB
+
+There was 1 failure:
+
+1) Tests\Feature\MtoTopologyReconciliationTest::test_unresolved_capture_parent_is_not_filled_from_proposal
+Failed asserting that two arrays are identical.
+--- Expected
++++ Actual
+@@ @@
+ Array &0 [
+-    0 => 'OBSERVED_TOPOLOGY_INCOMPLETE',
++    0 => 'ENGINEERING_AUTHORITY_NOT_ESTABLISHED',
++    1 => 'COVERAGE_NOT_VERIFIED',
++    2 => 'EVIDENCE_VALIDITY_NOT_VERIFIED',
+ ]
+
+/home/user/epcc-platform/app/tests/Feature/MtoTopologyReconciliationTest.php:323
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+FAILURES!
+Tests: 83, Assertions: 440, Failures: 1.

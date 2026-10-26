@@ -1,0 +1,34 @@
+
+  [39;41;1m FAIL [39;49;22m[39m Tests\Feature\PipingQaDecisionTest[39m
+  [32;1m✓[39;22m[90m [39m[90mhold history exact retry conflict stale head and localized escaped[39m[90m… [39m [90m3.75s[39m  
+  [32;1m✓[39;22m[90m [39m[90mno inheritance and both actual actors are blocked even if nominated[39m[90m [39m [90m2.69s[39m  
+  [32;1m✓[39;22m[90m [39m[90mnew qc invalidates form and marks old qa not current but retry is h[39m[90m…[39m [90m2.93s[39m  
+  [31;1m⨯[39;22m[90m [39m[90macceptance requires every attestation no conditions and both citati[39m[90m…[39m [90m2.31s[39m  
+  [32;1m✓[39;22m[90m [39m[90mincomplete qc unlinked source and unknown heat cannot be released[39m[90m   [39m [90m2.65s[39m  
+  [32;1m✓[39;22m[90m [39m[90munfrozen unknown and corrupt files refused atomically[39m[90m               [39m [90m2.65s[39m  
+  [32;1m✓[39;22m[90m [39m[90mqa does not grant document capability and citations are rechecked o[39m[90m…[39m [90m2.93s[39m  
+  [32;1m✓[39;22m[90m [39m[90munknown fields fake metadata and non boolean declarations rejected[39m[90m  [39m [90m2.69s[39m  
+  [32;1m✓[39;22m[90m [39m[90msql stamps history and forbids rewriting or late evidence[39m[90m           [39m [90m2.44s[39m  
+  [32;1m✓[39;22m[90m [39m[90marchive is read only and revocation blocks even exact retry[39m[90m         [39m [90m2.39s[39m  
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PipingQaDecisionTest[22m [90m>[39m accepta… [41;1m ValidationException [49;22m  
+[39;1m  Use the exact source unit; a linked entry cannot also have an unlinked reason. No unit conversion.[39;22m
+
+  at [32m/home/user/.cache/qa-vendor/laravel/framework/src/Illuminate/Validation/ValidationException.php[39m:[32m70[39m
+     66▕      * @return static
+     67▕      */
+     68▕     public static function withMessages(array $messages)
+     69▕     {
+  ➜  70▕         return new static(tap(ValidatorFacade::make([], []), function ($validator) use ($messages) {
+     71▕             foreach ($messages as $key => $value) {
+     72▕                 foreach (Arr::wrap($value) as $message) {
+     73▕                     $validator->errors()->add($key, $message);
+     74▕                 }
+
+  [33m1   [39m[39;1m/home/user/.cache/qa-vendor/laravel/framework/src/Illuminate/Validation/ValidationException.php[39;22m:[39;1m70[39;22m
+  [33m2   [39m[39;1mapp/Services/PipingCustodyService.php[39;22m:[39;1m182[39;22m
+
+
+  [90mTests:[39m    [31;1m1 failed[39;22m[90m,[39m[39m [39m[32;1m9 passed[39;22m[90m (63 assertions)[39m
+  [90mDuration:[39m [39m27.76s[39m
+

@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-19",
+  "status": "IMPLEMENTED_TARGETED_VERIFIED_PRICING_FORM_RECOVERY",
+  "scope": {
+    "presentation_only": true,
+    "same_current_PO_hash_and_complete_active_UUID_set_required": true,
+    "no_rebase_or_partial_merge": true,
+    "current_server_hidden_hash_only": true,
+    "null_browser_control_blank_not_zero_or_stored_default": true,
+    "HTML_escaped_exact_scalar_strings": true,
+    "original_authority_source_version_and_atomic_POST_contract_unchanged": true,
+    "helper_no_database_or_tenant_switch": true,
+    "new_endpoint_schema_role_write_authority": false
+  },
+  "decisions_reviewed": [
+    "ADR-038 original_drafter_live_grant and complete-ID/current-version requirements",
+    "PO-CONTROLLED-PRICING-EN.md",
+    "existing PurchaseOrderPricingService price/validation and MaterialsController POST"
+  ],
+  "verification": {
+    "tests": 42,
+    "assertions": 465,
+    "seconds": 59.744,
+    "pass": true,
+    "log": "related.log",
+    "new_tests": 9,
+    "new_pure_helper_tests": 4,
+    "new_HTTP_PostgreSQL_tests": 5,
+    "suites": [
+      "PurchaseOrderPricingFormStateTest",
+      "PurchaseOrderPricingComparisonTest",
+      "PurchaseOrderPricingTest",
+      "PurchaseOrderDetailsTest"
+    ],
+    "initial_focused_subset": {
+      "tests": 8,
+      "assertions": 90,
+      "seconds": 7.882,
+      "log": "focused.log",
+      "superseded_by_combined_final": true
+    },
+    "corrected_browser_POST_total": "89.99",
+    "validation_and_reads_no_extra_pricing_revision": true,
+    "blank_input_not_refilled": true,
+    "stale_input_current_hidden_hash_and_fresh_values": true,
+    "malicious_HTML_escaped_nested_foreign_duplicate_discarded": true,
+    "nomination_suspension_hides_form_and_blocks_write": true,
+    "EN_FA": true,
+    "lint_files": 5,
+    "lint_pass": true,
+    "pint_pass": true,
+    "diff_check_pass": true,
+    "full_suite": false
+  },
+  "database": {
+    "engine": "PostgreSQL17",
+    "role": "epcc",
+    "non_superuser": true,
+    "no_bypassrls": true,
+    "encoding": "UTF8",
+    "unix_only": true,
+    "stopped_after_verification": true
+  },
+  "implementation_sha256": {
+    "app/app/Support/PurchaseOrderPricingFormState.php": "c8e526e4447ad64dcc73c301e3e6357064f986d0fbdd7155ab515d99a1f81336",
+    "app/resources/views/materials/po-pricing.blade.php": "bfec975bda77b5ee26c927e1e7b3698fbbf9d71241efbd16b89f1491aebab9ff",
+    "app/lang/en/po_pricing.php": "228a5e37372fb156a63bb251ccccadb152e01fbae485a5289385c0275c19f0f9",
+    "app/lang/fa/po_pricing.php": "193f6a2846e1c9d426dfa6950574f46e581bf457f8e538cee0dcb9f2c620e0f2",
+    "app/tests/Unit/PurchaseOrderPricingFormStateTest.php": "6f0c3ee1675058696dff32d34d3b81742fecd76725fb52f4a876ce7ebd094571",
+    "app/tests/Feature/PurchaseOrderPricingTest.php": "cbc703899dd46278e108b37b1faf80c5c192be1b3ecc8849935a34c42c753d26"
+  },
+  "deferred": [
+    "general legacy/manual/MTO authority",
+    "write-based source reconciliation",
+    "official remaining capacity",
+    "physical receipt",
+    "controlled post-issue editing",
+    "broad concurrency certification"
+  ],
+  "production_migration_deployment_commit_push": false,
+  "browser_current_CI_claim": false
+}

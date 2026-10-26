@@ -1,0 +1,43 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+......F.F....                                                     13 / 13 (100%)
+
+Time: 00:21.800, Memory: 77.00 MB
+
+There were 2 failures:
+
+1) Tests\Feature\PurchaseOrderExecutionTest::test_scoped_workspace_does_not_delegate_generic_detail_other_buyer_or_warehouse
+Expected response status code [403] but received 404.
+Failed asserting that 404 is identical to 403.
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:46
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:183
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderExecutionTest.php:250
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+2) Tests\Feature\PurchaseOrderExecutionTest::test_archive_or_revoked_issuer_grant_blocks_action_and_delegated_read
+Expected response status code [403] but received 422.
+Failed asserting that 422 is identical to 403.
+
+The following errors occurred during the last request:
+
+{
+    "message": "This project is archived and is read only. Reopen it to make changes.",
+    "errors": {
+        "project": [
+            "This project is archived and is read only. Reopen it to make changes."
+        ]
+    }
+}
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:46
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:183
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Testing/Concerns/AssertsStatusCodes.php:141
+/home/user/epcc-platform/app/tests/Feature/PurchaseOrderExecutionTest.php:274
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+FAILURES!
+Tests: 13, Assertions: 135, Failures: 2.

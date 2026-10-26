@@ -36,7 +36,7 @@ final class ViewServiceProvider extends ServiceProvider
     private const SHELL_VIEWS = [
         'portfolio', 'certificates', 'projects.create', 'projects.team', 'documents.index',
         'transmittals.index', 'punch.index',
-        'materials.warehouse', 'materials.procurement',
+        'materials.warehouse', 'materials.procurement', 'materials.requisition', 'materials.purchase-order', 'materials.po-execution', 'materials.po-source-review',
         // Renders the shell only when signed in; the composer returns early
         // for a guest, which is exactly what the view expects.
         'gate-demo',
@@ -49,38 +49,38 @@ final class ViewServiceProvider extends ServiceProvider
         ViewFacade::composer(
             array_merge(self::SHELL_VIEWS, ['partials.sidebar', 'partials.topbar']),
             function (View $view): void {
-            $request = request();
-            $user = $request->user();
+                $request = request();
+                $user = $request->user();
 
-            if ($user === null) {
-                return;
-            }
+                if ($user === null) {
+                    return;
+                }
 
-            $data = $view->getData();
-            $lang = $data['lang'] ?? 'fa';
+                $data = $view->getData();
+                $lang = $data['lang'] ?? 'fa';
 
-            /*
-             * The sidebar reads $user and $acting. Every shell controller used
-             * to pass them by hand, which is a contract nothing enforced - a
-             * new screen that forgot them rendered a 500 from inside the
-             * partial. Supplied here as DEFAULTS so the partial is
-             * self-sufficient; a controller that passes its own still wins,
-             * because withDefault-style merging keeps existing view data.
-             */
-            $existing = $view->getData();
+                /*
+                 * The sidebar reads $user and $acting. Every shell controller used
+                 * to pass them by hand, which is a contract nothing enforced - a
+                 * new screen that forgot them rendered a 500 from inside the
+                 * partial. Supplied here as DEFAULTS so the partial is
+                 * self-sufficient; a controller that passes its own still wins,
+                 * because withDefault-style merging keeps existing view data.
+                 */
+                $existing = $view->getData();
 
-            $view->with([
-                'user' => $existing['user'] ?? $user,
-                'acting' => $existing['acting'] ?? $user->company,
-                'nav' => $this->app->make(Navigation::class)->build(
-                    $user,
-                    $lang,
-                    '/'.ltrim($request->path(), '/'),
-                    $data['project'] ?? null,
-                ),
-                'plan' => $user->company->plan,
-                'langSwitchUrl' => $this->langSwitchUrl($lang),
-            ]);
+                $view->with([
+                    'user' => $existing['user'] ?? $user,
+                    'acting' => $existing['acting'] ?? $user->company,
+                    'nav' => $this->app->make(Navigation::class)->build(
+                        $user,
+                        $lang,
+                        '/'.ltrim($request->path(), '/'),
+                        $data['project'] ?? null,
+                    ),
+                    'plan' => $user->company->plan,
+                    'langSwitchUrl' => $this->langSwitchUrl($lang),
+                ]);
             },
         );
     }

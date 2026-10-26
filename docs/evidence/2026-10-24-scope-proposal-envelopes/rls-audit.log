@@ -1,0 +1,46 @@
+ current_user | rolsuper | rolbypassrls 
+--------------+----------+--------------
+ epcc         | f        | f
+(1 row)
+
+         relname          | relrowsecurity | relforcerowsecurity 
+--------------------------+----------------+---------------------
+ scope_proposal_reviews   | t              | t
+ scope_proposal_envelopes | t              | t
+(2 rows)
+
+              proname               | prosecdef 
+------------------------------------+-----------
+ epcc_scope_proposal_envelope_guard | f
+ epcc_scope_dossier_binding         | f
+ epcc_scope_proposal_review_guard   | f
+ epcc_scope_dossier_nomination      | f
+(4 rows)
+
+                        conname                        | contype 
+-------------------------------------------------------+---------
+ scope_envelope_stream_version                         | u
+ scope_envelope_tenant_key                             | u
+ scope_proposal_envelopes_batch_id_foreign             | f
+ scope_proposal_envelopes_check                        | c
+ scope_proposal_envelopes_company_id_foreign           | f
+ scope_proposal_envelopes_nomination_policy_id_foreign | f
+ scope_proposal_envelopes_observation_id_foreign       | f
+ scope_proposal_envelopes_pkey                         | p
+ scope_proposal_envelopes_previous_id_fkey             | f
+ scope_proposal_envelopes_project_id_document_id_fkey  | f
+ scope_proposal_envelopes_project_id_foreign           | f
+ scope_proposal_envelopes_project_id_scope_id_fkey     | f
+ scope_proposal_envelopes_proposer_id_foreign          | f
+ scope_proposal_envelopes_reader_policy_id_foreign     | f
+ scope_proposal_reviews_check                          | c
+ scope_proposal_reviews_company_id_foreign             | f
+ scope_proposal_reviews_nomination_policy_id_foreign   | f
+ scope_proposal_reviews_pkey                           | p
+ scope_proposal_reviews_project_id_foreign             | f
+ scope_proposal_reviews_reader_policy_id_foreign       | f
+ scope_proposal_reviews_reviewer_id_foreign            | f
+ scope_review_exact_tenant                             | f
+ scope_review_once_per_version                         | u
+(23 rows)
+

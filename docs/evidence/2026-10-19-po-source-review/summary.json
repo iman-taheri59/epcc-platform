@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-19",
+  "status": "TARGETED_VERIFIED_READ_ONLY_SOURCE_COMMITMENT_REVIEW",
+  "implementation": {
+    "read_only_get_report": true,
+    "original_caller_RLS_only": true,
+    "current_membership_discipline_module_pack_checks": true,
+    "buyer_impersonation": false,
+    "new_roles_schema_or_migration": false,
+    "legacy_commitment_diagnostics": true,
+    "hidden_evidence_marked_unknown": true,
+    "exact_decimal_grouping_by_source_line_and_historical_unit": true,
+    "bounded_25_row_pagination": true,
+    "official_remaining_balance": false,
+    "write_resolution_or_capacity_release": false,
+    "source_or_order_mutation": false,
+    "MTO_authority": false
+  },
+  "verification": {
+    "tests": 57,
+    "assertions": 502,
+    "seconds": 102.245,
+    "pass": true,
+    "new_source_review_cases": 12,
+    "log": "related.log",
+    "lint_files": 8,
+    "lint_pass": true,
+    "pint_pass": true,
+    "diff_check_pass": true,
+    "prior_targeted_two_connection_allocation_case_included": true,
+    "exhaustive_concurrency_certification": false
+  },
+  "database": {
+    "role": "epcc",
+    "non_superuser": true,
+    "no_bypassrls": true,
+    "encoding": "UTF8",
+    "unix_socket_only": true,
+    "disposable": true,
+    "stopped_after_verification": true
+  },
+  "not_claimed": [
+    "full_suite",
+    "recovery",
+    "browser_acceptance",
+    "new_exhaustive_concurrency_crash_revocation_certification",
+    "current_CI",
+    "production_migration",
+    "deployment",
+    "commit",
+    "push",
+    "legacy_resolution",
+    "capacity_clearance",
+    "PKI_or_issuance_certificate"
+  ],
+  "next": "Legacy lock-order alignment and issue/amend/revocation race verification. Any write-based legacy reconciliation, capacity release or controlled post-issue change requires explicit semantics and authority.",
+  "historical_allocation_evidence_unchanged": "../2026-10-19-po-mr-issue-allocation/",
+  "source_sha256": {
+    "app/app/Services/PurchaseOrderSourceReviewService.php": "c20d48be4d99f0291431a06393e4e6353794f0a7c2fed348b2c4192bbd40c6ca",
+    "app/app/Services/PurchaseOrderExecutionService.php": "1f1d22580a7cdd3ae87c5457e59a180a77cce50c181517b594d615a46d248413",
+    "app/app/Http/Controllers/MaterialsController.php": "f03b3f961a92262d000defbf0cf3a685e5f5edb4a28ca10edd7f62073a29490c",
+    "app/app/Providers/ViewServiceProvider.php": "ea481892ef1e3bbdd9d265a3f6f0667aecd11fdf12b049a0d2c66d2b56d90fc9",
+    "app/routes/web.php": "af1acd04ebfa7c48bf0ea8dbab1c54d94cebf4986933c1d208b9c293f868cc5a",
+    "app/lang/en/po_source_review.php": "a91a77f4c832e778a2a0bf42fd3bc0dea9b8c5377cc65cecca2d408b44246bbc",
+    "app/lang/fa/po_source_review.php": "0bf4951ae36c5406d0634126392fe341cbe09979fce9fde8a851e87d5bcb3d60",
+    "app/tests/Feature/PurchaseOrderSourceReviewTest.php": "b98eb91d73dc37a7eb91694a82b9912c708c8f5adc6459fa8184f552986c4f08",
+    "app/resources/views/materials/po-source-review.blade.php": "bd07339faee094dd0302d23f597f1864f916947118b694ea8a8af1a0c1355f66",
+    "app/resources/views/materials/purchase-order.blade.php": "f2ecddb7377b2c421f824f0a34e4c1b64bbab9efd9be2e7b70363783d3ae4828",
+    "app/resources/views/materials/po-execution.blade.php": "1b2fb4698bb4749bee7038c1dea57a29933278461621cd341d7f53aed14d9ba5"
+  }
+}

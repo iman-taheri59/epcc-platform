@@ -59,6 +59,7 @@
 @foreach(['title_fa'=>255, 'title_en'=>255, 'discipline'=>32] as $field=>$limit)
 <label>{{ __('mr.'.$field) }}<input name="mr[{{ $field }}]" required maxlength="{{ $limit }}" value="{{ $safeOld('mr.'.$field) }}" @if($field !== 'title_fa') dir="ltr" @endif></label>
 @endforeach
+@include('materials.procurement-category-field', ['entryRoot'=>'mr'])
 </div>
 <p class="help">{{ __('mr.line_help') }}</p>
 @for($i=0; $i<20; $i++)
@@ -68,11 +69,13 @@
 @foreach(['item_code'=>64, 'description_fa'=>4000, 'description_en'=>4000, 'unit'=>16, 'quantity'=>19, 'specification'=>255] as $field=>$limit)
 <label>{{ __('mr.'.$field) }}<input name="mr[lines][{{ $i }}][{{ $field }}]" maxlength="{{ $limit }}" value="{{ $safeOld('mr.lines.'.$i.'.'.$field) }}" @if(in_array($field,['item_code','unit','quantity','description_en'])) dir="ltr" @endif @if($field==='quantity') inputmode="decimal" @endif></label>
 @endforeach
+<label>{{ __('procurement_category.material_id') }}<input name="mr[lines][{{ $i }}][material_item_id]" maxlength="36" dir="ltr" value="{{ $safeOld('mr.lines.'.$i.'.material_item_id') }}"></label>
 <label>{{ __('mr.subsystem') }}<select name="mr[lines][{{ $i }}][subsystem_id]"><option value="">—</option>
 @foreach($mrSubsystems as $subsystem)<option value="{{ $subsystem->id }}" @selected($safeOld('mr.lines.'.$i.'.subsystem_id') === $subsystem->id)>{{ $subsystem->code }}</option>@endforeach
 </select></label>
 </div></details>
 @endfor
+<p class="help">{{ __('procurement_category.identity_help') }}</p>
 <p class="help">{{ __('mr.quantity_help') }}</p>
 <button type="submit" class="btn">{{ __('mr.save_draft') }}</button>
 </form></details>

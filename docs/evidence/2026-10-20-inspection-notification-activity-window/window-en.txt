@@ -1,0 +1,91 @@
+Pars Construction & Engineering — EPC-PARS
+
+ITP inspection notifications
+Planned inspection notice — not an inspection result or release
+
+Inspection
+
+PH-14-IN-EPC-PARS-000001
+
+notification
+number:
+Recorded project
+
+SYNTHETIC PROJECT RECORD (PH-14)
+
+reference:
+State:
+
+ISSUED — recorded in-system / Version 2
+
+Issued at:
+
+2026-10-19 21:42:49+00
+
+Issuer / main
+
+مهندس رضایی
+
+contractor at
+issue:
+Planned activity
+
+Planned activity start: 2026-10-25T09:30:00+03:30
+
+execution window: Planned activity end: 2026-10-25T11:30:00+03:30
+
+Work/activity reference (PO not required)
+SYNTHETIC FIELD INSPECTION / نمونٔه آزمایشی
+
+Inspection location
+Synthetic site / محل آزمایشی
+
+Recorded ITP revision and stage
+Recorded
+
+PH-14-PIPING-ITP-0001 / A
+
+document number
+/ revision:
+ITP revision UUID:
+
+eae48d93-b11c-4ebc-84d5-4721d4749257
+
+Recorded CDE
+
+WIP / —
+
+state / suitability
+
+— not inferred ITP
+approval:
+Recorded ITP point 1 / W
+(H/W/R/M):
+Stage UUID:
+
+c9aa4808-36a7-4a32-8a43-0b536d71d87c
+
+Description / notes — English
+Recorded stage <script>stage()</script>
+
+Description / notes — Persian
+بازرسی مرحلٔه پیش‌نویس گچ ژاله
+
+Explicit recipients — participating project companies
+Explicit recipients — participating project companies
+MC-KARAN — Karan Contract Management
+
+Description / notes — English
+<img src="https://invalid.example/a"> & <script>notes()</script>
+
+Description / notes — Persian
+ نه تأیید نتیجه،ارجاع‌شده برای تأیید حضور
+
+A referenced CDE revision and recorded stage do not themselves certify ITP approval. Stages are appendonly; full ITP approval, corrections and hold/release rules are separate.
+
+Generated copy of recorded issue data. No digital signature, certified physical inspection, email delivery, acknowledgment or
+approval is implied.
+
+PH-14-IN-EPC-PARS-000001
+
+

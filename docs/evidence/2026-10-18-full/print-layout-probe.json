@@ -1,0 +1,18 @@
+[
+  {
+    "language": "en",
+    "label": "Open — category A",
+    "value": "2",
+    "labelLineCount": 1,
+    "whiteSpace": "nowrap",
+    "labelWidth": 181.40625
+  },
+  {
+    "language": "fa",
+    "label": "باز — ردهٔ A",
+    "value": "۲",
+    "labelLineCount": 1,
+    "whiteSpace": "nowrap",
+    "labelWidth": 181.40625
+  }
+]

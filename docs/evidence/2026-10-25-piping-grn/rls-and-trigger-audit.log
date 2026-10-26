@@ -1,0 +1,31 @@
+ current_user | rolsuper | rolbypassrls 
+--------------+----------+--------------
+ epcc         | f        | f
+(1 row)
+
+            relname            | relrowsecurity | relforcerowsecurity 
+-------------------------------+----------------+---------------------
+ piping_grn_records            | t              | t
+ piping_accepted_stock_entries | t              | t
+ piping_grn_posted_index       | t              | t
+(3 rows)
+
+            tgrelid            |            tgname             | tgenabled 
+-------------------------------+-------------------------------+-----------
+ material_lots                 | aa_piping_legacy_stock_cutoff | O
+ material_movements            | aa_piping_legacy_stock_cutoff | O
+ piping_receiving_reviews      | aa_grn_posted_cutoff          | O
+ piping_qa_decisions           | aa_grn_posted_cutoff          | O
+ piping_custody_amendments     | aa_grn_posted_cutoff          | O
+ piping_grn_records            | piping_grn_complete           | O
+ piping_grn_records            | piping_grn_credit             | O
+ piping_grn_records            | piping_grn_guard              | O
+ piping_accepted_stock_entries | piping_stock_guard            | O
+ piping_grn_posted_index       | piping_posted_guard           | O
+(10 rows)
+
+ inventory_policy_contract | posted_policy_contract 
+---------------------------+------------------------
+ t                         | t
+(1 row)
+

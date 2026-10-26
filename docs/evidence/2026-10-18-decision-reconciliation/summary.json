@@ -1,0 +1,19 @@
+{
+  "status": "ACCEPTED_DECISION_RECONCILIATION_APPLIED",
+  "proposal_cases": 46,
+  "previous_proposal_cases": 38,
+  "new_ancestry_cases": 8,
+  "mutants_detected": 4,
+  "selection_cases": 33,
+  "planner_cases": 26,
+  "local_link_targets_checked": 49,
+  "application_source_hashes_unchanged": 450,
+  "worker_hashes_unchanged": 2,
+  "full_suite": "1112/16488 green on unchanged application source; NOT rerun this offline slice",
+  "database_or_application_edits": false,
+  "new_authority_granted": false,
+  "admission_state": "UNADMITTED",
+  "ready_to_admit": false,
+  "order_gap_changed": false,
+  "commit_push_pr": false
+}

@@ -1,0 +1,15 @@
+No syntax errors detected in /home/user/epcc-platform/app/app/Services/ProcurementCategoryService.php
+No syntax errors detected in /home/user/epcc-platform/app/app/Services/MaterialRequisitionEntryService.php
+No syntax errors detected in /home/user/epcc-platform/app/app/Services/PurchaseOrderEntryService.php
+No syntax errors detected in /home/user/epcc-platform/app/app/Services/ProcurementService.php
+No syntax errors detected in /home/user/epcc-platform/app/app/Http/Controllers/MaterialsController.php
+No syntax errors detected in /home/user/epcc-platform/app/app/Models/MaterialRequisition.php
+No syntax errors detected in /home/user/epcc-platform/app/app/Models/PurchaseOrder.php
+No syntax errors detected in /home/user/epcc-platform/app/app/Models/MaterialRequisitionItem.php
+No syntax errors detected in /home/user/epcc-platform/app/database/migrations/2026_10_19_120000_separate_mr_po_by_material_category.php
+No syntax errors detected in /home/user/epcc-platform/app/lang/en/procurement_category.php
+No syntax errors detected in /home/user/epcc-platform/app/lang/fa/procurement_category.php
+No syntax errors detected in /home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php
+No syntax errors detected in /home/user/epcc-platform/app/tests/Feature/ProcurementCategoryMigrationTest.php
+No syntax errors detected in /home/user/epcc-platform/app/tests/Feature/MaterialRequisitionEntryTest.php
+No syntax errors detected in /home/user/epcc-platform/app/tests/Feature/PurchaseOrderEntryTest.php

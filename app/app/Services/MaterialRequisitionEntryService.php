@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\MaterialItem;
 use App\Models\MaterialRequisition;
 use App\Models\Project;
 use App\Models\Subsystem;
@@ -12,6 +13,7 @@ use App\Support\TenantContext;
 use Closure;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 /** ADR-018: authorized human entry facade around the legacy procurement primitive. */
@@ -21,6 +23,7 @@ final class MaterialRequisitionEntryService
         private readonly TenantContext $tenant,
         private readonly ProjectFittingDefinitionService $scope,
         private readonly ProjectArchiveService $archives,
+        private readonly ProcurementCategoryService $categories,
         private readonly MaterialRequisitionAccessService $access,
         private readonly ProcurementService $procurement,
     ) {}
@@ -35,13 +38,16 @@ final class MaterialRequisitionEntryService
             $this->archives->assertWritable($project);
             abort_unless($this->access->allows($project, $actor), 403, __('mr.not_author'));
             $data = $this->validate($input, $project);
+            $this->categories->validateLines($project, $data);
             $policyId = $this->access->policyId($project, $actor, $data['discipline']);
             abort_unless($policyId !== null, 403, __('mr.not_author'));
             $mr = $this->procurement->raiseRequisition($project, $actor, $data['title_en'], $data['title_fa'], $data['discipline'], $data['lines'], $lang);
+            $mr->material_category = $data['material_category'];
             $mr->author_policy_id = $policyId;
             $mr->save();
             foreach ($mr->items()->orderBy('line_no')->get() as $i => $line) {
                 $line->source_quantity = $data['lines'][$i]['quantity'];
+                $line->material_item_id = $data['lines'][$i]['material_item_id'] ?? null;
                 $line->save();
             }
 
@@ -51,7 +57,7 @@ final class MaterialRequisitionEntryService
 
     private function validate(array $input, Project $project): array
     {
-        Validator::make($input, ['lines' => ['required', 'array', 'list', 'max:20'], 'lines.*' => ['array:item_code,description_en,description_fa,unit,quantity,specification,subsystem_id']])->validate();
+        Validator::make($input, ['lines' => ['required', 'array', 'list', 'max:20'], 'lines.*' => ['array:item_code,description_en,description_fa,unit,quantity,specification,subsystem_id,material_category,material_item_id']])->validate();
         $input['lines'] = array_filter($input['lines'], fn (array $line): bool => collect($line)->contains(fn ($value): bool => $value !== null && $value !== ''));
         $text = static function (string $attribute, mixed $value, Closure $fail): void {
             if (is_string($value) && trim($value) === '') {
@@ -62,6 +68,9 @@ final class MaterialRequisitionEntryService
             'title_en' => ['required', 'string', 'max:255', $text],
             'title_fa' => ['required', 'string', 'max:255', $text],
             'discipline' => ['required', 'string', 'max:32', 'regex:/\A[A-Z][A-Z0-9_]*\z/'],
+            'material_category' => ['required', Rule::in(MaterialItem::categories())],
+            'lines.*.material_category' => ['sometimes', 'required', Rule::in(MaterialItem::categories())],
+            'lines.*.material_item_id' => ['nullable', 'uuid'],
             'lines' => ['required', 'array', 'min:1', 'max:20'],
             'lines.*.item_code' => ['required', 'string', 'max:64', $text],
             'lines.*.description_en' => ['required', 'string', 'max:4000', $text],

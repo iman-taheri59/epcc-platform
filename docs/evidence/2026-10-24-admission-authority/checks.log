@@ -1,0 +1,13 @@
+UNCHANGED app/app/Services/DemandReaderService.php
+UNCHANGED app/app/Http/Controllers/DemandReaderController.php
+UNCHANGED app/routes/web.php
+UNCHANGED app/lang/en/demand_readers.php
+UNCHANGED app/lang/fa/demand_readers.php
+UNCHANGED app/database/migrations/2026_10_23_130000_allow_recorded_demand_reader_suspension.php
+EXPECTED FIXTURE MAINTENANCE app/tests/Feature/DemandReaderSuspensionTest.php
+UNCHANGED app/resources/views/materials/demand-reader-suspensions.blade.php
+UNCHANGED app/resources/views/materials/demand-readers.blade.php
+LINK OK SCOPE-ADMISSION-AUTHORITY-SERVICE-FA.md
+LINK OK SCOPE-ADMISSION-AUTHORITY-EN.md
+LINK OK SCOPE-ADMISSION-AUTHORITY-SERVICE-EN.md
+LINK OK SCOPE-ADMISSION-AUTHORITY-FA.md

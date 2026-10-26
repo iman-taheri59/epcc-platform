@@ -1,0 +1,33 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+.....F.....                                                       11 / 11 (100%)
+
+Time: 00:16.545, Memory: 77.00 MB
+
+There was 1 failure:
+
+1) Tests\Feature\InspectionEntryTest::test_suspension_and_archive_after_display_refuse_new_entry
+Expected response status code [403] but received 422.
+Failed asserting that 422 is identical to 403.
+
+The following errors occurred during the last request:
+
+{
+    "message": "This project is archived and is read only. Reopen it to make changes.",
+    "errors": {
+        "project": [
+            "This project is archived and is read only. Reopen it to make changes."
+        ]
+    }
+}
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:46
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:183
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Testing/Concerns/AssertsStatusCodes.php:141
+/home/user/epcc-platform/app/tests/Feature/InspectionEntryTest.php:193
+
+FAILURES!
+Tests: 11, Assertions: 91, Failures: 1.

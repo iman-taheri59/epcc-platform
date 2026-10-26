@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\Project;
 use App\Models\User;
 use App\Support\Navigation;
+use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
 use Tests\TestCase;
@@ -51,7 +52,7 @@ final class SidebarNavigationTest extends TestCase
         // does not, so the memberships would be invisible and every
         // project-scoped item would silently disappear. Bind the same tenant
         // the middleware would have bound.
-        $nav = app(\App\Support\TenantContext::class)->runAs(
+        $nav = app(TenantContext::class)->runAs(
             $user->company_id,
             fn () => app(Navigation::class)->build(
                 $user,
@@ -326,5 +327,15 @@ final class SidebarNavigationTest extends TestCase
             $this->actingAs($karimi)->get($path.'?lang=en')
                 ->assertSee('action="/logout"', false);
         }
+    }
+
+    public function test_inspection_notification_menu_is_quality_entitled_without_document_read_or_issue_inheritance(): void
+    {
+        $items = $this->items($this->user('jafari@karan.example'), 'en', 'PH-14');
+        $this->assertSame('available', $items['project.inspection-notifications']['state']);
+        $this->assertStringContainsString('/inspection-notifications', $items['project.inspection-notifications']['url']);
+        $starter = $this->items($this->user('hosseini@arvand.example'), 'en', 'KISH-1');
+        $this->assertSame('locked', $starter['project.inspection-notifications']['state']);
+        $this->assertNull($starter['project.inspection-notifications']['url']);
     }
 }

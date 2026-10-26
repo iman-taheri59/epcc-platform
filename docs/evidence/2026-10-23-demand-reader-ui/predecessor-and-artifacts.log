@@ -1,0 +1,25 @@
+UNCHANGED app/app/Services/PipingTraceabilityService.php
+UNCHANGED app/app/Http/Controllers/PipingTraceabilityController.php
+UNCHANGED app/tests/Feature/PipingTraceabilityTest.php
+UNCHANGED app/lang/en/piping_traceability.php
+UNCHANGED app/lang/fa/piping_traceability.php
+EXPECTED MODIFICATION app/resources/views/materials/piping-traceability.blade.php
+UNCHANGED app/resources/views/materials/piping-custody.blade.php
+EXPECTED MODIFICATION app/routes/web.php
+EXPECTED MODIFICATION app/app/Services/DemandReaderService.php
+UNCHANGED app/database/migrations/2026_10_23_120000_add_scoped_demand_reader_policies.php
+UNCHANGED app/tests/Feature/DemandReaderTest.php
+EXPECTED MODIFICATION app/lang/en/demand_readers.php
+EXPECTED MODIFICATION app/lang/fa/demand_readers.php
+UNCHANGED prototype/demand-atomicity/schema.sql
+UNCHANGED prototype/demand-atomicity/test_postgres.py
+LINK OK DEMAND-READER-WEB-FA.md
+LINK OK DEMAND-ACTIVATION-MATRIX-EN.md
+LINK OK DEMAND-READER-SERVICE-EN.md
+LINK OK DEMAND-READER-WEB-EN.md
+LINK OK DEMAND-ACTIVATION-MATRIX-FA.md
+LINK OK DEMAND-READER-SERVICE-FA.md
+PASS synthetic config en artifact language and token redaction
+PASS synthetic readiness en artifact language and token redaction
+PASS synthetic config fa artifact language and token redaction
+PASS synthetic readiness fa artifact language and token redaction

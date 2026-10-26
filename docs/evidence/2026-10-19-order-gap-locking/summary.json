@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-19",
+  "status": "TARGETED_VERIFIED_ORDER_GAP_LOCK_ALIGNMENT",
+  "implementation": {
+    "project_advisory_before_project_po_item_rows": true,
+    "fresh_state_and_head_rechecks": true,
+    "original_caller_RLS_only": true,
+    "controlled_issued_content_freeze_unchanged": true,
+    "legacy_lineage_preserved": true,
+    "new_roles_or_MTO_authority": false,
+    "schema_migration": false,
+    "write_reconciliation_or_release": false
+  },
+  "verification": {
+    "tests": 65,
+    "assertions": 552,
+    "seconds": 116.35,
+    "pass": true,
+    "new_cases": 6,
+    "new_real_issue_versus_amend_connection_schedules": 2,
+    "suites": [
+      "OrderGapTest",
+      "PurchaseOrderMrAllocationTest",
+      "PurchaseOrderExecutionTest",
+      "PurchaseOrderPricingTest"
+    ],
+    "log": "related.log",
+    "lint_files": 3,
+    "lint_pass": true,
+    "pint_pass": true,
+    "diff_check_pass": true,
+    "full_suite_run": false,
+    "exhaustive_concurrency_certification": false
+  },
+  "database": {
+    "role": "epcc",
+    "non_superuser": true,
+    "no_bypassrls": true,
+    "encoding": "UTF8",
+    "unix_socket_only": true,
+    "disposable": true,
+    "stopped_after_verification": true
+  },
+  "implementation_sha256": {
+    "app/app/Services/OrderGapService.php": "9f7e7d564a5c2cf4441fd018552bfaf44f04b07f2bc2ca8441cc18ceaf6babf1",
+    "app/tests/Feature/OrderGapTest.php": "f125eb75bdee4aac87f5fdbf2971de3b93eb5ee1ad9874f5958de7b771761f00",
+    "app/tests/Feature/PurchaseOrderMrAllocationTest.php": "3814d812882f55c998b28e51dc9cf946ab59c5d42a58f1707e46bd1e882f768b"
+  },
+  "historical_logs": {
+    "focused.log": "Superseded: two material fixture lookups outside buyer context; corrected without widening RLS.",
+    "new-cases.log": "Intermediate five-new-case pass, before sixth cached-parent test; final related.log authoritative."
+  },
+  "deferred": [
+    "arbitrary raw SQL and multi-project lock schedules",
+    "revocation/crash/retry validation",
+    "non-buyer SQL guard visibility review",
+    "controlled post-issue amendment design",
+    "write-based legacy reconciliation",
+    "new MTO access/admission authority"
+  ],
+  "production_deployment_commit_push": false
+}

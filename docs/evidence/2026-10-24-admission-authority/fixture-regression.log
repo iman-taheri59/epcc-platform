@@ -1,0 +1,23 @@
+
+  [90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m[90;1m.[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\DemandReaderSuspensionTest[22m [90m>[39m…  [41;1m AssertionFailedError [49;22m  
+[39;1m  Old guard must deny[39;22m
+
+  at [32mtests/Feature/DemandReaderSuspensionTest.php[39m:[32m351[39m
+    347▕         $this->hide();
+    348▕         try {
+    349▕             try {
+    350▕                 app(DemandReaderService::class)->suspendRecorded($this->project(), $this->owner, $this->payload($id));
+  ➜ 351▕                 $this->fail('Old guard must deny');
+    352▕             } catch (QueryException $e) {
+    353▕                 $this->assertSame('42501', $e->errorInfo[0]);
+    354▕             }
+    355▕             $this->assertSame(1, (int) $this->latest()->version);
+
+  [33m1   [39m[39;1mtests/Feature/DemandReaderSuspensionTest.php[39;22m:[39;1m351[39;22m
+
+
+  [90mTests:[39m    [31;1m1 failed[39;22m[90m,[39m[39m [39m[32;1m48 passed[39;22m[90m (156 assertions)[39m
+  [90mDuration:[39m [39m100.77s[39m
+

@@ -1,0 +1,31 @@
+
+  ✓.✓✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   .................................... 4 files, 3 style issues fixed  
+  ✓ app/app/Services/ScopeAdmissionAuthorityService.php single_space_around_c…  
+  ✓ app/lang/en/scope_admission_authority.php blank_line_after_opening_tag, w…  
+  ✓ app/lang/fa/scope_admission_authority.php blank_line_after_opening_tag, w…  
+
+
+  ✓✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   .................................... 2 files, 2 style issues fixed  
+  ✓ app/app/Services/ScopeAdmissionAuthorityService.php unary_operator_spaces…  
+  ✓ app/tests/Feature/ScopeAdmissionAuthorityTest.php class_attributes_separa…  
+
+
+  .✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   ..................................... 2 files, 1 style issue fixed  
+  ✓ app/tests/Feature/ScopeAdmissionAuthorityTest.php    method_argument_space  
+
+
+  ✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   ...................................... 1 file, 1 style issue fixed  
+  ✓ app/tests/Feature/DemandReaderSuspensionTest.php     method_argument_space  
+

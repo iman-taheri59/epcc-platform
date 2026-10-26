@@ -1,0 +1,87 @@
+
+  [31;1m⨯[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m[31;1m⨯[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PipingCustodyTest[22m [90m>[39m no configuration means no defau…   
+[39;1m  Expected response status code [403] but received 422.
+Failed asserting that 422 is identical to 403.
+
+The following errors occurred during the last request:
+
+{
+    "message": "The receipt field is required.",
+    "errors": {
+        "receipt": [
+            "The receipt field is required."
+        ]
+    }
+}[39;22m
+
+  at [32mtests/Feature/PipingCustodyTest.php[39m:[32m93[39m
+     89▕     {
+     90▕         foreach ([$this->buyer, $this->owner, $this->qc] as $actor) {
+     91▕             $this->assertNull(app(PipingCustodyService::class)->policyId($this->project, $actor));
+     92▕             $this->actingAs($actor)->get($this->url)->assertForbidden();
+  ➜  93▕             $this->postJson($this->url, ['receipt' => []])->assertForbidden();
+     94▕         }
+     95▕     }
+     96▕ 
+     97▕     public function test_bilingual_form_private_cache_shell_no_material_defaults_and_current_link(): void
+
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PipingCustodyTest[22m [90m>[39m visible exact line u… [41;1m TypeError [49;22m  
+[39;1m  Tests\Feature\PipingCustodyTest::line(): Return value must be of type object, null returned[39;22m
+
+  at [32mtests/Feature/PipingCustodyTest.php[39m:[32m85[39m
+     81▕ 
+     82▕     private function line(): object
+     83▕     {
+     84▕         return $this->tenant($this->buyer, fn () => DB::table('purchase_order_items as l')->join('purchase_orders as p', 'p.id', '=', 'l.purchase_order_id')
+  ➜  85▕             ->where('p.project_id', $this->project->id)->where('p.discipline', 'PIPING')->orderBy('l.id')->select('l.*', 'p.number')->first());
+     86▕     }
+     87▕ 
+     88▕     public function test_no_configuration_means_no_default_read_or_write_not_even_owner_configurator(): void
+     89▕     {
+
+  [33m1   [39m[39;1mtests/Feature/PipingCustodyTest.php[39;22m:[39;1m85[39;22m
+  [33m2   [39m[39;1mtests/Feature/PipingCustodyTest.php[39;22m:[39;1m182[39;22m
+
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PipingCustodyTest[22m [90m>[39m nomination does not…  [41;1m TypeError [49;22m  
+[39;1m  Tests\Feature\PipingCustodyTest::line(): Return value must be of type object, null returned[39;22m
+
+  at [32mtests/Feature/PipingCustodyTest.php[39m:[32m85[39m
+     81▕ 
+     82▕     private function line(): object
+     83▕     {
+     84▕         return $this->tenant($this->buyer, fn () => DB::table('purchase_order_items as l')->join('purchase_orders as p', 'p.id', '=', 'l.purchase_order_id')
+  ➜  85▕             ->where('p.project_id', $this->project->id)->where('p.discipline', 'PIPING')->orderBy('l.id')->select('l.*', 'p.number')->first());
+     86▕     }
+     87▕ 
+     88▕     public function test_no_configuration_means_no_default_read_or_write_not_even_owner_configurator(): void
+     89▕     {
+
+  [33m1   [39m[39;1mtests/Feature/PipingCustodyTest.php[39;22m:[39;1m85[39;22m
+  [33m2   [39m[39;1mtests/Feature/PipingCustodyTest.php[39;22m:[39;1m209[39;22m
+
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PipingCustodyTest[22m [90m>[39m invalid nested serve… [41;1m TypeError [49;22m  
+[39;1m  Tests\Feature\PipingCustodyTest::line(): Return value must be of type object, null returned[39;22m
+
+  at [32mtests/Feature/PipingCustodyTest.php[39m:[32m85[39m
+     81▕ 
+     82▕     private function line(): object
+     83▕     {
+     84▕         return $this->tenant($this->buyer, fn () => DB::table('purchase_order_items as l')->join('purchase_orders as p', 'p.id', '=', 'l.purchase_order_id')
+  ➜  85▕             ->where('p.project_id', $this->project->id)->where('p.discipline', 'PIPING')->orderBy('l.id')->select('l.*', 'p.number')->first());
+     86▕     }
+     87▕ 
+     88▕     public function test_no_configuration_means_no_default_read_or_write_not_even_owner_configurator(): void
+     89▕     {
+
+  [33m1   [39m[39;1mtests/Feature/PipingCustodyTest.php[39;22m:[39;1m85[39;22m
+  [33m2   [39m[39;1mtests/Feature/PipingCustodyTest.php[39;22m:[39;1m276[39;22m
+
+
+  [90mTests:[39m    [31;1m4 failed[39;22m[90m,[39m[39m [39m[32;1m10 passed[39;22m[90m (119 assertions)[39m
+  [90mDuration:[39m [39m26.23s[39m
+

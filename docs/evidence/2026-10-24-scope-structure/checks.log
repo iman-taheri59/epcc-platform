@@ -1,0 +1,16 @@
+UNCHANGED app/app/Services/ScopeProposalEnvelopeReader.php
+UNCHANGED app/app/Http/Controllers/ScopeProposalEnvelopeController.php
+UNCHANGED app/routes/web.php
+UNCHANGED app/resources/views/materials/scope-proposal-envelope.blade.php
+UNCHANGED app/tests/Feature/ScopeProposalEnvelopeReadTest.php
+UNCHANGED app/database/migrations/2026_10_24_110000_add_scope_proposal_envelopes.php
+PASS old writer bytes unchanged after removing exact bounded cutoff block
+PASS old test changes confined to exact populated-parent migration fixture
+LINK OK SCOPE-STRUCTURE-DECLARATIONS-FA.md
+LINK OK SCOPE-PROPOSAL-ENVELOPE-READ-EN.md
+LINK OK SCOPE-PROPOSAL-ENVELOPES-EN.md
+LINK OK ADR-024-SCOPE-ADMISSION-CONTRACT-EN.md
+LINK OK SCOPE-STRUCTURE-DECLARATIONS-EN.md
+LINK OK SCOPE-PROPOSAL-ENVELOPE-READ-FA.md
+LINK OK SCOPE-PROPOSAL-ENVELOPES-FA.md
+LINK OK ADR-024-SCOPE-ADMISSION-CONTRACT-FA.md

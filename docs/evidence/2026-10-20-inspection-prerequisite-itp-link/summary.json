@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-20",
+  "scope": "inherited_stage",
+  "status": "targeted_verified_not_deployed",
+  "final_focused": {
+    "tests": 54,
+    "assertions": 807,
+    "seconds": 47.96,
+    "skipped": 0,
+    "passed": true
+  },
+  "separate_legacy": {
+    "tests": 1,
+    "assertions": 12,
+    "seconds": 4.54,
+    "passed": true
+  },
+  "pint_and_php_lint_files": 7,
+  "source_hashes": 10,
+  "local_links": 10,
+  "new_schema": false,
+  "new_source_access": false,
+  "pdf_changed": false,
+  "full_regression": false,
+  "interactive_browser_verified": false,
+  "current_ci_verified": false,
+  "committed": false,
+  "pushed": false,
+  "deployed": false,
+  "database_stopped_verified": true
+}

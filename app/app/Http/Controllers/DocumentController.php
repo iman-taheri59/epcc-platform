@@ -8,6 +8,7 @@ use App\Models\Document;
 use App\Models\DocumentFile;
 use App\Models\Project;
 use App\Models\ReviewComment;
+use App\Models\User;
 use App\Services\DocumentFileStore;
 use App\Services\DocumentRegister;
 use App\Services\ReviewCycle;
@@ -19,10 +20,12 @@ use App\Support\FileType;
 use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Morilog\Jalali\CalendarUtils;
 use Morilog\Jalali\Jalalian;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Document register / CDE (SRS FR-ENG-01/02/03/04).
@@ -49,26 +52,33 @@ final class DocumentController extends Controller
         private readonly DocumentRegister $register,
         private readonly DocumentFileStore $files,
         private readonly ReviewCycle $review,
-    ) {
-    }
+    ) {}
 
     /** The register for one project. */
     public function index(Request $request, string $projectCode): View
     {
         $lang = $this->lang($request);
-        $user = $request->user();
+        $user = $this->currentReader($request);
         $project = $this->resolveProject($user, $projectCode);
 
         $this->authorize($request, $user, 'doc.view', $project, $lang);
 
         [$documents, $counts] = $this->tenant->runAs(
             $user->company_id,
-            function (): array {
+            function () use ($user, $project): array {
+                $membership = $user->membershipFor($project->id);
+                abort_unless($membership, 404);
+                $scope = $membership->discipline_scope;
+                abort_unless($scope === null || is_array($scope), 404);
                 // `currentRevision.files` is eager-loaded INSIDE runAs():
                 // document_files is an RLS table, so a lazy load after the
                 // scope closes returns an empty collection - the attachments
                 // would silently vanish from the register.
-                $documents = Document::with([
+                $query = Document::query()->where('project_id', $project->id);
+                if (is_array($scope)) {
+                    $query->whereIn('discipline', $scope);
+                }
+                $documents = $query->with([
                     'currentRevision.files',
                     // Eager-loaded inside runAs() for the same reason as the
                     // files: a lazy load after the scope closes comes back
@@ -234,7 +244,7 @@ final class DocumentController extends Controller
     public function download(Request $request, string $projectCode, string $documentId, string $fileId): StreamedResponse
     {
         $lang = $this->lang($request);
-        $user = $request->user();
+        $user = $this->currentReader($request);
         $project = $this->resolveProject($user, $projectCode);
 
         $this->authorize($request, $user, 'doc.view', $project, $lang);
@@ -242,11 +252,16 @@ final class DocumentController extends Controller
         /** @var DocumentFile $file */
         $file = $this->tenant->runAs(
             $user->company_id,
-            fn () => DocumentFile::where('document_id', $documentId)->findOrFail($fileId),
+            function () use ($user, $project, $documentId, $fileId): DocumentFile {
+                $this->assertReadableDocument($user, $project, $documentId);
+                abort_unless(Str::isUuid($fileId), 404);
+
+                return DocumentFile::where('project_id', $project->id)->where('document_id', $documentId)->findOrFail($fileId);
+            },
             $project->id,
         );
 
-        $disk = \Illuminate\Support\Facades\Storage::disk($file->disk);
+        $disk = Storage::disk($file->disk);
 
         abort_unless($disk->exists($file->storage_path), 404);
 
@@ -302,14 +317,15 @@ final class DocumentController extends Controller
     public function review(Request $request, string $projectCode, string $documentId): View
     {
         $lang = $this->lang($request);
-        $user = $request->user();
+        $user = $this->currentReader($request);
         $project = $this->resolveProject($user, $projectCode);
 
         $this->authorize($request, $user, 'doc.view', $project, $lang);
 
         [$document, $comments, $stats] = $this->tenant->runAs(
             $user->company_id,
-            function () use ($documentId): array {
+            function () use ($documentId, $user, $project): array {
+                $this->assertReadableDocument($user, $project, $documentId);
                 $document = Document::with(['currentRevision', 'company'])->findOrFail($documentId);
                 $revision = $document->currentRevision;
 
@@ -436,6 +452,24 @@ final class DocumentController extends Controller
      * Mirrors the certificate screens: a project the acting company does not
      * participate in must 404, not 403 - a 403 confirms the project exists.
      */
+    /** Read paths must not authorize a stale caller model/loaded plan. */
+    private function currentReader(Request $request): User
+    {
+        $actor = $request->user();
+
+        return User::with('company.plan')->whereKey($actor->id)->where('company_id', $actor->company_id)->firstOrFail();
+    }
+
+    /** Minimum original-tenant/project header before files/comments/issuer metadata. */
+    private function assertReadableDocument(User $user, Project $project, string $id): void
+    {
+        abort_unless(Str::isUuid($id), 404);
+        $header = Document::where('project_id', $project->id)->whereKey($id)->first(['id', 'discipline']);
+        abort_unless($header, 404);
+        $denial = $this->authz->check($user, 'doc.view', $project, ['discipline' => $header->discipline]);
+        abort_if($denial !== null, 404);
+    }
+
     private function resolveProject($user, string $projectCode): Project
     {
         $project = Project::where('code', $projectCode)->first();

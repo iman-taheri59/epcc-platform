@@ -1,0 +1,25 @@
+--- /tmp/active-filter-test-before-style.php	2026-10-20 08:58:32.585522612 +0000
++++ app/tests/Feature/InspectionPrerequisiteNoticeStateFilterTest.php	2026-10-20 08:58:32.921522612 +0000
+@@ -182,7 +182,7 @@
+                 $out[$t] = DB::table($t)->orderBy('id')->get()->toJson();
+             }
+ 
+-return $out;
++            return $out;
+         });
+         $before = $snapshot();
+         foreach (['en', 'fa'] as $lang) {
+@@ -370,10 +370,10 @@
+         foreach (['ACTIVE', 'CANCELLED'] as $state) {
+             $r = $this->response(['prerequisite_notice_state' => $state]);
+             $this->assertSame(0, $r->viewData('prerequisites')->total());
+-            $this->assertSame(0,$r->viewData('prerequisiteVisibleTotal'));
+-            $this->assertSame(0,$r->viewData('prerequisiteCompanies')->total());
++            $this->assertSame(0, $r->viewData('prerequisiteVisibleTotal'));
++            $this->assertSame(0, $r->viewData('prerequisiteCompanies')->total());
+             $r = $this->actingAs($this->writer)->get('/projects/BB-2/inspection-notifications/prerequisites?prerequisite_notice_state='.$state)->assertOk();
+-            $this->assertSame(0,$r->viewData('prerequisiteVisibleTotal'));
++            $this->assertSame(0, $r->viewData('prerequisiteVisibleTotal'));
+         }
+     }
+ }

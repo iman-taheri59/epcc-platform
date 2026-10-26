@@ -1,0 +1,25 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+..............................................E................  63 / 116 ( 54%)
+.....................................................           116 / 116 (100%)
+
+Time: 02:33.476, Memory: 95.00 MB
+
+There was 1 error:
+
+1) Tests\Feature\ProcurementCategoryTest::test_sql_requires_category_when_assigning_new_human_author_basis
+Error: Class "Tests\Feature\DB" not found
+
+/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php:252
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php:48
+/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php:244
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+ERRORS!
+Tests: 116, Assertions: 955, Errors: 1.

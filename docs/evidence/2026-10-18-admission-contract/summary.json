@@ -1,0 +1,19 @@
+{
+  "status": "OFFLINE_DRAFT_CONTRACT_ONLY",
+  "proposal_tests": 38,
+  "mutation_probes_detected": 3,
+  "selection_cases_rerun": 33,
+  "planner_cases_rerun": 26,
+  "full_tested_source_hashes_unchanged": 450,
+  "prior_full_suite": "1112 tests/16488 assertions;0 failure/error/skip;exit0 on unchanged application source",
+  "new_phpunit_run": false,
+  "new_database_tests": false,
+  "ready_to_admit": false,
+  "admission_state": "UNADMITTED",
+  "gross": null,
+  "source_or_evidence_authenticated": false,
+  "authority_policy_approved": false,
+  "writes_performed": 0,
+  "production_migration": false,
+  "commit_push_pr": false
+}

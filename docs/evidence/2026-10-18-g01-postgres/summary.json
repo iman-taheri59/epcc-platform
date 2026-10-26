@@ -1,0 +1,207 @@
+{
+  "status": "PASS_ISOLATED_POSTGRES_PERSISTENCE_PROOF_ONLY",
+  "tests": 36,
+  "passed": 36,
+  "failed": 0,
+  "postgres_version": "17.11 (Debian 17.11-0+deb13u1)",
+  "database": "epcc_journal_proof",
+  "transport": "private Unix socket; no TCP listener; local trust test only",
+  "fsync": "on",
+  "synchronous_commit": "on",
+  "full_page_writes": "on",
+  "source_model": "synthetic minimal source fixtures, NOT Laravel app schema",
+  "production_database_used": false,
+  "production_migration": false,
+  "laravel_integration": false,
+  "g01_production_fixed": false,
+  "tests_detail": [
+    {
+      "name": "restricted actual writer; six tables FORCE RLS; integrity settings ON",
+      "passed": true
+    },
+    {
+      "name": "missing tenant context sees no projects",
+      "passed": true
+    },
+    {
+      "name": "foreign company sees no target project",
+      "passed": true
+    },
+    {
+      "name": "project context excludes another participating project",
+      "passed": true
+    },
+    {
+      "name": "root source/manifest/event commit together",
+      "passed": true
+    },
+    {
+      "name": "successor replaces head without mutating history",
+      "passed": true
+    },
+    {
+      "name": "duplicate revision rolls back clock and entire transaction",
+      "passed": true
+    },
+    {
+      "name": "stale expected head rejected atomically",
+      "passed": true
+    },
+    {
+      "name": "failure after complete insertion rolls back source/manifest/event/clock",
+      "passed": true
+    },
+    {
+      "name": "deferred completeness rejects batch without manifest/event at COMMIT",
+      "passed": true
+    },
+    {
+      "name": "foreign project acceptance rejected without writes",
+      "passed": true
+    },
+    {
+      "name": "RLS update cannot reach foreign project clock",
+      "passed": true
+    },
+    {
+      "name": "archive denies new acceptance while history remains readable",
+      "passed": true
+    },
+    {
+      "name": "writer cannot edit archive flag",
+      "passed": true
+    },
+    {
+      "name": "privileged UPDATE/DELETE rejected by immutable trigger: batches",
+      "passed": true
+    },
+    {
+      "name": "restrictive RLS denies UPDATE/DELETE even if privilege granted: batches",
+      "passed": true
+    },
+    {
+      "name": "privileged UPDATE/DELETE rejected by immutable trigger: manifest_entries",
+      "passed": true
+    },
+    {
+      "name": "restrictive RLS denies UPDATE/DELETE even if privilege granted: manifest_entries",
+      "passed": true
+    },
+    {
+      "name": "privileged UPDATE/DELETE rejected by immutable trigger: selection_events",
+      "passed": true
+    },
+    {
+      "name": "restrictive RLS denies UPDATE/DELETE even if privilege granted: selection_events",
+      "passed": true
+    },
+    {
+      "name": "second root forbidden",
+      "passed": true
+    },
+    {
+      "name": "branching predecessor forbidden",
+      "passed": true
+    },
+    {
+      "name": "skipped local step forbidden",
+      "passed": true
+    },
+    {
+      "name": "different scope predecessor forbidden",
+      "passed": true
+    },
+    {
+      "name": "different document predecessor forbidden",
+      "passed": true
+    },
+    {
+      "name": "exact manifest scope FK enforced",
+      "passed": true
+    },
+    {
+      "name": "future predecessor/cycle cannot be inserted",
+      "passed": true
+    },
+    {
+      "name": "new source with older unused ordinal cannot succeed newer head",
+      "passed": true
+    },
+    {
+      "name": "real connection contention: two commits serialize",
+      "passed": true
+    },
+    {
+      "name": "real connection contention: rollback releases lock without orphan",
+      "passed": true
+    },
+    {
+      "name": "real connection contention: concurrent stale writer loses",
+      "passed": true
+    },
+    {
+      "name": "FORCE RLS also filters the non-bypass table owner",
+      "passed": true
+    },
+    {
+      "name": "archive write guard also covers direct clock mutation",
+      "passed": true
+    },
+    {
+      "name": "composite source FK rejects real cross-project parent even as admin",
+      "passed": true
+    },
+    {
+      "name": "archive race: archive holds project lock, waiting acceptance rejected",
+      "passed": true
+    },
+    {
+      "name": "archive race: acceptance commits before waiting archive, later writes rejected",
+      "passed": true
+    }
+  ],
+  "concurrency": [
+    {
+      "scenario": "two commits serialize",
+      "pid1": 10245,
+      "pid2": 10247,
+      "verified_blocking": true,
+      "first": "committed",
+      "second": "committed"
+    },
+    {
+      "scenario": "rollback releases lock without orphan",
+      "pid1": 10253,
+      "pid2": 10255,
+      "verified_blocking": true,
+      "first": "rolled_back",
+      "second": "committed"
+    },
+    {
+      "scenario": "concurrent stale writer loses",
+      "pid1": 10261,
+      "pid2": 10263,
+      "verified_blocking": true,
+      "first": "committed",
+      "second": "40001"
+    },
+    {
+      "scenario": "archive first",
+      "pid1": 10280,
+      "pid2": 10282,
+      "verified_blocking": true,
+      "second": "55000"
+    },
+    {
+      "scenario": "acceptance first",
+      "pid1": 10289,
+      "pid2": 10291,
+      "verified_blocking": true,
+      "second": "archived"
+    }
+  ],
+  "mutation_probes_detected": 3,
+  "existing_443_source_hashes_unchanged": true,
+  "schema_sha256": "3586898443bc0e5a73d7841a26eded9c3d1e72c6a338728d39c101f1fef44041",
+  "runner_sha256": "bbe9c70ba9140f7ef6223a68aab5f886517c15f40d4ffebae6d4b0175b3e2360"
+}

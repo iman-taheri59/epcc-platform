@@ -1,0 +1,266 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('piping_custody_amendments', function (Blueprint $t): void {
+            $t->uuid('id')->primary();
+            $t->foreignUuid('project_id')->constrained('projects')->restrictOnDelete();
+            $t->foreignUuid('custody_id')->constrained('piping_custody_records')->restrictOnDelete();
+            $t->foreignUuid('company_id')->constrained('companies')->restrictOnDelete();
+            $t->foreignUuid('created_by')->constrained('users')->restrictOnDelete();
+            $t->foreignUuid('policy_id')->constrained('piping_receipt_author_policies')->restrictOnDelete();
+            $t->uuid('previous_amendment_id')->nullable();
+            $t->uuid('request_id');
+            $t->string('payload_hash', 64);
+            $t->integer('sequence');
+            $t->string('actor_name');
+            $t->string('custody_fingerprint', 64);
+            $t->string('source_kind', 16);
+            $t->text('unlinked_reason')->nullable();
+            $t->string('heat_ref', 200)->nullable();
+            $t->text('reason');
+            $t->timestampTz('created_at');
+            $t->unique(['project_id', 'request_id']);
+            $t->unique(['custody_id', 'sequence']);
+        });
+        Schema::table('piping_custody_amendments', fn (Blueprint $t) => $t->foreign('previous_amendment_id')->references('id')->on('piping_custody_amendments')->restrictOnDelete());
+        Schema::create('piping_custody_amendment_sources', function (Blueprint $t): void {
+            $t->foreignUuid('amendment_id')->primary()->constrained('piping_custody_amendments')->restrictOnDelete();
+            $t->foreignUuid('project_id')->constrained('projects')->restrictOnDelete();
+            $t->foreignUuid('source_line_id')->constrained('purchase_order_items')->restrictOnDelete();
+            $t->foreignUuid('purchase_order_id')->constrained('purchase_orders')->restrictOnDelete();
+            $t->jsonb('source_snapshot');
+            $t->string('source_fingerprint', 64);
+        });
+        Schema::table('piping_receiving_reviews', fn (Blueprint $t) => $t->foreignUuid('amendment_id')->nullable()->constrained('piping_custody_amendments')->restrictOnDelete());
+        Schema::table('piping_qa_decisions', fn (Blueprint $t) => $t->foreignUuid('amendment_id')->nullable()->constrained('piping_custody_amendments')->restrictOnDelete());
+        Schema::create('piping_qa_amendment_source_bases', function (Blueprint $t): void {
+            $t->foreignUuid('decision_id')->primary()->constrained('piping_qa_decisions')->restrictOnDelete();
+            $t->foreignUuid('project_id')->constrained('projects')->restrictOnDelete();
+            $t->foreignUuid('source_line_id')->constrained('purchase_order_items')->restrictOnDelete();
+            $t->foreignUuid('purchase_order_id')->constrained('purchase_orders')->restrictOnDelete();
+            $t->jsonb('snapshot');
+        });
+        DB::unprepared(<<<'SQL'
+
+ALTER TABLE piping_custody_amendments ADD CONSTRAINT piping_amendment_shape CHECK (
+ sequence>0 AND char_length(payload_hash)=64 AND char_length(custody_fingerprint)=64
+ AND reason ~ '[^[:space:]]' AND char_length(reason)<=4000
+ AND (heat_ref IS NULL OR heat_ref ~ '[^[:space:]]')
+ AND ((source_kind='LINKED' AND unlinked_reason IS NULL) OR (source_kind='UNRESOLVED' AND unlinked_reason ~ '[^[:space:]]' AND char_length(unlinked_reason)<=2000))
+);
+ALTER TABLE piping_custody_amendments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE piping_custody_amendments FORCE ROW LEVEL SECURITY;
+CREATE POLICY piping_amendments_read ON piping_custody_amendments FOR SELECT USING (
+ project_id=NULLIF(current_setting('epcc.project_id',true),'')::uuid
+ AND EXISTS(SELECT 1 FROM piping_custody_records c WHERE c.id=piping_custody_amendments.custody_id AND c.project_id=piping_custody_amendments.project_id)
+);
+CREATE POLICY piping_amendments_insert ON piping_custody_amendments FOR INSERT WITH CHECK (
+ project_id=NULLIF(current_setting('epcc.project_id',true),'')::uuid AND company_id=NULLIF(current_setting('epcc.company_id',true),'')::uuid
+ AND created_by=NULLIF(current_setting('epcc.receipt_actor_id',true),'')::uuid AND epcc_project_is_writable(project_id)
+ AND policy_id=epcc_piping_receipt_policy(project_id,created_by,company_id,'custody_mrr')
+);
+ALTER TABLE piping_custody_amendment_sources ENABLE ROW LEVEL SECURITY;
+ALTER TABLE piping_custody_amendment_sources FORCE ROW LEVEL SECURITY;
+CREATE POLICY piping_amendment_sources_read ON piping_custody_amendment_sources FOR SELECT USING (
+ project_id=NULLIF(current_setting('epcc.project_id',true),'')::uuid
+ AND EXISTS(SELECT 1 FROM piping_custody_amendments a WHERE a.id=piping_custody_amendment_sources.amendment_id AND a.project_id=piping_custody_amendment_sources.project_id)
+ AND EXISTS(SELECT 1 FROM purchase_order_items l JOIN purchase_orders p ON p.id=l.purchase_order_id WHERE l.id=piping_custody_amendment_sources.source_line_id AND p.id=piping_custody_amendment_sources.purchase_order_id AND l.project_id=piping_custody_amendment_sources.project_id AND p.project_id=piping_custody_amendment_sources.project_id AND p.discipline='PIPING')
+);
+CREATE POLICY piping_amendment_sources_insert ON piping_custody_amendment_sources FOR INSERT WITH CHECK (
+ project_id=NULLIF(current_setting('epcc.project_id',true),'')::uuid
+ AND EXISTS(SELECT 1 FROM piping_custody_amendments a WHERE a.id=piping_custody_amendment_sources.amendment_id AND a.project_id=piping_custody_amendment_sources.project_id AND a.created_by=NULLIF(current_setting('epcc.receipt_actor_id',true),'')::uuid AND a.company_id=NULLIF(current_setting('epcc.company_id',true),'')::uuid)
+);
+-- Ordinary original-caller RLS. This helper never changes company, source permissions or execution identity.
+CREATE OR REPLACE FUNCTION epcc_piping_source_snapshot(pid uuid,lid uuid) RETURNS jsonb LANGUAGE sql STABLE AS $$
+ SELECT jsonb_build_object('purchase_order_id',p.id,'number',p.number,'state',p.state,'buyer_company_id',p.company_id,'issued_at',p.issued_at,
+ 'line_id',l.id,'line_no',l.line_no,'supersedes_id',l.supersedes_id,'item_code',l.item_code,'description_en',l.description_en,'description_fa',l.description_fa,'unit',l.unit,'ordered_quantity',l.quantity)
+ FROM purchase_order_items l JOIN purchase_orders p ON p.id=l.purchase_order_id WHERE l.id=lid AND p.project_id=pid AND l.project_id=pid AND p.discipline='PIPING'
+$$;
+CREATE OR REPLACE FUNCTION epcc_piping_effective_receipt(rid uuid) RETURNS jsonb LANGUAGE plpgsql AS $$
+DECLARE c piping_custody_records%ROWTYPE; a piping_custody_amendments%ROWTYPE; s piping_custody_amendment_sources%ROWTYPE;
+BEGIN
+ SELECT * INTO c FROM piping_custody_records WHERE id=rid;
+ IF NOT FOUND THEN RETURN NULL; END IF;
+ SELECT * INTO a FROM piping_custody_amendments WHERE custody_id=rid AND project_id=c.project_id ORDER BY sequence DESC LIMIT 1;
+ IF NOT FOUND THEN RETURN jsonb_build_object('amendment_id',NULL,'source_line_id',c.source_line_id,'purchase_order_id',c.purchase_order_id,'source_snapshot',c.source_snapshot,'heat_ref',c.heat_ref,'unlinked_reason',c.unlinked_reason); END IF;
+ IF a.source_kind='LINKED' THEN
+ SELECT * INTO s FROM piping_custody_amendment_sources WHERE amendment_id=a.id AND project_id=c.project_id;
+ IF NOT FOUND THEN RETURN NULL; END IF; -- A hidden current source must NEVER fall back to an older readable version.
+ END IF;
+ RETURN jsonb_build_object('amendment_id',a.id,'source_line_id',s.source_line_id,'purchase_order_id',s.purchase_order_id,'source_snapshot',s.source_snapshot,'heat_ref',a.heat_ref,'unlinked_reason',a.unlinked_reason);
+END $$;
+CREATE OR REPLACE FUNCTION epcc_guard_piping_amendment() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE c piping_custody_records%ROWTYPE; head uuid; serial integer;
+BEGIN
+ IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'PIPING_AMENDMENT_IMMUTABLE' USING ERRCODE='23514'; END IF;
+ PERFORM pg_advisory_xact_lock(hashtextextended('piping-receipt-access:'||NEW.project_id::text,0));
+ PERFORM 1 FROM projects WHERE id=NEW.project_id FOR NO KEY UPDATE;
+ IF NOT FOUND OR NOT epcc_project_is_writable(NEW.project_id) OR NEW.project_id IS DISTINCT FROM NULLIF(current_setting('epcc.project_id',true),'')::uuid
+ OR NEW.company_id IS DISTINCT FROM NULLIF(current_setting('epcc.company_id',true),'')::uuid OR NEW.created_by IS DISTINCT FROM NULLIF(current_setting('epcc.receipt_actor_id',true),'')::uuid
+ OR NEW.policy_id IS NULL OR NEW.policy_id IS DISTINCT FROM epcc_piping_receipt_policy(NEW.project_id,NEW.created_by,NEW.company_id,'custody_mrr') THEN RAISE EXCEPTION 'PIPING_AMENDMENT_AUTHORITY' USING ERRCODE='42501'; END IF;
+ SELECT * INTO c FROM piping_custody_records WHERE id=NEW.custody_id AND project_id=NEW.project_id;
+ IF NOT FOUND OR c.created_by IS DISTINCT FROM NEW.created_by OR c.company_id IS DISTINCT FROM NEW.company_id THEN RAISE EXCEPTION 'PIPING_AMENDMENT_PREPARER' USING ERRCODE='42501'; END IF;
+ IF epcc_piping_effective_receipt(c.id) IS NULL THEN RAISE EXCEPTION 'PIPING_AMENDMENT_SOURCE' USING ERRCODE='42501'; END IF;
+ SELECT id,sequence INTO head,serial FROM piping_custody_amendments WHERE custody_id=c.id AND project_id=NEW.project_id ORDER BY sequence DESC LIMIT 1;
+ IF NEW.previous_amendment_id IS DISTINCT FROM head OR serial=2147483647 THEN RAISE EXCEPTION 'PIPING_AMENDMENT_STALE' USING ERRCODE='23514'; END IF;
+ IF NEW.policy_id IS DISTINCT FROM epcc_piping_receipt_policy(NEW.project_id,NEW.created_by,NEW.company_id,'custody_mrr') THEN RAISE EXCEPTION 'PIPING_AMENDMENT_AUTHORITY' USING ERRCODE='42501'; END IF;
+ NEW.sequence:=COALESCE(serial,0)+1; NEW.custody_fingerprint:=epcc_piping_custody_fingerprint(c.id);
+ SELECT name INTO NEW.actor_name FROM users WHERE id=NEW.created_by AND company_id=NEW.company_id AND is_active;
+ NEW.created_at:=clock_timestamp(); RETURN NEW;
+END $$;
+CREATE TRIGGER piping_amendment_guard BEFORE INSERT OR UPDATE OR DELETE ON piping_custody_amendments FOR EACH ROW EXECUTE FUNCTION epcc_guard_piping_amendment();
+CREATE OR REPLACE FUNCTION epcc_guard_piping_amendment_source() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE a piping_custody_amendments%ROWTYPE; snap jsonb; original_unit text;
+BEGIN
+ IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'PIPING_AMENDMENT_IMMUTABLE' USING ERRCODE='23514'; END IF;
+ SELECT * INTO a FROM piping_custody_amendments WHERE id=NEW.amendment_id AND project_id=NEW.project_id;
+ IF NOT FOUND OR a.source_kind<>'LINKED' OR a.created_by IS DISTINCT FROM NULLIF(current_setting('epcc.receipt_actor_id',true),'')::uuid
+ OR a.company_id IS DISTINCT FROM NULLIF(current_setting('epcc.company_id',true),'')::uuid OR NOT epcc_project_is_writable(a.project_id)
+ OR a.policy_id IS DISTINCT FROM epcc_piping_receipt_policy(a.project_id,a.created_by,a.company_id,'custody_mrr')
+ OR NOT EXISTS(SELECT 1 FROM piping_custody_amendments WHERE id=a.id AND pg_xact_status(xmin::text::xid8)='in progress') THEN RAISE EXCEPTION 'PIPING_AMENDMENT_SOURCE' USING ERRCODE='42501'; END IF;
+ snap:=epcc_piping_source_snapshot(NEW.project_id,NEW.source_line_id);
+ SELECT unit INTO original_unit FROM piping_custody_records WHERE id=a.custody_id AND created_by=a.created_by;
+ IF snap IS NULL OR original_unit IS NULL OR snap->>'unit' IS DISTINCT FROM original_unit THEN RAISE EXCEPTION 'PIPING_AMENDMENT_UNIT_SOURCE' USING ERRCODE='23514'; END IF;
+ NEW.purchase_order_id:=(snap->>'purchase_order_id')::uuid; NEW.source_snapshot:=snap;
+ NEW.source_fingerprint:=encode(sha256(convert_to(snap::text,'UTF8')),'hex'); RETURN NEW;
+END $$;
+CREATE TRIGGER piping_amendment_source_guard BEFORE INSERT OR UPDATE OR DELETE ON piping_custody_amendment_sources FOR EACH ROW EXECUTE FUNCTION epcc_guard_piping_amendment_source();
+CREATE OR REPLACE FUNCTION epcc_finalize_piping_amendment() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF (NEW.source_kind='LINKED') IS DISTINCT FROM EXISTS(SELECT 1 FROM piping_custody_amendment_sources WHERE amendment_id=NEW.id) THEN RAISE EXCEPTION 'PIPING_AMENDMENT_INCOMPLETE' USING ERRCODE='23514'; END IF;
+ RETURN NEW;
+END $$;
+CREATE CONSTRAINT TRIGGER piping_amendment_complete AFTER INSERT ON piping_custody_amendments DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION epcc_finalize_piping_amendment();
+ALTER TABLE piping_qa_amendment_source_bases ENABLE ROW LEVEL SECURITY;
+ALTER TABLE piping_qa_amendment_source_bases FORCE ROW LEVEL SECURITY;
+CREATE POLICY piping_qa_amended_source_read ON piping_qa_amendment_source_bases FOR SELECT USING (
+ project_id=NULLIF(current_setting('epcc.project_id',true),'')::uuid
+ AND EXISTS(SELECT 1 FROM piping_qa_decisions d WHERE d.id=piping_qa_amendment_source_bases.decision_id AND d.project_id=piping_qa_amendment_source_bases.project_id)
+ AND EXISTS(SELECT 1 FROM purchase_order_items l JOIN purchase_orders p ON p.id=l.purchase_order_id WHERE l.id=piping_qa_amendment_source_bases.source_line_id AND p.id=piping_qa_amendment_source_bases.purchase_order_id AND l.project_id=piping_qa_amendment_source_bases.project_id AND p.project_id=piping_qa_amendment_source_bases.project_id AND p.discipline='PIPING')
+);
+CREATE POLICY piping_qa_amended_source_insert ON piping_qa_amendment_source_bases FOR INSERT WITH CHECK (
+ project_id=NULLIF(current_setting('epcc.project_id',true),'')::uuid
+ AND EXISTS(SELECT 1 FROM piping_qa_decisions d WHERE d.id=piping_qa_amendment_source_bases.decision_id AND d.project_id=piping_qa_amendment_source_bases.project_id AND d.decided_by=NULLIF(current_setting('epcc.receipt_actor_id',true),'')::uuid AND d.company_id=NULLIF(current_setting('epcc.company_id',true),'')::uuid)
+);
+CREATE OR REPLACE FUNCTION epcc_guard_piping_qa_amended_source() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE q piping_qa_decisions%ROWTYPE; eff jsonb;
+BEGIN
+ IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'PIPING_AMENDMENT_IMMUTABLE' USING ERRCODE='23514'; END IF;
+ SELECT * INTO q FROM piping_qa_decisions WHERE id=NEW.decision_id AND project_id=NEW.project_id;
+ IF NOT FOUND OR q.decision<>'ACCEPTED' OR q.amendment_id IS NULL OR q.decided_by IS DISTINCT FROM NULLIF(current_setting('epcc.receipt_actor_id',true),'')::uuid
+ OR q.company_id IS DISTINCT FROM NULLIF(current_setting('epcc.company_id',true),'')::uuid
+ OR q.policy_id IS DISTINCT FROM epcc_piping_receipt_policy(q.project_id,q.decided_by,q.company_id,'acceptance_qa')
+ OR NOT EXISTS(SELECT 1 FROM piping_qa_decisions WHERE id=q.id AND pg_xact_status(xmin::text::xid8)='in progress') THEN RAISE EXCEPTION 'PIPING_AMENDMENT_SOURCE' USING ERRCODE='42501'; END IF;
+ eff:=epcc_piping_effective_receipt(q.custody_id);
+ IF eff IS NULL OR (eff->>'amendment_id')::uuid IS DISTINCT FROM q.amendment_id THEN RAISE EXCEPTION 'PIPING_AMENDMENT_STALE' USING ERRCODE='23514'; END IF;
+ NEW.source_line_id:=(eff->>'source_line_id')::uuid; NEW.snapshot:=epcc_piping_source_snapshot(q.project_id,NEW.source_line_id);
+ IF NEW.snapshot IS NULL THEN RAISE EXCEPTION 'PIPING_AMENDMENT_SOURCE' USING ERRCODE='42501'; END IF;
+ NEW.purchase_order_id:=(NEW.snapshot->>'purchase_order_id')::uuid; RETURN NEW;
+END $$;
+CREATE TRIGGER piping_qa_amended_source_guard BEFORE INSERT OR UPDATE OR DELETE ON piping_qa_amendment_source_bases FOR EACH ROW EXECUTE FUNCTION epcc_guard_piping_qa_amended_source();
+CREATE OR REPLACE FUNCTION epcc_capture_piping_qa_amended_source() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF NEW.amendment_id IS NOT NULL AND NEW.decision='ACCEPTED' THEN INSERT INTO piping_qa_amendment_source_bases(decision_id,project_id) VALUES(NEW.id,NEW.project_id); END IF;
+ RETURN NEW;
+END $$;
+CREATE TRIGGER piping_qa_capture_amended_source AFTER INSERT ON piping_qa_decisions FOR EACH ROW EXECUTE FUNCTION epcc_capture_piping_qa_amended_source();
+CREATE OR REPLACE FUNCTION epcc_guard_piping_receiving_review() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE receipt piping_custody_records%ROWTYPE; head uuid; serial integer; person text; eff jsonb;
+BEGIN
+ IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'PIPING_RECEIVING_QC_IMMUTABLE' USING ERRCODE='23514'; END IF;
+ PERFORM pg_advisory_xact_lock(hashtextextended('piping-receipt-access:'||NEW.project_id::text,0));
+ PERFORM 1 FROM projects WHERE id=NEW.project_id FOR NO KEY UPDATE;
+ IF NOT FOUND OR NOT epcc_project_is_writable(NEW.project_id)
+ OR NEW.project_id IS DISTINCT FROM NULLIF(current_setting('epcc.project_id',true),'')::uuid
+ OR NEW.company_id IS DISTINCT FROM NULLIF(current_setting('epcc.company_id',true),'')::uuid
+ OR NEW.reviewed_by IS DISTINCT FROM NULLIF(current_setting('epcc.receipt_actor_id',true),'')::uuid THEN
+  RAISE EXCEPTION 'PIPING_RECEIVING_QC_SCOPE' USING ERRCODE='42501'; END IF;
+ IF NEW.policy_id IS NULL OR NEW.policy_id IS DISTINCT FROM epcc_piping_receipt_policy(NEW.project_id,NEW.reviewed_by,NEW.company_id,'receiving_qc') THEN
+  RAISE EXCEPTION 'PIPING_RECEIVING_QC_NOMINATION' USING ERRCODE='42501'; END IF;
+ SELECT * INTO receipt FROM piping_custody_records WHERE id=NEW.custody_id AND project_id=NEW.project_id;
+ IF NOT FOUND THEN RAISE EXCEPTION 'PIPING_RECEIVING_QC_RECEIPT' USING ERRCODE='42501'; END IF;
+ eff:=epcc_piping_effective_receipt(NEW.custody_id);
+ IF eff IS NULL THEN RAISE EXCEPTION 'PIPING_AMENDMENT_SOURCE' USING ERRCODE='42501'; END IF;
+ IF NEW.amendment_id IS DISTINCT FROM (eff->>'amendment_id')::uuid THEN RAISE EXCEPTION 'PIPING_AMENDMENT_STALE' USING ERRCODE='23514'; END IF;
+ -- Parent custody is immutable. FOR SHARE would require an UPDATE RLS policy; do not weaken it.
+ -- Refresh personnel/entitlement/source visibility after the parent lookup in new SPI snapshots.
+ IF NEW.policy_id IS DISTINCT FROM epcc_piping_receipt_policy(NEW.project_id,NEW.reviewed_by,NEW.company_id,'receiving_qc') THEN
+  RAISE EXCEPTION 'PIPING_RECEIVING_QC_NOMINATION' USING ERRCODE='42501'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM piping_custody_records WHERE id=NEW.custody_id AND project_id=NEW.project_id) THEN
+  RAISE EXCEPTION 'PIPING_RECEIVING_QC_RECEIPT' USING ERRCODE='42501'; END IF;
+ IF receipt.created_by=NEW.reviewed_by THEN RAISE EXCEPTION 'PIPING_RECEIVING_QC_SELF_REVIEW' USING ERRCODE='23514'; END IF;
+ SELECT id,sequence INTO head,serial FROM piping_receiving_reviews WHERE custody_id=NEW.custody_id AND project_id=NEW.project_id ORDER BY sequence DESC LIMIT 1;
+ IF NEW.previous_review_id IS DISTINCT FROM head THEN RAISE EXCEPTION 'PIPING_RECEIVING_QC_STALE' USING ERRCODE='23514'; END IF;
+ IF serial=2147483647 THEN RAISE EXCEPTION 'PIPING_RECEIVING_QC_STALE' USING ERRCODE='23514'; END IF;
+ NEW.sequence:=COALESCE(serial,0)+1;
+ NEW.custody_fingerprint:=epcc_piping_custody_fingerprint(NEW.custody_id);
+ SELECT name INTO person FROM users WHERE id=NEW.reviewed_by AND company_id=NEW.company_id AND is_active;
+ IF NOT FOUND THEN RAISE EXCEPTION 'PIPING_RECEIVING_QC_NOMINATION' USING ERRCODE='42501'; END IF;
+ NEW.actor_name:=person; NEW.created_at:=clock_timestamp();
+ RETURN NEW;
+END $$;
+CREATE OR REPLACE FUNCTION epcc_guard_piping_qa() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE c piping_custody_records%ROWTYPE; q piping_receiving_reviews%ROWTYPE; head uuid; serial integer; k text; src record; eff jsonb;
+BEGIN
+ IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'PIPING_QA_IMMUTABLE' USING ERRCODE='23514'; END IF;
+ PERFORM pg_advisory_xact_lock(hashtextextended('piping-receipt-access:'||NEW.project_id::text,0));
+ PERFORM 1 FROM projects WHERE id=NEW.project_id FOR NO KEY UPDATE;
+ IF NOT FOUND OR NOT epcc_project_is_writable(NEW.project_id)
+ OR NEW.project_id IS DISTINCT FROM NULLIF(current_setting('epcc.project_id',true),'')::uuid
+ OR NEW.company_id IS DISTINCT FROM NULLIF(current_setting('epcc.company_id',true),'')::uuid
+ OR NEW.decided_by IS DISTINCT FROM NULLIF(current_setting('epcc.receipt_actor_id',true),'')::uuid
+ OR NEW.policy_id IS NULL OR NEW.policy_id IS DISTINCT FROM epcc_piping_receipt_policy(NEW.project_id,NEW.decided_by,NEW.company_id,'acceptance_qa') THEN
+ RAISE EXCEPTION 'PIPING_QA_AUTHORITY' USING ERRCODE='42501'; END IF;
+ SELECT * INTO c FROM piping_custody_records WHERE id=NEW.custody_id AND project_id=NEW.project_id;
+ IF NOT FOUND THEN RAISE EXCEPTION 'PIPING_QA_PARENT' USING ERRCODE='42501'; END IF;
+ eff:=epcc_piping_effective_receipt(c.id);
+ IF eff IS NULL THEN RAISE EXCEPTION 'PIPING_AMENDMENT_SOURCE' USING ERRCODE='42501'; END IF;
+ IF NEW.amendment_id IS DISTINCT FROM (eff->>'amendment_id')::uuid THEN RAISE EXCEPTION 'PIPING_AMENDMENT_STALE' USING ERRCODE='23514'; END IF;
+ c:=jsonb_populate_record(c,eff);
+ SELECT * INTO q FROM piping_receiving_reviews WHERE custody_id=c.id AND project_id=NEW.project_id ORDER BY sequence DESC LIMIT 1;
+ IF NOT FOUND OR NEW.review_id IS DISTINCT FROM q.id OR q.amendment_id IS DISTINCT FROM NEW.amendment_id THEN RAISE EXCEPTION 'PIPING_QA_QC_STALE' USING ERRCODE='23514'; END IF;
+ IF c.created_by=NEW.decided_by OR q.reviewed_by=NEW.decided_by OR c.created_by=q.reviewed_by THEN
+ RAISE EXCEPTION 'PIPING_QA_SEPARATION' USING ERRCODE='23514'; END IF;
+ SELECT id,sequence INTO head,serial FROM piping_qa_decisions WHERE custody_id=c.id AND project_id=NEW.project_id ORDER BY sequence DESC LIMIT 1;
+ IF NEW.previous_decision_id IS DISTINCT FROM head OR serial=2147483647 THEN RAISE EXCEPTION 'PIPING_QA_STALE' USING ERRCODE='23514'; END IF;
+ IF jsonb_typeof(NEW.declarations) IS DISTINCT FROM 'object' OR (SELECT count(*) FROM jsonb_object_keys(NEW.declarations))<>6 THEN RAISE EXCEPTION 'PIPING_QA_DECLARATIONS' USING ERRCODE='23514'; END IF;
+ FOREACH k IN ARRAY ARRAY['source_match','quantity_unit_match','heat_traceability','mandatory_documents_complete','nonconformities_closed','requirements_met'] LOOP
+ IF jsonb_typeof(NEW.declarations->k) IS DISTINCT FROM 'boolean' THEN RAISE EXCEPTION 'PIPING_QA_DECLARATIONS' USING ERRCODE='23514'; END IF;
+ IF NEW.decision='ACCEPTED' AND NEW.declarations->k<>'true'::jsonb THEN RAISE EXCEPTION 'PIPING_QA_ACCEPTANCE_BLOCKED' USING ERRCODE='23514'; END IF;
+ END LOOP;
+ NEW.source_basis:=NULL;
+ IF NEW.decision='ACCEPTED' THEN
+ IF NEW.open_conditions IS NOT NULL OR q.observed_result<>'NO_NONCONFORMITY_OBSERVED' OR c.source_line_id IS NULL OR c.heat_ref IS NULL OR btrim(c.heat_ref)='' THEN
+ RAISE EXCEPTION 'PIPING_QA_ACCEPTANCE_BLOCKED' USING ERRCODE='23514'; END IF;
+ SELECT po.state,l.quantity,l.unit,jsonb_build_object('purchase_order_id',po.id,'number',po.number,'state',po.state,'buyer_company_id',po.company_id,'issued_at',po.issued_at,
+ 'line_id',l.id,'line_no',l.line_no,'supersedes_id',l.supersedes_id,'item_code',l.item_code,'description_en',l.description_en,'description_fa',l.description_fa,'unit',l.unit,'ordered_quantity',l.quantity) AS basis INTO src
+ FROM purchase_order_items l JOIN purchase_orders po ON po.id=l.purchase_order_id WHERE l.id=c.source_line_id AND po.id=c.purchase_order_id
+ AND l.project_id=NEW.project_id AND po.project_id=NEW.project_id AND po.discipline='PIPING';
+ IF NOT FOUND OR src.state NOT IN ('ISSUED','PARTIALLY_RECEIVED','RECEIVED') OR src.unit<>c.unit OR c.quantity>src.quantity
+ OR (src.basis-'state'-'issued_at') IS DISTINCT FROM (c.source_snapshot-'state'-'issued_at') THEN
+ RAISE EXCEPTION 'PIPING_QA_SOURCE_BLOCKED' USING ERRCODE='23514'; END IF;
+ IF NEW.amendment_id IS NULL THEN NEW.source_basis:=src.basis; END IF; -- Amended PO metadata is captured separately under its original source RLS.
+ END IF;
+ IF NEW.policy_id IS DISTINCT FROM epcc_piping_receipt_policy(NEW.project_id,NEW.decided_by,NEW.company_id,'acceptance_qa') THEN RAISE EXCEPTION 'PIPING_QA_AUTHORITY' USING ERRCODE='42501'; END IF;
+ NEW.sequence:=COALESCE(serial,0)+1; NEW.custody_fingerprint:=epcc_piping_custody_fingerprint(c.id);
+ SELECT name INTO NEW.actor_name FROM users WHERE id=NEW.decided_by AND company_id=NEW.company_id AND is_active;
+ NEW.created_at:=clock_timestamp(); RETURN NEW;
+END $$;
+SQL);
+    }
+
+    public function down(): void
+    {
+        throw new RuntimeException('Custody amendments and exact reviewed bases are forward-only.');
+    }
+};

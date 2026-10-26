@@ -9,6 +9,9 @@ use App\Models\AcceptedMtoRow;
 use App\Models\MaterialItem;
 use App\Models\MtoRevision;
 use App\Models\MtoStagingRow;
+use App\Models\MtoDocument;
+use App\Models\Project;
+use App\Support\ProjectState;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -29,15 +32,26 @@ final class MtoAcceptanceService
     public function accept(MtoRevision $revision, string $lang = 'fa'): AcceptedMtoBatch
     {
         return DB::transaction(function () use ($revision, $lang): AcceptedMtoBatch {
-            // Re-read and lock the source inside the transaction. A stale model
-            // instance must not let two callers accept a changing revision.
+            // Locate without trusting a caller's stale project attributes, then
+            // lock project -> document -> revision. Archive uses the same project
+            // row lock. The NEW chronology trigger shares this transaction.
+            $locator = MtoRevision::query()->select(['id', 'project_id', 'mto_document_id'])->find($revision->getKey());
+            if ($locator === null) {
+                $this->fail($lang, 'revision', 'بازنگری MTO پیدا نشد.', 'MTO revision was not found.');
+            }
+            $project = Project::query()->whereKey($locator->project_id)->lockForUpdate()->first();
+            if ($project === null || $project->state !== ProjectState::ACTIVE) {
+                $this->fail($lang, 'project', 'پروژه برای پذیرش MTO فعال نیست.', 'The project is not active for MTO acceptance.');
+            }
+            $document = MtoDocument::query()->whereKey($locator->mto_document_id)->lockForUpdate()->first();
             $source = MtoRevision::query()
                 ->with('document')
                 ->whereKey($revision->getKey())
                 ->lockForUpdate()
                 ->first();
 
-            if ($source === null) {
+            if ($source === null || $document === null || $source->project_id !== $project->id
+                || $source->mto_document_id !== $document->id || $document->project_id !== $project->id) {
                 $this->fail($lang, 'revision', 'بازنگری MTO پیدا نشد.', 'MTO revision was not found.');
             }
 

@@ -1,0 +1,36 @@
+PASS 1 repeatable domain separated content version
+PASS 2 object key order irrelevant
+PASS 3 row input ordering irrelevant
+PASS 4 version binds project
+PASS 5 version binds selection_version
+PASS 6 version binds row id
+PASS 7 version binds row batch
+PASS 8 version binds row revision
+PASS 9 version binds row hierarchy
+PASS 10 version binds row scope
+PASS 11 version binds row material
+PASS 12 version binds row unit
+PASS 13 version binds exact milli quantity
+PASS 14 invalid manifest empty refused
+PASS 15 invalid manifest float refused
+PASS 16 invalid manifest extra refused
+PASS 17 invalid manifest duplicate refused
+PASS 18 invalid manifest missing refused
+PASS 19 invalid manifest bounds refused
+PASS 20 current reference not available capacity
+PASS 21 unchanged row in new selection still needs review
+PASS 22 replacement row never auto receives old commitment
+PASS 23 same immutable ID quantity mutation
+PASS 24 same immutable ID unit mutation
+PASS 25 foreign target project
+PASS 26 concurrent current version drift
+PASS 27 unknown historical version
+PASS 28 foreign historical commitment
+PASS 29 duplicate history not counted twice
+PASS 30 old overcommitment not hidden by new revision
+PASS 31 aggregate old overcommitment
+PASS 32 hidden or partial inventory not complete
+PASS 33 empty input never no commitments
+PASS 34 all historical references retained
+PASS 35 empty new manifest not retirement
+RESULT 35 offline cases PASS; no database or operational transfer

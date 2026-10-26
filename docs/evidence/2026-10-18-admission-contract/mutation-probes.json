@@ -1,0 +1,17 @@
+[
+  {
+    "mutant": "binding-mismatch-ignored",
+    "detected": true,
+    "exit": 255
+  },
+  {
+    "mutant": "omitted-row-ignored",
+    "detected": true,
+    "exit": 255
+  },
+  {
+    "mutant": "fabricated-admission-readiness",
+    "detected": true,
+    "exit": 255
+  }
+]

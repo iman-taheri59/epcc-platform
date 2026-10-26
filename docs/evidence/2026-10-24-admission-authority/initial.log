@@ -1,0 +1,1 @@
+PHP Fatal error:  Access level to Tests\Feature\ScopeAdmissionAuthorityTest::head() must be public (as in class Illuminate\Foundation\Testing\TestCase) in /home/user/epcc-platform/app/tests/Feature/ScopeAdmissionAuthorityTest.php on line 188

@@ -1,0 +1,22 @@
+ current_user | rolsuper | rolbypassrls | rolcreatedb | socket_only 
+--------------+----------+--------------+-------------+-------------
+ epcc         | f        | f            | t           | t
+(1 row)
+
+             relname             | relrowsecurity | relforcerowsecurity 
+---------------------------------+----------------+---------------------
+ piping_custody_counters         | t              | t
+ piping_custody_records          | t              | t
+ piping_receipt_author_policies  | t              | t
+ piping_receipt_nomination_index | t              | t
+(4 rows)
+
+              proname               | prosecdef 
+------------------------------------+-----------
+ epcc_guard_piping_custody          | f
+ epcc_guard_piping_custody_counter  | f
+ epcc_guard_piping_nomination_index | f
+ epcc_piping_receipt_policy         | f
+ epcc_project_piping_nominations    | f
+(5 rows)
+

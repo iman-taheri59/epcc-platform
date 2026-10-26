@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-18",
+  "status": "DRAFT_SPEC_AND_OFFLINE_PLANNER_NOT_PRODUCTION_MIGRATION",
+  "new_offline_tests": 26,
+  "new_offline_tests_passed": 26,
+  "previous_selection_tests_rerun_passed": 33,
+  "new_mutation_probes_detected": 3,
+  "cli_exit_code_scenarios": 4,
+  "existing_application_source_hashes_unchanged": 443,
+  "php_cli_restored_after_runtime_reset": true,
+  "laravel_bootstrap_invoked": false,
+  "database_connected": false,
+  "production_migration_executed": false,
+  "g01_production_fixed": false,
+  "full_phpunit_rerun": false,
+  "runtime_server_or_database_running_verified": false,
+  "files": {
+    "prototype/domain/MtoBackfillPlanner.php": "bacd64e70a152dbf8df9d7f3effe3948525485fc90a112e98127e4f1a00e22e5",
+    "prototype/test/mto-backfill-planner.php": "ce3aa25694b03dc39169fd5f99121a75fbb3a0c280d7adaba4e10b81935c60ff",
+    "scripts/plan-mto-backfill.php": "e6d44d38f3dc3ab38a80b7ca3c3e72f3df7d6fbf38b9e5bb7f7c5ecd8c4e9474",
+    "docs/examples/mto-backfill-synthetic-blocked.json": "040b2d39166f6cd8bf17638081c8b8e83ab726f2885138a38725a638d0c0951b"
+  }
+}

@@ -1,0 +1,21 @@
+EXPECTED MODIFICATION app/app/Services/DemandReaderService.php
+UNCHANGED app/database/migrations/2026_10_23_120000_add_scoped_demand_reader_policies.php
+UNCHANGED app/tests/Feature/DemandReaderTest.php
+EXPECTED MODIFICATION app/lang/en/demand_readers.php
+EXPECTED MODIFICATION app/lang/fa/demand_readers.php
+EXPECTED MODIFICATION app/app/Services/DemandReaderService.php
+EXPECTED MODIFICATION app/app/Http/Controllers/DemandReaderController.php
+EXPECTED MODIFICATION app/routes/web.php
+EXPECTED MODIFICATION app/lang/en/demand_readers.php
+EXPECTED MODIFICATION app/lang/fa/demand_readers.php
+UNCHANGED app/tests/Feature/DemandReaderHttpTest.php
+EXPECTED MODIFICATION app/resources/views/materials/demand-readers.blade.php
+UNCHANGED app/resources/views/materials/demand-readiness.blade.php
+UNCHANGED app/resources/views/materials/piping-traceability.blade.php
+PASS down guard byte-identical to preceding guard
+LINK OK DEMAND-READER-SUSPENSION-FA.md
+LINK OK DEMAND-READER-WEB-EN.md
+LINK OK DEMAND-READER-SUSPENSION-EN.md
+LINK OK DEMAND-READER-WEB-FA.md
+PASS en synthetic response locale/redaction
+PASS fa synthetic response locale/redaction

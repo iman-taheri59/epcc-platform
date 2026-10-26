@@ -1,0 +1,25 @@
+
+  [90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\InspectionPrerequisiteCompanyPicker[22m… [41;1m QueryException [49;22m  
+[39;1m  SQLSTATE[42501]: Insufficient privilege: 7 ERROR:  new row violates row-level security policy "project_memberships_archive_freeze" for table "project_memberships" (Connection: pgsql, Host: /tmp/epcc-reconciliation-full-sock-lq78n0a7, Port: 5545, Database: epcc_test, SQL: update "project_memberships" set "discipline_scope" = ["CIVIL"], "updated_at" = 2026-10-20 08:39:07 where "project_id" = 56700d86-c758-44cc-96fe-a7a739382e58 and "user_id" = f317c68b-685a-49ce-b385-c0261c44bfb7)[39;22m
+
+  at [32mvendor/laravel/framework/src/Illuminate/Database/Connection.php[39m:[32m857[39m
+    853▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
+    854▕                 ? UniqueConstraintViolationException::class
+    855▕                 : QueryException::class;
+    856▕ 
+  ➜ 857▕             $exception = new $exceptionType(
+    858▕                 $this->getNameWithReadWriteType(),
+    859▕                 $query,
+    860▕                 $this->prepareBindings($bindings),
+    861▕                 $e,
+
+      [2m+9 vendor frames [22m
+  [33m10  [39m[39;1mtests/Feature/InspectionPrerequisiteCompanyPickerTest.php[39;22m:[39;1m272[39;22m
+  [33m11  [39m[39;1mapp/Support/TenantContext.php[39;22m:[39;1m99[39;22m
+
+
+  [90mTests:[39m    [31;1m1 failed[39;22m[90m,[39m[39m [39m[32;1m25 passed[39;22m[90m (1750 assertions)[39m
+  [90mDuration:[39m [39m42.23s[39m
+

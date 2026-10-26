@@ -1,0 +1,176 @@
+{
+  "status": "TARGETED_VERIFIED_NOMINATION_ONLY",
+  "date": "2026-10-19",
+  "accepted_decisions": {
+    "po_issue_authority_model": "separate_financial_and_issue",
+    "po_execution_company_scope": "explicit_target_buyer"
+  },
+  "implemented_stage": "buyer-scoped nomination configuration and live nomination lookup",
+  "financial_action_implemented": false,
+  "issuance_action_implemented": false,
+  "three_person_execution_enforced": false,
+  "order_version_signing_implemented": false,
+  "new_delegated_po_read": false,
+  "legacy_issue_primitive_retired": false,
+  "related": {
+    "tests": 145,
+    "assertions": 1172,
+    "exit": 0,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "junit": "related.xml",
+    "suites": [
+      {
+        "name": "Tests\\Feature\\MaterialRequisitionEntryTest",
+        "file": "/home/user/epcc-platform/app/tests/Feature/MaterialRequisitionEntryTest.php",
+        "tests": "24",
+        "assertions": "252",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "32.830274"
+      },
+      {
+        "name": "Tests\\Feature\\MaterialRequisitionMigrationTest",
+        "file": "/home/user/epcc-platform/app/tests/Feature/MaterialRequisitionMigrationTest.php",
+        "tests": "1",
+        "assertions": "57",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "1.146813"
+      },
+      {
+        "name": "Tests\\Feature\\OrderGapTest",
+        "file": "/home/user/epcc-platform/app/tests/Feature/OrderGapTest.php",
+        "tests": "10",
+        "assertions": "40",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "14.320738"
+      },
+      {
+        "name": "Tests\\Feature\\ProcurementCategoryMigrationTest",
+        "file": "/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryMigrationTest.php",
+        "tests": "1",
+        "assertions": "118",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "1.567535"
+      },
+      {
+        "name": "Tests\\Feature\\ProcurementCategoryTest",
+        "file": "/home/user/epcc-platform/app/tests/Feature/ProcurementCategoryTest.php",
+        "tests": "12",
+        "assertions": "129",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "17.439634"
+      },
+      {
+        "name": "Tests\\Feature\\ProcurementTest",
+        "file": "/home/user/epcc-platform/app/tests/Feature/ProcurementTest.php",
+        "tests": "22",
+        "assertions": "31",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "28.795343"
+      },
+      {
+        "name": "Tests\\Feature\\PurchaseOrderDetailsTest",
+        "file": "/home/user/epcc-platform/app/tests/Feature/PurchaseOrderDetailsTest.php",
+        "tests": "8",
+        "assertions": "53",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "10.915233"
+      },
+      {
+        "name": "Tests\\Feature\\PurchaseOrderEntryMigrationTest",
+        "file": "/home/user/epcc-platform/app/tests/Feature/PurchaseOrderEntryMigrationTest.php",
+        "tests": "1",
+        "assertions": "55",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "1.292370"
+      },
+      {
+        "name": "Tests\\Feature\\PurchaseOrderEntryTest",
+        "file": "/home/user/epcc-platform/app/tests/Feature/PurchaseOrderEntryTest.php",
+        "tests": "13",
+        "assertions": "78",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "17.212599"
+      },
+      {
+        "name": "Tests\\Feature\\PurchaseOrderExecutionAccessTest",
+        "file": "/home/user/epcc-platform/app/tests/Feature/PurchaseOrderExecutionAccessTest.php",
+        "tests": "13",
+        "assertions": "95",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "17.281067"
+      },
+      {
+        "name": "Tests\\Feature\\PurchaseOrderExecutionMigrationTest",
+        "file": "/home/user/epcc-platform/app/tests/Feature/PurchaseOrderExecutionMigrationTest.php",
+        "tests": "1",
+        "assertions": "10",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "1.463104"
+      },
+      {
+        "name": "Tests\\Feature\\PurchaseOrderRequisitionDraftTest",
+        "file": "/home/user/epcc-platform/app/tests/Feature/PurchaseOrderRequisitionDraftTest.php",
+        "tests": "15",
+        "assertions": "110",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "21.291238"
+      },
+      {
+        "name": "Tests\\Feature\\ShellStructureTest",
+        "file": "/home/user/epcc-platform/app/tests/Feature/ShellStructureTest.php",
+        "tests": "24",
+        "assertions": "144",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "time": "31.439749"
+      }
+    ]
+  },
+  "new_tests": {
+    "tests": 14,
+    "assertions": 105,
+    "included_in_related": true
+  },
+  "full_suite_run": false,
+  "browser_smoke": false,
+  "deployment": false,
+  "source_sha256": {
+    "app/app/Services/PurchaseOrderExecutionAccessService.php": "6346abed4d84769ad4b05474f101bffb194c5b5d5587cfd0834ffc04803cc6cc",
+    "app/app/Http/Controllers/MaterialsController.php": "424b8c04c7a54530a21c7476508571623f0aeaffb94d9d26a28745d3518b9d91",
+    "app/routes/web.php": "0c43bbee69c6e66d43ed9766c382b7cf041536425373828c7091bd1c0cc0c227",
+    "app/database/migrations/2026_10_19_140000_add_buyer_scoped_po_execution_policies.php": "e0522a0ea4b085a5904085961caf0b65b0729f15a4db7f9f02d0a9e0757f3a22",
+    "app/lang/en/po_execution_access.php": "ea3e3b56e55452c083e8b5fd7095fc0ac2d37eb9803dd9f8357d68c05d227f7c",
+    "app/lang/fa/po_execution_access.php": "58de8b663184b3090cabee58880d0d73155bd7d6e05ad761ecf583eff71e7bc2",
+    "app/resources/views/materials/po-execution-access.blade.php": "8dd718b6672178b9f3028a3619d06c379b52ead6aab61b2ab5c7c8244b002ccb",
+    "app/resources/views/materials/procurement.blade.php": "4a9ec1a74997d72000fac237e712a1a970a84da87ccdbbfddfe34def16d54737",
+    "app/tests/Feature/PurchaseOrderExecutionAccessTest.php": "cd8449c81989af89bcf40ce9c2478974a26f4658d63ae18748725616a7d1ff71",
+    "app/tests/Feature/PurchaseOrderExecutionMigrationTest.php": "7a10c404068cfb748cdac3a5d14065af230a78557fc505dbee2873fb3a712833"
+  }
+}

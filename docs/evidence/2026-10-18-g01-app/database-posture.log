@@ -1,0 +1,32 @@
+ current_user | rolsuper | rolbypassrls | rolcreatedb 
+--------------+----------+--------------+-------------
+ epcc         | f        | f            | f
+(1 row)
+
+ fsync 
+-------
+ on
+(1 row)
+
+ synchronous_commit 
+--------------------
+ on
+(1 row)
+
+ full_page_writes 
+------------------
+ on
+(1 row)
+
+        relname         | relrowsecurity | relforcerowsecurity 
+------------------------+----------------+---------------------
+ mto_acceptance_clocks  | t              | t
+ mto_acceptance_journal | t              | t
+(2 rows)
+
+         conname          | convalidated 
+--------------------------+--------------
+ mto_row_source_tuple     | f
+ mto_journal_source_tuple | t
+(2 rows)
+

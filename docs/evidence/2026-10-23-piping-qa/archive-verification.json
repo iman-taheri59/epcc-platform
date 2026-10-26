@@ -1,0 +1,10 @@
+{
+  "files_verified": 157,
+  "archive": "/home/user/000-piping-qa-source.tar.gz",
+  "archive_sha256": "63301e6f9c5ebc423816433e3d75e6ab591a9a14f654325adf204457347eb891",
+  "bytes": 605715,
+  "roundtrip": "PASS",
+  "root_copy_is_deliverable": true,
+  "manifest_in_archive": true,
+  "verification_record_external_to_avoid_self_hash": true
+}

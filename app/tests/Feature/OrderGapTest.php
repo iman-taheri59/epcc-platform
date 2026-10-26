@@ -6,9 +6,9 @@ namespace Tests\Feature;
 
 use App\Models\AcceptedMtoRow;
 use App\Models\Company;
+use App\Models\Facility;
 use App\Models\MaterialItem;
 use App\Models\MtoDocument;
-use App\Models\MtoRevision;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
@@ -22,6 +22,7 @@ use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
 use Database\Seeders\MaterialCatalogueSeeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -103,7 +104,7 @@ final class OrderGapTest extends TestCase
     }
 
     /** Accept one MTO revision carrying the given rows; returns the rows. */
-    private function acceptRows(array $rows): \Illuminate\Support\Collection
+    private function acceptRows(array $rows): Collection
     {
         $project = $this->project();
         $pars = $this->company('EPC-PARS');
@@ -216,7 +217,7 @@ final class OrderGapTest extends TestCase
         }
 
         $facility = $this->tenant->forIdentityLookup(
-            fn () => \App\Models\Facility::where('project_id', $project->id)->firstOrFail()
+            fn () => Facility::where('project_id', $project->id)->firstOrFail()
         );
 
         return $this->tenant->runAs($pars->id, fn () => Subsystem::create([
@@ -265,6 +266,127 @@ final class OrderGapTest extends TestCase
     // ------------------------------------------------------------------
     // Attribution
     // ------------------------------------------------------------------
+
+    public function test_amendment_uses_fresh_fields_instead_of_stale_model_values(): void
+    {
+        $po = $this->makePo([$this->poLine('STALE', 10, 'M')]);
+        $project = $this->project();
+        $pars = $this->company('EPC-PARS');
+        $this->tenant->runAs($pars->id, function () use ($po): void {
+            $stale = $po->items()->firstOrFail();
+            $po->items()->whereKey($stale->id)->update(['description_en' => 'Fresh authoritative description', 'unit_price' => 17]);
+            $next = $this->gaps->amend($stale, 9, 'en');
+            $this->assertSame('Fresh authoritative description', $next->description_en);
+            $this->assertEquals(17, $next->unit_price);
+            $this->assertSame($stale->id, $next->supersedes_id);
+        }, $project->id);
+    }
+
+    public function test_amendment_rechecks_parent_state_even_with_cached_draft_relation(): void
+    {
+        $po = $this->makePo([$this->poLine('CANCELLED', 10, 'M')]);
+        $project = $this->project();
+        $pars = $this->company('EPC-PARS');
+        $this->tenant->runAs($pars->id, function () use ($po): void {
+            $stale = $po->items()->firstOrFail();
+            $stale->setRelation('purchaseOrder', $po);
+            $po->newQuery()->whereKey($po->id)->update(['state' => 'CANCELLED']);
+            try {
+                $this->gaps->amend($stale, 9, 'en');
+                $this->fail('A cached draft relation cannot override the locked parent');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('purchase_order_id', $e->errors());
+            }
+            $this->assertSame(1, $po->items()->count());
+        }, $project->id);
+    }
+
+    public function test_attribution_checks_fresh_unit_not_stale_unit(): void
+    {
+        $this->acceptRows([$this->mtoRow('PIP-CS-6-SCH40', 120, 'M')]);
+        $po = $this->makePo([$this->poLine('STALE', 10, 'M')]);
+        $project = $this->project();
+        $pars = $this->company('EPC-PARS');
+        $material = $this->tenant->runAs($pars->id, fn () => $this->material('PIP-CS-6-SCH40'), $project->id);
+        $this->tenant->runAs($pars->id, function () use ($po, $project, $material): void {
+            $stale = $po->items()->firstOrFail();
+            $po->items()->whereKey($stale->id)->update(['unit' => 'EA']);
+            try {
+                $this->gaps->attribute($project, $stale, $material->id, 'en');
+                $this->fail('Fresh incompatible unit must be rejected');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('unit', $e->errors());
+            }
+            $this->assertNull($stale->fresh()->material_item_id);
+        }, $project->id);
+    }
+
+    public function test_all_mutators_lock_project_before_order_before_item_and_reject_stale_heads(): void
+    {
+        $this->acceptRows([$this->mtoRow('PIP-CS-6-SCH40', 120, 'M')]);
+        $po = $this->makePo([$this->poLine('LOCKS', 10, 'M')]);
+        $po = $this->issue($po);
+        $project = $this->project();
+        $pars = $this->company('EPC-PARS');
+        $material = $this->tenant->runAs($pars->id, fn () => $this->material('PIP-CS-6-SCH40'), $project->id);
+        $user = $this->userByEmail('rezaei@pars.example');
+        $scope = $this->subsystem();
+        $this->tenant->runAs($pars->id, function () use ($po, $project, $material, $user, $scope): void {
+            $stale = $po->items()->firstOrFail();
+            foreach (['attribute', 'allocate', 'amend'] as $method) {
+                DB::flushQueryLog();
+                DB::enableQueryLog();
+                try {
+                    if ($method === 'attribute') {
+                        $this->gaps->attribute($project, $stale, $material->id, 'en');
+                    } elseif ($method === 'allocate') {
+                        // The caller still holds the unattributed model from before attribution.
+                        $this->gaps->allocate($project, $user, $stale, $scope->id, 2, 'en');
+                    } else {
+                        $this->gaps->amend($stale, 9, 'en');
+                    }
+                    $locks = array_values(array_filter(array_column(DB::getQueryLog(), 'query'),
+                        fn ($sql) => str_contains($sql, 'pg_advisory_xact_lock') || str_contains($sql, 'for update')));
+                    $this->assertStringContainsString('pg_advisory_xact_lock', $locks[0]);
+                    $this->assertStringContainsString('"projects"', $locks[1]);
+                    $this->assertStringContainsString('"purchase_orders"', $locks[2]);
+                    $this->assertStringContainsString('"purchase_order_items"', $locks[3]);
+                } finally {
+                    DB::disableQueryLog();
+                    DB::flushQueryLog();
+                }
+            }
+            foreach (['attribute', 'allocate'] as $method) {
+                try {
+                    if ($method === 'attribute') {
+                        $this->gaps->attribute($project, $stale, $material->id, 'en');
+                    } else {
+                        $this->gaps->allocate($project, $user, $stale, $scope->id, 1, 'en');
+                    }
+                    $this->fail('A stale superseded head must be rejected');
+                } catch (ValidationException $e) {
+                    $this->assertArrayHasKey('supersedes_id', $e->errors());
+                }
+            }
+        }, $project->id);
+    }
+
+    public function test_legacy_http_attribution_and_amendment_keep_existing_lineage_behavior(): void
+    {
+        $po = $this->makePo([$this->poLine('LEGACY-HTTP', 10, 'M')]);
+        $project = $this->project();
+        $user = $this->userByEmail('rezaei@pars.example');
+        [$line, $material] = $this->tenant->runAs($user->company_id, fn () => [$po->items()->firstOrFail(), $this->material('PIP-CS-6-SCH40')], $project->id);
+        $this->actingAs($user)->postJson('/projects/PH-14/procurement/order-gap/attribute?lang=en', ['item_id' => $line->id, 'material_item_id' => $material->id])->assertRedirect()->assertSessionHasNoErrors();
+        $this->postJson('/projects/PH-14/procurement/order-gap/amend?lang=en', ['item_id' => $line->id, 'quantity' => '9.000'])->assertRedirect()->assertSessionHasNoErrors();
+        $this->tenant->runAs($user->company_id, function () use ($po, $line, $material): void {
+            $this->assertSame(2, $po->items()->count());
+            $this->assertSame('10.000', $line->fresh()->quantity);
+            $next = $po->items()->where('supersedes_id', $line->id)->firstOrFail();
+            $this->assertSame('9.000', $next->quantity);
+            $this->assertSame($material->id, $next->material_item_id);
+        }, $project->id);
+    }
 
     public function test_attribution_is_exact_and_rejects_unit_mismatch(): void
     {

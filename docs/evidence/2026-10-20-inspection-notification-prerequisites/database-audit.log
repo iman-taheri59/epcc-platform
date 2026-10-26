@@ -1,0 +1,71 @@
+runtime
+[
+    {
+        "current_user": "epcc",
+        "rolsuper": false,
+        "rolbypassrls": false,
+        "socket_only": true
+    }
+]
+tables
+[
+    {
+        "relname": "inspection_itp_stages",
+        "relrowsecurity": true,
+        "relforcerowsecurity": true
+    },
+    {
+        "relname": "inspection_notification_acknowledgments",
+        "relrowsecurity": true,
+        "relforcerowsecurity": true
+    },
+    {
+        "relname": "inspection_notification_cancellations",
+        "relrowsecurity": true,
+        "relforcerowsecurity": true
+    },
+    {
+        "relname": "inspection_notification_draft_history",
+        "relrowsecurity": true,
+        "relforcerowsecurity": true
+    },
+    {
+        "relname": "inspection_notification_prerequisite_events",
+        "relrowsecurity": true,
+        "relforcerowsecurity": true
+    },
+    {
+        "relname": "inspection_notification_prerequisites",
+        "relrowsecurity": true,
+        "relforcerowsecurity": true
+    },
+    {
+        "relname": "inspection_notification_settings",
+        "relrowsecurity": true,
+        "relforcerowsecurity": true
+    },
+    {
+        "relname": "inspection_notifications",
+        "relrowsecurity": true,
+        "relforcerowsecurity": true
+    }
+]
+functions
+[
+    {
+        "proname": "epcc_capture_notification_prerequisite",
+        "prosecdef": false
+    },
+    {
+        "proname": "epcc_guard_notification_prerequisite",
+        "prosecdef": false
+    },
+    {
+        "proname": "epcc_guard_notification_prerequisite_event",
+        "prosecdef": false
+    },
+    {
+        "proname": "epcc_notification_prerequisite_snapshot",
+        "prosecdef": false
+    }
+]

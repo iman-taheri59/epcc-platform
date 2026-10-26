@@ -1,0 +1,19 @@
+No syntax errors detected in app/database/migrations/2026_10_25_110000_add_controlled_piping_grns.php
+No syntax errors detected in app/app/Services/PipingGrnService.php
+No syntax errors detected in app/app/Http/Controllers/PipingGrnController.php
+No syntax errors detected in app/app/Services/PipingQaDecisionService.php
+No syntax errors detected in app/app/Services/PipingReceivingReviewService.php
+No syntax errors detected in app/app/Services/PipingCustodyAmendmentService.php
+No syntax errors detected in app/app/Services/WarehouseService.php
+No syntax errors detected in app/lang/en/piping_grn.php
+No syntax errors detected in app/lang/fa/piping_grn.php
+No syntax errors detected in app/routes/web.php
+No syntax errors detected in app/resources/views/materials/piping-grn.blade.php
+No syntax errors detected in app/resources/views/materials/piping-custody.blade.php
+No syntax errors detected in app/tests/Feature/PipingGrnTest.php
+
+  ..........
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   .......................................................... 10 files  
+

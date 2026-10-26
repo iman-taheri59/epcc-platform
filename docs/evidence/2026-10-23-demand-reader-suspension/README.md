@@ -1,0 +1,5 @@
+# Recorded reader suspension correction
+
+final-affected.log: authoritative 44 tests/172 assertions PASS, 66.83s (12 new suspension cases + service + prior HTTP). initial.log 12/61 overlaps and preceded extra SQL active-actor hardening. static.log: seven PHP Pint/lint, Blade compile/clear, four configuration/suspension routes, whitespace. rls-audit.log: ordinary epcc role, FORCE RLS and invoker guard. checks.log: expected shared changes, predecessor integrity including unchanged original migration, exact down guard restoration, guide links and HTTP locale/token redaction. http-en/fa: synthetic responses, not browser screenshots.
+
+No source read grant, admission, reservation or stock activation. Reduction-only owner metadata path. See bilingual DEMAND-READER-SUSPENSION guides for authorization/atomicity/visibility limits. Private test DB stopped after verification. Dependent source archive, not full application/vendor/runtime/DB backup. No full regression, production migration, CI/deploy/commit/push.

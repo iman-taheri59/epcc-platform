@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-22",
+  "status": "policy_partly_accepted_matrix_proposed_not_implemented",
+  "selected_boundary": "physical_custody_then_controlled_acceptance",
+  "selected_authority": "design_matrix_before_grants",
+  "reference_sha256": "19f2adcdc26ec887c90763948b2d0b7586d08d721490a3313359c1826696f6e9",
+  "reference_verbatim": true,
+  "scenarios_traced": 12,
+  "requirement_groups": 14,
+  "matrix_approved": false,
+  "new_grants_activated": false,
+  "application_files_unchanged": 545,
+  "checked_local_links": 54,
+  "runtime_tests_executed": 0,
+  "schema_changed": false,
+  "structured_prerequisite_items": "explicitly_deferred",
+  "committed": false,
+  "pushed": false,
+  "deployed": false
+}

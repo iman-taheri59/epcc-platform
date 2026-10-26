@@ -1,0 +1,118 @@
+Notification cancelled — CANCELLED
+Withdrawn notice. Original issued number, text and issue evidence are retained for history, not an active invitation.
+No replacement has been issued by this action.
+Cancelled by / UTC time:  · مهندس رضایی2026-10-20T06:38:53+00:00
+Cancellation reason (visible to authorized readers, including recipients):
+Synthetic withdrawal
+
+Pars Construction & Engineering — EPC-PARS
+
+ITP inspection notifications
+Planned inspection notice — not an inspection result or release
+
+Inspection notification PH-14-IN-EPC-PARS-000001
+number:
+Recorded project
+
+SYNTHETIC PROJECT RECORD (PH-14)
+
+reference:
+State:
+
+Notification cancelled / Version 3
+
+Issued at:
+
+2026-10-20 06:38:53+00
+
+Issuer / main contractor مهندس رضایی
+at issue:
+Planned activity
+
+Planned activity start: 2026-10-25T09:30:00+03:30
+
+execution window:
+
+Planned activity end: 2026-10-25T11:30:00+03:30
+
+Work/activity reference (PO not required)
+SYNTHETIC FIELD INSPECTION / نمونٔه آزمایشی
+
+Inspection location
+Synthetic site / محل آزمایشی
+
+Recorded ITP revision and stage
+Recorded document
+
+PH-14-PIPING-ITP-0001 / A
+
+number / revision:
+ITP revision UUID:
+
+0b339e62-be45-4a30-88fb-35973cbe4e8b
+
+Recorded CDE state / WIP / —
+suitability — not
+inferred ITP approval:
+Recorded ITP point
+
+1 / W
+
+(H/W/R/M):
+Stage UUID:
+
+346cbacd-5b8c-4956-9abf-9357c563747b
+
+Description / notes — English
+Recorded stage <script>stage()</script>
+
+Description / notes — Persian
+بازرسی مرحلٔه پیش‌نویس گچ ژاله
+
+Explicit recipients — participating project companies
+Explicit recipients — participating project companies
+MC-KARAN — Karan Contract Management
+
+Description / notes — English
+CURRENTACKPDFBODY
+
+Description / notes — Persian
+ نه تأیید نتیجه،ارجاع‌شده برای تأیید حضور
+
+A referenced CDE revision and recorded stage do not themselves certify ITP approval. Stages are append-only; full ITP approval,
+corrections and hold/release rules are separate.
+
+Recorded company acknowledgments — current in-system record
+The first authorized reader to confirm for a selected recipient company records that company’s receipt of this specific
+event. Original notice and cancellation receipts are separate. Visible to all authorized readers of the notice. Not email
+delivery evidence, a signature, attendance confirmation, technical acceptance or permission to proceed.
+Event received
+
+Recipient company (recorded name)
+
+Recorded by
+
+Server time (UTC)
+
+Original issued notice
+
+MC-KARAN — Karan Contract Management
+
+مهندس جعفری
+
+2026-10-20T06:38:53+00:00
+
+Cancellation of the notice
+
+MC-KARAN — Karan Contract Management
+
+مهندس جعفری
+
+2026-10-20T06:38:53+00:00
+
+Generated copy of retained issue data and current in-system lifecycle/receipt records. This copy is not a signature, external-delivery proof, attendance
+confirmation, technical acceptance or release.
+
+PH-14-IN-EPC-PARS-000001
+
+

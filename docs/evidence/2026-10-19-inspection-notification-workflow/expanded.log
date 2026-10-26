@@ -1,0 +1,34 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+.............E.E.                                                 17 / 17 (100%)
+
+Time: 00:47.739, Memory: 77.00 MB
+
+There were 2 errors:
+
+1) Tests\Feature\InspectionNotificationTest::test_archived_itp_revision_and_foreign_project_routes_cannot_issue
+Error: Class "Tests\Feature\DocumentRevision" not found
+
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/InspectionNotificationTest.php:66
+/home/user/epcc-platform/app/tests/Feature/InspectionNotificationTest.php:310
+
+2) Tests\Feature\InspectionNotificationTest::test_two_independent_issuers_of_same_draft_produce_one_issue_and_one_refusal
+Symfony\Component\Process\Exception\ProcessTimedOutException: The process "'/usr/bin/php8.4' '/home/user/epcc-platform/app/../scripts/tests/inspection_notification_worker.php' '49ea5131-1b60-4960-a3fc-c49b7ea1673c' '2a8bf238-13ee-448e-9288-edc27587e0ed' '7026821f-6003-426d-addd-b4578b49ff1a'" exceeded the timeout of 20 seconds.
+
+/home/user/epcc-platform/.cache/vendor/symfony/process/Process.php:1222
+/home/user/epcc-platform/.cache/vendor/symfony/process/Process.php:530
+/home/user/epcc-platform/app/tests/Feature/InspectionNotificationTest.php:347
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/InspectionNotificationTest.php:66
+/home/user/epcc-platform/app/tests/Feature/InspectionNotificationTest.php:338
+
+ERRORS!
+Tests: 17, Assertions: 112, Errors: 2.

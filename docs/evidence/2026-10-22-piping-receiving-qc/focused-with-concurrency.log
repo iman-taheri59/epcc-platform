@@ -1,0 +1,42 @@
+
+  [90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m[31;1m⨯[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PipingReceivingReviewTest[22m [90m>[39m real concurrent…  [41;1m Error [49;22m  
+[39;1m  Class "Tests\Feature\Process" not found[39;22m
+
+  at [32mtests/Feature/PipingReceivingReviewTest.php[39m:[32m406[39m
+    402▕             DB::beginTransaction();
+    403▕             DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?,0))', ['piping-receipt-access:'.$this->project->id]);
+    404▕ 
+    405▕             for ($i = 0; $i < $count; $i++) {
+  ➜ 406▕                 $p = new Process([PHP_BINARY, $script, $this->project->id, $this->qc->id, base64_encode(json_encode($payload, JSON_THROW_ON_ERROR)), $prefix.'-'.$i, $custodyId], $appPath, ['APP_ENV' => 'testing', 'APP_BASE_PATH' => $appPath, 'DB_DATABASE' => 'epcc_test', 'DB_HOST' => config('database.connections.pgsql.host'), 'DB_PORT' => (string) config('database.connections.pgsql.port'), 'DB_USERNAME' => config('database.connections.pgsql.username'), 'DB_PASSWORD' => config('database.connections.pgsql.password')]);
+    407▕                 $p->setTimeout(20);
+    408▕                 $p->start();
+    409▕                 $workers[] = $p;
+    410▕             }
+
+  [33m1   [39m[39;1mtests/Feature/PipingReceivingReviewTest.php[39;22m:[39;1m406[39;22m
+  [33m2   [39m[39;1mtests/Feature/PipingReceivingReviewTest.php[39;22m:[39;1m447[39;22m
+
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PipingReceivingReviewTest[22m [90m>[39m real nomination…  [41;1m Error [49;22m  
+[39;1m  Class "Tests\Feature\Process" not found[39;22m
+
+  at [32mtests/Feature/PipingReceivingReviewTest.php[39m:[32m406[39m
+    402▕             DB::beginTransaction();
+    403▕             DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?,0))', ['piping-receipt-access:'.$this->project->id]);
+    404▕ 
+    405▕             for ($i = 0; $i < $count; $i++) {
+  ➜ 406▕                 $p = new Process([PHP_BINARY, $script, $this->project->id, $this->qc->id, base64_encode(json_encode($payload, JSON_THROW_ON_ERROR)), $prefix.'-'.$i, $custodyId], $appPath, ['APP_ENV' => 'testing', 'APP_BASE_PATH' => $appPath, 'DB_DATABASE' => 'epcc_test', 'DB_HOST' => config('database.connections.pgsql.host'), 'DB_PORT' => (string) config('database.connections.pgsql.port'), 'DB_USERNAME' => config('database.connections.pgsql.username'), 'DB_PASSWORD' => config('database.connections.pgsql.password')]);
+    407▕                 $p->setTimeout(20);
+    408▕                 $p->start();
+    409▕                 $workers[] = $p;
+    410▕             }
+
+  [33m1   [39m[39;1mtests/Feature/PipingReceivingReviewTest.php[39;22m:[39;1m406[39;22m
+  [33m2   [39m[39;1mtests/Feature/PipingReceivingReviewTest.php[39;22m:[39;1m463[39;22m
+
+
+  [90mTests:[39m    [31;1m2 failed[39;22m[90m,[39m[39m [39m[32;1m13 passed[39;22m[90m (188 assertions)[39m
+  [90mDuration:[39m [39m32.42s[39m
+

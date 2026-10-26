@@ -1,0 +1,14 @@
+ current_user | rolsuper | rolbypassrls | rolcreatedb | socket_only 
+--------------+----------+--------------+-------------+-------------
+ epcc         | f        | f            | t           | t
+(1 row)
+
+                   relname                   | relrowsecurity | relforcerowsecurity 
+---------------------------------------------+----------------+---------------------
+ inspection_notification_acknowledgments     | t              | t
+ inspection_notification_cancellations       | t              | t
+ inspection_notification_prerequisite_events | t              | t
+ inspection_notification_prerequisites       | t              | t
+ inspection_notifications                    | t              | t
+(5 rows)
+

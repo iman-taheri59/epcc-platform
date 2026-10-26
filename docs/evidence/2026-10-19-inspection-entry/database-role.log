@@ -1,0 +1,32 @@
+                                                       version                                                       
+---------------------------------------------------------------------------------------------------------------------
+ PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+(1 row)
+
+  rolname   | rolsuper | rolbypassrls | rolcreatedb 
+------------+----------+--------------+-------------
+ epcc_admin | t        | t            | t
+ epcc       | f        | f            | t
+(2 rows)
+
+  datname  | pg_encoding_to_char | datcollate | datctype 
+-----------+---------------------+------------+----------
+ epcc_test | UTF8                | C          | C
+(1 row)
+
+ listen_addresses 
+------------------
+ 
+(1 row)
+
+ port 
+------
+ 5545
+(1 row)
+
+           unix_socket_directories           
+---------------------------------------------
+ /tmp/epcc-reconciliation-full-sock-lq78n0a7
+(1 row)
+
+{"current_user":"epcc","rolsuper":false,"rolbypassrls":false}

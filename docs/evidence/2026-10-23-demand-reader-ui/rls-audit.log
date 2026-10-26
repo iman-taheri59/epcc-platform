@@ -1,0 +1,15 @@
+ current_user | rolsuper | rolbypassrls 
+--------------+----------+--------------
+ epcc         | f        | f
+(1 row)
+
+        relname         | relrowsecurity | relforcerowsecurity 
+------------------------+----------------+---------------------
+ demand_reader_policies | t              | t
+(1 row)
+
+             proname             | prosecdef 
+---------------------------------+-----------
+ epcc_demand_reader_insert_guard | f
+(1 row)
+

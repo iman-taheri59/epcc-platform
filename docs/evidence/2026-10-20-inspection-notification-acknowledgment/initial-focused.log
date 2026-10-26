@@ -1,0 +1,42 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+.........E....                                                    14 / 14 (100%)
+
+Time: 00:27.516, Memory: 77.00 MB
+
+There was 1 error:
+
+1) Tests\Feature\InspectionNotificationAcknowledgmentTest::test_quality_only_recipient_without_document_module_can_ack_but_wrong_pack_cannot
+Illuminate\Database\QueryException: SQLSTATE[22001]: String data, right truncated: 7 ERROR:  value too long for type character varying(24) (Connection: pgsql, Host: /tmp/epcc-reconciliation-full-sock-lq78n0a7, Port: 5545, Database: epcc_test, SQL: insert into "plans" ("code", "name_en", "name_fa", "max_projects", "max_users", "modules", "standards_packs", "id", "updated_at", "created_at") values (synthetic-receipt-quality-only, Full, کامل, ?, ?, ["qaqc"], ["ips-iran"], 05f90fd3-622b-4c39-be01-1da14c9310c8, 2026-10-20 06:31:36, 2026-10-20 06:31:36))
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:857
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:590
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:554
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4220
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2336
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1614
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1407
+/home/user/epcc-platform/app/tests/Feature/InspectionNotificationAcknowledgmentTest.php:412
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+Caused by
+PDOException: SQLSTATE[22001]: String data, right truncated: 7 ERROR:  value too long for type character varying(24)
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:601
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:846
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:590
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:554
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4220
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2336
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1614
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1407
+/home/user/epcc-platform/app/tests/Feature/InspectionNotificationAcknowledgmentTest.php:412
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+ERRORS!
+Tests: 14, Assertions: 215, Errors: 1.

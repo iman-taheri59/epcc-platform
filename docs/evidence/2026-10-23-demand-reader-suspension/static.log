@@ -1,0 +1,29 @@
+
+  ......⨯
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FAIL   ............................................ 7 files, 1 style issue  
+  ⨯ app/tests/Feature/DemandReaderSuspensionTest.php     method_argument_space  
+
+No syntax errors detected in app/app/Services/DemandReaderService.php
+No syntax errors detected in app/app/Http/Controllers/DemandReaderController.php
+No syntax errors detected in app/routes/web.php
+No syntax errors detected in app/lang/en/demand_readers.php
+No syntax errors detected in app/lang/fa/demand_readers.php
+No syntax errors detected in app/database/migrations/2026_10_23_130000_allow_recorded_demand_reader_suspension.php
+No syntax errors detected in app/tests/Feature/DemandReaderSuspensionTest.php
+
+
+   INFO  Blade templates cached successfully.  
+
+
+   INFO  Compiled views cleared successfully.  
+
+
+  GET|HEAD   projects/{projectCode}/materials/demand-reader-suspensions mater…
+  POST       projects/{projectCode}/materials/demand-reader-suspensions mater…
+  GET|HEAD   projects/{projectCode}/materials/demand-readers materials.demand…
+  POST       projects/{projectCode}/materials/demand-readers materials.demand…
+
+                                                            Showing [4] routes
+

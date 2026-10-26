@@ -1,0 +1,31 @@
+{
+  "status": "RELATED_SUITE_GREEN_FULL_SUITE_PENDING",
+  "source_files": 452,
+  "unchanged_preceding_source_files": 450,
+  "new_source_files": [
+    "app/app/Services/CdeEvidenceIntegrityService.php",
+    "app/tests/Feature/CdeEvidenceIntegrityTest.php"
+  ],
+  "phpunit": {
+    "tests": 85,
+    "assertions": 288,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "new_test_cases_within_related": 22,
+  "new_assertions_within_related": 110,
+  "exit_code": 0,
+  "junit_seconds": 124.67066,
+  "full_suite_on_new_source": "NOT_RUN_PENDING",
+  "preceding_exact_source_full_suite": "1112/16488 green on preceding450 files only",
+  "standalone_reruns": "proposal46,selection33,planner26",
+  "authority_granted": false,
+  "admission_state": "UNADMITTED",
+  "ready_to_admit": false,
+  "order_gap_changed": false,
+  "migration_or_web_endpoint_added": false,
+  "live_api_or_remote_storage_used": false,
+  "actual_two_connection_concurrency_tests_this_slice": false,
+  "commit_push_pr": false
+}

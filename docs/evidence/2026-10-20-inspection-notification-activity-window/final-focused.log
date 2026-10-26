@@ -1,0 +1,11 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+................................................................. 65 / 71 ( 91%)
+......                                                            71 / 71 (100%)
+
+Time: 01:45.926, Memory: 79.00 MB
+
+OK (71 tests, 802 assertions)

@@ -1,0 +1,28 @@
+
+  ✓...✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   .................................... 5 files, 2 style issues fixed  
+  ✓ app/app/Services/PipingTraceabilityService.php single_quote, unary_operat…  
+  ✓ app/routes/web.php                                         ordered_imports  
+
+
+  ✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   ...................................... 1 file, 1 style issue fixed  
+  ✓ app/tests/Feature/PipingTraceabilityTest.php class_attributes_separation,…  
+
+
+  ✓
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    FIXED   ...................................... 1 file, 1 style issue fixed  
+  ✓ app/tests/Feature/PipingTraceabilityTest.php class_attributes_separation,…  
+
+
+  ....
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ........................................................... 4 files  
+

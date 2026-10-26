@@ -1,0 +1,12 @@
+{
+  "previous_source_files": 446,
+  "current_source_files": 450,
+  "changed_or_added": [
+    "app/app/Models/AcceptedMtoBatch.php",
+    "app/app/Models/MtoScopeObservation.php",
+    "app/app/Services/MtoScopeReadinessService.php",
+    "app/database/migrations/2026_10_18_110000_capture_mto_scope_observations.php",
+    "app/tests/Feature/MtoAcceptanceJournalTest.php",
+    "app/tests/Feature/MtoScopeObservationTest.php"
+  ]
+}

@@ -64,7 +64,7 @@ final class MaterialRequisitionEntryTest extends TestCase
     private function payload(array $changes = []): array
     {
         return array_replace([
-            'title_en' => 'Valve request', 'title_fa' => 'درخواست شیرآلات', 'discipline' => 'PIPING',
+            'title_en' => 'Valve request', 'title_fa' => 'درخواست شیرآلات', 'discipline' => 'PIPING', 'material_category' => 'VALVE',
             'lines' => [['item_code' => 'V-1', 'description_en' => 'Gate valve', 'description_fa' => 'شیر دروازه‌ای', 'quantity' => '0002.10', 'unit' => 'EA', 'specification' => 'Project Spec §2']],
         ], $changes);
     }
@@ -236,6 +236,7 @@ final class MaterialRequisitionEntryTest extends TestCase
             $base = ['project_id' => $foreignProject->id, 'company_id' => $this->writer->company_id,
                 'code' => 'FOREIGN-MR', 'name_en' => 'Synthetic foreign breakdown', 'name_fa' => 'آزمون پروژه دیگر'];
             $facility = Facility::create($base + ['kind' => 'PLANT']);
+
             return Subsystem::create($base + ['facility_id' => $facility->id, 'discipline' => 'PIPING'])->id;
         }, $foreignProject->id);
         $this->assertNotNull($foreignSubsystem);
@@ -362,7 +363,7 @@ final class MaterialRequisitionEntryTest extends TestCase
             $this->bound(fn () => DB::table('material_requisitions')->insert([
                 'id' => (string) Str::uuid(), 'project_id' => $this->project->id, 'company_id' => $this->writer->company_id, 'raised_by' => $this->writer->id,
                 'raised_at' => now(), 'number' => 'PH-14-MR-0099', 'sequence' => 99, 'state' => 'DRAFT', 'title_en' => 'Forged', 'title_fa' => 'آزمون',
-                'discipline' => 'PIPING', 'author_policy_id' => $mr->author_policy_id,
+                'discipline' => 'PIPING', 'material_category' => 'VALVE', 'author_policy_id' => $mr->author_policy_id,
             ]));
             $this->fail('Expected current nomination guard');
         } catch (QueryException $e) {

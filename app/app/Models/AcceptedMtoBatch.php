@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use LogicException;
 
 /** Immutable acceptance event for one MTO document revision. */
@@ -36,6 +37,10 @@ final class AcceptedMtoBatch extends \Illuminate\Database\Eloquent\Model
             throw new LogicException('Accepted MTO batches are immutable.');
         });
     }
+
+    public function scopeObservation(): HasOne { return $this->hasOne(MtoScopeObservation::class, 'accepted_mto_batch_id'); }
+
+    public function acceptanceJournal(): HasOne { return $this->hasOne(MtoAcceptanceJournal::class, 'accepted_mto_batch_id'); }
 
     public function project(): BelongsTo { return $this->belongsTo(Project::class); }
     public function company(): BelongsTo { return $this->belongsTo(Company::class); }

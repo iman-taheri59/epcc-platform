@@ -1,0 +1,8 @@
+No syntax errors detected in app/Services/PurchaseOrderPricingService.php
+No syntax errors detected in app/Http/Controllers/MaterialsController.php
+No syntax errors detected in routes/web.php
+No syntax errors detected in database/migrations/2026_10_19_160000_add_controlled_po_draft_pricing.php
+No syntax errors detected in lang/en/po_pricing.php
+No syntax errors detected in lang/fa/po_pricing.php
+No syntax errors detected in tests/Feature/PurchaseOrderPricingTest.php
+No syntax errors detected in tests/Feature/PurchaseOrderPricingMigrationTest.php

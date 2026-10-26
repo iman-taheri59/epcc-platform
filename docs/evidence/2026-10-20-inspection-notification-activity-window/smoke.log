@@ -1,0 +1,25 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+....E....                                                           9 / 9 (100%)
+
+Time: 00:04.193, Memory: 75.00 MB
+
+There was 1 error:
+
+1) Tests\Unit\InspectionNotificationInputTest::test_time_requires_explicit_offset_and_invalid_dates_are_refused
+TypeError: DateTime::createFromFormat(): Argument #2 ($datetime) must be of type string, array given
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Concerns/ValidatesAttributes.php:353
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Concerns/ValidatesAttributes.php:338
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Concerns/ValidatesAttributes.php:282
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Concerns/ValidatesAttributes.php:248
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:733
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Validation/Validator.php:488
+/home/user/epcc-platform/app/tests/Unit/InspectionNotificationInputTest.php:29
+/home/user/epcc-platform/app/tests/Unit/InspectionNotificationInputTest.php:69
+
+ERRORS!
+Tests: 9, Assertions: 70, Errors: 1.

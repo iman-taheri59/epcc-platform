@@ -1,0 +1,446 @@
+مهندسی و ساخت پارس — EPC-PARS
+
+نوتیفیکیشن بازرسی مراحل ITP
+اعالم برنامٔه بازرسی — نه نتیجٔه بازرسی یا release
+
+شمارٔه نوتیفیکیشن
+
+PH-14-IN-EPC-PARS-000001
+
+بازرسی:
+مرجع ثبت‌شدٔه پروژه:
+
+پروژٔه آزمایشی — )PH-14( SYNTHETIC
+
+وضعیت:
+
+صادرشده — ثبت داخل سامانه  /نسخه 2
+
+زمان صدور:
+
+2026-10-20 10:20:33+00
+
+صادرکننده  /پیمانکار
+
+مهندس رضایی
+
+اصلی هنگام صدور:
+بازٔه برنامه‌ریزی‌شدٔه
+
+شروع برنامه‌ریزی‌شدٔه فعالیت2026-10-25T09:30:00+03:30 :
+
+انجام فعالیت:
+
+پایان برنامه‌ریزی‌شدٔه فعالیت2026-10-25T11:30:00+03:30 :
+
+مرجع کار/فعالیت ( POاجباری نیست)
+
+نمونٔه آزمایشی SYNTHETIC FIELD INSPECTION /
+محل بازرسی
+
+محل آزمایشی Synthetic site /
+نسخه و مرحلٔه ثبت‌شدٔه ITP
+شمارٔه سند  /بازنگری
+
+PH-14-PIPING-ITP-0001 / A
+
+ثبت‌شده:
+ UUIDنسخٔه سند :ITP
+
+10b0dcb3-4e02-42e0-8224-2c37ead1996a
+
+وضعیت CDE /
+
+— WIP /
+
+ suitabilityثبت‌شده —
+نه استنتاج تصویب :ITP
+نقطٔه ثبت‌شدٔه ITP
+
+1 / W
+
+):(H/W/R/M
+ UUIDمرحله:
+
+4987f217-94f5-4411-977c-5e3541e54164
+
+شرح  /یادداشت انگلیسی
+
+>Recorded stage <script>stage()</script
+شرح  /یادداشت فارسی
+
+بازرسی مرحلٔه پیش‌نویس گچ ژاله
+گیرندگان صریح — شرکت‌های مشارکت‌کنندٔه پروژه
+گیرندگان صریح — شرکت‌های مشارکت‌کنندٔه پروژه
+
+ — MC-KARANمدیریت پیمان کاران
+
+شرح  /یادداشت انگلیسی
+
+><img src="https://invalid.example/a"> & <script>notes()</script
+شرح  /یادداشت فارسی
+
+ارجاع‌شده برای تأیید حضور ،نه تأیید نتیجه
+
+نسخٔه  CDEو ثبت مرحله به‌خودی‌خود گواه تصویب  ITPنیستند .مراحل  append-onlyهستند؛ تصویب کامل ،اصالح و  hold/releaseجدا
+هستند.
+
+تأییدهای دریافت شرکت‌ها — سابقٔه جاری داخل سامانه
+
+اولین خوانندٔه مجاز که از طرف شرکت گیرندٔه انتخاب‌شده تأیید کند ،دریافت همان شرکت برای همان رویداد را ثبت می‌کند.
+دریافت اصل و ابطال جدا هستند .برای همٔه خوانندگان مجاز اعالن قابل‌رؤیت است؛ نه مدرک تحویل ایمیل ،امضا ،تأیید حضور،
+پذیرش فنی یا اجازٔه ادامٔه کار.
+تأیید دریافت شرکتی ثبت نشده است؛ این به معنی اثبات تحویل‌نشدن یا نخواندن اعالن نیست.
+
+پیوست جاری پیگیری پیش‌نیازها
+اطالعات پیگیری در زمان خروجی؛ جدا از متن ثبت‌شدٔه زمان صدور .همٔه وضعیت‌های ثبت‌شده و سابقٔه کامل تغییرات درج
+می‌شوند .این پیوست تأیید بازرسی ،اصالح  ،ITPگواهی آمادگی یا اجازٔه ادامٔه کار نیست.
+زمان تهیٔه خروجی (2026-10-20T10:20:34+00:00 :)UTC
+
+مرحلٔه دقیق  ITPموروثی از اعالن صادرشده
+تمام پیش‌نیازها و اصالحات اینجا مربوط به همین مرحله و نسخٔه ثبت‌شدٔه  ITPهستند .مرجع مورد همچنان متن آزاد
+است؛ نه آیتم جزئی ساختاریافته یا مجوز خواندن سند منبع .این نمایش ،تصویب  ITPنیست.
+سند  ITPثبت‌شده UUID /
+29c00550-4e37-4ac3-9441-ce9a0c8282f7 / PH-14-PIPING-ITP-0001
+نسخٔه سند ثبت‌شده UUID /
+10b0dcb3-4e02-42e0-8224-2c37ead1996a / A
+مرحلٔه ثبت‌شده :ترتیب  /نقطه UUID /
+1 / W / 4987f217-94f5-4411-977c-5e3541e54164
+بازرسی مرحلٔه پیش‌نویس گچ ژاله
+
+ — MC-KARANمدیریت پیمان کاران
+58d946d6-a09f-48e7-80e6-cfd90a3be251
+
+پس از اقدام — نسخه 2
+پیش‌نیاز باز  /نسخه 2
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-OPEN-EDITED
+پیش‌نیاز موردنیاز
+
+گچ ژاله — .Long prerequisite line
+گچ ژاله — .Long prerequisite line
+گچ ژاله — .Long prerequisite line
+گچ ژاله — .Long prerequisite line
+
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+
+گچ ژاله — .Long prerequisite line
+گچ ژاله — .Long prerequisite line
+گچ ژاله — .Long prerequisite line
+گچ ژاله — .Long prerequisite line
+END-OF-LONG-REQUIREMENT
+اصالح پیش‌نیاز باز با دلیل — مهندس جعفری  — MC-KARAN /مدیریت پیمان کاران · 2026-10-
+20T10:20:33.136078+00:00
+EDIT-REASON
+
+سابقٔه تغییرناپذیر رویدادهای پیش‌نیاز
+
+نسخه  — 1پیش‌نیاز ثبت شد
+پس از اقدام
+
+پیش‌نیاز باز  /نسخه 1
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-OPEN
+پیش‌نیاز موردنیاز
+
+ORIGINAL-REQUIREMENT
+پیش‌نیاز ثبت شد — مهندس جعفری  — MC-KARAN /مدیریت پیمان کاران · 2026-10-20T10:20:33.121113+00:00
+
+نسخه  — 2اصالح پیش‌نیاز باز با دلیل
+پیش از اقدام
+
+پیش‌نیاز باز  /نسخه 1
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-OPEN
+پیش‌نیاز موردنیاز
+
+ORIGINAL-REQUIREMENT
+2026-10-20T10:20:33.121113+00:00 ·  — مدیریت پیمان کارانMC-KARAN / پیش‌نیاز ثبت شد — مهندس جعفری
+پس از اقدام
+
+2  نسخه/ پیش‌نیاز باز
+) نه پیوند تأییدشدٔه کاال،مورد (متنی/مرجع عملیات
+
+ITEM-OPEN-EDITED
+پیش‌نیاز موردنیاز
+
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+.Long prerequisite line — گچ ژاله
+END-OF-LONG-REQUIREMENT
+2026-10- ·  — مدیریت پیمان کارانMC-KARAN / اصالح پیش‌نیاز باز با دلیل — مهندس جعفری
+20T10:20:33.136078+00:00
+EDIT-REASON
+ — مدیریت پیمان کارانMC-KARAN
+64cc909a-8397-482a-83c5-5fad34d4be85
+
+2 پس از اقدام — نسخه
+2  نسخه/ انجام اعالم‌شده — منتظر بررسی گیرنده
+) نه پیوند تأییدشدٔه کاال،مورد (متنی/مرجع عملیات
+
+ITEM-REPORTED
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+اعالم انجام یا اصالح توضیح انجام — مهندس رضایی  — EPC-PARS /مهندسی و ساخت پارس · 2026-10-
+20T10:20:33.165566+00:00
+REPORT-EXPLANATION
+
+سابقٔه تغییرناپذیر رویدادهای پیش‌نیاز
+
+نسخه  — 1پیش‌نیاز ثبت شد
+پس از اقدام
+
+پیش‌نیاز باز  /نسخه 1
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-REPORTED
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+پیش‌نیاز ثبت شد — مهندس جعفری  — MC-KARAN /مدیریت پیمان کاران · 2026-10-20T10:20:33.147749+00:00
+
+نسخه  — 2اعالم انجام یا اصالح توضیح انجام
+پیش از اقدام
+
+پیش‌نیاز باز  /نسخه 1
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-REPORTED
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+پیش‌نیاز ثبت شد — مهندس جعفری  — MC-KARAN /مدیریت پیمان کاران · 2026-10-20T10:20:33.147749+00:00
+پس از اقدام
+
+انجام اعالم‌شده — منتظر بررسی گیرنده  /نسخه 2
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-REPORTED
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+اعالم انجام یا اصالح توضیح انجام — مهندس رضایی  — EPC-PARS /مهندسی و ساخت پارس · 2026-10-
+20T10:20:33.165566+00:00
+REPORT-EXPLANATION
+ — MC-KARANمدیریت پیمان کاران
+bcc6fbc1-87e4-4ea3-ad98-b9738210edc2
+
+پس از اقدام — نسخه 3
+تحقق پیش‌نیاز تأییدشده توسط گیرنده  /نسخه 3
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-FULFILLED
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+تأیید تحقق پیش‌نیاز اعالم‌شده — مهندس جعفری  — MC-KARAN /مدیریت پیمان کاران · 2026-10-
+20T10:20:33.207047+00:00
+CONFIRMATION-NOTE
+
+سابقٔه تغییرناپذیر رویدادهای پیش‌نیاز
+
+نسخه  — 1پیش‌نیاز ثبت شد
+پس از اقدام
+
+پیش‌نیاز باز  /نسخه 1
+
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-FULFILLED
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+پیش‌نیاز ثبت شد — مهندس جعفری  — MC-KARAN /مدیریت پیمان کاران · 2026-10-20T10:20:33.177743+00:00
+
+نسخه  — 2اعالم انجام یا اصالح توضیح انجام
+پیش از اقدام
+
+پیش‌نیاز باز  /نسخه 1
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-FULFILLED
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+پیش‌نیاز ثبت شد — مهندس جعفری  — MC-KARAN /مدیریت پیمان کاران · 2026-10-20T10:20:33.177743+00:00
+پس از اقدام
+
+انجام اعالم‌شده — منتظر بررسی گیرنده  /نسخه 2
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-FULFILLED
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+اعالم انجام یا اصالح توضیح انجام — مهندس رضایی  — EPC-PARS /مهندسی و ساخت پارس · 2026-10-
+20T10:20:33.194156+00:00
+FULFILLED-REPORT
+
+نسخه  — 3تأیید تحقق پیش‌نیاز اعالم‌شده
+پیش از اقدام
+
+انجام اعالم‌شده — منتظر بررسی گیرنده  /نسخه 2
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-FULFILLED
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+اعالم انجام یا اصالح توضیح انجام — مهندس رضایی  — EPC-PARS /مهندسی و ساخت پارس · 2026-10-
+20T10:20:33.194156+00:00
+FULFILLED-REPORT
+پس از اقدام
+
+تحقق پیش‌نیاز تأییدشده توسط گیرنده  /نسخه 3
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-FULFILLED
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+تأیید تحقق پیش‌نیاز اعالم‌شده — مهندس جعفری  — MC-KARAN /مدیریت پیمان کاران · 2026-10-
+20T10:20:33.207047+00:00
+CONFIRMATION-NOTE
+ — MC-KARANمدیریت پیمان کاران
+7634bfdf-8f7a-44a3-b45c-38a742fd921b
+
+پس از اقدام — نسخه 2
+پس‌گرفته‌شده توسط گیرنده  /نسخه 2
+
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-WITHDRAWN
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+پس‌گرفتن پیش‌نیاز با دلیل — مهندس جعفری  — MC-KARAN /مدیریت پیمان کاران · 2026-10-
+20T10:20:33.229404+00:00
+WITHDRAWAL-REASON
+
+سابقٔه تغییرناپذیر رویدادهای پیش‌نیاز
+
+نسخه  — 1پیش‌نیاز ثبت شد
+پس از اقدام
+
+پیش‌نیاز باز  /نسخه 1
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-WITHDRAWN
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+پیش‌نیاز ثبت شد — مهندس جعفری  — MC-KARAN /مدیریت پیمان کاران · 2026-10-20T10:20:33.217527+00:00
+
+نسخه  — 2پس‌گرفتن پیش‌نیاز با دلیل
+پیش از اقدام
+
+پیش‌نیاز باز  /نسخه 1
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-WITHDRAWN
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+پیش‌نیاز ثبت شد — مهندس جعفری  — MC-KARAN /مدیریت پیمان کاران · 2026-10-20T10:20:33.217527+00:00
+پس از اقدام
+
+پس‌گرفته‌شده توسط گیرنده  /نسخه 2
+مرجع عملیات/مورد (متنی ،نه پیوند تأییدشدٔه کاال)
+
+ITEM-WITHDRAWN
+پیش‌نیاز موردنیاز
+
+SYNTHETIC-REQUIREMENT
+پس‌گرفتن پیش‌نیاز با دلیل — مهندس جعفری  — MC-KARAN /مدیریت پیمان کاران · 2026-10-
+20T10:20:33.229404+00:00
+WITHDRAWAL-REASON
+
+نسخٔه تولیدشده از مدرک صدور محفوظ و سوابق جاری چرخه/دریافت داخل سامانه؛ خود این فایل امضا ،مدرک تحویل خارجی ،تأیید حضور ،پذیرش فنی یا اجازٔه ادامٔه
+کار نیست.
+
+PH-14-IN-EPC-PARS-000001
+
+

@@ -1,0 +1,24 @@
+
+  ......
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ........................................................... 6 files  
+
+No syntax errors detected in app/app/Services/ScopeProposalEnvelopeReader.php
+No syntax errors detected in app/app/Http/Controllers/ScopeProposalEnvelopeController.php
+No syntax errors detected in app/routes/web.php
+No syntax errors detected in app/lang/en/scope_proposals.php
+No syntax errors detected in app/lang/fa/scope_proposals.php
+No syntax errors detected in app/tests/Feature/ScopeProposalEnvelopeReadTest.php
+
+
+   INFO  Blade templates cached successfully.  
+
+
+   INFO  Compiled views cleared successfully.  
+
+
+  GET|HEAD       projects/{projectCode}/materials/scope-proposals/{proposalId} materials.scope-proposals.show › ScopeProposalEnvelopeController@sh…
+
+                                                            Showing [1] routes
+

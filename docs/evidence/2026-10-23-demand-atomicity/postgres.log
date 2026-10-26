@@ -1,0 +1,32 @@
+PASS 1 approval and one reservation committed together
+PASS 2 failure after MR update rolls approval back
+PASS 3 failure after event rolls entire transaction back
+PASS 4 same request same content reserves once
+PASS 5 same request other MR conflicts
+PASS 6 new request cannot approve same MR twice
+PASS 7 stale MR has no partial approval
+PASS 8 stale basis has no partial approval
+PASS 9 stale evidence has no partial approval
+PASS 10 wrong project has no partial approval
+PASS 11 wrong buyer has no partial approval
+PASS 12 not nominated has no partial approval
+PASS 13 fresh active required
+PASS 14 fresh can_read required
+PASS 15 fresh can_apply required
+PASS 16 fresh can_commercial required
+PASS 17 admitted is not inferred from approval
+PASS 18 inventory_complete is not inferred from approval
+PASS 19 archive blocks new reservation
+PASS 20 technical and commercial person separation retained
+PASS 21 self-reviewed demand proposal rejected
+PASS 22 changed evidence with unchanged quantity needs fresh review
+PASS 23 concurrent identical retries commit once
+PASS 24 concurrent two MRs cannot overconsume one source
+PASS 25 blocked caller sees committed basis change
+PASS 26 blocked caller sees committed archive change
+PASS 27 blocked caller sees committed grant change
+PASS 28 ordinary actor cannot read or write foreign context
+PASS 29 reservation event immutable even through fixture administrator
+RESULT 29 isolated PostgreSQL protocol cases PASS; not Laravel/application tests
+[["demand_atomic_actor", false, false]]
+[["events", true, true], ["mrs", true, true], ["nominations", true, true], ["projects", true, true], ["sources", true, true]]

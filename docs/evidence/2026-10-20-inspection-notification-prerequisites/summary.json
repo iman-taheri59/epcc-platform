@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-20",
+  "status": "targeted_verified_not_deployed",
+  "approved": {
+    "prerequisite_authority": "any_reader_company_scope",
+    "prerequisite_effect": "report_and_recipient_confirm",
+    "prerequisite_visibility": "all_notice_readers"
+  },
+  "final_focused": {
+    "tests": 81,
+    "assertions": 1290,
+    "seconds": 176.73,
+    "skipped": 0,
+    "passed": true
+  },
+  "separate_workflow_upgrade": {
+    "tests": 1,
+    "assertions": 5,
+    "seconds": 2.12,
+    "passed": true
+  },
+  "new_prerequisite_cases": 19,
+  "new_legacy_followup_cases": 1,
+  "concurrency_schedules": 4,
+  "pint_files": 10,
+  "php_lint_files": 10,
+  "source_hashes": 13,
+  "local_doc_links": 17,
+  "full_regression": false,
+  "current_ci_verified": false,
+  "interactive_browser_verified": false,
+  "pdf_prerequisites_included": false,
+  "committed": false,
+  "pushed": false,
+  "deployed": false,
+  "database_stopped_verified": true
+}

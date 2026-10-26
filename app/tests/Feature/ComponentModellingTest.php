@@ -575,7 +575,13 @@ final class ComponentModellingTest extends TestCase
         $this->assertStringContainsString('Issued PMS revision', $html);
         $this->assertStringContainsString('PH-14-PIP-PMS-A1', $html);
         $this->assertStringContainsString('Schedule', $html);
-        $this->assertStringContainsString('<td class="mono">80</td>', $html);
+        // Assert the PIPE schedule and status, not the obsolete exact HTML cell.
+        $document = new \DOMDocument();
+        @$document->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $cells = (new \DOMXPath($document))->query('//tr[td[2]//div[normalize-space(.)="PIPE"]]/td[4]');
+        $this->assertCount(1, $cells);
+        $this->assertMatchesRegularExpression('/^80\b/', trim($cells->item(0)->textContent));
+        $this->assertStringContainsString('Matches issued PMS schedule', $cells->item(0)->textContent);
         $this->assertStringContainsString('Open ends', $html);
         // Three ports remain open: the tee's two runs and the pipe's far end.
         $this->assertStringContainsString('(3)', $html);

@@ -1,0 +1,28 @@
+
+  [90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[90;1m.[39;22m[31;1m⨯[39;22m
+  [31m────────────────────────────────────────────────────────────────────────────[39m  
+  [41;1m FAILED [49;22m [1mTests\Feature\PipingGrnTest[22m [90m>[39m legacy source stock… [41;1m QueryException [49;22m  
+[39;1m  SQLSTATE[23514]: Check violation: 7 ERROR:  PIPING_GRN_CONTROLLED_LEDGER_REQUIRED
+CONTEXT:  PL/pgSQL function epcc_piping_legacy_stock_cutoff() line 11 at RAISE (Connection: pgsql, Host: /tmp/epcc-cde-read-sock, Port: 5554, Database: epcc_test, SQL: insert into "material_lots" ("id", "project_id", "company_id", "purchase_order_id", "lot_code", "item_code", "description_en", "description_fa", "unit") values (badc334e-e25c-4a3c-8ab1-97582f83a936, 76967d32-365f-42e1-b810-bf6a430040a1, 5fbdd0ad-7295-453d-8b52-c901801bc8f2, 9ebe3550-a1b4-4313-aa64-bd66c0910f6e, SHOULD-BLOCK, X, X, X, M))[39;22m
+
+  at [32m/home/user/.cache/cde-read-vendor/laravel/framework/src/Illuminate/Database/Connection.php[39m:[32m857[39m
+    853▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
+    854▕                 ? UniqueConstraintViolationException::class
+    855▕                 : QueryException::class;
+    856▕ 
+  ➜ 857▕             $exception = new $exceptionType(
+    858▕                 $this->getNameWithReadWriteType(),
+    859▕                 $query,
+    860▕                 $this->prepareBindings($bindings),
+    861▕                 $e,
+
+  [33m1   [39m[39;1m/home/user/.cache/cde-read-vendor/laravel/framework/src/Illuminate/Database/Connection.php[39;22m:[39;1m857[39;22m
+
+  [33m2   [39m[39;1m/home/user/.cache/cde-read-vendor/laravel/framework/src/Illuminate/Database/Connection.php[39;22m:[39;1m601[39;22m
+  [90m    NunoMaduro\Collision\Exceptions\TestException::("SQLSTATE[23514]: Check violation: 7 ERROR:  PIPING_GRN_CONTROLLED_LEDGER_REQUIRED
+CONTEXT:  PL/pgSQL function epcc_piping_legacy_stock_cutoff() line 11 at RAISE")[39m
+
+
+  [90mTests:[39m    [31;1m1 failed[39;22m[90m,[39m[39m [39m[32;1m12 passed[39;22m[90m,[39m[39m [2m2 pending[22m[39m[90m (69 assertions)[39m
+  [90mDuration:[39m [39m60.27s[39m
+

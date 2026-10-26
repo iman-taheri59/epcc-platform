@@ -1,0 +1,95 @@
+PHPUnit 12.5.35 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.26
+Configuration: /home/user/epcc-platform/app/phpunit.xml
+
+...EE......                                                       11 / 11 (100%)
+
+Time: 00:16.070, Memory: 91.77 MB
+
+There were 2 errors:
+
+1) Tests\Feature\MtoScopeObservationTest::test_optional_area_is_valid_and_later_reparent_does_not_rewrite_snapshot
+Illuminate\Database\QueryException: SQLSTATE[23502]: Not null violation: 7 ERROR:  null value in column "facility_id" of relation "subsystems" violates not-null constraint (Connection: pgsql, Host: /tmp/epcc-app-journal-sock-qp8e_g2c, Port: 5545, Database: epcc_test, SQL: update "subsystems" set "facility_id" = ?, "updated_at" = 2026-10-18 18:15:36 where "id" = cf4a7be7-a470-4647-aed7-96501fef7e4f)
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:857
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:614
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:566
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4377
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1305
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1518
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1400
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1159
+/home/user/epcc-platform/app/tests/Feature/MtoScopeObservationTest.php:203
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/MtoScopeObservationTest.php:118
+/home/user/epcc-platform/app/tests/Feature/MtoScopeObservationTest.php:197
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+Caused by
+PDOException: SQLSTATE[23502]: Not null violation: 7 ERROR:  null value in column "facility_id" of relation "subsystems" violates not-null constraint
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:626
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:846
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:614
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:566
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4377
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1305
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1518
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1400
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1159
+/home/user/epcc-platform/app/tests/Feature/MtoScopeObservationTest.php:203
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/MtoScopeObservationTest.php:118
+/home/user/epcc-platform/app/tests/Feature/MtoScopeObservationTest.php:197
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+2) Tests\Feature\MtoScopeObservationTest::test_missing_facility_is_reported_without_promoting_to_project_root
+Illuminate\Database\QueryException: SQLSTATE[23502]: Not null violation: 7 ERROR:  null value in column "facility_id" of relation "subsystems" violates not-null constraint (Connection: pgsql, Host: /tmp/epcc-app-journal-sock-qp8e_g2c, Port: 5545, Database: epcc_test, SQL: update "subsystems" set "facility_id" = ?, "area_id" = ?, "updated_at" = 2026-10-18 18:15:37 where "id" = 102c80c6-e3bb-4e99-b561-d43373522783)
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:857
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:614
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:566
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4377
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1305
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1518
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1400
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1159
+/home/user/epcc-platform/app/tests/Feature/MtoScopeObservationTest.php:216
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/MtoScopeObservationTest.php:118
+/home/user/epcc-platform/app/tests/Feature/MtoScopeObservationTest.php:216
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+Caused by
+PDOException: SQLSTATE[23502]: Not null violation: 7 ERROR:  null value in column "facility_id" of relation "subsystems" violates not-null constraint
+
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:626
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:846
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:813
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:614
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Connection.php:566
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4377
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1305
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1518
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1400
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1159
+/home/user/epcc-platform/app/tests/Feature/MtoScopeObservationTest.php:216
+/home/user/epcc-platform/app/app/Support/TenantContext.php:99
+/home/user/epcc-platform/.cache/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php:35
+/home/user/epcc-platform/app/app/Support/TenantContext.php:94
+/home/user/epcc-platform/app/tests/Feature/MtoScopeObservationTest.php:118
+/home/user/epcc-platform/app/tests/Feature/MtoScopeObservationTest.php:216
+/home/user/epcc-platform/.cache/vendor/phpunit/phpunit/phpunit:104
+
+ERRORS!
+Tests: 11, Assertions: 40, Errors: 2.

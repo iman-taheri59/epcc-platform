@@ -1,0 +1,58 @@
+{
+  "date_local": "2026-10-20",
+  "user_selection": "activity_window=replace_time",
+  "scope": "required planned activity start/end replace single inspection time for new registration and explicit draft saves; no issued rescheduling authority",
+  "final_focused": {
+    "tests": 71,
+    "assertions": 802,
+    "seconds": 105.926,
+    "skipped": 0,
+    "log": "final-focused.log",
+    "cases": {
+      "activity_window": 10,
+      "draft_edit": 16,
+      "workflow": 22,
+      "pdf": 13,
+      "input": 10
+    }
+  },
+  "history": "old issued single times and snapshot untouched; legacy windows null, explicit label/warning; no backfill/invented end. Legacy drafts must explicitly save a valid window at current version before issuing.",
+  "storage": "raw offset inputs plus UTC instants; legacy scheduled fields null for window records; complete legacy-only rows remain readable",
+  "contract_change": "old scheduled_at payload is rejected, including when submitted with a window. Coordinate application/migration/client/worker release; mixed-version writers not supported.",
+  "database": "epcc_test private Unix socket only; epcc NOSUPERUSER NOBYPASSRLS; all three notification tables FORCE RLS; migration110000 forward only, no row backfill/default grants",
+  "database_stopped": "pg_ctl: no server running\npg_ctl_exit=3\n",
+  "static_checks": "14-file Pint test and PHP lint PASS; Blade cache and clear PASS; git diff --check PASS; new guide links resolve",
+  "rendering": "real Chromium EN/FA window and legacy PDFs; embedded Vazirmatn font report; first FA page raster inspected, not full visual/end-user acceptance",
+  "intermediate_fix": "Built-in Laravel after rule could TypeError on array-valued peer input. Replaced with data-aware typed strict comparison rule; unit and HTTP negative cases retained. Initial smoke failure retained.",
+  "full_suite": false,
+  "current_ci_checked": false,
+  "production_deployed": false,
+  "source_sha256": {
+    "app/app/Support/InspectionNotificationInput.php": "03d8c6d1434ff9a016a3db5edc4a45d12ffd070f1fcd68619a10e78b5db55862",
+    "app/app/Support/InspectionNotificationSchedule.php": "d07d40c22351c8344324f81ad653097924ace286b71fdaa4624001da77eee190",
+    "app/app/Support/InspectionNotificationPrintData.php": "3babe570dc4196ee211bb589ce29df30845642afd7b1324fdbd12f7b00b7fde3",
+    "app/app/Rules/InspectionActivityEndAfterStart.php": "24b799d6132e5517825c2007e1304ac8c8631063b4066bf667f736b888869be5",
+    "app/app/Services/InspectionNotificationService.php": "2b3ad2834c4a5c0cb4c01d7c42bef27a56fb9c7e0c130071e8409a8a7bd4ddcb",
+    "app/app/Http/Controllers/InspectionNotificationController.php": "4e30ce6fdd5d68fc805b06e2d142c30b98ffa68b2fa66289f60fa49d46ce486d",
+    "app/database/migrations/2026_10_20_110000_add_inspection_notification_activity_window.php": "b9d2eb21b4a6950d99adc6c418e42a8f1304d15c9fd61e45c3ae49f968b8bab2",
+    "app/resources/views/inspection-notifications/index.blade.php": "3507dd6eb2970db09c7e047654e447408a6ad63de5924ff7add3c90c43d22040",
+    "app/resources/views/inspection-notifications/edit.blade.php": "adc6d80ee5fffedf3494f4ebd4245c088311355756ca8295546c345f666c8249",
+    "app/resources/views/inspection-notifications/show.blade.php": "ddb3bcfe3e5dc9b7bc19fc25a3102a5a0298b0dcfe0236a7c54ad5c2db2bb8b3",
+    "app/resources/views/inspection-notifications/schedule.blade.php": "1611858fadab12596df51f7d5b0a1a839b3a638649a1e03d45d38d0fe439ba66",
+    "app/resources/views/print/inspection-notification.blade.php": "587892a39e23aa2b5fb73330db580f796217871719eaada02b81cfd6980587b9",
+    "app/lang/en/inspection_notifications.php": "aa9fb00239736000e8cfc09e916f11baf846b89fc2dd33adee3c6ff0fae7f628",
+    "app/lang/fa/inspection_notifications.php": "82d4773a0dae1ed8d1f9ca8f4ac2a92834e2eb3968c4621565b7a8ae0b099aa0",
+    "app/tests/Feature/InspectionNotificationActivityWindowTest.php": "3abdfbde00ca5706a6f4b4a153b39c10c5c513975a320a6c324d71a9d2200b54",
+    "app/tests/Feature/InspectionNotificationDraftEditTest.php": "31355404be9cf9fc0f1e895131a07314dd68772f0b66654d9b65e3702dc65511",
+    "app/tests/Feature/InspectionNotificationTest.php": "924f1e012b6e4a288775d77a53e4e0497f9df6df9d57958f01c559f88ecd8a2d",
+    "app/tests/Feature/InspectionNotificationPdfTest.php": "607d1a4a12db4ba0321885570716f9ce8c9a6bf1b8e1c86e435ea82f2a443550",
+    "app/tests/Unit/InspectionNotificationInputTest.php": "84499788d31f57ae290e8bb1229a971b203fe8d32cd64382a339dbf7f387247a"
+  },
+  "artifact_sha256": {
+    "legacy-fa.pdf": "cb227c814d625bb16974f5159a08b0bad611f76009f36ccb96b5698afc6d3c33",
+    "window-fa.pdf": "4652e60a6784589644af3f5f266c46ff7704b498888796a9d338fc07c59d530f",
+    "window-fa-page1.png": "465046a47cb605e2598222f7d593ee3c904e573269eca7c9b81f80ecc371b796",
+    "window-en.pdf": "fbea6d556ae6c73387de3793b9c8b5dd57618ce0afbfacd2e4c18ab4bdb47646",
+    "legacy-en.pdf": "38f7d694b2f2488595be177bb7ccd80c1d32fd33fa445a9e2685d0a9032a8a6d"
+  }
+}

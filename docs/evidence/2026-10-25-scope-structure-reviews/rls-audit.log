@@ -1,0 +1,46 @@
+ current_user | rolsuper | rolbypassrls 
+--------------+----------+--------------
+ epcc         | f        | f
+(1 row)
+
+         relname         | relrowsecurity | relforcerowsecurity 
+-------------------------+----------------+---------------------
+ scope_structure_reviews | t              | t
+(1 row)
+
+              proname              | prosecdef 
+-----------------------------------+-----------
+ epcc_scope_structure_review_guard | f
+(1 row)
+
+          polname           | polcmd 
+----------------------------+--------
+ scope_bound_opinion_select | r
+ scope_bound_opinion_insert | a
+(2 rows)
+
+              tgname              | tgenabled 
+----------------------------------+-----------
+ scope_bound_opinion_immutable    | O
+ scope_bound_opinion_insert_guard | O
+(2 rows)
+
+                       conname                        | contype 
+------------------------------------------------------+---------
+ scope_bound_review_declaration_tenant                | f
+ scope_bound_review_proposal_tenant                   | f
+ scope_structure_review_once                          | u
+ scope_structure_reviews_check                        | c
+ scope_structure_reviews_company_id_foreign           | f
+ scope_structure_reviews_nomination_policy_id_foreign | f
+ scope_structure_reviews_pkey                         | p
+ scope_structure_reviews_project_id_foreign           | f
+ scope_structure_reviews_reader_policy_id_foreign     | f
+ scope_structure_reviews_reviewer_id_foreign          | f
+(10 rows)
+
+                   migration                   
+-----------------------------------------------
+ 2026_10_25_100000_add_scope_structure_reviews
+(1 row)
+

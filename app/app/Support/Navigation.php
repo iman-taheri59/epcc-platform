@@ -41,9 +41,7 @@ final class Navigation
      */
     private const PLANNED_MODULES = ['awp'];
 
-    public function __construct(private readonly AuthorizationPipeline $authz)
-    {
-    }
+    public function __construct(private readonly AuthorizationPipeline $authz) {}
 
     /**
      * @return list<array{key:string,label:string,items:list<array<string,mixed>>}>
@@ -105,6 +103,9 @@ final class Navigation
                     ], $plan, $lang, $currentPath),
                     $this->item('project.piping', 'qaqc', "/projects/{$code}/piping", [
                         'fa' => 'رجیستر خطوط لوله', 'en' => 'Piping line register',
+                    ], $plan, $lang, $currentPath),
+                    $this->item('project.inspection-notifications', 'qaqc', "/projects/{$code}/inspection-notifications", [
+                        'fa' => 'نوتیفیکیشن بازرسی ITP', 'en' => 'ITP inspection notifications',
                     ], $plan, $lang, $currentPath),
                     $this->item('project.punch', 'qaqc', "/projects/{$code}/punch", [
                         'fa' => 'کنترل کیفیت و پانچ‌لیست', 'en' => 'QA/QC & punch list',

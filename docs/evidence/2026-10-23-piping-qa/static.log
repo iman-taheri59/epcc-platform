@@ -1,0 +1,13 @@
+
+  .......
+
+  ──────────────────────────────────────────────────────────────────── Laravel  
+    PASS   ........................................................... 7 files  
+
+No syntax errors detected in app/app/Services/PipingQaDecisionService.php
+No syntax errors detected in app/app/Http/Controllers/PipingQaDecisionController.php
+No syntax errors detected in app/database/migrations/2026_10_23_100000_add_piping_qa_decisions.php
+No syntax errors detected in app/tests/Feature/PipingQaDecisionTest.php
+No syntax errors detected in app/lang/en/piping_qa.php
+No syntax errors detected in app/lang/fa/piping_qa.php
+No syntax errors detected in app/routes/web.php

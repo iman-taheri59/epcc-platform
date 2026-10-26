@@ -1,3 +1,5 @@
+> **Current delivery — 2026-10-19:** [independent inspection entry](INSPECTION-ENTRY-EN.md) / [فارسی](INSPECTION-ENTRY-FA.md), [ADR-041](ADR-041-INDEPENDENT-INSPECTION-ENTRY-EN.md). **46 affected tests /558 assertions PASS**,14 new cases. Owner versioned nominations/suspension, create-only original-visible PO form, server attribution and immutable new evidence. Existing TPI/PMC/MC/OWN independence, non-PASS findings and IRN numbering retained; no default/inherited writer, PO read delegation, source/lot/financial/receipt/usable/MTO mutation. Migration190000 privately verified only; no full-suite/production claim. Older current notices/counts below are historical and nonadditive.
+
 # Requirements review — piping discipline (first pass, 2026-10-12)
 
 Owner directive (2026-10-12): «چرا نیازمندی‌ها رو درست بررسی نمی‌کنی، تا در

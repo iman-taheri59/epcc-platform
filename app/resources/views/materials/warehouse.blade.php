@@ -101,6 +101,13 @@
 @include('partials.topbar')
 
   <h1>{{ $L('title') }}</h1>
+  @if(app(\App\Services\PipingCustodyService::class)->policyId($project,$user)!==null)
+  <p><a id="piping-custody-link" href="{{ route('materials.piping-custody',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('piping_custody.title') }}</a></p>
+  @endif
+  @if($user->company_id === $project->owner_company_id && $user->company?->plan?->hasModule('proc') && $user->company->plan->allowsPack($project->standards_pack) && app(\App\Support\AuthorizationPipeline::class)->allows($user, 'project.configure', $project))
+  <p><a id="piping-receipt-access-link" href="{{ route('materials.receipt-access', ['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('receipt_access.title') }}</a></p>
+  @endif
+
   <div class="sub">
     {{ $project->name($lang) }} · <span class="mono">{{ $project->code }}</span> · {{ $L('sub') }} · {{ $jalaliDate }}
   </div>

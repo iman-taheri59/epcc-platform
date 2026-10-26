@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-18",
+  "status": "RELATED_SUITE_GREEN_FULL_SUITE_PENDING",
+  "source_files": 450,
+  "phpunit": {
+    "tests": 58,
+    "assertions": 197,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "exit_code": 0
+  },
+  "new_observation_cases_within_phpunit": {
+    "tests": 14,
+    "assertions": 59
+  },
+  "junit_seconds": 89.94363,
+  "real_service_contention_scenarios": 5,
+  "scope_observation_state": "UNADMITTED",
+  "selection_state": "UNRESOLVED",
+  "gross": null,
+  "full_suite_on_this_source": "NOT_RUN_PENDING",
+  "previous_446_file_full_suite": "1098/16429 green only on preceding exact source",
+  "php_lint_files": 358,
+  "standalone_selection_cases": 33,
+  "standalone_planner_cases": 26,
+  "infra_failure": "tmpfs full, 47 errors; retained infra-disk-full log/XML. Cluster relocated to excluded disk cache, recovery completed, WAL128/32MB restored; final fresh-fixture related run passed. Not production crash-recovery proof.",
+  "legacy_backfill": false,
+  "order_gap_changed": false,
+  "production_migration": false,
+  "commit_push_pr": false,
+  "pilot_executed": false
+}
