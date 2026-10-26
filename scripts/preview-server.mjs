@@ -19,7 +19,7 @@
 // ---------------------------------------------------------------------------
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
-import { extname, join, normalize, resolve } from 'node:path';
+import { extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -52,7 +52,7 @@ const server = http.createServer(async (req, res) => {
 
   // Never escape the prototype/ directory.
   const abs = resolve(join(root, normalize(rel)));
-  if (!abs.startsWith(root)) {
+  if (abs !== root && !abs.startsWith(root + sep)) {
     res.writeHead(403, { 'content-type': 'text/plain' });
     res.end('Forbidden');
     return;

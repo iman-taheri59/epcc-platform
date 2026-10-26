@@ -67,7 +67,7 @@
         $entered = rtrim(rtrim(number_format((float) $value, 4, '.', ''), '0'), '.');
 
         if ($want === $unit || ! $reg->knows($unit)) {
-            return $num($entered).' '.$unit;
+            return $num($entered).' '.e($unit);
         }
 
         try {
@@ -81,8 +81,10 @@
         $shown = rtrim(rtrim(number_format($converted, 2, '.', ''), '0'), '.');
         $note = $t['asent'][$lang] ?? 'as entered';
 
-        return $num($shown).' '.$want
-            .' <span style="color:var(--muted);font-size:11px;" title="'.$note.'">('.$num($entered).' '.$unit.')</span>';
+        // e(): the unit strings are database values rendered inside raw HTML
+        // (the span below is deliberate markup, hence {!! !!} at the call site).
+        return $num($shown).' '.e($want)
+            .' <span style="color:var(--muted);font-size:11px;" title="'.e($note).'">('.$num($entered).' '.e($unit).')</span>';
     };
 @endphp
 <!doctype html>
