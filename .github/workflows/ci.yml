@@ -151,21 +151,9 @@ jobs:
   laravel:
     name: Laravel suite (PostgreSQL + RLS)
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
-
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 30
+    # The 1920-test suite alone ran 76 minutes on the 2026-10-26 CI attempt;
+    # native PG17 install adds a few more. 90 was too tight to be safe.
+    timeout-minutes: 120
 
     steps:
       - uses: actions/checkout@v4
@@ -217,12 +205,40 @@ jobs:
           exit 1
 
       # ---- the database ------------------------------------------------------
-      - name: Create the non-superuser epcc role and both databases
-        env:
-          PGPASSWORD: postgres
+      # PostgreSQL 17 runs NATIVELY on the runner, not as a service container:
+      # the concurrency tests spawn real worker processes that refuse to run
+      # unless the app's DB host is a Unix-socket directory under /tmp/epcc-
+      # (see the guards in PipingCustodyTest / InspectionNotification* tests).
+      # A service container's /tmp is not the runner's /tmp, so no socket
+      # mapping can satisfy them - 34 such refusals were the bulk of the
+      # 2026-10-26T11:41 CI failure.
+      - name: Install PostgreSQL 17 with the /tmp/epcc-pg isolation socket
         run: |
           set -euo pipefail
-          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y --no-install-recommends postgresql-17
+          # One cluster, our config, port 5432: drop whatever the image or the
+          # package auto-created, then rebuild.
+          pg_lsclusters -h | awk '{print $1, $2}' | while read -r ver name; do
+            sudo pg_dropcluster --stop "$ver" "$name" || true
+          done
+          sudo pg_createcluster -p 5432 17 main
+          sudo mkdir -p /tmp/epcc-pg
+          sudo chown postgres:postgres /tmp/epcc-pg
+          sudo sed -i "s|^unix_socket_directories.*|unix_socket_directories = '/var/run/postgresql,/tmp/epcc-pg'|" /etc/postgresql/17/main/postgresql.conf
+          # Password auth for epcc ON THE SOCKET (the default 'peer' would tie
+          # the DB user to an OS user and the workers connect as `user`).
+          sudo sed -i 's|^local\s\+all\s\+all\s\+peer|local   epcc            epcc                                    scram-sha-256\nlocal   epcc_test       epcc                                    scram-sha-256\nlocal   all             all                                     peer|' /etc/postgresql/17/main/pg_hba.conf
+          sudo pg_ctlcluster 17 main start
+          sudo -u postgres psql -h /var/run/postgresql -tAc "SHOW unix_socket_directories" | grep -q '/tmp/epcc-pg'
+          ls /tmp/epcc-pg/.s.PGSQL.5432
+
+      - name: Create the non-superuser epcc role and both databases
+        run: |
+          set -euo pipefail
+          sudo -u postgres psql -h /var/run/postgresql -v ON_ERROR_STOP=1 <<'SQL'
           CREATE ROLE epcc LOGIN PASSWORD 'epcc_dev';
           CREATE DATABASE epcc OWNER epcc;
           CREATE DATABASE epcc_test OWNER epcc;
@@ -235,9 +251,9 @@ jobs:
           # would bypass RLS and the fail-closed assertions would go red.
           # Counted rather than concatenated - PostgreSQL has no text||boolean
           # operator, so building the message inline just errors out.
-          psql -h 127.0.0.1 -U postgres -c \
+          sudo -u postgres psql -h /var/run/postgresql -c \
             "select rolname, rolsuper, rolbypassrls, rolcreatedb, rolcreaterole from pg_roles where rolname = 'epcc'"
-          role_ok="$(psql -h 127.0.0.1 -U postgres -tAc \
+          role_ok="$(sudo -u postgres psql -h /var/run/postgresql -tAc \
             "select count(*) from pg_roles where rolname = 'epcc' and not rolsuper and not rolbypassrls")"
           [ "$role_ok" = "1" ] \
             || { echo "::error::the epcc role must exist and be neither superuser nor BYPASSRLS"; exit 1; }
@@ -251,22 +267,21 @@ jobs:
         working-directory: app
         run: composer install --no-scripts --no-interaction --no-progress --prefer-dist
 
-      - name: Point Laravel at PostgreSQL
+      - name: Point Laravel at PostgreSQL (isolated socket, debug off)
         working-directory: app
         run: |
           set -euo pipefail
           cp .env.example .env
-          # Replace, do not append: .env.example ships DB_CONNECTION=sqlite
-          # uncommented and Dotenv keeps the FIRST of a duplicated key.
-          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
-          cat >> .env <<'ENV'
-          DB_HOST=127.0.0.1
-          DB_PORT=5432
-          DB_DATABASE=epcc
-          DB_USERNAME=epcc
-          DB_PASSWORD=epcc_dev
-          ENV
-          grep -E '^(APP_ENV|DB_)' .env
+          # Replace, do not append: Dotenv keeps the FIRST of a duplicated key.
+          # .env.example ships the pgsql dev defaults (epcc/epcc_dev, db epcc);
+          # CI overrides exactly two things:
+          #  - DB_HOST -> the /tmp/epcc-pg socket dir the worker guards require
+          #  - APP_DEBUG=false -> debug error pages echo request data, which
+          #    legitimately fails the leak-marker assertions in the 422-family
+          #    filter tests (part of the 2026-10-26T11:41 CI failure).
+          sed -i 's|^DB_HOST=.*|DB_HOST=/tmp/epcc-pg|' .env
+          sed -i 's/^APP_DEBUG=.*/APP_DEBUG=false/' .env
+          grep -E '^(APP_ENV|APP_DEBUG|DB_)' .env
 
       - name: Generate APP_KEY
         working-directory: app
