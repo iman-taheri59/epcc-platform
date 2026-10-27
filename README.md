@@ -10,8 +10,9 @@
 | Receipt chain MRR→QC→QA→controlled GRN + physical custody/amendments | Implemented (ADR-046 + custody guides); **legacy warehouse cutover and accepted-stock control NOT done** |
 | ITP inspection notifications — draft/issue/cancel/company ack/prerequisites/bilingual PDF | Implemented (ADR-042…045) |
 | Traceability, line numbering, unit registry, demand reader | Implemented; demand-reader reinstall semantics covered by `DemandReaderTest` |
-| Tests | Domain suites green on a correctly provisioned Postgres (see `.env.example` note: worker-isolation tests require a `/tmp/epcc-*` socket host and `epcc_test`); per-slice counts live in the bulletin |
-| CI | GitHub Actions disabled (billing) since 2026-10-15 — **no branch is CI-verified**; run the suite locally |
+| Tests | Domain suites green on a correctly provisioned Postgres (see `.env.example` note: worker-isolation tests require a `/tmp/epcc-*` socket host and `epcc_test`); full suite 1920 OK / 24 skipped on main @ `38f24a4`; per-slice counts live in the bulletin |
+| CI | **Revived and green** on `e19aee3` (run 40370676791, 6/6 jobs, 2026-10-26): `.github/workflows/ci.yml` now provisions native PG17 on the runner with a `/tmp/epcc-pg` socket for worker-isolation tests and forces `APP_DEBUG=false`. A future job failing in ~3s with zero steps means the account billing/spending wall, not the code. |
+| Completion roadmap | [docs/TODO-COMPLETION-ROADMAP-EN.md](docs/TODO-COMPLETION-ROADMAP-EN.md) ([فارسی](docs/TODO-COMPLETION-ROADMAP-FA.md)) — detailed task list from the 2026-10-26 process assessment (phases 0/A–G, immediate review debts included), indexed against twelve **PROPOSED** ADRs 047–058 awaiting owner decisions |
 
 # EPCC Suite — Project Workspace
 
@@ -122,6 +123,8 @@ Current implementation status: Material Library foundation is built with a two-l
 ## Decisions — closed and open
 
 **Closed:** Technology stack — **Laravel 13 + Filament v4 + PHP 8.4** (user decision; ADR-003 superseded by its Annex A). Rule engine kept framework-free per Annex A §6, with a conformance corpus so the offline TS app can be proven to agree · Iran-first launch market · AWP split three ways with the methodology as a **project-level** add-on (ADR-001) · AWP methodology **deferred to the international phase**, constraint engine / lookahead / package-based field execution stay in core (ADR-002) · on-premise primary with no foreign cloud dependency · modular monolith · RabbitMQ default with Kafka optional.
+
+**Proposed 2026-10-26 (awaiting owner decisions):** ADR-047…058 — warehouse cutover & stock ledger (047), inspection/test results & ITR (048), minimal workflow transition ledger (049), notification transport & delivery ledger (050), schedule integration & progress measurement (051), sourcing/vendors/RFQ (052), commercial close: change orders/invoicing/3-way match/payment (053), cost commitment/actual/EVM (054), work packages/IWP release (055), field capture & offline sync (056), system completion & turnover dossier (057), external-party portals (058). Each lists explicit `key=option` decision points with a recommendation; sequencing lives in [docs/TODO-COMPLETION-ROADMAP-EN.md](docs/TODO-COMPLETION-ROADMAP-EN.md) ([فارسی](docs/TODO-COMPLETION-ROADMAP-FA.md)).
 
 **Open, and now blocking P0:**
 1. **Pilot clients** — which NOC or affiliate, and which private EPC? Everything sharpens once these are named.
