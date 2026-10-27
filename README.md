@@ -7,7 +7,8 @@
 | Area | State |
 |---|---|
 | Piping material cycle — MR→PO separation, PO draft/pricing, MTO journal, scope admission | Implemented on `arena/piping-material-cycle-2026-10-26` (ADR-032…041) |
-| Receipt chain MRR→QC→QA→controlled GRN + physical custody/amendments | Implemented (ADR-046 + custody guides); **legacy warehouse cutover and accepted-stock control NOT done** |
+| Receipt chain MRR→QC→QA→controlled GRN + physical custody/amendments | Implemented (ADR-046 + custody guides) |
+| Unified stock ledger & warehouse cutover | **Slice 1 implemented (ADR-047 ACCEPTED, service-only)**: append-only journal + ordinal clock + GRN auto-journaling + insufficient-balance guard + dual-person authority; legacy non-piping writes gated by `EPCC_WAREHOUSE_LEGACY_WRITES_REFUSED` (default off until opening physical counts are posted). Role-scoped authority policies, per-project cutover register and HTTP/UI = declared next slices. See `docs/STOCK-LEDGER-EN.md` ([فارسی](docs/STOCK-LEDGER-FA.md)) |
 | ITP inspection notifications — draft/issue/cancel/company ack/prerequisites/bilingual PDF | Implemented (ADR-042…045) |
 | Traceability, line numbering, unit registry, demand reader | Implemented; demand-reader reinstall semantics covered by `DemandReaderTest` |
 | Tests | Domain suites green on a correctly provisioned Postgres (see `.env.example` note: worker-isolation tests require a `/tmp/epcc-*` socket host and `epcc_test`); full suite 1920 OK / 24 skipped on main @ `38f24a4`; per-slice counts live in the bulletin |

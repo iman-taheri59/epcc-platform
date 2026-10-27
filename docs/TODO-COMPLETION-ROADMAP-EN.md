@@ -47,15 +47,29 @@
 
 > Goal: end the "two parallel material truths" and close the quality loop. ADRs: **047, 048** (+ implementing the existing ADR-031).
 
-- [ ] **A.1 Decide ADR-047** — the four decision keys (target core, legacy fate, stock
-      ledger model, opening physical count). (S — decision session)
-- [ ] **A.2 Append-only stock ledger** — `stock_entries` (GRN +, issues −, adjustments ±
+- [x] **A.1 Decide ADR-047** — the four decision keys (target core, legacy fate, stock
+      ledger model, opening physical count). (2026-10-27: on the owner's start-execution
+      instruction all four recommended options were adopted and the ADR moved to
+      ACCEPTED; revising any key is an append-only amendment to that ADR.)
+- [x] **A.2 Append-only stock ledger** — `stock_entries` (GRN +, issues −, adjustments ±
       with reason and dual authority) + balance projection + ordinal clock (the
-      `epcc_mto_clock_step` pattern). Depends: A.1. (L)
-      Acceptance: Σentries=balance invariant under concurrency; RLS+FORCE; separation of
-      duties (recorder ≠ adjustment approver); fail-closed test on legacy writes after cutover.
-- [ ] **A.3 Legacy core cutover** — `WarehouseService` writes → fail-closed refusal behind
-      a cutover flag; history stays readable; EN/FA guide. Depends: A.2. (M)
+      `epcc_mto_clock_step` pattern). Depends: A.1. (Slice 1, service-only, done — commit
+      `b648866`: `stock_ledger_entries` journal + clock + `epcc_stock_balance` +
+      insufficient-balance guard under an advisory lock + dual-person authority +
+      automatic RECEIPT from the controlled GRN credit; 10 tests/81 assertions green +
+      60-test regression green. Guides: `docs/STOCK-LEDGER-EN.md`/`-FA.md`)
+      Acceptance: Σentries=balance invariant under concurrency ✅; RLS+FORCE ✅; separation
+      of duties at person level ✅ (role level → A.2b); fail-closed test on legacy writes
+      after cutover ✅.
+- [ ] **A.2b Stock ledger — slice 2** — role-scoped `stock_ledger_author_policies` table
+      (the `piping_receipt_author_policies` pattern), an HTTP/UI surface for posting and
+      reading the journal, and a per-project cutover register (authority-routed, replacing
+      the global config flag). Depends: A.2 ✅. (M)
+- [x] **A.3 Legacy core cutover** — `WarehouseService` writes → fail-closed refusal behind
+      a cutover flag; history stays readable; EN/FA guide. Depends: A.2. (Done — commit
+      `b648866`: `EPCC_WAREHOUSE_LEGACY_WRITES_REFUSED` fail-closes all five legacy stock
+      writers before any other validation; reads stay open; piping was already closed.
+      Per-project granularity → A.2b)
 - [ ] **A.4 Inspection/test result records (ADR-048)** — `inspection_results` (ITP stage
       sign-off with hold/witness), `weld_results` (per joint per method with repair
       history), `test_pack_results` (hydro/pneumatic), `material_certificates` (MTR to

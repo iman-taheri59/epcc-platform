@@ -1,6 +1,8 @@
 # ADR-047 — Warehouse core cutover and the single stock ledger
 
-Status: **PROPOSED — awaiting owner decisions** (2026-10-26). Supersedes nothing yet; closes the open debt recorded as B6 in the 2026-10 reviews and repeatedly deferred in ADR-046 banners ("legacy warehouse cutover remains unimplemented").
+Status: **ACCEPTED (2026-10-27)** — owner blanket instruction to start execution ("انجام کارها رو شروع کن"); the four recommended options are adopted as the decisions: `warehouse_target_core=controlled_core_only`, `legacy_disposition=read_only_then_retire`, `stock_ledger_model=append_only_projection`, `opening_balances=physical_count_required`. The owner may revise any key at any time; a revision is an append-only amendment to this ADR, never a silent edit. Closes the open debt recorded as B6 in the 2026-10 reviews and repeatedly deferred in ADR-046 banners ("legacy warehouse cutover remains unimplemented").
+
+Implementation record — **slice 1 (service-only), 2026-10-27, commit `b648866`**: migration `app/database/migrations/2026_10_27_100000_add_unified_stock_ledger.php` (forward-only), `StockLedgerService`, legacy gate `epcc.warehouse.legacy_writes_refused` on all five `WarehouseService` stock writers, `StockLedgerTest` 10 tests / 81 assertions green, `PipingGrnTest` + `WarehouseTest` regression green (60 tests / 265 assertions together). Guides: `docs/STOCK-LEDGER-EN.md` / `docs/STOCK-LEDGER-FA.md`. Declared next slices: role-scoped `stock_ledger_author_policies`, per-project cutover register, HTTP/UI surface (TODO item A.2b).
 
 ## Context
 

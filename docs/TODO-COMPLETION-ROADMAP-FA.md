@@ -46,15 +46,26 @@
 
 > هدف: پایان «دو حقیقت موازی» در مواد و بسته‌شدن حلقهٔ کیفیت. ADRها: **047، 048** (+ اجرای ADR-031 موجود).
 
-- [ ] **A.1 تصمیم‌گیری ADR-047** — چهار کلید تصمیم (هستهٔ هدف، سرنوشت legacy، مدل دفتر
-      موجودی، موجودی اول دوره). (S — جلسهٔ تصمیم)
-- [ ] **A.2 دفتر موجودی append-only** — `stock_entries` (GRN +، صدور −، تعدیل ± با دلیل و
+- [x] **A.1 تصمیم‌گیری ADR-047** — چهار کلید تصمیم (هستهٔ هدف، سرنوشت legacy، مدل دفتر
+      موجودی، موجودی اول دوره). (۲۰۲۶-۱۰-۲۷: با دستور مالک برای شروع اجرا، هر چهار
+      گزینهٔ توصیه‌شده پذیرفته و وضعیت ADR به ACCEPTED تغییر کرد؛ بازنگری هر کلید =
+      اصلاح append-only روی همان ADR.)
+- [x] **A.2 دفتر موجودی append-only** — `stock_entries` (GRN +، صدور −، تعدیل ± با دلیل و
       اختیار دوگانه) + balance projection + ساعت ترتیبی (الگوی `epcc_mto_clock_step`).
-      وابسته: A.1. (L)
-      معیار پذیرش: اینوریانس Σentries=balance تحت هم‌رویدادی؛ RLS+FORCE؛ تفکیک وظایف
-      (ثبت‌کننده≠تأییدکننده تعدیل)؛ تست fail-closed روی نوشتار legacy پس از cutover.
-- [ ] **A.3 cutover هستهٔ قدیمی** — `WarehouseService` نوشتاری → refusal fail-closed با پرچم
-      cutover؛ خوانا ماندن تاریخچه؛ راهنمای EN/FA. وابسته: A.2. (M)
+      وابسته: A.1. (برش ۱ service-only انجام شد — کامیت `b648866`: ژورنال
+      `stock_ledger_entries` + ساعت + تابع موجودی `epcc_stock_balance` + گارد کسری با قفل
+      advisory + اختیار دو-شخصی + RECEIPT خودکار از اعتبار GRN؛ تست ۱۰/۸۱ سبز +
+      رگرسیون ۶۰ تست سبز. راهنما: `docs/STOCK-LEDGER-FA.md`/`-EN.md`)
+      معیار پذیرش: اینوریانس Σentries=balance تحت هم‌رویدادی ✅؛ RLS+FORCE ✅؛ تفکیک وظایف
+      در سطح اشخاص ✅ (سطح نقش‌ها → A.2b)؛ تست fail-closed روی نوشتار legacy پس از cutover ✅.
+- [ ] **A.2b دفتر موجودی — برش ۲** — جدول اختیارات نقش‌محور `stock_ledger_author_policies`
+      (الگوی `piping_receipt_author_policies`)، سطح HTTP/UI برای ثبت و مشاهدهٔ ژورنال، و
+      ثبت cutover پروژه‌ای (اختیار-مسیر، به‌جای پرچم سراسری config). وابسته: A.2 ✅. (M)
+- [x] **A.3 cutover هستهٔ قدیمی** — `WarehouseService` نوشتاری → refusal fail-closed با پرچم
+      cutover؛ خوانا ماندن تاریخچه؛ راهنمای EN/FA. وابسته: A.2. (انجام شد — کامیت
+      `b648866`: پرچم `EPCC_WAREHOUSE_LEGACY_WRITES_REFUSED` هر پنج نویسندهٔ موجودی legacy
+      را پیش از هر اعتبارسنجی دیگری fail-closed می‌بندد؛ خوانده‌ها باز؛ piping از قبل بسته
+      بود. دانه‌بندی پروژه‌ای → A.2b)
 - [ ] **A.4 رکوردهای نتایج بازرسی/تست (ADR-048)** — `inspection_results` (sign-off مراحل
       ITP با hold/witness)، `weld_results` (per joint per method با تاریخچهٔ repair)،
       `test_pack_results` (هیدرو/پنوماتیک)، `material_certificates` (MTR به lot+heat).
