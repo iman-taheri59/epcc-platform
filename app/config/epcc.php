@@ -31,4 +31,15 @@ return [
     // `migrate:fresh --seed` writes demo identities with well-known
     // passwords. Production seeding must be a deliberate, explicit act.
     'allow_demo_seed' => (bool) env('EPCC_ALLOW_DEMO_SEED', false),
+
+    // ADR-047 warehouse cutover. When true, the LEGACY warehouse core
+    // (WarehouseService receive/issue/deliverToSite/returnToStore/reverse)
+    // refuses every stock write, fail-closed, and stock operations go through
+    // the unified stock ledger (StockLedgerService + controlled GRN credits)
+    // only. Legacy history stays readable either way. Default false: the
+    // cutover is a deliberate owner act, posted after the opening physical
+    // counts are in the ledger — see docs/STOCK-LEDGER-EN.md.
+    'warehouse' => [
+        'legacy_writes_refused' => (bool) env('EPCC_WAREHOUSE_LEGACY_WRITES_REFUSED', false),
+    ],
 ];

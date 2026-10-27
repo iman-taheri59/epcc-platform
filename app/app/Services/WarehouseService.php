@@ -49,6 +49,22 @@ final class WarehouseService
         TenantType::TPI, TenantType::PMC, TenantType::MC, TenantType::OWN,
     ];
 
+    /**
+     * ADR-047 cutover gate. While epcc.warehouse.legacy_writes_refused is on,
+     * this legacy core accepts NO stock writes at all — fail-closed, before
+     * any other validation, so a closed warehouse can never be half-used.
+     * Reading history (subsystemMaterialStatus, uninspectedLots) stays open:
+     * the legacy record remains evidence even after it stops being a writer.
+     */
+    private function assertLegacyWritesOpen(string $lang): void
+    {
+        if ((bool) config('epcc.warehouse.legacy_writes_refused', false)) {
+            throw ValidationException::withMessages(['warehouse' => $lang === 'fa'
+                ? 'هستهٔ انبار قدیمی بسته شده است (ADR-047): عملیات موجودی فقط از طریق دفتر موجودی یکپارچه و مسیر GRN کنترل‌شده انجام می‌شود.'
+                : 'The legacy warehouse core is closed (ADR-047): stock operations go through the unified stock ledger and the controlled GRN path only.']);
+        }
+    }
+
     // -----------------------------------------------------------------------
     // بازرسی - inspection
     // -----------------------------------------------------------------------
@@ -169,6 +185,7 @@ final class WarehouseService
         ?Subsystem $subsystem = null,
         string $lang = 'fa',
     ): MaterialLot {
+        $this->assertLegacyWritesOpen($lang);
         // Known PIPING receipts now belong exclusively to the controlled QA/GRN ledger.
         if (PurchaseOrder::whereKey($po->id)->where('project_id', $project->id)->value('discipline') === 'PIPING') {
             throw ValidationException::withMessages(['purchase_order' => __('piping_grn.blocked')]);
@@ -248,6 +265,7 @@ final class WarehouseService
         ?string $note = null,
         string $lang = 'fa',
     ): MaterialMovement {
+        $this->assertLegacyWritesOpen($lang);
         if ($quantity <= 0) {
             throw ValidationException::withMessages([
                 'quantity' => $lang === 'fa' ? 'مقدار باید بزرگ‌تر از صفر باشد.' : 'Quantity must be greater than zero.',
@@ -302,6 +320,7 @@ final class WarehouseService
         ?string $note = null,
         string $lang = 'fa',
     ): MaterialMovement {
+        $this->assertLegacyWritesOpen($lang);
         if ($quantity <= 0) {
             throw ValidationException::withMessages([
                 'quantity' => $lang === 'fa' ? 'مقدار باید بزرگ‌تر از صفر باشد.' : 'Quantity must be greater than zero.',
@@ -358,6 +377,7 @@ final class WarehouseService
         ?string $note = null,
         string $lang = 'fa',
     ): MaterialMovement {
+        $this->assertLegacyWritesOpen($lang);
         if ($quantity <= 0) {
             throw ValidationException::withMessages([
                 'quantity' => $lang === 'fa' ? 'مقدار باید بزرگ‌تر از صفر باشد.' : 'Quantity must be greater than zero.',
@@ -378,6 +398,7 @@ final class WarehouseService
      */
     public function reverse(MaterialMovement $movement, User $user, string $reason, string $lang = 'fa'): MaterialMovement
     {
+        $this->assertLegacyWritesOpen($lang);
         if (trim($reason) === '') {
             throw ValidationException::withMessages([
                 'reason' => $lang === 'fa' ? 'دلیل ابطال الزامی است.' : 'A reversal must record a reason.',
