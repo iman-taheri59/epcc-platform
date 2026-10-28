@@ -70,12 +70,24 @@
       `b648866`: `EPCC_WAREHOUSE_LEGACY_WRITES_REFUSED` fail-closes all five legacy stock
       writers before any other validation; reads stay open; piping was already closed.
       Per-project granularity → A.2b)
-- [ ] **A.4 Inspection/test result records (ADR-048)** — `inspection_results` (ITP stage
-      sign-off with hold/witness), `weld_results` (per joint per method with repair
-      history), `test_pack_results` (hydro/pneumatic), `material_certificates` (MTR to
-      lot+heat). Two-mode internal/external-register per ADR-031. (L)
-      Acceptance: inspector ≠ notifier ≠ acceptor separation; result immutability;
-      external-register honesty; piece→heat→MTR traceability.
+- [x] **A.4 Inspection/test result records (ADR-048) — slice 1** — `joint_weld_records`
+      (WELD/REPAIR_WELD per FITTED joint, stamp-code identity), `joint_ndt_results`
+      (per joint per method with repair + re-examination lineage), `test_pack_results`
+      (hydro/pneumatic per READY pack with retest lineage), `material_certificates`
+      (MTR to exact heat, optional lot). Two-mode internal/external-register per
+      ADR-031. (Done — commit `29c138d`: `InspectionResultService` + append-only
+      RLS+FORCE tables + ordering/lineage/provenance triggers; `InspectionResultTest`
+      10/69 green + regression 77/275 green. Guides:
+      `docs/INSPECTION-RESULTS-EN.md`/`-FA.md`. ITP stage sign-off split to A.4b)
+      Acceptance: inspector ≠ notifier ≠ acceptor separation ✅ at person level (role
+      level → A.4b); result immutability ✅; external-register honesty ✅ (both
+      directions CHECK-enforced); piece→heat→MTR traceability ✅ (exact-heat reader).
+- [ ] **A.4b Inspection results — slice 2** — structured hold/witness sign-off records on
+      ITP notification stages (ADR-048 decision 3; TPI witnesses per G.5), role-scoped
+      result authority policies (the `piping_receipt_author_policies` pattern), exact
+      (lot, heat) MTR pairing joined to custody, unit-registry validation of
+      `pressure_unit` (ADR-014), gating of pack READY→TESTED→ACCEPTED on recorded
+      results, HTTP/UI surface. Depends: A.4 ✅. (M)
 - [ ] **A.5 ITR compiler** — on-demand assembler + digest-bound frozen snapshots; explicit
       completeness report (missing items enumerated, never silently omitted) with the
       existing bilingual renderer. (M)

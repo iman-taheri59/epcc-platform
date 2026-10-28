@@ -66,12 +66,23 @@
       `b648866`: پرچم `EPCC_WAREHOUSE_LEGACY_WRITES_REFUSED` هر پنج نویسندهٔ موجودی legacy
       را پیش از هر اعتبارسنجی دیگری fail-closed می‌بندد؛ خوانده‌ها باز؛ piping از قبل بسته
       بود. دانه‌بندی پروژه‌ای → A.2b)
-- [ ] **A.4 رکوردهای نتایج بازرسی/تست (ADR-048)** — `inspection_results` (sign-off مراحل
-      ITP با hold/witness)، `weld_results` (per joint per method با تاریخچهٔ repair)،
-      `test_pack_results` (هیدرو/پنوماتیک)، `material_certificates` (MTR به lot+heat).
-      دو-حالتی internal/external-register طبق ADR-031. (L)
-      معیار پذیرش: جداسازی بازرس≠اعلام‌کننده≔پذیرنده؛ تغییرناپذیری نتایج؛ صداقت
-      external-register؛ ردیابی قطعه→heat→MTR.
+- [x] **A.4 رکوردهای نتایج بازرسی/تست (ADR-048) — برش ۱** — `joint_weld_records`
+      (WELD/REPAIR_WELD per مفصل FITTED با هویت کد-مهری)، `joint_ndt_results` (per مفصل
+      per روش با تبار repair و بازآزمایی)، `test_pack_results` (هیدرو/پنوماتیک per بستهٔ
+      READY با تبار آزمون مجدد)، `material_certificates` (MTR به heat دقیق، lot اختیاری).
+      دو-حالتی internal/external-register طبق ADR-031. (انجام شد — کامیت `29c138d`:
+      `InspectionResultService` + جداول append-only با RLS+FORCE + تریگرهای
+      ترتیب/تبار/provenance؛ تست ۱۰/۶۹ سبز + رگرسیون ۷۷/۲۷۵ سبز. راهنما:
+      `docs/INSPECTION-RESULTS-FA.md`/`-EN.md`. sign-off مراحل ITP به A.4b منتقل شد)
+      معیار پذیرش: جداسازی بازرس≠اعلام‌کننده≔پذیرنده ✅ در سطح شخص (سطح نقش‌ها →
+      A.4b)؛ تغییرناپذیری نتایج ✅؛ صداقت external-register ✅ (جفت‌شده در هر دو جهت با
+      CHECK)؛ ردیابی قطعه→heat→MTR ✅ (خوانندهٔ heat-دقیق).
+- [ ] **A.4b نتایج بازرسی — برش ۲** — رکوردهای ساختاریافتهٔ sign-off برای
+      hold/witness روی مراحل اعلان ITP (تصمیم ۳ ADR-048؛ شاهدان TPI طبق G.5)، جدول
+      اختیارات نقش‌محور نتایج (الگوی `piping_receipt_author_policies`)، جفت‌سازی دقیق
+      (lot, heat) برای MTR با پیوند custody، اعتبارسنجی `pressure_unit` با registry
+      واحدها (ADR-014)، گیت‌کردن انتقال‌های بستهٔ آزمون روی نتایج ثبت‌شده، سطح HTTP/UI.
+      وابسته: A.4 ✅. (M)
 - [ ] **A.5 کامپایلر ITR** — اسمبلر on-demand + snapshot امضاشدهٔ digest-bound؛ گزارش
       کامل‌بودن صریح (فقره‌های غایب شمرده شوند، نه حذف خاموش) با رندر دوزبانهٔ موجود. (M)
 - [ ] **A.6 اجرای ADR-031: TQ/NCR** — spec نوشته شده (دو حالت IN_SYSTEM/EXTERNAL_REGISTER)؛
