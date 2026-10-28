@@ -88,9 +88,23 @@
       (lot, heat) MTR pairing joined to custody, unit-registry validation of
       `pressure_unit` (ADR-014), gating of pack READY→TESTED→ACCEPTED on recorded
       results, HTTP/UI surface. Depends: A.4 ✅. (M)
-- [ ] **A.5 ITR compiler** — on-demand assembler + digest-bound frozen snapshots; explicit
-      completeness report (missing items enumerated, never silently omitted) with the
-      existing bilingual renderer. (M)
+- [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
+      digest-bound frozen snapshots; explicit completeness report (missing items
+      enumerated, never silently omitted) with the existing bilingual renderer.
+      (Done — commit `2a6e2fa`: `ItrCompilerService` (compile/freeze/snapshot/
+      renderPdf) + `itr_snapshots` (append-only RLS+FORCE, trigger-derived
+      dossier+completeness+sha256 digest — client content never declarable) +
+      `print.itr-dossier` bilingual blade; test 10/72 green + regression 87/344
+      green. Guides: `docs/ITR-COMPILER-EN.md`/`-FA.md`. Non-pack scopes split
+      to A.5b)
+      Acceptance: preview ≡ frozen snapshot (same SQL body) ✅; digest binds
+      stored dossier ✅ + reader re-verification ✅; gaps enumerated not hidden
+      ✅; freeze of a moment immutable against later evidence ✅.
+- [ ] **A.5b ITR compiler — slice 2** — subsystem/system and full-dossier scopes
+      (meeting ADR-057), ITP-notification and receipt/MTR binding into the
+      dossier (depends: A.4b piece-level custody), formal signature/approval
+      layer on snapshots, HTTP/UI surface for compile/freeze/export. Depends:
+      A.5 ✅, A.4b, F.1. (M)
 - [ ] **A.6 Implement ADR-031: TQ/NCR** — the spec is written (two modes
       IN_SYSTEM/EXTERNAL_REGISTER); it only needs implementation: record, routing (via
       ADR-049 if ready, otherwise a simple authority-gated state transition), disposition,

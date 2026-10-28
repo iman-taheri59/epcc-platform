@@ -83,8 +83,21 @@
       (lot, heat) برای MTR با پیوند custody، اعتبارسنجی `pressure_unit` با registry
       واحدها (ADR-014)، گیت‌کردن انتقال‌های بستهٔ آزمون روی نتایج ثبت‌شده، سطح HTTP/UI.
       وابسته: A.4 ✅. (M)
-- [ ] **A.5 کامپایلر ITR** — اسمبلر on-demand + snapshot امضاشدهٔ digest-bound؛ گزارش
-      کامل‌بودن صریح (فقره‌های غایب شمرده شوند، نه حذف خاموش) با رندر دوزبانهٔ موجود. (M)
+- [x] **A.5 کامپایلر ITR — برش ۱ (دامنهٔ TEST_PACK)** — اسمبلر on-demand + snapshot
+      امضاشدهٔ digest-bound؛ گزارش کامل‌بودن صریح (فقره‌های غایب شمرده شوند، نه حذف
+      خاموش) با رندر دوزبانهٔ موجود. (انجام شد — کامیت `2a6e2fa`:
+      `ItrCompilerService` (compile/freeze/snapshot/renderPdf) + `itr_snapshots`
+      (append-only با RLS+FORCE، dossier+کامل‌بودن+digest sha256 همه
+      trigger-derived — محتوای client هرگز اعلام‌پذیر نیست) + blade دوزبانهٔ
+      `print.itr-dossier`؛ تست ۱۰/۷۲ سبز + رگرسیون ۸۷/۳۴۴ سبز. راهنما:
+      `docs/ITR-COMPILER-FA.md`/`-EN.md`. دامنه‌های غیر-بسته به A.5b منتقل شد)
+      معیار پذیرش: پیش‌نمایش ≡ snapshot منجمد (همان بدنهٔ SQL) ✅؛ digest دقیقاً
+      dossier ذخیره‌شده را می‌بندد ✅ + بازراستیابی خواننده ✅؛ شکاف‌ها شمرده نه
+      پنهان ✅؛ انجمادِ یک لحظه در برابر مدرک متأخر تغییرناپذیر ✅.
+- [ ] **A.5b کامپایلر ITR — برش ۲** — دامنه‌های subsystem/سیستم و dossier کامل
+      (تلاقی با ADR-057)، اتصال اعلان‌های ITP و رسیدها/MTR به dossier (وابسته:
+      custody سطح-قطعهٔ A.4b)، لایهٔ امضا/تأیید رسمی روی snapshot ها، سطح HTTP/UI
+      برای گردآوری/انجماد/خروجی. وابسته: A.5 ✅، A.4b، F.1. (M)
 - [ ] **A.6 اجرای ADR-031: TQ/NCR** — spec نوشته شده (دو حالت IN_SYSTEM/EXTERNAL_REGISTER)؛
       فقط اجرا می‌خواهد: رکورد، گردش (از ADR-049 اگر آماده بود، وگرنه انتقال-حالت ساده با
       اختیار)، disposition، اتصال به خط/قطعه/snapshot PMS. (M)
