@@ -82,12 +82,33 @@
       Acceptance: inspector ≠ notifier ≠ acceptor separation ✅ at person level (role
       level → A.4b); result immutability ✅; external-register honesty ✅ (both
       directions CHECK-enforced); piece→heat→MTR traceability ✅ (exact-heat reader).
-- [ ] **A.4b Inspection results — slice 2** — structured hold/witness sign-off records on
-      ITP notification stages (ADR-048 decision 3; TPI witnesses per G.5), role-scoped
-      result authority policies (the `piping_receipt_author_policies` pattern), exact
-      (lot, heat) MTR pairing joined to custody, unit-registry validation of
-      `pressure_unit` (ADR-014), gating of pack READY→TESTED→ACCEPTED on recorded
-      results, HTTP/UI surface. Depends: A.4 ✅. (M)
+- [x] **A.4b Inspection results — slice 2, part 1: nominated authority + evidence-gated
+      pack states** (Done — commit `d257468`)
+      * `result_recorder_policies` (versioned, suspendable, RLS+FORCE, selectors
+        `user:<uuid>` / `role:<company>:<code>`) + `epcc_result_nomination()`; the three
+        slice-1 guards now STAMP and REQUIRE the authorising nomination
+        (`recorder_policy_id`, `RESULT_AUTHORITY_NOT_NOMINATED` 42501). Recording was
+        membership-implied — any project member could create the record a client reads;
+        it is now default-deny, and `discipline_scope` excluding PIPING disqualifies.
+      * `epcc_guard_test_pack_transition()` on `piping_test_packs`: TESTED requires a
+        recorded result; ACCEPTED requires the LATEST result to be PASS; ACCEPTED is
+        terminal; DRAFT→READY→TESTED→ACCEPTED cannot be skipped — enforced against
+        direct SQL, with `PipingTestPackService` mapping refusals to bilingual errors.
+        READY stays an application-level declaration on purpose.
+      * Tests: `ResultAuthorityAndGatingTest` 13/40 green; `InspectionResultTest` (10/69)
+        + `ItrSnapshotTest` (10/72) + Joint/PipingGrn/StockLedger/Cde/Component/UnitPref
+        green together (218 tests / 819 assertions). Fixture:
+        `tests/Support/ResultRecorderPolicyFixture.php`.
+      Acceptance: un-nominated recording refused with nothing written ✅; nomination
+        stamped on the row ✅; suspension revokes ✅; TESTED/ACCEPTED held to evidence ✅;
+        accepted pack cannot change ✅.
+- [ ] **A.4c Inspection results — slice 2, part 2** — structured hold/witness sign-off
+      records on ITP notification stages (ADR-048 decision 3; TPI witnesses per G.5),
+      WHO MAY AUTHOR a nomination (today any project-member company may nominate its
+      own people — employer/owner-scoped authoring is the missing control), exact
+      (lot, heat) MTR pairing joined to custody (also unblocks A.5b), unit-registry
+      validation of `pressure_unit` (ADR-014 — `App\Support\Units\UnitRegistry`
+      already exists), HTTP/UI surface for results and nominations. Depends: A.4b ✅. (M)
 - [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
       digest-bound frozen snapshots; explicit completeness report (missing items
       enumerated, never silently omitted) with the existing bilingual renderer.

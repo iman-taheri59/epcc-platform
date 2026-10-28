@@ -44,6 +44,15 @@ project GUC + company GUC + `epcc.result_actor_id`), with bilingual validation e
    reads the EPC's results); insert = matching project/company GUCs **and**
    `recorded_by = epcc.result_actor_id` — no session can write a record naming another
    actor. Archive freeze (`epcc_project_is_writable`) applies.
+11. **Nominated authority (A.4b slice 1)**: membership is not authority. Every insert
+    must resolve a current, non-suspended `result_recorder_policies` nomination naming
+    that user or one of their project roles (`RESULT_AUTHORITY_NOT_NOMINATED`, 42501),
+    and the authorising policy id is stamped on the row as `recorder_policy_id`. A
+    `discipline_scope` that excludes PIPING disqualifies the holder.
+12. **Evidence-gated pack states (A.4b slice 1)**: `piping_test_packs` refuses
+    TESTED with no recorded result, ACCEPTED unless the LATEST recorded result is
+    PASS, any change once ACCEPTED (terminal), and any transition that skips the
+    DRAFT→READY→TESTED→ACCEPTED order. READY stays an application-level declaration.
 9. **Depth guard**: inserts only at depth 1 (`RESULT_MANUAL_DIRECT_ONLY`) — records are
    posted by the service, never as a side effect of nested triggers.
 10. **Heat exactness**: `certificatesForHeat` matches the heat string exactly; `HEAT-7`
@@ -56,16 +65,21 @@ project GUC + company GUC + `epcc.result_actor_id`), with bilingual validation e
   for TPI witnesses). This slice records results on joints/packs, not on ITP stages.
 - `joint.state` stays `FITTED` — weld/NDT progress is **derived** from records, never
   stamped back onto the joint (joint states remain the ADR-006 contract).
-- Test-pack transitions (READY→TESTED→ACCEPTED) are **not yet gated** on recorded
-  results; that coupling arrives with the ITR compiler (A.5) or an explicit A.4b rule.
+- ~~Test-pack transitions (READY→TESTED→ACCEPTED) are not yet gated on recorded
+  results.~~ **CLOSED by A.4b slice 1** — see invariant 12. READY alone stays an
+  application-level self-declaration, on purpose: a crew promising it is ready is not
+  yet a falsifiable claim about reality.
 - `pressure_unit` is a required string but not yet unit-registry-validated (ADR-014
   `units->knows`) — slice 2.
 - MTR binding is heat-first with optional lot (decision point 4 recommended lot+heat;
   exact (lot, heat) pairing lands with A.4b when lot custody links are joined in).
 - ITR compilation (decision point 5) = **A.5**, unchanged.
-- No role-scoped authority policies yet: any project-member user of the recording
-  company may post (person-level separation only). Inspector ≠ notifier ≠ acceptor at
-  *role* level follows the A.2b pattern in slice 2.
+- ~~No role-scoped authority policies yet: any project-member user may post.~~
+  **CLOSED by A.4b slice 1** — see invariant 11: recording is default-deny behind a
+  versioned, suspendable nomination. Still open: who may *author* a nomination (any
+  project member company may nominate its own people today) — A.4b slice 2, together
+  with ITP hold/witness sign-offs, (lot, heat) pairing and unit-registry pressure
+  validation.
 
 ## Tests
 
@@ -76,6 +90,15 @@ cross-method refusal), external-mode identity in both directions, member-readabl
 foreign-actor-refused (42501), DRAFT-pack refusal + time window + positive pressure,
 retest lineage, MTR required fields + dangling-document refusal + heat exactness,
 duplicate `request_id` refused on welds, packs and certificates.
+
+`tests/Feature/ResultAuthorityAndGatingTest.php` — 13 tests / 40 assertions (green):
+default-deny without a nomination, role nomination stamped on the row, a role outside
+the nomination refused, suspension revoking authority, user-scoped nomination covering
+exactly one person, CIVIL-scoped engineer refused for piping evidence, an independent
+(PMC) examiner recording under its own nomination, TESTED without a result refused,
+FAIL allows TESTED but never ACCEPTED, repair lineage ending in PASS unlocking
+acceptance, ACCEPTED terminal, skipped transitions refused against direct SQL, and
+metadata edits that are not claims still allowed.
 
 Regression: `JointTest` + `PipingGrnTest` + `StockLedgerTest` green together
 (77 tests / 275 assertions).

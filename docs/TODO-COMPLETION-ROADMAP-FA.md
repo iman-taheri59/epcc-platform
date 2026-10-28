@@ -77,12 +77,34 @@
       معیار پذیرش: جداسازی بازرس≠اعلام‌کننده≔پذیرنده ✅ در سطح شخص (سطح نقش‌ها →
       A.4b)؛ تغییرناپذیری نتایج ✅؛ صداقت external-register ✅ (جفت‌شده در هر دو جهت با
       CHECK)؛ ردیابی قطعه→heat→MTR ✅ (خوانندهٔ heat-دقیق).
-- [ ] **A.4b نتایج بازرسی — برش ۲** — رکوردهای ساختاریافتهٔ sign-off برای
-      hold/witness روی مراحل اعلان ITP (تصمیم ۳ ADR-048؛ شاهدان TPI طبق G.5)، جدول
-      اختیارات نقش‌محور نتایج (الگوی `piping_receipt_author_policies`)، جفت‌سازی دقیق
-      (lot, heat) برای MTR با پیوند custody، اعتبارسنجی `pressure_unit` با registry
-      واحدها (ADR-014)، گیت‌کردن انتقال‌های بستهٔ آزمون روی نتایج ثبت‌شده، سطح HTTP/UI.
-      وابسته: A.4 ✅. (M)
+- [x] **A.4b نتایج بازرسی — برش ۲، بخش ۱: اختیار نامزدشده + گیت‌گذاری وضعیت بسته بر
+      مدرک** (انجام شد — کامیت `d257468`)
+      * جدول `result_recorder_policies` (نسخه‌دار، قابل‌تعلیق، RLS+FORCE، انتخاب‌گرهای
+        `user:<uuid>` / `role:<company>:<code>`) + تابع `epcc_result_nomination()`؛
+        سه گارد برش ۱ حالا نامزدیِ مُجیز را **مُهر و الزام** می‌کنند
+        (`recorder_policy_id`، خطای `RESULT_AUTHORITY_NOT_NOMINATED` با 42501). ثبت
+        پیش‌تر بر عضویت استوار بود — هر عضو پروژه می‌توانست رکوردی بسازد که کارفرما
+        می‌خواند؛ حالا پیش‌فرض ممنوع است و `discipline_scope`ای که PIPING نداشته باشد
+        دارنده را فاقد صلاحیت می‌کند.
+      * `epcc_guard_test_pack_transition()` روی `piping_test_packs`: TESTED نیازمند
+        نتیجهٔ ثبت‌شده؛ ACCEPTED نیازمند PASS بودنِ **آخرین** نتیجه؛ ACCEPTED ترمینال؛
+        ترتیب DRAFT→READY→TESTED→ACCEPTED قابل پرش نیست — حتی در برابر SQL مستقیم،
+        با نگاشت خطاهای دوزبانه در `PipingTestPackService`. READY به‌عمد در سطح برنامه
+        می‌ماند.
+      * تست‌ها: `ResultAuthorityAndGatingTest` ۱۳/۴۰ سبز؛ `InspectionResultTest`
+        (۱۰/۶۹) + `ItrSnapshotTest` (۱۰/۷۲) به‌همراه Joint/PipingGrn/StockLedger/
+        Cde/Component/UnitPref با هم سبز (۲۱۸ تست / ۸۱۹ assertion). فیچر:
+        `tests/Support/ResultRecorderPolicyFixture.php`.
+      معیار پذیرش: ثبتِ بدون‌نامزدی رد و چیزی نوشته نشود ✅؛ مُهر نامزدی روی رکورد ✅؛
+        تعلیق ابطال می‌کند ✅؛ TESTED/ACCEPTED پایبند مدرک ✅؛ بستهٔ پذیرفته‌شده قابل
+        تغییر نیست ✅.
+- [ ] **A.4c نتایج بازرسی — برش ۲، بخش ۲** — رکوردهای ساختاریافتهٔ sign-off برای
+      hold/witness روی مراحل اعلان ITP (تصمیم ۳ ADR-048؛ شاهدان TPI طبق G.5)، اینکه چه
+      کسی می‌تواند نامزدی **صادر** کند (امروز هر شرکت عضو افراد خودش را نامزد می‌کند —
+      صدور در سطح کارفرما/مالک حلقهٔ گمشده است)، جفت‌سازی دقیق (lot, heat) برای MTR با
+      پیوند custody (قفلِ A.5b را هم باز می‌کند)، اعتبارسنجی `pressure_unit` با registry
+      واحدها (ADR-014 — کلاس `App\Support\Units\UnitRegistry` از قبل هست)، سطح HTTP/UI
+      برای نتایج و نامزدی‌ها. وابسته: A.4b ✅. (M)
 - [x] **A.5 کامپایلر ITR — برش ۱ (دامنهٔ TEST_PACK)** — اسمبلر on-demand + snapshot
       امضاشدهٔ digest-bound؛ گزارش کامل‌بودن صریح (فقره‌های غایب شمرده شوند، نه حذف
       خاموش) با رندر دوزبانهٔ موجود. (انجام شد — کامیت `2a6e2fa`:
