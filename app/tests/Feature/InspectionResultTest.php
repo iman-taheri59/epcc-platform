@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Tests\Support\ApprovedPmsClassFixture;
+use Tests\Support\ResultRecorderPolicyFixture;
 use Tests\TestCase;
 
 /**
@@ -43,6 +44,10 @@ final class InspectionResultTest extends TestCase
         $this->seed(EpccDemoSeeder::class);
         $this->seed(AuthSeeder::class);
         $this->tenant = app(TenantContext::class);
+
+        // Recording evidence is default-deny since A.4b slice 1: nominate the actor
+        // these tests post as, so their subject stays the record rules, not authority.
+        ResultRecorderPolicyFixture::ensureAllForUser($this->tenant, $this->project(), $this->owner());
     }
 
     // ------------------------------------------------------------------

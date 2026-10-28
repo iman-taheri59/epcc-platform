@@ -328,6 +328,10 @@ final class InspectionResultService
         $m = $e->getMessage();
         $field = 'result';
         $text = match (true) {
+            // Must precede RESULT_AUTHORITY: the longer name contains the shorter.
+            str_contains($m, 'RESULT_AUTHORITY_NOT_NOMINATED') => $this->msg($lang,
+                'این شخص برای ثبت این نوع نتیجه نامزد نشده است (یا نامزدی تعلیق/خاتمه یافته)؛ ثبت رد شد.',
+                'This person is not nominated to record this kind of result (or the nomination is suspended/revoked); nothing was recorded.'),
             str_contains($m, 'RESULT_JOINT_NOT_FITTED') => $this->msg($lang,
                 'نتیجهٔ جوش/آزمون فقط روی مفصل FITTED ثبت می‌شود؛ اول fit-up را ثبت کنید.',
                 'Weld/examination results bind only to a FITTED joint; record the fit-up first.'),

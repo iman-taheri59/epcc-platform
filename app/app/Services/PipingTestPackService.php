@@ -11,6 +11,7 @@ use App\Models\Subsystem;
 use App\Models\User;
 use App\Support\LineReleaseState;
 use App\Support\Units\UnitRegistry;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -84,7 +85,7 @@ final class PipingTestPackService
         return $line->refresh();
     }
 
-    public function transition(PipingTestPack $pack, User $actor, string $to): PipingTestPack
+    public function transition(PipingTestPack $pack, User $actor, string $to, string $lang = 'en'): PipingTestPack
     {
         $project = Project::query()->findOrFail($pack->project_id);
         $this->archives->assertWritable($project);
@@ -93,7 +94,7 @@ final class PipingTestPackService
             throw ValidationException::withMessages(['state' => 'Invalid test-pack transition.']);
         }
 
-        return DB::transaction(function () use ($pack, $actor, $to): PipingTestPack {
+        return DB::transaction(function () use ($pack, $actor, $to, $lang): PipingTestPack {
             $locked = PipingTestPack::query()->whereKey($pack->id)->lockForUpdate()->firstOrFail();
 
             if ($to === PipingTestPack::READY) {
@@ -113,14 +114,53 @@ final class PipingTestPackService
                     ]);
                 }
 
-                $locked->forceFill(['state' => $to, 'ready_at' => now(), 'ready_by' => $actor->id])->save();
+                $this->saveState($locked, ['state' => $to, 'ready_at' => now(), 'ready_by' => $actor->id], $lang);
             } elseif ($to === PipingTestPack::TESTED) {
-                $locked->forceFill(['state' => $to, 'tested_at' => now(), 'tested_by' => $actor->id])->save();
+                $this->saveState($locked, ['state' => $to, 'tested_at' => now(), 'tested_by' => $actor->id], $lang);
             } else {
-                $locked->forceFill(['state' => $to, 'accepted_at' => now(), 'accepted_by' => $actor->id])->save();
+                $this->saveState($locked, ['state' => $to, 'accepted_at' => now(), 'accepted_by' => $actor->id], $lang);
             }
 
             return $locked->refresh();
         });
+    }
+
+    /**
+     * The database owns the evidence rules for TESTED/ACCEPTED, so the save can
+     * be refused by a trigger; surface that as a field error instead of a 500.
+     */
+    private function saveState(PipingTestPack $pack, array $attributes, string $lang): void
+    {
+        try {
+            $pack->forceFill($attributes)->save();
+        } catch (QueryException $e) {
+            throw ValidationException::withMessages(['state' => $this->transitionMessage($e, $lang)]);
+        }
+    }
+
+    private function transitionMessage(QueryException $e, string $lang): string
+    {
+        $m = $e->getMessage();
+
+        return match (true) {
+            str_contains($m, 'PACK_TESTED_WITHOUT_RESULT') => $lang === 'fa'
+                ? 'بسته بدون هیچ نتیجهٔ آزمون ثبت‌شده نمی‌تواند TESTED شود.'
+                : 'A pack cannot be marked TESTED with no test result recorded.',
+            str_contains($m, 'PACK_ACCEPTED_WITHOUT_PASS') => $lang === 'fa'
+                ? 'پذیرش بسته نیازمند PASS است؛ آخرین نتیجهٔ ثبت‌شده PASS نیست.'
+                : 'Acceptance requires a PASS: the latest recorded result is not PASS.',
+            str_contains($m, 'PACK_ACCEPTED_TERMINAL') => $lang === 'fa'
+                ? 'بستهٔ پذیرفته‌شده سند تحویل است و دیگر قابل تغییر نیست.'
+                : 'An accepted pack is a handover artefact and can no longer change.',
+            str_contains($m, 'PACK_INVALID_TRANSITION') => $lang === 'fa'
+                ? 'این انتقال وضعیت مجاز نیست (DRAFT→READY→TESTED→ACCEPTED).'
+                : 'That transition is not allowed (DRAFT→READY→TESTED→ACCEPTED).',
+            str_contains($m, 'PACK_PROJECT_NOT_WRITABLE') => $lang === 'fa'
+                ? 'پروژه برای تغییر وضعیت بسته writable نیست (آرشیو).'
+                : 'The project is not writable for pack transitions (archived).',
+            default => $lang === 'fa'
+                ? 'تغییر وضعیت بسته رد شد؛ وضعیت تغییر نکرد.'
+                : 'The pack transition was refused; the state is unchanged.',
+        };
     }
 }
