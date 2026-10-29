@@ -11,6 +11,7 @@ use App\Models\DocumentRevision;
 use App\Models\Project;
 use App\Models\User;
 use App\Services\PipingCustodyAmendmentService;
+use App\Services\LegacyMaterialReconciliationService;
 use App\Services\PipingCustodyService;
 use App\Services\PipingGrnService;
 use App\Services\PipingQaDecisionService;
@@ -28,6 +29,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Tests\Support\ResultRecorderPolicyFixture;
 use Tests\TestCase;
 
 final class PipingGrnTest extends TestCase
@@ -342,6 +344,40 @@ final class PipingGrnTest extends TestCase
         } catch (QueryException $e) {
             $this->assertSame('23514', (string) $e->getCode());
         }
+    }
+
+    public function test_the_legacy_gate_opens_once_the_lot_is_reconciled_and_only_then(): void
+    {
+        $this->accepted();
+        $basis = app(PipingCustodyService::class)->basis($this->project, $this->buyer, $this->receipt);
+
+        $lot = (string) Str::uuid();
+        $this->scoped(function () use ($basis, $lot): void {
+            DB::unprepared('ALTER TABLE material_lots DISABLE TRIGGER aa_piping_legacy_stock_cutoff');
+            try {
+                DB::table('material_lots')->insert(['id' => $lot, 'project_id' => $this->project->id, 'company_id' => $this->buyer->company_id, 'purchase_order_id' => $basis['purchase_order_id'], 'lot_code' => 'PRE-CUTOVER-1', 'item_code' => 'LEGACY', 'description_en' => 'Legacy fixture', 'description_fa' => 'قدیمی', 'unit' => 'M']);
+            } finally {
+                DB::unprepared('ALTER TABLE material_lots ENABLE TRIGGER aa_piping_legacy_stock_cutoff');
+            }
+        }, $this->buyer);
+
+        // The gate holds: nothing has been decided about that lot yet.
+        $this->actingAs($this->buyer)->postJson($this->grnUrl(), ['grn' => $this->grnInput()])->assertUnprocessable();
+        $this->assertCount(0, $this->grnRows());
+
+        ResultRecorderPolicyFixture::ensure(
+            app(TenantContext::class), $this->project, $this->buyer, $this->buyer->company_id,
+            'reconcile_legacy', ['user:'.$this->buyer->id],
+        );
+        app(LegacyMaterialReconciliationService::class)->reconcile($this->project, $this->buyer, $lot, [
+            'decision' => 'RETIRE', 'reason' => 'Issued to the site before cutover; no controlled receipt exists',
+            'request_id' => (string) Str::uuid(),
+        ], 'en');
+
+        // And now it opens — not because old rows were mapped onto new ones, but
+        // because somebody took a decision and said why.
+        $this->postGrn($this->grnInput());
+        $this->assertCount(1, $this->grnRows());
     }
 
     public function test_transaction_rollback_leaves_no_grn_credit_or_posted_cutoff(): void
