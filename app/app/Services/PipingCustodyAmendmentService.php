@@ -47,12 +47,12 @@ final class PipingCustodyAmendmentService
                 app(PipingGrnService::class)->assertUnposted($project, $custodyId);
                 abort_unless($receipt->created_by === $actor->id && $receipt->company_id === $actor->company_id, 403);
                 $data = Validator::make(['amendment' => $input], [
-                    'amendment' => ['required', 'array:expected_policy_id,previous_amendment_id,request_id,source_line_id,unlinked_reason,heat_ref,reason'],
+                    'amendment' => ['required', 'array:expected_policy_id,previous_amendment_id,request_id,source_line_id,unlinked_reason,heat_ref,lot_ref,reason'],
                     'amendment.expected_policy_id' => ['required', 'uuid'], 'amendment.previous_amendment_id' => ['present', 'nullable', 'uuid'], 'amendment.request_id' => ['required', 'uuid'],
                     'amendment.source_line_id' => ['present', 'nullable', 'uuid'], 'amendment.unlinked_reason' => ['present', 'nullable', 'string', 'max:2000'],
-                    'amendment.heat_ref' => ['present', 'nullable', 'string', 'max:200'], 'amendment.reason' => ['required', 'string', 'max:4000', 'regex:/\S/u'],
+                    'amendment.heat_ref' => ['present', 'nullable', 'string', 'max:200'], 'amendment.lot_ref' => ['present', 'nullable', 'string', 'max:200'], 'amendment.reason' => ['required', 'string', 'max:4000', 'regex:/\S/u'],
                 ], array_fill_keys(['required', 'present', 'array', 'uuid', 'string', 'max', 'regex'], __('piping_amendments.invalid')))->validate()['amendment'];
-                foreach (['unlinked_reason', 'heat_ref', 'reason'] as $key) {
+                foreach (['unlinked_reason', 'heat_ref', 'lot_ref', 'reason'] as $key) {
                     if (str_contains($data[$key] ?? '', "\0")) {
                         $this->fail();
                     }$data[$key] = trim($data[$key] ?? '');
@@ -67,7 +67,7 @@ final class PipingCustodyAmendmentService
                     $this->fail('stale');
                 }
                 $canonical = [];
-                foreach (['expected_policy_id', 'previous_amendment_id', 'request_id', 'source_line_id', 'unlinked_reason', 'heat_ref', 'reason'] as $key) {
+                foreach (['expected_policy_id', 'previous_amendment_id', 'request_id', 'source_line_id', 'unlinked_reason', 'heat_ref', 'lot_ref', 'reason'] as $key) {
                     $canonical[$key] = $data[$key];
                 }
                 $hash = hash('sha256', json_encode($canonical, JSON_THROW_ON_ERROR));
@@ -91,7 +91,7 @@ final class PipingCustodyAmendmentService
                     $this->fail('stale');
                 }
                 $id = (string) Str::uuid();
-                DB::table('piping_custody_amendments')->insert(['id' => $id, 'project_id' => $project->id, 'custody_id' => $custodyId, 'company_id' => $actor->company_id, 'created_by' => $actor->id, 'policy_id' => $policy, 'previous_amendment_id' => $data['previous_amendment_id'], 'request_id' => $data['request_id'], 'payload_hash' => $hash, 'source_kind' => $data['source_line_id'] !== null ? 'LINKED' : 'UNRESOLVED', 'unlinked_reason' => $data['unlinked_reason'], 'heat_ref' => $data['heat_ref'], 'reason' => $data['reason']]);
+                DB::table('piping_custody_amendments')->insert(['id' => $id, 'project_id' => $project->id, 'custody_id' => $custodyId, 'company_id' => $actor->company_id, 'created_by' => $actor->id, 'policy_id' => $policy, 'previous_amendment_id' => $data['previous_amendment_id'], 'request_id' => $data['request_id'], 'payload_hash' => $hash, 'source_kind' => $data['source_line_id'] !== null ? 'LINKED' : 'UNRESOLVED', 'unlinked_reason' => $data['unlinked_reason'], 'heat_ref' => $data['heat_ref'], 'lot_ref' => $data['lot_ref'], 'reason' => $data['reason']]);
                 if ($data['source_line_id'] !== null) {
                     DB::table('piping_custody_amendment_sources')->insert(['amendment_id' => $id, 'project_id' => $project->id, 'source_line_id' => $data['source_line_id']]);
                 }
