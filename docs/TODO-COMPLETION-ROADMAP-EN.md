@@ -159,9 +159,49 @@
       Declared boundary (still open): sign-offs are RECORDED, not yet GATED — there is no
         notification<->test-pack link, so a pack can still be accepted without a hold
         sign-off. That gate is tracked as A.5b, not claimed here. HTTP/UI also still open.
-- [ ] **A.4e Inspection results — slice 2, part 4** — exact (lot, heat) MTR pairing
-      joined to custody (also unblocks A.5b), HTTP/UI surface for results, nominations,
-      sign-offs and ITR export. Depends: A.4d ✅. (M)
+- [x] **A.4e Inspection results — slice 2, part 4: MTR <-> custody bindings**
+      (Done — commits `bb744e0` + `815a1ab`)
+      * The gap: the certificate registry spoke free-text heat/lot, the piping custody
+        chain attested what was received by heat only, and the legacy warehouse spoke
+        (lot_code, heat_number) — nothing joined them. A certificate could be registered
+        for a heat nobody ever received, and the turnover question (which heats we hold
+        have no certificate) had no answer at all.
+      * `piping_custody_amendments.lot_ref` (additive, nullable) + `epcc_piping_effective_receipt()`
+        now reporting the effective lot: custody can attest a lot as well as a heat, and
+        old amendments keep their hashes and their NULL rather than being back-filled.
+      * `material_certificate_bindings` (append-only, RLS+FORCE, forward-only) with
+        `epcc_guard_certificate_binding()`: heat and lot DERIVED from the certificate,
+        custody/amendment/item DERIVED from custody (a raw insert claiming another heat
+        is corrected to the certificate's own claim); default-deny behind the same
+        nomination register (new action `bind_certificate`, stamped `bound_policy_id`);
+        exact matching, never fuzzy; a lot custody does not attest is REFUSED
+        (`MTR_LOT_NOT_ATTESTED`) rather than downgraded to heat level; a certificate for
+        material that is not here is keepable as `UNRESOLVED` with a mandatory reason;
+        `request_id` unique and (certificate, custody) unique.
+      * `coverage()` answers the turnover question: every (heat, lot, item) custody
+        attests with the number of certificates bound to it — uncovered heats reported,
+        never omitted — plus every unresolved binding with its reason.
+      * Two maintainer notes: the binding session carries BOTH session contracts
+        (`epcc.result_actor_id` and `epcc.receipt_actor_id`, because custody is readable
+        only by a receipt actor), and an additive key had to be *defaulted* in
+        `PipingCustodyAmendmentService` since the amendment payload is validated by a
+        strict `array:` rule (`815a1ab`, after it broke 16 Piping tests).
+      * Tests: `MtrCustodyBindingTest` 11 tests / 48 assertions green (run twice,
+        stable); related regression (Piping custody/amendment/GRN/QA/traceability,
+        StockLedger, Warehouse, MTR bindings) green together — 273 tests / 1632 assertions.
+      * Guide: `docs/MTR-CUSTODY-BINDING-EN.md` / `-FA.md`.
+      Acceptance: heat/lot derived, never declared (incl. direct SQL) ✅; un-nominated
+        binding refused with nothing written ✅; exact (lot, heat) bind ✅; unattested lot
+        refused instead of downgraded ✅; unknown heat refused unless a reason is given,
+        then recorded as UNRESOLVED ✅; append-only ✅; duplicate request id and duplicate
+        (certificate, custody) refused ✅; another company cannot bind in another name ✅;
+        coverage reports an uncovered heat instead of hiding it ✅.
+      Declared boundaries: PIPING custody only (legacy `material_lots` reconciliation is
+        the ADR-047 cutover item), no HTTP/UI, and coverage counts rather than judges.
+- [ ] **A.4f Inspection results — slice 2, part 5** — HTTP/UI surface for results,
+      nominations, sign-offs, MTR bindings and ITR export; reconciliation of the legacy
+      `material_lots` warehouse with the custody chain (ADR-047 cutover). Depends:
+      A.4e ✅. (M)
 - [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
       digest-bound frozen snapshots; explicit completeness report (missing items
       enumerated, never silently omitted) with the existing bilingual renderer.

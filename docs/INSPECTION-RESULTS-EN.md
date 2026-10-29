@@ -88,14 +88,17 @@ project GUC + company GUC + `epcc.result_actor_id`), with bilingual validation e
   **CLOSED by A.4c slice 1** — see invariant 13. Note the *planned* pack pressure was
   already checked with `UnitRegistry::knows()`, which alone accepts a temperature; both
   plan and recorded result now require the PRESSURE quantity.
-- MTR binding is heat-first with optional lot (decision point 4 recommended lot+heat;
+- ~~MTR binding is heat-first with optional lot (decision point 4 recommended lot+heat;~~
+  **CLOSED by A.4e slice 1**) — see [`MTR-CUSTODY-BINDING-EN.md`](MTR-CUSTODY-BINDING-EN.md):
+  a certificate binds only to custody that attests its exact (lot, heat), derived never
+  declared, or is kept UNRESOLVED with a reason; `coverage()` reports which received heats
+  have no certificate.
 - ITR compilation (decision point 5) = **A.5**, unchanged.
 - ~~No role-scoped authority policies yet: any project-member user may post.~~
   **CLOSED by A.4b slice 1** — see invariant 11: recording is default-deny behind a
   versioned, suspendable nomination. Still open: who may *author* a nomination (any
   project member company may nominate its own people today) — **CLOSED by A.4c slice 1**,
-  see invariant 14. Still open: (lot, heat) pairing and the
-  HTTP/UI surface = **A.4c slice 2**.
+  see invariant 14. Still open: HTTP/UI = **A.4f** and the legacy warehouse reconciliation.
 
 ## Tests
 
