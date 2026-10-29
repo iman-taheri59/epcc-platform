@@ -230,10 +230,44 @@
         reconciliation and opens after ✅.
       Declared boundaries: this reconciles the gate, not the quantities (ADR-047
         `OPENING_COUNT` untouched), no HTTP/UI, and the decision is not evidence by itself.
-- [ ] **A.4g Inspection results — slice 2, part 6** — HTTP/UI surface for results,
-      nominations, sign-offs, MTR bindings, legacy reconciliations and ITR export; a
-      reconciliation report comparing a named receipt's quantity with the legacy
-      balance. Depends: A.4f ✅. (M)
+- [x] **A.4g Inspection results — slice 2, part 6: the nomination register gets a
+      surface** (Done)
+      * The hole: recording inspection evidence has been default-deny since A.4b —
+        a result may only be written when `epcc_result_nomination()` finds a current,
+        un-suspended policy naming the actor. Right, and unarguable. But the only
+        code that had ever written to `result_recorder_policies` was a test fixture
+        inserting rows directly, so in production the whole quality stack was
+        switched off at the wall with the only key being SQL.
+      * `ResultRecorderPolicyService` (dashboard/configure/nominationFor) +
+        `QualityNominationController` + screen at
+        `/projects/{projectCode}/quality/nominations`: a company nominates its own
+        people, or the project employer nominates anyone.
+      * A nomination is (project, target company, action, version), never edited; a
+        new version supersedes and the old row stays. Suspension is a new version
+        with `suspended = true` — there is no UPDATE policy, by design.
+      * Selectors (`user:<uuid>`, `role:<company>:<role code>`) are offered, not
+        accepted: only members the guard would recognise appear in the directory.
+      * "Am I nominated?" is answered by `epcc_result_nomination()` itself — the
+        screen and the guards cannot disagree about what authority exists.
+      * One register governs all seven actions in its CHECK: record_weld,
+        record_ndt, record_pack_result, register_certificate, sign_off_stage,
+        bind_certificate, reconcile_legacy.
+      * Tests: `ResultRecorderNominationsHttpTest` 15 tests / 59 assertions green,
+        all nominating through HTTP (own company, employer, cross-company refusal,
+        empty/foreign nominee, blank reason, unknown action, stale version,
+        suspend-with-and-without-reason).
+      * Guide: `docs/QUALITY-NOMINATIONS-EN.md` / `-FA.md`.
+      Acceptance: default-deny with nothing written ✅; versioning, never editing ✅;
+        suspension is a version ✅; a company may not nominate another company ✅;
+        the employer may ✅; selectors must be real project members ✅; a reason is
+        mandatory ✅; a stale version is refused ✅; the guard's own function is the
+        oracle ✅; guest → login, non-member → forbidden ✅.
+      Declared boundaries: the register only — no result, sign-off, binding or
+        reconciliation is recorded here.
+- [ ] **A.4h Inspection results — slice 2, part 7** — HTTP/UI surface for recording
+      results (weld/NDT/test pack), ITP stage sign-offs, MTR bindings and legacy
+      reconciliations; ITR export; a reconciliation report comparing a named
+      receipt's quantity with the legacy balance. Depends: A.4g ✅. (M)
 - [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
       digest-bound frozen snapshots; explicit completeness report (missing items
       enumerated, never silently omitted) with the existing bilingual renderer.

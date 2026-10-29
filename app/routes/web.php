@@ -20,6 +20,7 @@ use App\Http\Controllers\PipingReceivingReviewController;
 use App\Http\Controllers\PipingTraceabilityController;
 use App\Http\Controllers\ProjectFittingDefinitionController;
 use App\Http\Controllers\ProjectSetupController;
+use App\Http\Controllers\QualityNominationController;
 use App\Http\Controllers\PunchController;
 use App\Http\Controllers\ScopeAdmissionAuthorityController;
 use App\Http\Controllers\ScopeProposalEnvelopeController;
@@ -160,6 +161,10 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::get('/projects/{projectCode}/materials/piping-custody/{receiptId}', [PipingCustodyController::class, 'show'])->whereUuid('receiptId')->middleware('cache.headers:private;no_store;max_age=0')->name('materials.piping-custody.show');
     Route::get('/projects/{projectCode}/materials/receipt-access', [PipingReceiptAccessController::class, 'show'])->middleware('cache.headers:private;no_store;max_age=0')->name('materials.receipt-access');
     Route::post('/projects/{projectCode}/materials/receipt-access', [PipingReceiptAccessController::class, 'store'])->name('materials.receipt-access.store');
+
+    // Quality nomination register (ADR-048 A.4g slice 1) — who may record what.
+    Route::get('/projects/{projectCode}/quality/nominations', [QualityNominationController::class, 'show'])->middleware('cache.headers:private;no_store;max_age=0')->name('quality.nominations');
+    Route::post('/projects/{projectCode}/quality/nominations', [QualityNominationController::class, 'store'])->name('quality.nominations.store');
     Route::get('/projects/{projectCode}/materials', [MaterialsController::class, 'warehouse'])->name('materials');
     Route::post('/projects/{projectCode}/materials/issue', [MaterialsController::class, 'issue'])->name('materials.issue');
     Route::post('/projects/{projectCode}/materials/deliver', [MaterialsController::class, 'deliver'])->name('materials.deliver');
