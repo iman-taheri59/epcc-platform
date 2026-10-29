@@ -71,9 +71,13 @@ project GUC + company GUC + `epcc.result_actor_id`), with bilingual validation e
 
 ## Declared boundaries of THIS slice (honesty first)
 
-- **ITP hold/witness sign-offs are NOT here.** Structured sign-off records on
-  notification stages (decision point 3) = slice 2, tracked as TODO **A.4b** (and G.5
-  for TPI witnesses). This slice records results on joints/packs, not on ITP stages.
+- ~~**ITP hold/witness sign-offs are NOT here.** Structured sign-off records on
+  notification stages~~ — **CLOSED by A.4d slice 1 (commit `d7d5ce8`)**: see
+  [`ITP-STAGE-SIGN-OFFS-EN.md`](ITP-STAGE-SIGN-OFFS-EN.md). The sign-off records what
+  happened at the stage (accepted / accepted with comments / rejected / waived because
+  nobody attended), is default-deny behind a nomination, and a HOLD point can be waived
+  only by the project employer. Still open: sign-offs are RECORDED, not yet GATED — a
+  pack can still be accepted without a hold sign-off (A.5b).
 - `joint.state` stays `FITTED` — weld/NDT progress is **derived** from records, never
   stamped back onto the joint (joint states remain the ADR-006 contract).
 - ~~Test-pack transitions (READY→TESTED→ACCEPTED) are not yet gated on recorded
@@ -85,13 +89,12 @@ project GUC + company GUC + `epcc.result_actor_id`), with bilingual validation e
   already checked with `UnitRegistry::knows()`, which alone accepts a temperature; both
   plan and recorded result now require the PRESSURE quantity.
 - MTR binding is heat-first with optional lot (decision point 4 recommended lot+heat;
-  exact (lot, heat) pairing lands with A.4b when lot custody links are joined in).
 - ITR compilation (decision point 5) = **A.5**, unchanged.
 - ~~No role-scoped authority policies yet: any project-member user may post.~~
   **CLOSED by A.4b slice 1** — see invariant 11: recording is default-deny behind a
   versioned, suspendable nomination. Still open: who may *author* a nomination (any
   project member company may nominate its own people today) — **CLOSED by A.4c slice 1**,
-  see invariant 14. Still open: ITP hold/witness sign-offs, (lot, heat) pairing and the
+  see invariant 14. Still open: (lot, heat) pairing and the
   HTTP/UI surface = **A.4c slice 2**.
 
 ## Tests

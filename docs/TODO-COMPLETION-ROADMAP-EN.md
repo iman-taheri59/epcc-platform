@@ -119,10 +119,49 @@
       Acceptance: unknown unit and wrong-quantity unit refused, incl. direct SQL ✅;
         every PRESSURE unit in the pack accepted in any case ✅; third-party authorship
         refused ✅; non-member and forged authorship refused ✅.
-- [ ] **A.4d Inspection results — slice 2, part 3** — structured hold/witness sign-off
-      records on ITP notification stages (ADR-048 decision 3; TPI witnesses per G.5),
-      exact (lot, heat) MTR pairing joined to custody (also unblocks A.5b), HTTP/UI
-      surface for results, nominations and ITR export. Depends: A.4c ✅. (M)
+- [x] **A.4d Inspection results — slice 2, part 3: ITP hold/witness sign-offs**
+      (Done — commit `d7d5ce8`)
+      * The gap: a notification only ever said "we asked you to attend". Nothing recorded
+        what happened at the stage, so a hold point nobody attended and one the client's
+        inspector attended and accepted looked identical in the data.
+      * `inspection_stage_signoffs` (append-only, RLS+FORCE, forward-only migration) plus
+        `epcc_guard_stage_signoff()`: `stage_id` and `point` are DERIVED from the notice,
+        so a sign-off cannot mis-state what kind of point it answers; signing is
+        default-deny behind the same `result_recorder_policies` register (new action
+        `sign_off_stage`) and the authorising policy is stamped on the row
+        (`signer_policy_id`); an outcome that changes the work must say why (REJECTED ->
+        cause, ACCEPTED_WITH_COMMENTS -> the comments, WAIVED_NOT_ATTENDED -> why nobody
+        was there); **a HOLD ('H') point can be waived only by the project employer** —
+        a contractor waiving the client's hold is the removal of a control, not a waiver;
+        a correction is a new chained sign-off (`previous_signoff_id` must point at a
+        REJECTED sign-off of the same notice and company), never an edit; `request_id`
+        is unique so a retry cannot double-sign; `recorded_at` is `timestamptz(6)`
+        because append order is the record.
+      * Visibility fix: reading an ITP stage required read access to the ITP *document
+        revision*, so the very companies a notice was sent to could not see — and
+        therefore could not sign — the stage named in it. An additive SELECT policy lets
+        a notified project member read a stage a notice it can read refers to. Nothing
+        new leaks (the notice already names the stage) and no write path opens.
+      * Tests: `ItpSignOffTest` 11 tests / 48 assertions green (run twice, stable);
+        related regression (`InspectionNotification`, `InspectionResult`, `ItrSnapshot`,
+        `ResultAuthorityAndGating`, `ResultUnitsAndPolicyAuthorship`) 245 tests / 2198
+        assertions green. The pre-A.4d upgrade fixture in `InspectionNotificationTest`
+        now drops the sign-off table and the additive policy first.
+      * Guide: `docs/ITP-STAGE-SIGN-OFFS-EN.md` / `-FA.md`.
+      Acceptance: default-deny with nothing written ✅; stage and point derived, never
+        declared ✅; rejection without a cause / waiver without a reason / conditional
+        acceptance without comments refused ✅ (CHECK, so direct SQL too); a contractor
+        cannot waive the employer's hold and the employer can ✅; a witness point can be
+        waived by the notified party ✅; a correction chains to a REJECTED sign-off and
+        the rejection stays on the record ✅; append-only against direct SQL ✅; duplicate
+        request ids refused ✅; another member can read but nobody can sign in another
+        name ✅; a draft notice and an invisible notice cannot be signed ✅.
+      Declared boundary (still open): sign-offs are RECORDED, not yet GATED — there is no
+        notification<->test-pack link, so a pack can still be accepted without a hold
+        sign-off. That gate is tracked as A.5b, not claimed here. HTTP/UI also still open.
+- [ ] **A.4e Inspection results — slice 2, part 4** — exact (lot, heat) MTR pairing
+      joined to custody (also unblocks A.5b), HTTP/UI surface for results, nominations,
+      sign-offs and ITR export. Depends: A.4d ✅. (M)
 - [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
       digest-bound frozen snapshots; explicit completeness report (missing items
       enumerated, never silently omitted) with the existing bilingual renderer.
@@ -137,7 +176,8 @@
       ✅; freeze of a moment immutable against later evidence ✅.
 - [ ] **A.5b ITR compiler — slice 2** — subsystem/system and full-dossier scopes
       (meeting ADR-057), ITP-notification and receipt/MTR binding into the
-      dossier (depends: A.4b piece-level custody), formal signature/approval
+      dossier (depends: A.4b piece-level custody; the notification<->test-pack gate
+      needs A.4d sign-offs ✅), formal signature/approval
       layer on snapshots, HTTP/UI surface for compile/freeze/export. Depends:
       A.5 ✅, A.4b, F.1. (M)
 - [ ] **A.6 Implement ADR-031: TQ/NCR** — the spec is written (two modes
