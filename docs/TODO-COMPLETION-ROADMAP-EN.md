@@ -198,10 +198,42 @@
         coverage reports an uncovered heat instead of hiding it ✅.
       Declared boundaries: PIPING custody only (legacy `material_lots` reconciliation is
         the ADR-047 cutover item), no HTTP/UI, and coverage counts rather than judges.
-- [ ] **A.4f Inspection results — slice 2, part 5** — HTTP/UI surface for results,
-      nominations, sign-offs, MTR bindings and ITR export; reconciliation of the legacy
-      `material_lots` warehouse with the custody chain (ADR-047 cutover). Depends:
-      A.4e ✅. (M)
+- [x] **A.4f Inspection results — slice 2, part 5: legacy warehouse reconciliation**
+      (Done — commit `182a94d`)
+      * The wall: ADR-047 closed `material_lots` behind a cutoff and made the GRN guard
+        refuse any purchase order that still has legacy lots. Right, but there was no way
+        through — nothing could ever be done about such a lot, so a project that used the
+        legacy warehouse could never post a controlled GRN against those orders at all.
+      * `material_legacy_reconciliations` (append-only, RLS+FORCE, forward-only): one
+        explicit, nominated, reasoned decision per legacy lot — TAKE_OVER (this custody
+        record re-receives it and must attest the same heat) or RETIRE (it is not coming
+        across, and here is why). Item and heat DERIVED from the lot; a later decision
+        chains instead of editing; `request_id` unique.
+      * `epcc_guard_piping_grn()` re-declared byte-for-byte except one IF, so the legacy
+        refusal applies only to lots nobody has decided about: same code, same meaning,
+        no longer permanent.
+      * Authority from the quality register (`reconcile_legacy`), deliberately not the
+        receipt register: the latter demands a nominee for every action and would force
+        every project — including those with no legacy material — to nominate a
+        reconciler before configuring receipts.
+      * `pending()` is the cutover worklist: the legacy lots still blocking a GRN.
+      * Tests: `LegacyMaterialReconciliationTest` 11 tests / 46 assertions green (twice);
+        `PipingGrnTest` proves end to end that the gate holds while the lot is undecided
+        and opens once it is reconciled (22 / 123); related regression 440 tests /
+        2786 assertions green.
+      * Guide: `docs/LEGACY-MATERIAL-RECONCILIATION-EN.md` / `-FA.md`.
+      Acceptance: default-deny with nothing written ✅; identity derived from the lot,
+        never declared (incl. direct SQL) ✅; TAKE_OVER against a different heat refused ✅;
+        a reason is mandatory ✅; a second decision must chain and the superseded one stays
+        ✅; append-only ✅; duplicate request id refused ✅; another company cannot decide in
+        another name ✅; pending() lists only undecided lots ✅; the GRN gate holds before
+        reconciliation and opens after ✅.
+      Declared boundaries: this reconciles the gate, not the quantities (ADR-047
+        `OPENING_COUNT` untouched), no HTTP/UI, and the decision is not evidence by itself.
+- [ ] **A.4g Inspection results — slice 2, part 6** — HTTP/UI surface for results,
+      nominations, sign-offs, MTR bindings, legacy reconciliations and ITR export; a
+      reconciliation report comparing a named receipt's quantity with the legacy
+      balance. Depends: A.4f ✅. (M)
 - [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
       digest-bound frozen snapshots; explicit completeness report (missing items
       enumerated, never silently omitted) with the existing bilingual renderer.
