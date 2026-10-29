@@ -46,6 +46,10 @@ final class PipingCustodyAmendmentService
                 $receipt = $this->custody->detail($project, $actor, $custodyId);
                 app(PipingGrnService::class)->assertUnposted($project, $custodyId);
                 abort_unless($receipt->created_by === $actor->id && $receipt->company_id === $actor->company_id, 403);
+                // lot_ref is additive: callers that predate it (and the HTTP
+                // form) still send the same payload, so it is defaulted rather
+                // than required of them.
+                $input = array_replace(['lot_ref' => null], $input);
                 $data = Validator::make(['amendment' => $input], [
                     'amendment' => ['required', 'array:expected_policy_id,previous_amendment_id,request_id,source_line_id,unlinked_reason,heat_ref,lot_ref,reason'],
                     'amendment.expected_policy_id' => ['required', 'uuid'], 'amendment.previous_amendment_id' => ['present', 'nullable', 'uuid'], 'amendment.request_id' => ['required', 'uuid'],
