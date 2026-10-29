@@ -102,13 +102,27 @@
       Acceptance: un-nominated recording refused with nothing written ✅; nomination
         stamped on the row ✅; suspension revokes ✅; TESTED/ACCEPTED held to evidence ✅;
         accepted pack cannot change ✅.
-- [ ] **A.4c Inspection results — slice 2, part 2** — structured hold/witness sign-off
+- [x] **A.4c Inspection results — slice 2, part 2: units + nomination authorship**
+      (Done — commit `53d1942`)
+      * `test_pack_results_pressure_unit_is_pressure`: a CHECK generated at migration
+        time from the same `units.ref.json` the `UnitRegistry` reads (case-insensitive),
+        so DB and app cannot drift and a missing reference pack fails the install.
+        `InspectionResultService` rejects unknown units AND known units of the wrong
+        quantity; `PipingTestPackService` gained the same quantity check for the
+        PLANNED pressure, which previously accepted a temperature as a pressure.
+      * `epcc_guard_result_policy_author()`: a nomination may be authored only by the
+        nominated company itself or the project employer, and only by a project member
+        — a rival contractor can no longer nominate someone else's inspectors.
+      * Tests: `ResultUnitsAndPolicyAuthorshipTest` 10/31 green; related regression
+        175 tests / 540 assertions green (owner instruction: the full suite now runs in
+        CI on every push instead of blocking the local loop — RUNBOOK §12).
+      Acceptance: unknown unit and wrong-quantity unit refused, incl. direct SQL ✅;
+        every PRESSURE unit in the pack accepted in any case ✅; third-party authorship
+        refused ✅; non-member and forged authorship refused ✅.
+- [ ] **A.4d Inspection results — slice 2, part 3** — structured hold/witness sign-off
       records on ITP notification stages (ADR-048 decision 3; TPI witnesses per G.5),
-      WHO MAY AUTHOR a nomination (today any project-member company may nominate its
-      own people — employer/owner-scoped authoring is the missing control), exact
-      (lot, heat) MTR pairing joined to custody (also unblocks A.5b), unit-registry
-      validation of `pressure_unit` (ADR-014 — `App\Support\Units\UnitRegistry`
-      already exists), HTTP/UI surface for results and nominations. Depends: A.4b ✅. (M)
+      exact (lot, heat) MTR pairing joined to custody (also unblocks A.5b), HTTP/UI
+      surface for results, nominations and ITR export. Depends: A.4c ✅. (M)
 - [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
       digest-bound frozen snapshots; explicit completeness report (missing items
       enumerated, never silently omitted) with the existing bilingual renderer.

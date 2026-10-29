@@ -49,6 +49,17 @@ project GUC + company GUC + `epcc.result_actor_id`), with bilingual validation e
     that user or one of their project roles (`RESULT_AUTHORITY_NOT_NOMINATED`, 42501),
     and the authorising policy id is stamped on the row as `recorder_policy_id`. A
     `discipline_scope` that excludes PIPING disqualifies the holder.
+13. **Units are registry-checked (A.4c slice 1)**: a recorded `pressure_unit` must be a
+    unit the platform knows **and** of quantity PRESSURE — a temperature is a known unit
+    and still is not a pressure. The CHECK is generated at migration time from the same
+    `units.ref.json` the `UnitRegistry` reads (case-insensitive: "BAR" and "bar" agree),
+    so a direct INSERT cannot slip past the service. A missing reference pack fails the
+    install rather than allowing every unit.
+14. **Nominations are authored by the company itself or the project employer (A.4c
+    slice 1)**: `result_recorder_policies` refuses a third party nominating another
+    company's people (`RESULT_POLICY_AUTHOR_NOT_PERMITTED`) and refuses an author who is
+    not a project member. The employer path is the control that matters — the client
+    decides who may produce the evidence it will rely on.
 12. **Evidence-gated pack states (A.4b slice 1)**: `piping_test_packs` refuses
     TESTED with no recorded result, ACCEPTED unless the LATEST recorded result is
     PASS, any change once ACCEPTED (terminal), and any transition that skips the
@@ -69,17 +80,19 @@ project GUC + company GUC + `epcc.result_actor_id`), with bilingual validation e
   results.~~ **CLOSED by A.4b slice 1** — see invariant 12. READY alone stays an
   application-level self-declaration, on purpose: a crew promising it is ready is not
   yet a falsifiable claim about reality.
-- `pressure_unit` is a required string but not yet unit-registry-validated (ADR-014
-  `units->knows`) — slice 2.
+- ~~`pressure_unit` is a required string but not yet unit-registry-validated.~~
+  **CLOSED by A.4c slice 1** — see invariant 13. Note the *planned* pack pressure was
+  already checked with `UnitRegistry::knows()`, which alone accepts a temperature; both
+  plan and recorded result now require the PRESSURE quantity.
 - MTR binding is heat-first with optional lot (decision point 4 recommended lot+heat;
   exact (lot, heat) pairing lands with A.4b when lot custody links are joined in).
 - ITR compilation (decision point 5) = **A.5**, unchanged.
 - ~~No role-scoped authority policies yet: any project-member user may post.~~
   **CLOSED by A.4b slice 1** — see invariant 11: recording is default-deny behind a
   versioned, suspendable nomination. Still open: who may *author* a nomination (any
-  project member company may nominate its own people today) — A.4b slice 2, together
-  with ITP hold/witness sign-offs, (lot, heat) pairing and unit-registry pressure
-  validation.
+  project member company may nominate its own people today) — **CLOSED by A.4c slice 1**,
+  see invariant 14. Still open: ITP hold/witness sign-offs, (lot, heat) pairing and the
+  HTTP/UI surface = **A.4c slice 2**.
 
 ## Tests
 
