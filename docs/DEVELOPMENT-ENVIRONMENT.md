@@ -210,6 +210,38 @@ Tightening `composer.json` to `^8.4` and regenerating the lock would make the
 constraint tell the truth, but it touches every environment at once rather than
 just this one, so it is deliberately left as a separate decision.
 
+### 6.5 Changing a guard: edit the file, never re-declare it
+
+The 48 `epcc_guard_*` trigger functions carry the invariants — the refusals. Their
+authoritative text lives in **`database/guards/<name>.sql`**, one file per guard, and
+not in the migration that first declared them ([ADR-059](ADR-059-GUARD-SQL-SINGLE-SOURCE-EN.md),
+[guide](GUARD-SQL-REGISTRY-EN.md)).
+
+Why: guards were declared inline, and a later slice that needed to change one IF had
+to re-declare the whole body — so `epcc_guard_notification` ended up in three
+migrations and a dozen guards in two each. Copies drift silently; the database ends
+up saying something no single file says.
+
+```php
+use App\Support\GuardSql;
+
+// To change what a guard refuses: edit database/guards/<name>.sql. Nothing else.
+
+// To bind a guard in a migration — apply it immediately before CREATE TRIGGER, so
+// the trigger binds the current text even when the file changed in this change:
+GuardSql::apply('epcc_guard_piping_grn');
+DB::unprepared('CREATE TRIGGER ... EXECUTE FUNCTION epcc_guard_piping_grn()');
+
+// A brand-new guard: add the file, then apply and bind it the same way.
+```
+
+Migration `2026_10_29_200000_consolidate_guard_definitions.php` re-applies every file
+at the end of the run, so the files have the last word. `tests/Feature/GuardDefinitionsTest.php`
+fails if a migration dated after that pass declares a guard inline, if a file and the
+database disagree, or if a guard is registered but bound to nothing.
+
+Non-guard SQL (other functions, RLS policies) still lives in its migration.
+
 ## 7. Configuration
 
 All of these are read from a gitignored `./.env` at the repository root, which

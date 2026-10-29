@@ -1,0 +1,9 @@
+CREATE OR REPLACE FUNCTION public.epcc_guard_piping_nomination_index()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+ IF pg_trigger_depth()<>2 THEN RAISE EXCEPTION 'PIPING_NOMINATION_DERIVED_ONLY' USING ERRCODE='23514'; END IF;
+ IF TG_OP='DELETE' THEN RETURN OLD; END IF;
+ RETURN NEW;
+END $function$;
