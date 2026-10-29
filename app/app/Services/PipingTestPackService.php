@@ -41,6 +41,11 @@ final class PipingTestPackService
             if (! $this->units->knows($unit)) {
                 throw ValidationException::withMessages(['test_pressure_unit' => 'Unknown unit: '.$unit]);
             }
+            if (strtoupper((string) $this->units->resolve($unit)['quantity']) !== 'PRESSURE') {
+                throw ValidationException::withMessages([
+                    'test_pressure_unit' => 'Not a pressure unit: '.$unit,
+                ]);
+            }
         }
 
         $subsystemId = $data['subsystem_id'] ?? null;

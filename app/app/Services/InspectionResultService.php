@@ -7,6 +7,8 @@ namespace App\Services;
 use App\Models\Project;
 use App\Models\User;
 use App\Support\TenantContext;
+use App\Support\Units\UnitRegistry;
+use App\Support\Units\Exceptions\UnknownUnitException;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -46,7 +48,10 @@ final class InspectionResultService
 
     public const MODES = ['IN_SYSTEM', 'EXTERNAL_REGISTER'];
 
-    public function __construct(private readonly TenantContext $tenant) {}
+    public function __construct(
+        private readonly TenantContext $tenant,
+        private readonly UnitRegistry $units,
+    ) {}
 
     /** Runs $fn in the result session contract: project, recording company, result actor. */
     public function scoped(Project $project, User $actor, callable $fn): mixed
@@ -185,6 +190,25 @@ final class InspectionResultService
         $unit = strtoupper(trim((string) ($input['pressure_unit'] ?? '')));
         if ($unit === '' || mb_strlen($unit) > 12) {
             $errors['pressure_unit'] = $this->msg($lang, 'واحد فشار الزامی است.', 'The pressure unit is required.');
+        } else {
+            // A unit this platform does not know is rejected outright; one it
+            // knows but that is NOT a pressure (a temperature, a length) is
+            // rejected too - "21.75 C" is not a hydrostatic test. The database
+            // holds the same rule, so a direct INSERT cannot slip past it.
+            try {
+                $resolved = $this->units->resolve($unit);
+            } catch (UnknownUnitException) {
+                $resolved = null;
+            }
+            if ($resolved === null) {
+                $errors['pressure_unit'] = $this->msg($lang,
+                    'واحد فشار ناشناخته است؛ فقط واحدهای تعریف‌شدهٔ registry مجازند.',
+                    'Unknown pressure unit; only units defined in the registry are allowed.');
+            } elseif (strtoupper((string) $resolved['quantity']) !== 'PRESSURE') {
+                $errors['pressure_unit'] = $this->msg($lang,
+                    'این واحد متعلق به کمیت فشار نیست؛ یک دما یا طول را نمی‌توان به‌عنوان فشار ثبت کرد.',
+                    'That unit is not a pressure quantity; a temperature or length cannot be recorded as a pressure.');
+            }
         }
         $hold = $input['hold_duration_minutes'] ?? null;
         if (! is_int($hold) && ! (is_string($hold) && ctype_digit($hold))) {
@@ -329,6 +353,9 @@ final class InspectionResultService
         $field = 'result';
         $text = match (true) {
             // Must precede RESULT_AUTHORITY: the longer name contains the shorter.
+            str_contains($m, 'test_pack_results_pressure_unit_is_pressure') => $this->msg($lang,
+                'واحد فشار در registry یک واحدِ فشار نیست؛ مقدار ثبت نشد.',
+                'The pressure unit is not a pressure unit in the registry; nothing was recorded.'),
             str_contains($m, 'RESULT_AUTHORITY_NOT_NOMINATED') => $this->msg($lang,
                 'این شخص برای ثبت این نوع نتیجه نامزد نشده است (یا نامزدی تعلیق/خاتمه یافته)؛ ثبت رد شد.',
                 'This person is not nominated to record this kind of result (or the nomination is suspended/revoked); nothing was recorded.'),
