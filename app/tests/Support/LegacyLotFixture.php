@@ -31,10 +31,11 @@ final class LegacyLotFixture
         string $itemCode = 'LEGACY-PIPE',
         ?string $heat = 'HEAT-77',
         string $lotCode = '',
+        string $unit = 'M',
     ): string {
         $id = (string) Str::uuid();
 
-        $tenant->runAs($owner->company_id, function () use ($id, $project, $owner, $itemCode, $heat, $lotCode): void {
+        $tenant->runAs($owner->company_id, function () use ($id, $project, $owner, $itemCode, $heat, $lotCode, $unit): void {
             DB::unprepared('ALTER TABLE material_lots DISABLE TRIGGER aa_piping_legacy_stock_cutoff');
             try {
                 DB::table('material_lots')->insert([
@@ -45,7 +46,7 @@ final class LegacyLotFixture
                     'item_code' => $itemCode,
                     'description_en' => 'Legacy fixture',
                     'description_fa' => 'قدیمی',
-                    'unit' => 'M',
+                    'unit' => $unit,
                     'heat_number' => $heat,
                     'created_at' => now(),
                     'updated_at' => now(),

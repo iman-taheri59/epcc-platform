@@ -160,6 +160,116 @@ final class LegacyMaterialReconciliationService
     }
 
     /**
+     * The quantity reconciliation: what the legacy warehouse said we held,
+     * against what the controlled receipt we named actually attests.
+     *
+     * The legacy balance is the ledger's opening count for the lot's own
+     * (item, heat, unit) — the amount brought across at cutover. The
+     * controlled side is the quantity on the custody record named by the
+     * lot's current TAKE_OVER decision.
+     *
+     * Three refusals are built into the report rather than left for the
+     * reader to trip over: units that differ are NOT compared (converting
+     * them would be the platform inventing a factor), a lot with no opening
+     * count is reported as one rather than treated as zero, and a retired
+     * lot is shown with the balance it released instead of vanishing. A
+     * difference is not an error — it is a fact somebody must explain, and
+     * guessing which side is right is exactly what this layer exists not to
+     * do.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function quantityReport(Project $project, User $actor, string $lang = 'fa'): array
+    {
+        return $this->scoped($project, $actor, function () use ($project, $lang): array {
+            $rows = DB::select(<<<'SQL'
+                SELECT l.id                                   AS lot_id,
+                       l.lot_code                             AS lot_code,
+                       l.item_code                            AS item_code,
+                       l.heat_number                          AS heat_number,
+                       l.unit                                 AS lot_unit,
+                       h.decision                             AS decision,
+                       h.custody_id                           AS custody_id,
+                       c.quantity                             AS receipt_quantity,
+                       c.unit                                 AS receipt_unit,
+                       COALESCE(o.quantity, 0)                AS legacy_quantity,
+                       COALESCE(o.entries, 0)                 AS legacy_entries
+                  FROM material_lots l
+                  JOIN LATERAL (
+                        SELECT r.decision, r.custody_id, r.sequence
+                          FROM material_legacy_reconciliations r
+                         WHERE r.lot_id = l.id AND r.project_id = l.project_id
+                         ORDER BY r.sequence DESC
+                         LIMIT 1
+                       ) h ON true
+                  LEFT JOIN piping_custody_records c
+                         ON c.id = h.custody_id AND c.project_id = l.project_id
+                  LEFT JOIN LATERAL (
+                        SELECT SUM(e.quantity) AS quantity, count(*) AS entries
+                          FROM stock_ledger_entries e
+                         WHERE e.project_id = l.project_id
+                           AND e.kind = 'OPENING_COUNT'
+                           AND e.item_code = l.item_code
+                           AND e.unit = l.unit
+                           AND COALESCE(e.heat_ref, '') = COALESCE(l.heat_number, '')
+                       ) o ON true
+                 WHERE l.project_id = ?
+                 ORDER BY l.item_code, l.lot_code
+            SQL, [$project->id]);
+
+            $labels = $this->reportLabels($lang);
+
+            return array_map(function (object $row) use ($labels): array {
+                $legacy = (string) $row->legacy_quantity;
+                $receipt = $row->receipt_quantity === null ? null : (string) $row->receipt_quantity;
+                $entries = (int) $row->legacy_entries;
+
+                if ($row->decision === 'RETIRE') {
+                    $verdict = 'NOT_BROUGHT_ACROSS';
+                } elseif ($entries === 0) {
+                    $verdict = 'NO_OPENING_COUNT';
+                } elseif ($receipt !== null && (string) $row->receipt_unit !== (string) $row->lot_unit) {
+                    $verdict = 'UNIT_MISMATCH';
+                } else {
+                    $delta = $receipt === null ? null : bcsub($receipt, $legacy, 3);
+                    $verdict = $delta === null ? 'NO_OPENING_COUNT'
+                        : (bccomp($delta, '0', 3) === 0 ? 'MATCH' : (bccomp($delta, '0', 3) < 0 ? 'SHORT' : 'OVER'));
+                }
+
+                return [
+                    'lot_id' => (string) $row->lot_id,
+                    'lot_code' => (string) $row->lot_code,
+                    'item_code' => (string) $row->item_code,
+                    'heat_ref' => $row->heat_number === null ? null : (string) $row->heat_number,
+                    'unit' => (string) $row->lot_unit,
+                    'decision' => (string) $row->decision,
+                    'custody_id' => $row->custody_id === null ? null : (string) $row->custody_id,
+                    'legacy_quantity' => $legacy,
+                    'legacy_entries' => $entries,
+                    'receipt_quantity' => $receipt,
+                    'receipt_unit' => $row->receipt_unit === null ? null : (string) $row->receipt_unit,
+                    'delta' => $receipt === null ? null : bcsub($receipt, $legacy, 3),
+                    'verdict' => $verdict,
+                    'verdict_label' => $labels[$verdict] ?? $verdict,
+                ];
+            }, $rows);
+        });
+    }
+
+    /** @return array<string, string> */
+    private function reportLabels(string $lang): array
+    {
+        return [
+            'MATCH' => $lang === 'fa' ? 'تطبیق دارد' : 'Matches',
+            'SHORT' => $lang === 'fa' ? 'کمتر از ماندهٔ قدیمی' : 'Short of the legacy balance',
+            'OVER' => $lang === 'fa' ? 'بیش از ماندهٔ قدیمی' : 'More than the legacy balance',
+            'UNIT_MISMATCH' => $lang === 'fa' ? 'واحدها یکی نیستند — مقایسه نشد' : 'Units differ — not compared',
+            'NO_OPENING_COUNT' => $lang === 'fa' ? 'ماندهٔ قدیمی‌ای ثبت نشده' : 'No legacy opening count',
+            'NOT_BROUGHT_ACROSS' => $lang === 'fa' ? 'نیامده (ماندهٔ قدیمی رها شد)' : 'Not brought across (balance released)',
+        ];
+    }
+
+    /**
      * Everything the reconciliation screen needs: the cutover worklist, the
      * lots already decided, the chain for the selected one, and — the part
      * that keeps the form honest — the custody records that MAY take this lot
@@ -209,6 +319,7 @@ final class LegacyMaterialReconciliationService
                 'nominated' => $this->nominations->nominationFor($project, $actor, 'reconcile_legacy'),
                 'decisions' => self::DECISIONS,
                 'decisionLabels' => $this->decisionLabels($lang),
+                'quantityReport' => $this->quantityReport($project, $actor, $lang),
             ];
         });
     }

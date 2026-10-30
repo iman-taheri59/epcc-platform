@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\Project;
 use App\Models\User;
 use App\Services\PipingReceiptAccessService;
+use App\Services\StockLedgerService;
 use App\Services\ResultRecorderPolicyService;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
@@ -276,17 +277,151 @@ final class LegacyReconciliationHttpTest extends TestCase
         $this->assertSame(1, $this->rows()->count(), 'a resubmission did not double-decide the lot');
     }
 
+    // -------------------------------------------------------- quantity report
+
+    public function test_the_report_marks_a_receipt_that_matches_the_legacy_balance(): void
+    {
+        $lot = $this->legacyLot('HEAT-Q1', 'QTY-PIPE');
+        $custody = $this->custody('HEAT-Q1', quantity: '5.000');
+        $this->openingCount('QTY-PIPE', 'HEAT-Q1', '5.000');
+        $this->nominate();
+
+        $this->decide($lot, ['decision' => 'TAKE_OVER', 'custody_id' => $custody]);
+
+        $row = $this->reportRow($lot);
+        $this->assertSame('MATCH', $row['verdict']);
+        $this->assertSame('0.000', $row['delta']);
+
+        $this->actingAs($this->buyer)->get($this->route())
+            ->assertSee('id="quantity-report"', false)
+            ->assertSee(__('quality_legacy.quantity_report'), false);
+    }
+
+    public function test_the_report_shows_a_receipt_short_of_the_legacy_balance(): void
+    {
+        $lot = $this->legacyLot('HEAT-Q2', 'QTY-PIPE');
+        $custody = $this->custody('HEAT-Q2', quantity: '4.000');
+        $this->openingCount('QTY-PIPE', 'HEAT-Q2', '10.000');
+        $this->nominate();
+
+        $this->decide($lot, ['decision' => 'TAKE_OVER', 'custody_id' => $custody]);
+
+        $row = $this->reportRow($lot);
+        $this->assertSame('SHORT', $row['verdict']);
+        $this->assertSame('-6.000', $row['delta'], 'a short receipt is reported, not rounded away');
+    }
+
+    public function test_the_report_shows_a_receipt_above_the_legacy_balance(): void
+    {
+        $lot = $this->legacyLot('HEAT-Q3', 'QTY-PIPE');
+        $custody = $this->custody('HEAT-Q3', quantity: '12.000');
+        $this->openingCount('QTY-PIPE', 'HEAT-Q3', '10.000');
+        $this->nominate();
+
+        $this->decide($lot, ['decision' => 'TAKE_OVER', 'custody_id' => $custody]);
+
+        $this->assertSame('OVER', $this->reportRow($lot)['verdict']);
+        $this->assertSame('2.000', $this->reportRow($lot)['delta']);
+    }
+
+    public function test_units_that_differ_are_reported_and_never_converted(): void
+    {
+        $lot = $this->legacyLot('HEAT-Q4', 'QTY-PIPE', unit: 'M');
+        $custody = $this->custody('HEAT-Q4', quantity: '4.000', unit: 'EA');
+        $this->openingCount('QTY-PIPE', 'HEAT-Q4', '10.000');
+        $this->nominate();
+
+        $this->decide($lot, ['decision' => 'TAKE_OVER', 'custody_id' => $custody]);
+
+        $row = $this->reportRow($lot);
+        $this->assertSame('UNIT_MISMATCH', $row['verdict'], 'the platform does not invent a conversion factor');
+        $this->assertSame('EA', $row['receipt_unit']);
+        $this->assertSame('M', $row['unit']);
+    }
+
+    public function test_a_lot_with_no_opening_count_is_reported_as_one_not_as_zero(): void
+    {
+        $lot = $this->legacyLot('HEAT-Q5', 'QTY-PIPE');
+        $custody = $this->custody('HEAT-Q5', quantity: '4.000');
+        $this->nominate();
+
+        $this->decide($lot, ['decision' => 'TAKE_OVER', 'custody_id' => $custody]);
+
+        $row = $this->reportRow($lot);
+        $this->assertSame('NO_OPENING_COUNT', $row['verdict']);
+        $this->assertSame(0, $row['legacy_entries']);
+    }
+
+    public function test_a_retired_lot_shows_the_balance_it_released(): void
+    {
+        $lot = $this->legacyLot('HEAT-Q6', 'QTY-PIPE');
+        $this->openingCount('QTY-PIPE', 'HEAT-Q6', '7.000');
+        $this->nominate();
+
+        $this->decide($lot, ['decision' => 'RETIRE', 'reason' => 'Consumed before cutover']);
+
+        $row = $this->reportRow($lot);
+        $this->assertSame('NOT_BROUGHT_ACROSS', $row['verdict']);
+        $this->assertSame('7.000', $row['legacy_quantity'], 'what we let go is on the record');
+        $this->assertNull($row['receipt_quantity']);
+    }
+
     // ------------------------------------------------------------------ helpers
 
-    private function legacyLot(?string $heat = 'HEAT-77', string $itemCode = 'LEGACY-PIPE'): string
+    private function legacyLot(?string $heat = 'HEAT-77', string $itemCode = 'LEGACY-PIPE', string $unit = 'M'): string
     {
-        return LegacyLotFixture::legacyLot($this->tenant, $this->project, $this->buyer, $itemCode, $heat);
+        return LegacyLotFixture::legacyLot($this->tenant, $this->project, $this->buyer, $itemCode, $heat, '', $unit);
     }
 
-    private function custody(string $heat): string
+    private function custody(string $heat, string $quantity = '2.000', string $unit = 'M'): string
     {
-        return MtrBindingFixture::custody($this->tenant, $this->project, $this->buyer, $heat);
+        return MtrBindingFixture::custody(
+            $this->tenant, $this->project, $this->buyer, $heat, null, false, null, null, $quantity, $unit,
+        );
     }
+
+    /** The legacy side of the comparison: an opening count at cutover. */
+    private function openingCount(string $item, string $heat, string $quantity): string
+    {
+        return app(StockLedgerService::class)->post($this->project, $this->buyer, [
+            'kind' => 'OPENING_COUNT',
+            'item_code' => $item,
+            'heat_ref' => $heat,
+            'unit' => 'M',
+            'quantity' => $quantity,
+            'approver_user_id' => $this->userByEmail('sadeghi@pars.example')->id,
+            'reason' => 'Opening physical count at cutover',
+            'request_id' => (string) Str::uuid(),
+        ], 'en');
+    }
+
+    /** @param  array<string,mixed>  $overrides */
+    private function decide(string $lot, array $overrides): void
+    {
+        $this->actingAs($this->buyer)->post($this->route(), [
+            'lot_id' => $lot,
+            'reconciliation' => $this->payload($overrides),
+        ])->assertRedirect();
+    }
+
+    /** @return array<string,mixed> */
+    private function reportRow(string $lot): array
+    {
+        $report = $this->tenant->runAs(
+            $this->buyer->company_id,
+            fn () => app(\App\Services\LegacyMaterialReconciliationService::class)->quantityReport($this->project, $this->buyer),
+            $this->project->id
+        );
+
+        foreach ($report as $row) {
+            if ($row['lot_id'] === $lot) {
+                return $row;
+            }
+        }
+
+        $this->fail('The lot is missing from the quantity reconciliation report.');
+    }
+
 
     private function nominate(): void
     {

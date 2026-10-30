@@ -63,4 +63,17 @@
 @endforeach
 </tbody></table>
 @endif
+{{-- ------------------------------------------------- quantity report --}}
+<h2>{{ __('quality_legacy.quantity_report') }}</h2>
+<p>{{ __('quality_legacy.quantity_help') }}</p>
+@if($quantityReport === [])
+<p id="no-quantity-report">{{ __('quality_legacy.no_quantity_report') }}</p>
+@else
+<table data-tt border="1" cellpadding="6" cellspacing="0" id="quantity-report"><thead><tr>
+<th data-sort="text" data-facet>{{ __('quality_legacy.lot') }}</th><th data-sort="text" data-facet>{{ __('quality_legacy.item') }}</th><th data-sort="text" data-facet>{{ __('quality_legacy.decision') }}</th><th data-sort="num">{{ __('quality_legacy.legacy_quantity') }}</th><th data-sort="num">{{ __('quality_legacy.receipt_quantity') }}</th><th data-sort="num">{{ __('quality_legacy.delta') }}</th><th data-sort="text" data-facet>{{ __('quality_legacy.verdict') }}</th>
+</tr></thead><tbody>
+@foreach($quantityReport as $row)
+<tr><td data-facet-value="{{ $row['lot_code'] }}">{{ $row['lot_code'] }}</td><td data-facet-value="{{ $row['item_code'] }}">{{ $row['item_code'] }}</td><td data-facet-value="{{ $row['decision'] }}">{{ $decisionLabels[$row['decision']] ?? $row['decision'] }}</td><td>{{ $row['legacy_quantity'] }} {{ $row['unit'] }}</td><td>@if($row['receipt_quantity'] === null)—@else{{ $row['receipt_quantity'] }} {{ $row['receipt_unit'] }}@endif</td><td>{{ $row['delta'] ?? '—' }}</td><td data-facet-value="{{ $row['verdict'] }}">{{ $row['verdict_label'] }}</td></tr>
+@endforeach
+</tbody></table>@endif
 </section></div></div></body></html>

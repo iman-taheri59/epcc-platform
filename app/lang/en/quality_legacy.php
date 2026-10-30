@@ -43,4 +43,12 @@ return [
     'submit' => 'Record the decision',
     'saved' => 'Decision recorded: :decision.',
     'supersedes' => 'This decision supersedes the current one; both stay on the record.',
+
+    'quantity_report' => 'Quantity reconciliation — the receipt against the legacy balance',
+    'quantity_help' => 'The legacy side is the ledger’s opening count for the lot’s own item, heat and unit; the controlled side is the quantity on the custody record the decision named. A difference is not an error — it is a fact someone must explain, and the platform will not guess which side is right. Units that differ are not compared, and a lot with no opening count is reported as one rather than treated as zero.',
+    'no_quantity_report' => 'No legacy lot has been decided yet, so there is nothing to reconcile.',
+    'legacy_quantity' => 'Legacy balance',
+    'receipt_quantity' => 'Receipt',
+    'delta' => 'Difference',
+    'verdict' => 'Reading',
 ];

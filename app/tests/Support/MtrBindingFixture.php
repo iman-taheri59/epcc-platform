@@ -75,6 +75,8 @@ final class MtrBindingFixture
         bool $linked = false,
         ?User $reviewer = null,
         ?User $issuer = null,
+        string $quantity = '2.000',
+        string $unit = 'M',
     ): string {
         $arrival = [
             'expected_policy_id' => app(PipingCustodyService::class)->policyId($project, $buyer, 'custody_mrr'),
@@ -85,8 +87,8 @@ final class MtrBindingFixture
             'package_ref' => null,
             'received_at' => '2026-10-29T08:00:00+03:30',
             'observed_description' => 'Fixture receipt',
-            'quantity' => '2.000',
-            'unit' => 'M',
+            'quantity' => $quantity,
+            'unit' => $unit,
             'heat_ref' => $heat,
             'location_kind' => 'QUARANTINE',
             'location_ref' => 'Bay Q',
