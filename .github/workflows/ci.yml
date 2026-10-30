@@ -54,6 +54,48 @@ jobs:
   # (ADR-003 Annex A §6), so this job stays fast enough to be worth running
   # first.
   # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------
+  # Did this push touch code? A docs-only push cannot break the suite, and the
+  # Laravel job costs ~64 minutes, so running it for a markdown change buys an
+  # hour of wall clock in exchange for no information.
+  #
+  # Safety first: anything we cannot PROVE is docs-only runs everything. A
+  # workflow_dispatch has no `before`, a new branch has an all-zero `before`,
+  # and a diff we fail to read all fall through to the full run.
+  # -------------------------------------------------------------------------
+  changes:
+    name: Changed paths
+    runs-on: ubuntu-24.04
+    outputs:
+      code: ${{ steps.changed.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: changed
+        name: Classify the push
+        run: |
+          set -uo pipefail
+          code=true
+          if [ "${{ github.event_name }}" = "push" ]; then
+            base="${{ github.event.before }}"
+            case "$base" in
+              ""|0000000000000000000000000000000000000000)
+                ;; # unknown base: assume code, run everything
+              *)
+                if files=$(git diff --name-only "$base" "${{ github.sha }}" 2>/dev/null) && [ -n "$files" ]; then
+                  # docs-only == every changed path is under docs/ or a root-level .md
+                  if ! printf '%s\n' "$files" | grep -qvE '^(docs/.*|[^/]+\.md)$'; then
+                    code=false
+                  fi
+                fi
+                ;;
+            esac
+          fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "changed paths treated as code: $code"
+
   static:
     name: Standards packs + rule engine
     runs-on: ubuntu-24.04
@@ -148,12 +190,38 @@ jobs:
   # -------------------------------------------------------------------------
   # The real suite: PostgreSQL 17, RLS, and the PDF toolchain.
   # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------
+  # The suite: 2028 tests, ~64 minutes serially. Two things make it expensive
+  # and both are deliberate:
+  #
+  #   * 121 of 145 test classes rebuild all 100 migrations inside setUp(),
+  #     because some tests spawn real worker processes (PipingCustodyTest,
+  #     InspectionNotification*) that open their own connection and so cannot
+  #     see an uncommitted transaction. RefreshDatabase's usual trick is
+  #     therefore unavailable: each test needs genuinely committed data.
+  #     Measured cost of that choice: 1.52 s per test, and 86% of the tests pay
+  #     it - about 97% of the 64 minutes is rebuilding the same database.
+  #   * PostgreSQL 17 runs natively on the runner rather than as a service
+  #     container, because those workers need the app's DB host to be a Unix
+  #     socket under /tmp/epcc-, and a container's /tmp is not the runner's.
+  #
+  # Making each test cheaper means auditing 121 classes by hand (deferred, and
+  # worth doing later). So the wall clock is cut the way that cannot change
+  # what is being tested: split the classes into SHARDS balanced by test count
+  # and run them in parallel. Each shard uploads its JUnit log; `laravel-report`
+  # merges them and owns the verdict, so the gate - including the "no skips"
+  # rule - is exactly as strict as the single job it replaces.
+  # -------------------------------------------------------------------------
   laravel:
-    name: Laravel suite (PostgreSQL + RLS)
+    name: Laravel suite ${{ matrix.shard }}/4 (PostgreSQL + RLS)
     runs-on: ubuntu-24.04
-    # The 1920-test suite alone ran 76 minutes on the 2026-10-26 CI attempt;
-    # native PG17 install adds a few more. 90 was too tight to be safe.
-    timeout-minutes: 120
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false # one red shard must not rob us of the other three
+      matrix:
+        shard: [1, 2, 3, 4]
 
     steps:
       - uses: actions/checkout@v4
@@ -315,31 +383,120 @@ jobs:
       # colors="true" and which would wrap the summary line in escape codes.
       # Locally, scripts/dev-test.sh keeps using `artisan test` because that
       # output is nicer to read - and its gate handles both summary shapes.
-      - name: Run the suite
+      - name: Run this shard of the suite
         working-directory: app
+        env:
+          SHARD: ${{ matrix.shard }}
+          SHARDS: "4"
         run: |
           set -uo pipefail
           php artisan config:clear --no-interaction >/dev/null 2>&1 || true
-          vendor/bin/phpunit --colors=never --log-junit ../junit.xml 2>&1 | tee ../test-output.log
+
+          # Balanced, deterministic, self-maintaining: group the tests by class,
+          # then fill the emptiest shard in sorted order. A hand-maintained list
+          # of files would go stale the first time someone adds a test class.
+          python3 - <<'PY'
+          import os, re, subprocess
+
+          listing = subprocess.run(
+              ['vendor/bin/phpunit', '--list-tests'], capture_output=True, text=True
+          ).stdout
+
+          counts = {}
+          for line in listing.splitlines():
+              m = re.match(r'\s*-\s+(.+?)::', line)
+              if m:
+                  cls = m.group(1).split('\\')[-1]
+                  counts[cls] = counts.get(cls, 0) + 1
+
+          if not counts:
+              raise SystemExit('phpunit listed no tests - refusing to report a green shard')
+
+          total = sum(counts.values())
+          shards = int(os.environ['SHARDS'])
+          index = int(os.environ['SHARD']) - 1
+          buckets = [[] for _ in range(shards)]
+          load = [0] * shards
+          for cls in sorted(counts):
+              i = min(range(shards), key=lambda k: (load[k], k))
+              buckets[i].append(cls)
+              load[i] += counts[cls]
+
+          # Anchored on the namespace separator: without it, 'WarehouseTest'
+          # also matches 'PipingWarehouseTest', and 24 tests ran in two shards.
+          pattern = '/(?:\\\\)(' + '|'.join(buckets[index]) + ')::/'
+          open('shard-filter.txt', 'w').write(pattern)
+          print(f'shard {index + 1}/{shards}: {len(buckets[index])} classes, '
+                f'{load[index]} of {total} tests (loads: {load})')
+          PY
+
+          # A shard that somehow produced no filter must not silently run the
+          # whole suite (or, worse, nothing): that is how a green build lies.
+          if [ ! -s shard-filter.txt ]; then
+            echo "::error::shard filter was not produced - refusing to run"
+            exit 1
+          fi
+          FILTER="$(cat shard-filter.txt)"
+          echo "filter length: ${#FILTER} chars"
+
+          vendor/bin/phpunit --colors=never --filter "$FILTER" --log-junit "../junit-${SHARD}.xml" 2>&1 | tee "../test-output-${SHARD}.log"
           code="${PIPESTATUS[0]}"
-          echo "$code" > ../phpunit-exit-code
+          echo "$code" > "../phpunit-exit-code-${SHARD}"
           echo "PHPUnit exit code: $code (0=success, 1=failures, 2=errors)"
-          # Deliberately not `exit $code`: the reporting step below owns the
-          # verdict, so that failures are annotated even when the suite is red.
+          # Deliberately not `exit $code`: `laravel-report` owns the verdict, so
+          # that failures are annotated even when this shard is red.
           exit 0
 
-      # One step owns the verdict, and it reads the JUnit log rather than
-      # scraping text: every failing test becomes a PR annotation, and the run
-      # fails on any failure, error OR skip. The skip half is the gate
-      # REBUILD.md §4 exists to justify - markTestSkipped() exits zero.
-      - name: Report results, annotate failures, gate on skips
+      - name: Upload this shard's JUnit log
         if: always()
-        env:
-          ALLOW_SKIPS: "0"
+        uses: actions/upload-artifact@v4
+        with:
+          name: laravel-junit-${{ matrix.shard }}
+          path: junit-${{ matrix.shard }}.xml
+          if-no-files-found: error # a shard that ran no tests must not look green
+          retention-days: 7
+
+      - name: Upload the suite output
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: laravel-test-output-${{ matrix.shard }}
+          path: test-output-${{ matrix.shard }}.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # -------------------------------------------------------------------------
+  # One verdict for the whole suite, exactly as strict as the single job it
+  # replaces: every failure and error becomes an annotation, and a skipped test
+  # fails the run (REBUILD.md §4 - markTestSkipped() exits zero).
+  #
+  # It also fixes a counting bug that job had: PHPUnit's JUnit log nests
+  # <testsuite> elements, and summing root.iter('testsuite') counted every suite
+  # once as a parent and again through its children - the run of 2026-10-30 was
+  # announced as "6183 tests" when phpunit itself reported 2028. Counting only
+  # the top level reports the truth.
+  # -------------------------------------------------------------------------
+  laravel-report:
+    name: Laravel suite — verdict
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs: laravel
+    if: always() && needs.laravel.result != 'skipped'
+    env:
+      ALLOW_SKIPS: "0"
+      EXPECT_SHARDS: "4"
+      SHARD_RESULT: ${{ needs.laravel.result }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: laravel-junit-*
+          merge-multiple: true
+
+      - name: Merge, annotate, gate
         run: |
           set -uo pipefail
           python3 - <<'PY'
-          import os, sys, xml.etree.ElementTree as ET
+          import glob, os, sys, xml.etree.ElementTree as ET
 
           def emit(level, title, msg):
               # Workflow-command escaping: % first, then the control chars.
@@ -347,44 +504,59 @@ jobs:
               msg = str(msg).replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
               print(f"::{level} title={clean(title)[:180]}::{msg[:1200]}")
 
-          if not os.path.exists('junit.xml'):
-              emit('error', 'suite did not produce junit.xml',
-                   'PHPUnit never wrote its log. See the test-output.log artifact - the suite '
-                   'crashed or could not start, which is an environment failure, not a test failure.')
-              sys.exit(1)
+          files = sorted(glob.glob('junit-*.xml'))
+          expected = int(os.environ['EXPECT_SHARDS'])
+          bad = False
 
-          root = ET.parse('junit.xml').getroot()
-          tests = sum(int(t.get('tests', 0)) for t in root.iter('testsuite'))
-          assertions = sum(int(t.get('assertions', 0)) for t in root.iter('testsuite'))
-          failures = sum(int(t.get('failures', 0)) for t in root.iter('testsuite'))
-          errors = sum(int(t.get('errors', 0)) for t in root.iter('testsuite'))
-          skipped = sum(int(t.get('skipped', 0)) for t in root.iter('testsuite'))
+          if len(files) != expected:
+              emit('error', 'missing shard logs',
+                   f'expected {expected} JUnit logs, found {len(files)} ({files}). '
+                   'A shard that crashed before writing its log is an environment '
+                   'failure, not a green suite.')
+              bad = True
+
+          tests = assertions = failures = errors = skipped = 0
+          for path in files:
+              root = ET.parse(path).getroot()
+              # Top level only: a nested <testsuite> is already counted by its parent.
+              for ts in root.findall('testsuite'):
+                  tests += int(ts.get('tests', 0))
+                  assertions += int(ts.get('assertions', 0))
+                  failures += int(ts.get('failures', 0))
+                  errors += int(ts.get('errors', 0))
+                  skipped += int(ts.get('skipped', 0))
 
           print(f"Suite: tests={tests} assertions={assertions} "
-                f"failures={failures} errors={errors} skipped={skipped}")
+                f"failures={failures} errors={errors} skipped={skipped} "
+                f"across {len(files)} shard(s)")
+          print(f"shards result: {os.environ.get('SHARD_RESULT', '?')}")
 
-          exit_code = open('phpunit-exit-code').read().strip() if os.path.exists('phpunit-exit-code') else '?'
-          print(f"PHPUnit exit code: {exit_code}")
+          if tests == 0:
+              emit('error', 'no tests ran',
+                   'the merged JUnit logs report zero tests - the suite did not collect.')
+              bad = True
 
           annotated = 0
-          for tc in root.iter('testcase'):
-              for kind in ('failure', 'error'):
-                  el = tc.find(kind)
-                  if el is None:
-                      continue
-                  cls = tc.get('classname') or tc.get('class') or '?'
-                  name = tc.get('name') or '?'
-                  body = (el.get('message') or el.text or '').strip()
-                  body = ' '.join(body.split()) or el.get('type', kind)
-                  emit('error', f"{cls} {name}", f"[{kind}] {body}")
-                  annotated += 1
+          for path in files:
+              for tc in ET.parse(path).getroot().iter('testcase'):
+                  for kind in ('failure', 'error'):
+                      el = tc.find(kind)
+                      if el is None:
+                          continue
+                      cls = tc.get('classname') or tc.get('class') or '?'
+                      name = tc.get('name') or '?'
+                      body = (el.get('message') or el.text or '').strip()
+                      body = ' '.join(body.split()) or el.get('type', kind)
+                      emit('error', f"{cls} {name}", f"[{kind}] {body}")
+                      annotated += 1
+                  if annotated >= 40:
+                      break
               if annotated >= 40:
                   break
           if failures + errors > 40:
               print(f"::notice::{failures + errors - 40} more failing tests not annotated; "
-                    f"see the test-output.log artifact")
+                    "see the laravel-test-output-* artifacts")
 
-          bad = False
           if failures or errors:
               emit('error', 'suite is red',
                    f"{failures} failure(s) and {errors} error(s) out of {tests} tests")
@@ -393,30 +565,18 @@ jobs:
               emit('error', f'{skipped} test(s) SKIPPED',
                    'The suite is not proving what it claims to. Nearly always a missing PDF '
                    'toolchain (chromium, poppler-utils, Vazirmatn) - both are verified earlier '
-                   'in this job. Set ALLOW_SKIPS=1 only if you know why they skipped.')
+                   'in this workflow.')
               bad = True
-          elif skipped:
-              print(f"::warning::{skipped} test(s) skipped (allowed by ALLOW_SKIPS)")
-
-          if tests == 0:
-              emit('error', 'no tests ran', 'junit.xml reports zero tests - the suite did not collect.')
+          if os.environ.get('SHARD_RESULT', 'success') != 'success':
+              emit('error', 'a shard did not succeed',
+                   f"the laravel matrix finished with result '{os.environ.get('SHARD_RESULT')}'; "
+                   'see that job for the infrastructure or timeout failure behind it.')
               bad = True
 
           if bad:
               sys.exit(1)
           print(f"All green: {tests} tests, {assertions} assertions, 0 failures, 0 errors, 0 skipped.")
           PY
-
-      - name: Upload the suite output
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: laravel-test-output
-          path: |
-            test-output.log
-            junit.xml
-          if-no-files-found: ignore
-          retention-days: 14
 
   # -------------------------------------------------------------------------
   # The development image itself. Cheap insurance that a Dockerfile edit did
@@ -426,6 +586,8 @@ jobs:
     name: Development image + compose.yaml
     runs-on: ubuntu-24.04
     timeout-minutes: 40
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     steps:
       - uses: actions/checkout@v4
 
@@ -499,7 +661,8 @@ jobs:
     name: Compose stack boots and serves
     runs-on: ubuntu-24.04
     timeout-minutes: 60
-    needs: image
+    needs: [changes, image]
+    if: needs.changes.outputs.code == 'true' && needs.image.result == 'success'
     steps:
       - uses: actions/checkout@v4
 
