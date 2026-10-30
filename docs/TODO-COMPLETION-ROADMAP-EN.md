@@ -264,10 +264,30 @@
         oracle ✅; guest → login, non-member → forbidden ✅.
       Declared boundaries: the register only — no result, sign-off, binding or
         reconciliation is recorded here.
-- [ ] **A.4h Inspection results — slice 2, part 7** — HTTP/UI surface for recording
-      results (weld/NDT/test pack), ITP stage sign-offs, MTR bindings and legacy
-      reconciliations; ITR export; a reconciliation report comparing a named
-      receipt's quantity with the legacy balance. Depends: A.4g ✅. (M)
+- [x] **A.4h Inspection results — slice 1 (recording results)** — HTTP/UI surface
+      for recording weld / NDT / pressure-test results. Depends: A.4g ✅.
+      (Done — commit `b2ee0e5`: `InspectionResultController` + `quality.results`
+      and three POSTs over a new `InspectionResultService::dashboard()`; a form is
+      rendered only where the register's own function says this actor is
+      nominated, and otherwise the refusal is shown in place of the form; a
+      non-member of the project is refused at the door.
+      * Tests: `InspectionResultHttpTest` 15 tests / 61 assertions green, all
+        recording through HTTP (nomination gates each form, a repair weld needs a
+        reason, a REJECTED examination needs a defect description, an examination
+        is refused until the joint has a weld, a temperature is not a pressure, a
+        PASS carries no failure cause, a test cannot finish before it starts, a
+        resubmission is refused rather than duplicated).
+      * Guide: `docs/QUALITY-RESULT-RECORDING-EN.md` / `-FA.md`.)
+      Acceptance: a form appears only for a nominated actor ✅; the guard's own
+        function is the oracle ✅; a forged POST is still refused in the database
+        ✅; guest → login, non-member → forbidden ✅; nothing is edited ✅.
+      Declared boundaries: recording only — no sign-off screen, no certificate
+        binding, no legacy reconciliation, no ITR export, no completeness
+        judgement, no bulk entry; the joint and pack lists are capped at 500 rows.
+- [ ] **A.4h Inspection results — slice 2** — HTTP/UI for ITP stage sign-offs, MTR
+      bindings and legacy reconciliations; ITR export; a reconciliation report
+      comparing a named receipt's quantity with the legacy balance. Depends:
+      A.4h slice 1 ✅. (M)
 - [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
       digest-bound frozen snapshots; explicit completeness report (missing items
       enumerated, never silently omitted) with the existing bilingual renderer.
