@@ -374,8 +374,29 @@
         mismatch is reported and never converted ✅; no opening count is
         reported as one, not as zero ✅; a retired lot keeps the balance it
         released ✅; the report never posts an adjustment of its own ✅.
-- [ ] **A.4h Inspection results — slice 6** — ITR export from the compiled
-      dossier (the compiler is A.5). Depends: A.5, A.4h slice 5 ✅. (M)
+- [x] **A.4h Inspection results — slice 6 (the ITR compiler gets a surface)** —
+      compile, freeze and export from the screen. Depends: A.5, A.4h slice 5 ✅.
+      (Done — commit `f41c1ed`: `ItrDossierController` +
+      `/projects/{projectCode}/quality/itr` (`quality.itr` + `.freeze` + `.pdf`).
+      The compiler is unchanged: the dossier is still built by
+      `epcc_itr_test_pack_dossier()`, the digest is still trigger-derived, and
+      `itr_snapshots` is still append-only. What the screen adds is honesty the
+      console could not show — completeness is presented as an ENUMERATION of
+      gaps with their line and joint numbers, not as one verdict; every
+      snapshot is re-verified against its digest on every page load; a DRAFT
+      pack is offered no freeze button at all, because the guard would refuse it
+      and a button that only works sometimes is discovery-on-submit; and the
+      PDF route returns 503 with an explanation where no headless browser
+      exists, never an empty document.
+      * Tests: `ItrDossierHttpTest` 14 tests / 61 assertions green (dossier
+        shown, gaps enumerated, digest format and derived kind, snapshot
+        re-verified, DRAFT not freezable, `request_id` idempotent, non-member
+        refused, PDF never empty) + regression 85 tests / 379 assertions.
+      * Guide: `docs/ITR-DOSSIER-SCREEN-EN.md` / `-FA.md`.)
+      Acceptance: the dossier on screen is the compiler's ✅; gaps are
+        enumerated rather than collapsed ✅; every listed snapshot is
+        re-verified ✅; DRAFT is never offered a freeze ✅; the PDF route never
+        returns an empty document ✅; freezing is idempotent on `request_id` ✅.
 - [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
       digest-bound frozen snapshots; explicit completeness report (missing items
       enumerated, never silently omitted) with the existing bilingual renderer.
