@@ -436,10 +436,49 @@
         cleared only by a correction ✅; W/R/M gate nothing ✅; only the pack's
         company or the employer may link ✅; gate, dossier and screen ask one
         function ✅; freezing still records reality including the gap ✅.
-- [ ] **A.5b ITR compiler — slice 2** — subsystem/system and full-dossier scopes
-      (meeting ADR-057), receipt/MTR binding into the dossier (depends: A.4b
-      piece-level custody), formal signature/approval layer on snapshots.
-      Depends: A.5b slice 1 ✅, A.5 ✅, A.4b, F.1. (M)
+- [x] **A.5b ITR compiler — slice 2 (the formal signature layer)** — a name on a
+      frozen dossier. Depends: A.5b slice 1 ✅, A.4d ✅, A.5 ✅.
+      (Done — commit `a0ac504`: `itr_snapshot_signatures` (append-only,
+      RLS+FORCE, forward-only) + `epcc_guard_itr_signature()` and an eighth
+      nomination action, `sign_itr_snapshot`. Three rules make the signature
+      worth something rather than decorative: (a) IT BINDS A DOCUMENT — the
+      digest is derived from the frozen snapshot, never declared, and a snapshot
+      whose dossier no longer matches its own digest is refused, because the
+      table is append-only and a mismatch means the document was changed
+      underneath; (b) AN ENDORSEMENT IS A CLAIM THAT THE DOCUMENT IS FINISHED —
+      `ENDORSED` is refused while the completeness report still enumerates a gap,
+      and the honest way past it is `ENDORSED_WITH_COMMENTS`, whose comments are
+      mandatory by CHECK, while a clean endorsement is refused a reason it does
+      not carry; `REFUSED` is a first-class outcome, not the absence of a
+      signature; (c) SIGNING IS DEFAULT-DENY behind the nomination register, and
+      the policy that authorised each signature is stamped on the row. A second
+      signature from one company is a new row chained to the head — both stand,
+      the latest is that company's word — so no company can hold two histories.
+      The screen is built around the guard, not around a form: no clean
+      endorsement on offer for a dossier with gaps, no form at all for a snapshot
+      whose digest no longer verifies, and no form for a company the guard would
+      refuse. The printed document now follows its own state: unsigned it still
+      says NOT a certificate and nobody has signed it; signed it says who stands
+      behind it and carries the HOLD evidence it was compiled against. The
+      dossier's `kind` is unchanged — a signature is a statement about a
+      document, never a certificate of acceptance.
+      * Tests: `ItrSignatureTest` 22 tests / 98 assertions green — endorsement
+        over gaps refused, comments mandatory and forbidden in the right places,
+        tampered snapshot refused, chaining and staleness, two companies signing
+        independently, idempotent request, the printed document before and after
+        through a renderer that echoes its own input, and the form.
+      * Guide: `docs/ITR-SIGNATURES-EN.md` / `-FA.md`.)
+      Acceptance: a signature binds one frozen document ✅; an endorsement
+        cannot be given over an enumerated gap ✅; the reason is mandatory
+        exactly when it is the only honest way to sign ✅; only a nominated
+        company signs, and the authorising policy is on the row ✅; a later
+        signature chains and never edits ✅; the document's self-description
+        follows its signatures ✅; the `kind` still does not claim a
+        certificate ✅.
+- [ ] **A.5b ITR compiler — slice 3** — subsystem/system scopes and the
+      full-dossier assembly (meeting ADR-057), and receipt/MTR binding into the
+      dossier (depends: A.4b piece-level custody). Depends: A.5b slice 2 ✅,
+      A.5 ✅, A.4b, F.1. (M)
 - [ ] **A.6 Implement ADR-031: TQ/NCR** — the spec is written (two modes
       IN_SYSTEM/EXTERNAL_REGISTER); it only needs implementation: record, routing (via
       ADR-049 if ready, otherwise a simple authority-gated state transition), disposition,
