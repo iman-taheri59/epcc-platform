@@ -53,8 +53,8 @@ use Illuminate\Validation\ValidationException;
 final class ResultRecorderPolicyService
 {
     /**
-     * The seven quality actions this register governs. The CHECK constraint on
-     * the table is the authority; this list is its mirror.
+     * The quality actions this register governs. The CHECK constraint on the
+     * table is the authority; this list is its mirror.
      */
     public const ACTIONS = [
         'record_weld',
@@ -64,6 +64,7 @@ final class ResultRecorderPolicyService
         'sign_off_stage',
         'bind_certificate',
         'reconcile_legacy',
+        'sign_itr_snapshot',
     ];
 
     public function __construct(

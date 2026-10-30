@@ -175,6 +175,7 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::get('/projects/{projectCode}/quality/itr', [ItrDossierController::class, 'show'])->middleware('cache.headers:private;no_store;max_age=0')->name('quality.itr');
     Route::post('/projects/{projectCode}/quality/itr/freeze', [ItrDossierController::class, 'freeze'])->name('quality.itr.freeze');
     Route::post('/projects/{projectCode}/quality/itr/notices', [ItrDossierController::class, 'link'])->name('quality.itr.link');
+    Route::post('/projects/{projectCode}/quality/itr/sign', [ItrDossierController::class, 'sign'])->name('quality.itr.sign');
     Route::get('/projects/{projectCode}/quality/itr/snapshots/{snapshotId}/pdf', [ItrDossierController::class, 'pdf'])->whereUuid('snapshotId')->name('quality.itr.pdf');
 
     // Legacy warehouse reconciliation (ADR-048 A.4h slice 4) — the way through the cutover.

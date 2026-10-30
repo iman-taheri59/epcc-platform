@@ -92,12 +92,44 @@
 <p id="no-snapshots">{{ __('quality_itr.no_snapshots') }}</p>
 @else
 <table data-tt border="1" cellpadding="6" cellspacing="0" id="snapshot-table"><thead><tr>
-<th data-sort="text">{{ __('quality_itr.compiled_at') }}</th><th data-sort="text">{{ __('quality_itr.digest') }}</th><th data-sort="text" data-facet>{{ __('quality_itr.digest_valid') }}</th><th>{{ __('quality_itr.export') }}</th>
+<th data-sort="text">{{ __('quality_itr.compiled_at') }}</th><th data-sort="text">{{ __('quality_itr.digest') }}</th><th data-sort="text" data-facet>{{ __('quality_itr.digest_valid') }}</th><th data-sort="text" data-facet>{{ __('quality_itr.signatures') }}</th><th>{{ __('quality_itr.export') }}</th>
 </tr></thead><tbody>
 @foreach($snapshots as $s)
-<tr><td>{{ $s['row']->compiled_at }}</td><td style="font-family:monospace">{{ substr((string) $s['row']->digest, 0, 16) }}…</td><td data-facet-value="{{ $s['valid'] ? 'valid' : 'mismatch' }}">{{ $s['valid'] ? __('quality_itr.digest_yes') : __('quality_itr.digest_no') }}</td><td>@if($pdfAvailable)<a id="pdf-{{ Str::of($s['row']->id)->substr(0,8) }}" href="{{ route('quality.itr.pdf',['projectCode'=>$project->code,'lang'=>$lang,'snapshotId'=>$s['row']->id]) }}">{{ __('quality_itr.export') }}</a>@else—@endif</td></tr>
+<tr><td>{{ $s['row']->compiled_at }}</td><td style="font-family:monospace">{{ substr((string) $s['row']->digest, 0, 16) }}…</td><td data-facet-value="{{ $s['valid'] ? 'valid' : 'mismatch' }}">{{ $s['valid'] ? __('quality_itr.digest_yes') : __('quality_itr.digest_no') }}</td>
+@php $state = $signatureState->get((string) $s['row']->id); $sigs = $state['signatures'] ?? collect(); @endphp
+<td data-facet-value="{{ $sigs->isEmpty() ? 'none' : ($sigs->contains(fn ($g) => $g->outcome !== 'REFUSED') ? 'endorsed' : 'refused') }}">@forelse($sigs as $g)<div>{{ $g->company_code ?? '—' }} — {{ __('quality_itr.sig_'.$g->outcome) }} <small>{{ $g->signer_name ?? '' }} · {{ $g->signed_at }}</small></div>@empty{{ __('quality_itr.signature_none') }}@endforelse</td><td>@if($pdfAvailable)<a id="pdf-{{ Str::of($s['row']->id)->substr(0,8) }}" href="{{ route('quality.itr.pdf',['projectCode'=>$project->code,'lang'=>$lang,'snapshotId'=>$s['row']->id]) }}">{{ __('quality_itr.export') }}</a>@else—@endif</td></tr>
 @endforeach
 </tbody></table>
+@endif
+
+<h4>{{ __('quality_itr.signatures') }}</h4>
+<p>{{ __('quality_itr.signatures_help') }}</p>
+@if(! $maySign)
+<p id="no-nomination">{{ __('quality_itr.sign_not_nominated') }}</p>
+@elseif($signable->isEmpty())
+<p id="nothing-signable">{{ __('quality_itr.no_snapshots') }}</p>
+@else
+<p>{{ __('quality_itr.sign_help', ['company' => $acting->name($lang)]) }}</p>
+@foreach($signable as $opt)
+<form id="sign-form-{{ Str::of($opt['id'])->substr(0, 8) }}" method="post" action="{{ route('quality.itr.sign', ['projectCode' => $project->code, 'lang' => $lang]) }}">@csrf
+<input type="hidden" name="test_pack_id" value="{{ $pack->id }}"><input type="hidden" name="snapshot_id" value="{{ $opt['id'] }}">
+<input type="hidden" name="previous_signature_id" value="{{ $opt['head_id'] ?? '' }}"><input type="hidden" name="request_id" value="{{ (string) Str::uuid() }}">
+<fieldset><legend><span style="font-family:monospace">{{ $opt['compiled_at'] }} · {{ substr($opt['digest'], 0, 16) }}…</span></legend>
+@if(! $opt['digest_ok'])
+<p id="intact-note-{{ Str::of($opt['id'])->substr(0, 8) }}">{{ __('quality_itr.sign_intact_note') }}</p>
+@else
+@if(! $opt['is_complete'])<p id="gaps-note-{{ Str::of($opt['id'])->substr(0, 8) }}">{{ __('quality_itr.sign_gaps_note') }}</p>@endif
+<label>{{ __('quality_itr.sign_outcome') }} <select name="outcome" id="outcome-{{ Str::of($opt['id'])->substr(0, 8) }}">
+@if($opt['is_complete'])<option value="ENDORSED">{{ __('quality_itr.sig_ENDORSED') }}</option>@endif
+<option value="ENDORSED_WITH_COMMENTS">{{ __('quality_itr.sig_ENDORSED_WITH_COMMENTS') }}</option>
+<option value="REFUSED">{{ __('quality_itr.sig_REFUSED') }}</option>
+</select></label>
+<label>{{ __('quality_itr.sign_reason') }} <textarea name="reason" rows="2" maxlength="4000" id="reason-{{ Str::of($opt['id'])->substr(0, 8) }}"></textarea></label>
+<button type="submit" id="sign-{{ Str::of($opt['id'])->substr(0, 8) }}">{{ __('quality_itr.sign_submit') }}</button>
+@if($opt['head_outcome'] !== null)<small>{{ __('quality_itr.signed', ['outcome' => __('quality_itr.sig_'.$opt['head_outcome'])]) }}</small>@endif
+@endif
+</fieldset></form>
+@endforeach
 @endif
 @endif
 </section></div></div></body></html>

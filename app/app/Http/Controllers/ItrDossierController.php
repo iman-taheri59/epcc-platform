@@ -8,6 +8,7 @@ use App\Models\PipingTestPack;
 use App\Models\Project;
 use App\Models\User;
 use App\Services\ItrCompilerService;
+use App\Services\ItrSignatureService;
 use App\Services\PdfRenderer;
 use App\Services\TestPackNotificationService;
 use App\Support\TenantContext;
@@ -16,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -44,6 +46,7 @@ final class ItrDossierController extends Controller
     public function __construct(
         private readonly ItrCompilerService $itr,
         private readonly TestPackNotificationService $notices,
+        private readonly ItrSignatureService $signatures,
         private readonly PdfRenderer $pdf,
         private readonly TenantContext $tenant,
     ) {}
@@ -91,6 +94,13 @@ final class ItrDossierController extends Controller
                 ])
             : collect();
 
+        // Signatures are read per snapshot, in one query, from the same
+        // expressions the guard uses: a screen that offered "endorse" for a
+        // dossier with gaps would only be refused on submit.
+        $signatureState = $snapshots->isNotEmpty()
+            ? $this->signatures->forSnapshots($project, $actor, $snapshots->pluck('row.id')->map(fn ($id) => (string) $id)->all())
+            : collect();
+
         return view('quality.itr', [
             'project' => $project,
             'lang' => $lang,
@@ -108,6 +118,13 @@ final class ItrDossierController extends Controller
                 ? $this->notices->eligibleForPack($project, $actor, (string) $pack->id)
                 : collect(),
             'snapshots' => $snapshots,
+            'signatureState' => $signatureState,
+            'signable' => $pack !== null
+                ? $this->signatures->signableFor($project, $actor, (string) $pack->id)
+                : collect(),
+            // Asked of the register the guard itself asks: one definition of
+            // authority, so the form is never shown to someone it would refuse.
+            'maySign' => $this->signatures->nominationFor($project, $actor) !== null,
             'pdfAvailable' => $this->pdf->isAvailable(),
             'requestId' => (string) Str::uuid(),
             'linkRequestId' => (string) Str::uuid(),
@@ -165,6 +182,38 @@ final class ItrDossierController extends Controller
     }
 
     /**
+     * Signs one frozen dossier. The outcome that is offered on the form is the
+     * outcome the guard will accept: a dossier with enumerated gaps has no
+     * clean endorsement on offer at all.
+     */
+    public function sign(Request $request, string $projectCode): RedirectResponse
+    {
+        [$project, $lang] = $this->context($request, $projectCode);
+        $validated = $request->validate([
+            'test_pack_id' => ['required', 'uuid'],
+            'snapshot_id' => ['required', 'uuid'],
+            'outcome' => ['required', 'string', Rule::in(ItrSignatureService::OUTCOMES)],
+            'reason' => ['nullable', 'string', 'max:4000'],
+            'previous_signature_id' => ['nullable', 'uuid'],
+            'request_id' => ['required', 'uuid'],
+        ]);
+
+        $signed = $this->signatures->sign(
+            $project,
+            $request->user(),
+            (string) $validated['snapshot_id'],
+            $validated,
+            $lang,
+        );
+
+        return redirect()->route('quality.itr', [
+            'projectCode' => $projectCode,
+            'lang' => $lang,
+            'pack' => $validated['test_pack_id'],
+        ])->with('status', __('quality_itr.signed', ['outcome' => __('quality_itr.sig_'.$signed['outcome'])]));
+    }
+
+    /**
      * The frozen dossier as a bilingual PDF. Optional by host: without a
      * headless browser the data is still the deliverable, so this says so
      * instead of handing back an empty document.
@@ -175,7 +224,21 @@ final class ItrDossierController extends Controller
 
         abort_unless($this->pdf->isAvailable(), 503, __('quality_itr.pdf_unavailable'));
 
-        $bytes = $this->itr->renderPdf($project, $request->user(), $snapshotId, $lang);
+        $actor = $request->user();
+
+        // The printed document carries the evidence the dossier was compiled
+        // from and every signature on it — a signed dossier that hid the HOLD
+        // evidence would be less honest than an unsigned one.
+        [$notifications, $signatures] = $this->tenant->runAs($actor->company_id, function () use ($project, $actor, $snapshotId, $lang): array {
+            $packId = DB::table('itr_snapshots')->where('id', $snapshotId)->value('test_pack_id');
+
+            return [
+                $packId !== null ? $this->notices->forPack($project, $actor, (string) $packId, $lang) : collect(),
+                $this->signatures->latestPerCompany($project, $actor, $snapshotId),
+            ];
+        }, $project->id);
+
+        $bytes = $this->itr->renderPdf($project, $actor, $snapshotId, $lang, $notifications, $signatures);
         abort_if($bytes === null, 404);
 
         return response($bytes, 200, [

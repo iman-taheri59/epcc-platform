@@ -61,6 +61,42 @@
         'empty'    => ['fa' => '(هیچ رکوردی وجود ندارد)', 'en' => '(no records exist)'],
         'external' => ['fa' => 'بیرونی', 'en' => 'External'],
         'internal' => ['fa' => 'داخلی', 'en' => 'In-system'],
+
+        // A.5b slice 2 — signatures, and the HOLD evidence they stand beside.
+        // The strap and the warning are NOT constants any more: they follow the
+        // document. An unsigned dossier keeps saying, plainly, that it is not a
+        // certificate — and a signed one says who stands behind it instead.
+        'signed_strap' => ['fa' => 'گردآوری شواهد کیفی یک بستهٔ آزمون — امضاشده به عنوان مدرک، نه گواهی', 'en' => 'Quality-evidence compilation for one test pack — signed as evidence, not a certificate'],
+        'warn_unsigned' => ['fa' => 'این سند گواهی نیست؛ گردآوری رکوردهای موجود است و فقرات غایب صریحاً درج شده‌اند. هیچ‌کس آن را امضا نکرده است.', 'en' => 'This document is NOT a certificate; it compiles the records that exist and enumerates the gaps explicitly. Nobody has signed it.'],
+        'warn_signed' => ['fa' => 'این سند گواهیِ پذیرش نیست؛ مدرکی است امضاشده از سویِ طرف‌های فهرست‌شده در انتها، و امضا فراتر از نتیجهٔ درج‌شده نظری را حمل نمی‌کند.', 'en' => 'This document is not a certificate of acceptance; it is evidence, signed by the parties listed at the end, and a signature carries no opinion beyond the outcome stated.'],
+        'sig_title' => ['fa' => 'امضاها', 'en' => 'Signatures'],
+        'sig_none' => ['fa' => 'هیچ امضایی روی این سند ثبت نشده است.', 'en' => 'No signature has been recorded on this document.'],
+        'sig_company' => ['fa' => 'شرکت', 'en' => 'Company'],
+        'sig_by' => ['fa' => 'امضاکننده', 'en' => 'Signer'],
+        'sig_at' => ['fa' => 'زمان امضا', 'en' => 'Signed at'],
+        'sig_outcome' => ['fa' => 'نتیجه', 'en' => 'Outcome'],
+        'sig_reason' => ['fa' => 'توضیح / علت', 'en' => 'Comments / cause'],
+        'sig_digest' => ['fa' => 'digest ی سندِ امضاشده', 'en' => 'Digest of the signed document'],
+        'sig_ENDORSED' => ['fa' => 'تأیید', 'en' => 'Endorsed'],
+        'sig_ENDORSED_WITH_COMMENTS' => ['fa' => 'تأیید با توضیح', 'en' => 'Endorsed with comments'],
+        'sig_REFUSED' => ['fa' => 'خودداری از امضا', 'en' => 'Refused to sign'],
+        'notices_title' => ['fa' => 'اعلام‌های بازرسیِ پیوندخورده', 'en' => 'Linked inspection notices'],
+        'notices_none' => ['fa' => 'هیچ اعلامِ بازرسی به این بسته پیوند نخورده است.', 'en' => 'No inspection notice is linked to this pack.'],
+        'notice' => ['fa' => 'اعلام', 'en' => 'Notice'],
+        'point' => ['fa' => 'نقطه', 'en' => 'Point'],
+        'holder' => ['fa' => 'وضعیت توقف', 'en' => 'Hold state'],
+        'stage' => ['fa' => 'مرحله', 'en' => 'Stage'],
+        'outcome' => ['fa' => 'امضای بازرسی', 'en' => 'Inspection sign-off'],
+        'hold_NOT_SIGNED' => ['fa' => 'امضانشده', 'en' => 'not signed'],
+        'hold_CLEARED' => ['fa' => 'آزاد', 'en' => 'cleared'],
+        'hold_REJECTED' => ['fa' => 'مردود', 'en' => 'rejected'],
+        'hold_CANCELLED' => ['fa' => 'لغو', 'en' => 'cancelled'],
+        'hold_NOT_ISSUED' => ['fa' => 'صادرنشده', 'en' => 'not issued'],
+        'hold_NOT_VISIBLE' => ['fa' => 'نامرئی', 'en' => 'not visible'],
+        'outcome_ACCEPTED' => ['fa' => 'پذیرفته', 'en' => 'Accepted'],
+        'outcome_ACCEPTED_WITH_COMMENTS' => ['fa' => 'پذیرفته با توضیح', 'en' => 'Accepted with comments'],
+        'outcome_REJECTED' => ['fa' => 'مردود', 'en' => 'Rejected'],
+        'outcome_WAIVED_NOT_ATTENDED' => ['fa' => 'چشم‌پوشی — کسی نیامد', 'en' => 'Waived — nobody attended'],
     ];
     $L = fn (string $k): string => $fa ? $t[$k]['fa'] : $t[$k]['en'];
     $pack = $dossier['pack'] ?? [];
@@ -70,15 +106,26 @@
     $stamp = fn ($v) => $v === null || $v === '' ? '—' : substr(str_replace(['T', '+03:30', 'Z'], [' ', '', ''], (string) $v), 0, 16);
     $modeLabel = fn ($m) => ($m === 'EXTERNAL_REGISTER' ? $L('external') : $L('internal'))
         . ($m === 'EXTERNAL_REGISTER' && ! empty($pack) ? '' : '');
+
+    // Evidence passed in by the caller (A.5b slice 2). Both are optional on
+    // purpose: this view has always been renderable from the snapshot alone.
+    $signatures = collect($signatures ?? []);
+    $notifications = collect($notifications ?? []);
+    $endorsements = $signatures->reject(fn ($s) => ($s->outcome ?? null) === 'REFUSED')->values();
+    $isSigned = $endorsements->isNotEmpty();
 @endphp
 @section('document')
 <header class="doc">
   <div class="org">{{ $L('org') }}</div>
   <h1>{{ $L('title') }}</h1>
-  <div class="strap">{{ $L('strap') }}</div>
+  <div class="strap">{{ $isSigned ? $L('signed_strap') : $L('strap') }}</div>
 </header>
 
-<div class="warn">{{ $L('warn') }}</div>
+@if($isSigned)
+  <div class="warn signed">{{ $L('warn_signed') }}</div>
+@else
+  <div class="warn">{{ $L('warn_unsigned') }}</div>
+@endif
 
 <table class="meta">
   <tr><td class="k">{{ $L('pack') }}</td><td><span class="mono">{{ $short($pack['code'] ?? null) }}</span> — {{ $fa ? $short($pack['title_fa'] ?? null) : $short($pack['title_en'] ?? null) }}</td></tr>
@@ -203,4 +250,53 @@
   @endforelse
   </tbody>
 </table>
+
+@if($notifications->isNotEmpty())
+<h2>{{ $L('notices_title') }}</h2>
+<table class="grid">
+  <thead><tr>
+    <th>{{ $L('notice') }}</th><th>{{ $L('point') }}</th><th>{{ $L('holder') }}</th>
+    <th>{{ $L('stage') }}</th><th>{{ $L('outcome') }}</th>
+  </tr></thead>
+  <tbody>
+  @foreach($notifications as $n)
+    <tr>
+      <td><span class="mono">{{ $n['number'] ?? '—' }}</span></td>
+      <td><span class="mono">{{ $n['point'] ?? '—' }}</span></td>
+      <td>{{ $L('hold_'.($n['hold_state'] ?? 'NOT_VISIBLE')) }}</td>
+      <td>{{ $n['stage_description'] ?? '—' }}</td>
+      <td>
+        @forelse($n['signoffs'] ?? [] as $so)
+          {{ $L('outcome_'.($so['outcome'] ?? '')) }}@if(! empty($so['is_employer'])) <span class="note">({{ $L('org') }})</span>@endif<br><span class="note">{{ $stamp($so['signed_at'] ?? null) }}</span>@if(! $loop->last)<br>@endif
+        @empty—@endforelse
+      </td>
+    </tr>
+  @endforeach
+  </tbody>
+</table>
+@endif
+
+<h2>{{ $L('sig_title') }}</h2>
+@if($signatures->isEmpty())
+  <div class="box">{{ $L('sig_none') }}</div>
+@else
+<table class="grid">
+  <thead><tr>
+    <th>{{ $L('sig_company') }}</th><th>{{ $L('sig_by') }}</th><th>{{ $L('sig_at') }}</th>
+    <th>{{ $L('sig_outcome') }}</th><th>{{ $L('sig_reason') }}</th><th>{{ $L('sig_digest') }}</th>
+  </tr></thead>
+  <tbody>
+  @foreach($signatures as $s)
+    <tr>
+      <td><span class="mono">{{ $s->company_code ?? '—' }}</span></td>
+      <td>{{ $s->signer_name ?? '—' }}</td>
+      <td><span class="mono">{{ $stamp($s->signed_at ?? null) }}</span></td>
+      <td><strong>{{ $L('sig_'.($s->outcome ?? '')) }}</strong></td>
+      <td>{{ $s->reason ?? '—' }}</td>
+      <td><span class="mono" style="font-size:7pt">{{ substr((string) ($s->digest ?? ''), 0, 16) }}…</span></td>
+    </tr>
+  @endforeach
+  </tbody>
+</table>
+@endif
 @endsection

@@ -174,8 +174,23 @@ final class ItrCompilerService
      * Returns null when no headless browser exists on this host (the
      * TransmittalPackager contract: data first, bytes optional).
      */
-    public function renderPdf(Project $project, User $actor, string $snapshotId, string $lang = 'fa'): ?string
-    {
+    /**
+     * The frozen dossier as a document. Evidence is passed in rather than
+     * re-read here because what a printed ITR carries — the HOLD notices it
+     * was compiled against, and every company's current signature — belongs to
+     * the caller's view of the project, not to the compiler's.
+     *
+     * @param  Collection<int, array<string, mixed>>  $notifications
+     * @param  Collection<int, object>  $signatures
+     */
+    public function renderPdf(
+        Project $project,
+        User $actor,
+        string $snapshotId,
+        string $lang = 'fa',
+        ?Collection $notifications = null,
+        ?Collection $signatures = null,
+    ): ?string {
         $snap = $this->snapshot($project, $actor, $snapshotId);
         if ($snap === null || ! $snap['digest_valid'] || ! $this->pdf->isAvailable()) {
             return null;
@@ -189,6 +204,8 @@ final class ItrCompilerService
             'completeness' => $completeness,
             'digest' => (string) $snap['row']->digest,
             'compiledAt' => (string) $snap['row']->compiled_at,
+            'notifications' => $notifications ?? collect(),
+            'signatures' => $signatures ?? collect(),
         ])->render());
     }
 
