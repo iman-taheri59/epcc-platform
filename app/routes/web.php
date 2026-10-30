@@ -8,6 +8,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\GateDemoController;
 use App\Http\Controllers\InspectionNotificationController;
 use App\Http\Controllers\InspectionResultController;
+use App\Http\Controllers\ItrDossierController;
 use App\Http\Controllers\ItpSignOffController;
 use App\Http\Controllers\LegacyReconciliationController;
 use App\Http\Controllers\MtrBindingController;
@@ -169,6 +170,11 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     // Quality nomination register (ADR-048 A.4g slice 1) — who may record what.
     Route::get('/projects/{projectCode}/quality/nominations', [QualityNominationController::class, 'show'])->middleware('cache.headers:private;no_store;max_age=0')->name('quality.nominations');
     Route::post('/projects/{projectCode}/quality/nominations', [QualityNominationController::class, 'store'])->name('quality.nominations.store');
+
+    // ITR dossiers (ADR-048 A.5 slice 1 + A.4h slice 6) — compile, freeze, export.
+    Route::get('/projects/{projectCode}/quality/itr', [ItrDossierController::class, 'show'])->middleware('cache.headers:private;no_store;max_age=0')->name('quality.itr');
+    Route::post('/projects/{projectCode}/quality/itr/freeze', [ItrDossierController::class, 'freeze'])->name('quality.itr.freeze');
+    Route::get('/projects/{projectCode}/quality/itr/snapshots/{snapshotId}/pdf', [ItrDossierController::class, 'pdf'])->whereUuid('snapshotId')->name('quality.itr.pdf');
 
     // Legacy warehouse reconciliation (ADR-048 A.4h slice 4) — the way through the cutover.
     Route::get('/projects/{projectCode}/quality/legacy', [LegacyReconciliationController::class, 'show'])->middleware('cache.headers:private;no_store;max_age=0')->name('quality.legacy');

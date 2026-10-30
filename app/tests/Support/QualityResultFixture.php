@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Models\Joint;
+use App\Models\PipingLine;
 use App\Models\PipingClass;
 use App\Models\PipingTestPack;
 use App\Models\Project;
@@ -37,10 +38,21 @@ use Illuminate\Support\Facades\DB;
  */
 final class QualityResultFixture
 {
-    /** A joint in FITTED state - the only state a weld may be recorded against. */
-    public static function fittedJoint(TenantContext $tenant, Project $project, User $owner, string $size = '6'): Joint
-    {
-        $line = self::line($tenant, $project, $owner, $size);
+    /**
+     * A joint in FITTED state - the only state a weld may be recorded against.
+     *
+     * $line is optional so a caller that needs the line as well (the ITR
+     * dossier, which compiles a pack's lines) can build both on the same one
+     * instead of creating a second line nobody asked for.
+     */
+    public static function fittedJoint(
+        TenantContext $tenant,
+        Project $project,
+        User $owner,
+        string $size = '6',
+        ?PipingLine $line = null,
+    ): Joint {
+        $line ??= self::line($tenant, $project, $owner, $size);
 
         return $tenant->runAs($project->owner_company_id, function () use ($line, $owner): Joint {
             $components = app(ComponentService::class);
@@ -72,7 +84,8 @@ final class QualityResultFixture
         );
     }
 
-    private static function line(TenantContext $tenant, Project $project, User $owner, string $size): mixed
+    /** A line with an approved PMS class - the ground a joint needs. */
+    public static function line(TenantContext $tenant, Project $project, User $owner, string $size = '6'): PipingLine
     {
         return $tenant->runAs($project->owner_company_id, function () use ($project, $owner, $size) {
             $lines = app(PipingLineService::class);

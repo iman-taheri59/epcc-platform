@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'title' => 'ITR dossiers',
+    'boundary' => 'A compilation of the records this project already holds — not a certificate. The completeness report enumerates every gap rather than collapsing them into a verdict: unreleased lines, unfitted joints, joints without a weld or an examination, open rejections, and a pack with no passed result. Freezing stores the dossier under a digest derived server-side, so a preview and a frozen snapshot taken at the same moment are identical, and a snapshot can never be edited afterwards.',
+    'nominations' => 'Nomination register',
+    'results' => 'Result recording',
+    'signoffs' => 'ITP sign-offs',
+    'mtr' => 'MTR registry',
+    'legacy' => 'Legacy reconciliation',
+
+    'packs' => 'Test packs',
+    'pack' => 'Test pack',
+    'state' => 'State',
+    'subsystem' => 'Subsystem',
+    'no_packs' => 'No test pack has been defined in this project.',
+    'select' => 'Select',
+    'open' => 'Open',
+
+    'dossier' => 'Compiled dossier',
+    'kind' => 'This is a compilation of records, not a certificate.',
+    'complete' => 'Complete',
+    'complete_yes' => 'Complete',
+    'complete_no' => 'Not complete — see the gaps below',
+    'counts' => 'Counts',
+    'lines' => 'Lines',
+    'joints' => 'Joints',
+    'welds' => 'Welds',
+    'ndt' => 'Examinations',
+    'test_results' => 'Test results',
+
+    'gaps' => 'Gaps (enumerated, never hidden)',
+    'gap_lines_not_released' => 'Lines not released',
+    'gap_joints_not_fitted' => 'Joints not fitted',
+    'gap_joints_without_weld_record' => 'Joints with no weld record',
+    'gap_joints_without_ndt' => 'Joints with no examination record',
+    'gap_joints_with_open_rejection' => 'Joints with an open rejection',
+    'gap_pack_without_passed_result' => 'Pack has no passed result',
+    'no_gaps' => 'No gap was found.',
+    'line_number' => 'Line',
+    'joint' => 'Joint',
+
+    'freeze_title' => 'Freeze a snapshot',
+    'freeze_help' => 'Freezing stores the dossier exactly as it compiles now, under a digest computed in the database. A snapshot is append-only: a correction is a new snapshot, never an edit.',
+    'submit' => 'Freeze the snapshot',
+    'saved' => 'Snapshot frozen with digest :digest…',
+    'draft_note' => 'This pack is still DRAFT, so there is nothing to freeze yet — an ITR snapshot of an unprepared pack would be premature.',
+    'pdf_unavailable' => 'PDF rendering is unavailable on this host. The dossier itself is the deliverable and is shown on this page; ask the operator to enable the headless browser and fonts.',
+
+    'snapshots' => 'Frozen snapshots',
+    'snapshot' => 'Snapshot',
+    'digest' => 'Digest',
+    'digest_valid' => 'Re-verified',
+    'digest_yes' => 'Valid',
+    'digest_no' => 'MISMATCH — the stored dossier no longer matches its digest',
+    'compiled_at' => 'Compiled at',
+    'compiled_by' => 'Compiled by',
+    'export' => 'PDF',
+    'no_snapshots' => 'No snapshot has been frozen for this pack.',
+];
