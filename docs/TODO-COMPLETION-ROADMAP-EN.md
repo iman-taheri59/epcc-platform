@@ -332,9 +332,34 @@
       Declared boundaries: no document upload or PDF parsing, no bulk import,
         no legacy reconciliation surface, no ITR export; coverage counts rather
         than judges.
-- [ ] **A.4h Inspection results — slice 4** — HTTP/UI for legacy `material_lots`
-      reconciliation; ITR export; a reconciliation report comparing a named
-      receipt's quantity with the legacy balance. Depends: A.4h slice 3 ✅. (M)
+- [x] **A.4h Inspection results — slice 4 (legacy reconciliation)** — HTTP/UI for
+      deciding about legacy `material_lots`. Depends: A.4h slice 3 ✅.
+      (Done — commit `c0ea7ab`: `LegacyReconciliationController` +
+      `quality.legacy` and one POST over a new
+      `LegacyMaterialReconciliationService::dashboard()`. ADR-047 closed the
+      legacy warehouse and made the GRN guard refuse any order that still has
+      legacy lots — right, but it was a wall, and A.4f's decision could only be
+      recorded from SQL. One lot is now either taken over (by a custody record
+      attesting its own heat — a different heat is different steel) or retired
+      with a reason. The take-over field lists only the receipts that MAY take
+      it over: offering the rest would be asking someone to make a decision in
+      order to be told it was never theirs to make.
+      * Tests: `LegacyReconciliationHttpTest` 13 tests / 56 assertions green,
+        all through HTTP (nomination gates the form, heat and item are derived
+        from the lot, a mismatched heat is refused, only eligible receipts are
+        offered, a decision without a reason is refused, a stale submission is
+        refused and both rows stay once it names the head, a resubmission is
+        refused rather than double-deciding).
+      * Guide: `docs/LEGACY-RECONCILIATION-SCREEN-EN.md` / `-FA.md`.)
+      Acceptance: a form appears only for a nominated actor ✅; the identity is
+        the lot's own, never the caller's ✅; every decision is reasoned ✅; a
+        later decision supersedes and never edits ✅; guest → login, non-member
+        → forbidden ✅.
+      Declared boundaries: this reconciles the gate, not the ledger — the
+        quantity reconciliation report and ITR export are still open.
+- [ ] **A.4h Inspection results — slice 5** — ITR export; a reconciliation report
+      comparing a named receipt's quantity with the legacy balance. Depends:
+      A.4h slice 4 ✅. (M)
 - [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
       digest-bound frozen snapshots; explicit completeness report (missing items
       enumerated, never silently omitted) with the existing bilingual renderer.
