@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Joint;
+use App\Models\PipingTestPack;
 use App\Models\Project;
 use App\Models\User;
 use App\Support\TenantContext;
@@ -48,9 +50,13 @@ final class InspectionResultService
 
     public const MODES = ['IN_SYSTEM', 'EXTERNAL_REGISTER'];
 
+    /** The three actions the results screen can take, each nomination-gated. */
+    public const ACTIONS = ['record_weld', 'record_ndt', 'record_pack_result'];
+
     public function __construct(
         private readonly TenantContext $tenant,
         private readonly UnitRegistry $units,
+        private readonly ResultRecorderPolicyService $nominations,
     ) {}
 
     /** Runs $fn in the result session contract: project, recording company, result actor. */
@@ -303,6 +309,59 @@ final class InspectionResultService
     // ---------------------------------------------------------------- readers
 
     /** Weld + NDT history of one joint, oldest first. */
+    /**
+     * Everything the results screen needs, and nothing it must not have.
+     *
+     * The screen is built around the nomination register: each of the three
+     * forms is offered only when `epcc_result_nomination()` says this actor is
+     * nominated for that action, and otherwise says so out loud instead of
+     * offering a form that would be refused. The answer comes from the same
+     * function the guards call, so the page and the database cannot disagree
+     * about what may be recorded.
+     *
+     * @return array{project: Project, joints: \Illuminate\Support\Collection, packs: \Illuminate\Support\Collection, joint: ?Joint, history: ?array, pack: ?PipingTestPack, packResults: ?\Illuminate\Support\Collection, nominations: array<string,?string>, pressureUnits: array<int,array<string,mixed>>}
+     */
+    public function dashboard(Project $project, User $actor, ?string $jointId = null, ?string $packId = null, string $lang = 'fa'): array
+    {
+        return $this->scoped($project, $actor, function () use ($project, $actor, $jointId, $packId, $lang): array {
+            $joints = Joint::with('line')->where('project_id', $project->id)
+                ->orderBy('joint_seq')->orderBy('id')->limit(500)->get();
+
+            // A pack that is still DRAFT cannot be tested and one that is
+            // ACCEPTED is finished; offering either would invite a refusal.
+            $packs = PipingTestPack::where('project_id', $project->id)
+                ->whereIn('state', [PipingTestPack::READY, PipingTestPack::TESTED])
+                ->orderBy('code')->limit(500)->get();
+
+            $joint = $jointId !== null && $jointId !== ''
+                ? $joints->firstWhere('id', $jointId)
+                : null;
+            $pack = $packId !== null && $packId !== ''
+                ? $packs->firstWhere('id', $packId)
+                : null;
+
+            $nominations = [];
+            foreach (self::ACTIONS as $action) {
+                $nominations[$action] = $this->nominations->nominationFor($project, $actor, $action);
+            }
+
+            return [
+                'project' => $project,
+                'joints' => $joints,
+                'packs' => $packs,
+                'joint' => $joint,
+                'history' => $joint !== null ? $this->jointHistory($project, $actor, (string) $joint->id) : null,
+                'pack' => $pack,
+                'packResults' => $pack !== null ? $this->packResults($project, $actor, (string) $pack->id) : null,
+                'nominations' => $nominations,
+                'pressureUnits' => $this->units->selectableUnitsFor('PRESSURE'),
+                'pressureUnitLabels' => collect($this->units->selectableUnitsFor('PRESSURE'))
+                    ->mapWithKeys(fn (array $unit): array => [(string) $unit['code'] => $this->units->label((string) $unit['code'], $lang)])
+                    ->all(),
+            ];
+        });
+    }
+
     public function jointHistory(Project $project, User $actor, string $jointId): array
     {
         return $this->scoped($project, $actor, fn () => [

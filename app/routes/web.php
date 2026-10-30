@@ -7,6 +7,7 @@ use App\Http\Controllers\DemandReaderController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\GateDemoController;
 use App\Http\Controllers\InspectionNotificationController;
+use App\Http\Controllers\InspectionResultController;
 use App\Http\Controllers\MaterialsController;
 use App\Http\Controllers\OrderGapController;
 use App\Http\Controllers\PipingConfigController;
@@ -165,6 +166,12 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     // Quality nomination register (ADR-048 A.4g slice 1) — who may record what.
     Route::get('/projects/{projectCode}/quality/nominations', [QualityNominationController::class, 'show'])->middleware('cache.headers:private;no_store;max_age=0')->name('quality.nominations');
     Route::post('/projects/{projectCode}/quality/nominations', [QualityNominationController::class, 'store'])->name('quality.nominations.store');
+
+    // Recording inspection results (ADR-048 A.4h slice 1) — weld, NDT, test pack.
+    Route::get('/projects/{projectCode}/quality/results', [InspectionResultController::class, 'show'])->middleware('cache.headers:private;no_store;max_age=0')->name('quality.results');
+    Route::post('/projects/{projectCode}/quality/results/weld', [InspectionResultController::class, 'storeWeld'])->name('quality.results.weld');
+    Route::post('/projects/{projectCode}/quality/results/ndt', [InspectionResultController::class, 'storeNdt'])->name('quality.results.ndt');
+    Route::post('/projects/{projectCode}/quality/results/pack', [InspectionResultController::class, 'storePack'])->name('quality.results.pack');
     Route::get('/projects/{projectCode}/materials', [MaterialsController::class, 'warehouse'])->name('materials');
     Route::post('/projects/{projectCode}/materials/issue', [MaterialsController::class, 'issue'])->name('materials.issue');
     Route::post('/projects/{projectCode}/materials/deliver', [MaterialsController::class, 'deliver'])->name('materials.deliver');
