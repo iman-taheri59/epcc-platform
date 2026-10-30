@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\User;
 use App\Services\ItrCompilerService;
 use App\Services\PdfRenderer;
+use App\Services\TestPackNotificationService;
 use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,6 +43,7 @@ final class ItrDossierController extends Controller
 
     public function __construct(
         private readonly ItrCompilerService $itr,
+        private readonly TestPackNotificationService $notices,
         private readonly PdfRenderer $pdf,
         private readonly TenantContext $tenant,
     ) {}
@@ -99,9 +101,16 @@ final class ItrDossierController extends Controller
             'pack' => $pack,
             'dossier' => $compiled['dossier'] ?? null,
             'completeness' => $compiled['completeness'] ?? null,
+            'notifications' => $pack !== null
+                ? $this->notices->forPack($project, $actor, (string) $pack->id, $lang)
+                : collect(),
+            'eligible' => $pack !== null
+                ? $this->notices->eligibleForPack($project, $actor, (string) $pack->id)
+                : collect(),
             'snapshots' => $snapshots,
             'pdfAvailable' => $this->pdf->isAvailable(),
             'requestId' => (string) Str::uuid(),
+            'linkRequestId' => (string) Str::uuid(),
         ]);
     }
 
@@ -123,6 +132,36 @@ final class ItrDossierController extends Controller
             'lang' => $lang,
             'pack' => $validated['test_pack_id'],
         ])->with('status', __('quality_itr.saved', ['digest' => substr($snapshot['digest'], 0, 12)]));
+    }
+
+    /**
+     * Links one inspection notice to one pack. The link is what makes the
+     * sign-off register load bearing: from here on, a HOLD point on that
+     * notice gates the pack's claim to have been tested or accepted.
+     */
+    public function link(Request $request, string $projectCode): RedirectResponse
+    {
+        [$project, $lang] = $this->context($request, $projectCode);
+        $validated = $request->validate([
+            'test_pack_id' => ['required', 'uuid'],
+            'notification_id' => ['required', 'uuid'],
+            'request_id' => ['required', 'uuid'],
+        ]);
+
+        $linked = $this->notices->link(
+            $project,
+            $request->user(),
+            (string) $validated['test_pack_id'],
+            (string) $validated['notification_id'],
+            (string) $validated['request_id'],
+            $lang,
+        );
+
+        return redirect()->route('quality.itr', [
+            'projectCode' => $projectCode,
+            'lang' => $lang,
+            'pack' => $validated['test_pack_id'],
+        ])->with('status', __('quality_itr.linked', ['number' => $linked['number']]));
     }
 
     /**

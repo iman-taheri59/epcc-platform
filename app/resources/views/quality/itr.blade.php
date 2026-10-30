@@ -39,10 +39,42 @@
 <tr><td data-facet-value="{{ $key }}">{{ __('quality_itr.'.$label) }}</td><td>@foreach($missing[$key] as $m)<span>{{ $m['line_number'] }}@if(($m['joint_seq'] ?? null) !== null)/J{{ $m['joint_seq'] }}@endif</span>@if(! $loop->last) · @endif @endforeach</td></tr>
 @endif
 @endforeach
+@if(! empty($missing['hold_notifications_not_cleared']))
+<tr><td data-facet-value="hold_notifications_not_cleared">{{ __('quality_itr.gap_hold_notifications_not_cleared') }}</td><td>@foreach($missing['hold_notifications_not_cleared'] as $h)<span>{{ $h['number'] }} — {{ __('quality_itr.hold_'.strtolower((string) $h['hold_state'])) }}</span>@if(! $loop->last) · @endif @endforeach</td></tr>
+@endif
 @if(! empty($missing['pack_without_passed_result']))
 <tr><td data-facet-value="pack_without_passed_result">{{ __('quality_itr.gap_pack_without_passed_result') }}</td><td>—</td></tr>
 @endif
 </tbody></table>
+@endif
+
+<h4 id="notices-heading">{{ __('quality_itr.notices_title') }}</h4>
+<p>{{ __('quality_itr.notices_help') }}</p>
+@if($notifications->isEmpty())
+<p id="no-notices">{{ __('quality_itr.no_notices') }}</p>
+@else
+<table data-tt border="1" cellpadding="6" cellspacing="0" id="notice-table"><thead><tr>
+<th data-sort="text">{{ __('quality_itr.notice') }}</th><th data-sort="text">{{ __('quality_itr.point') }}</th><th data-sort="text" data-facet>{{ __('quality_itr.holder') }}</th><th>{{ __('quality_itr.stage') }}</th><th>{{ __('quality_itr.outcome') }}</th>
+</tr></thead><tbody>
+@foreach($notifications as $n)
+<tr><td>{{ $n['number'] }}</td><td>{{ $n['point'] }}</td><td data-facet-value="{{ \Illuminate\Support\Str::lower($n['hold_state']) }}">{{ __('quality_itr.hold_'.\Illuminate\Support\Str::lower($n['hold_state'])) }}</td><td>{{ $n['stage_description'] }}</td><td>@if($n['signoffs'] === []){{ __('quality_itr.signoff_none') }}@else @foreach($n['signoffs'] as $so)<div>{{ __('quality_itr.outcome_'.$so['outcome']) }}@if($so['is_employer']) <small>({{ __('quality_itr.employer_tag') }})</small>@endif <small>{{ $so['signed_at'] }}</small></div>@endforeach @endif</td></tr>
+@endforeach
+</tbody></table>
+@endif
+
+<h4>{{ __('quality_itr.link_title') }}</h4>
+<p>{{ __('quality_itr.link_help') }}</p>
+@if($eligible->isEmpty())
+<p id="no-eligible">{{ __('quality_itr.no_eligible') }}</p>
+@else
+<form id="link-form" method="post" action="{{ route('quality.itr.link',['projectCode'=>$project->code,'lang'=>$lang]) }}">@csrf
+<input type="hidden" name="test_pack_id" value="{{ $pack->id }}"><input type="hidden" name="request_id" value="{{ $linkRequestId }}">
+<label>{{ __('quality_itr.select_notice') }} <select name="notification_id" id="notice-select">
+@foreach($eligible as $e)
+<option value="{{ $e->id }}">{{ $e->number }} — {{ $e->point }} — {{ $lang === 'fa' ? ($e->stage_description_fa ?: $e->stage_description_en) : ($e->stage_description_en ?: $e->stage_description_fa) }}</option>
+@endforeach
+</select></label>
+<button type="submit" id="link-notice">{{ __('quality_itr.submit_link') }}</button></form>
 @endif
 
 @if($pack->state === 'DRAFT')

@@ -38,6 +38,7 @@ final class QualitySignOffFixture
         array $recipientCompanyIds,
         string $point = 'W',
         string $workReference = 'SIGN-OFF FIXTURE WORK',
+        bool $issue = true,
     ): string {
         $notifications = app(InspectionNotificationService::class);
 
@@ -84,8 +85,12 @@ final class QualitySignOffFixture
                 'recipient_company_ids' => $recipientCompanyIds,
             ]), $project->id);
 
-        $tenant->runAs($writer->company_id, fn (): mixed => $notifications
-            ->issue($project, $writer, $id, ['version' => 1]), $project->id);
+        // Left un-issued on request: a draft is not yet a request for
+        // attendance, and a link test needs one to prove that rule.
+        if ($issue) {
+            $tenant->runAs($writer->company_id, fn (): mixed => $notifications
+                ->issue($project, $writer, $id, ['version' => 1]), $project->id);
+        }
 
         return $id;
     }

@@ -160,6 +160,12 @@ final class PipingTestPackService
             str_contains($m, 'PACK_INVALID_TRANSITION') => $lang === 'fa'
                 ? 'این انتقال وضعیت مجاز نیست (DRAFT→READY→TESTED→ACCEPTED).'
                 : 'That transition is not allowed (DRAFT→READY→TESTED→ACCEPTED).',
+            str_contains($m, 'PACK_HOLD_REJECTED') => $lang === 'fa'
+                ? 'یک نقطهٔ توقف (HOLD) روی این بسته مردود اعلام شده است؛ تا اصلاحی ثبت نشود ادعای انجام یا پذیرش پذیرفته نیست.'
+                : 'A HOLD point on this pack was rejected; no claim of testing or acceptance stands until a correction is recorded.',
+            str_contains($m, 'PACK_HOLD_NOT_SIGNED') => $lang === 'fa'
+                ? 'یک نقطهٔ توقف (HOLD) روی این بسته هنوز امضا نشده است؛ تا امضای کارفرما ادعای انجام یا پذیرش پذیرفته نیست.'
+                : 'A HOLD point on this pack is still unsigned; the employer must clear it before the work can be claimed as tested or accepted.',
             str_contains($m, 'PACK_PROJECT_NOT_WRITABLE') => $lang === 'fa'
                 ? 'پروژه برای تغییر وضعیت بسته writable نیست (آرشیو).'
                 : 'The project is not writable for pack transitions (archived).',
