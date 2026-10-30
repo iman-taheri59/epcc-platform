@@ -292,14 +292,50 @@ on demand:
 
 | Job | Runs | Notes |
 |---|---|---|
+| `changes` | Classifies the push by the paths it touched | Outputs `code=true/false`; see the fast lane below |
 | `static` | `standards-packs/validate_packs.py`, `packages/standards-engine/conformance/run.php` | No database, no vendor directory |
 | `prototype` | `prototype/test/render.test.js` + `npm run test:prototype` | Node 22, root `jsdom` |
-| `laravel` | The full PHPUnit suite | `postgres:17` service, non-superuser `epcc` role, PDF toolchain, skip gate. Runs `vendor/bin/phpunit` with `--log-junit` so every failing test becomes a PR annotation, and the run fails on any failure, error **or** skip |
+| `pcf` | The pure PCF parser and classification tests | No database |
+| `laravel` (×4) | The PHPUnit suite, **sharded four ways and run in parallel** | See below |
+| `laravel-report` | Merges the four JUnit logs and owns the verdict | Runs even when a shard is red |
 | `image` | Builds `docker/php/Dockerfile`, smoke-checks it, `docker compose config`, `shellcheck` | Proves the dev image still contains what §8 depends on |
 | `stack` | Boots the real compose stack, loads `/login`, queries the database as `epcc`, runs a slice of the suite | Proves `dev-up.sh` works end to end, that RLS is fail-closed inside the container, and that the suite cannot reach the development database (§6.1) |
 
-The suite is large and several tests call `migrate:fresh` in `setUp()`, so the
-`laravel` job runs ~19 minutes and is given 90. That is expected, not a leak.
+**Where the time goes.** The suite is 2028 tests. Setup is about 54 seconds;
+everything else is the tests, and 97% of that is one thing: 121 of the 145 test
+classes rebuild all 100 migrations inside `setUp()`. They have to, because some
+tests spawn real worker processes (`PipingCustodyTest`, `InspectionNotification*`)
+that open their own connection and therefore cannot see an uncommitted
+transaction — so `RefreshDatabase`, which migrates once and wraps each test in a
+transaction, is unavailable to them. The measured cost is 1.52 s per test, paid
+by 86% of the tests: ~64 minutes serially.
+
+**Sharding.** Rather than make each test cheaper (a class-by-class audit, worth
+doing but not done yet), the job is split into four shards balanced by test
+count, run in parallel: the same 2028 tests, about **16 minutes** of wall clock
+instead of 64. The partition is computed at runtime from `phpunit --list-tests`
+— no hand-maintained manifest to go stale when someone adds a test class — and
+the filter is anchored on the namespace separator, because without it
+`WarehouseTest` also matches `PipingWarehouseTest` and 24 tests run twice.
+
+**The verdict is not weakened.** Each shard uploads its JUnit log;
+`laravel-report` merges them and gates on any failure, error **or** skip, and it
+fails the run if a shard did not succeed or a shard's log is missing — a shard
+that crashed before writing its log must not read as green. Every failing test
+still becomes a PR annotation. (That job also fixed a counting bug: the report
+used to sum nested `<testsuite>` elements and announced 6183 tests for a suite
+of 2028.)
+
+**Docs-only fast lane.** If every path a push touched is under `docs/` or is a
+root-level `.md`, the heavy jobs (`laravel`, `image`, `stack`) are skipped: they
+cannot be broken by a markdown change and were costing an hour of wall clock
+each. The light jobs still run. Anything we cannot *prove* is docs-only runs
+everything — a `workflow_dispatch` has no `before`, a new branch has an
+all-zero `before`, and an unreadable diff all fall through to the full run.
+
+**PostgreSQL runs natively on the runner, not as a service container**, because
+those worker processes need the app's DB host to be a Unix socket under
+`/tmp/epcc-`, and a container's `/tmp` is not the runner's `/tmp`.
 
 The `stack` job is the one that validates this document's central claim. It
 plants a sentinel table in the **development** database, runs a slice of the
