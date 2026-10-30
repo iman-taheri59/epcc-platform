@@ -6,6 +6,8 @@ namespace App\Services;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Services\InspectionResultService;
+use App\Services\ResultRecorderPolicyService;
 use App\Support\TenantContext;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
@@ -38,7 +40,13 @@ use Illuminate\Validation\ValidationException;
  */
 final class MaterialCertificateBindingService
 {
-    public function __construct(private readonly TenantContext $tenant) {}
+    public function __construct(
+        private readonly TenantContext $tenant,
+        private readonly ResultRecorderPolicyService $nominations,
+    ) {}
+
+    /** A screen is not a report: the registry is capped rather than paginated. */
+    public const REGISTRY_LIMIT = 200;
 
     /** Runs $fn in the binding session contract: project, binding company, actor. */
     private function scoped(Project $project, User $actor, callable $fn): mixed
@@ -138,6 +146,62 @@ final class MaterialCertificateBindingService
             ->where('certificate_id', $certificateId)
             ->orderBy('bound_at')->orderBy('id')
             ->get());
+    }
+
+    /**
+     * Everything the MTR screen needs: the certificate registry with its
+     * binding state, the selected certificate with its history, and the
+     * coverage report.
+     *
+     * The certificate list is whatever RLS lets this session read, for the
+     * same reason the sign-off worklist is: one copy of the visibility rule,
+     * in the database, rather than a second one in PHP that can drift.
+     */
+    public function dashboard(Project $project, User $actor, ?string $certificateId = null, string $lang = 'fa'): array
+    {
+        return $this->scoped($project, $actor, function () use ($project, $actor, $certificateId, $lang): array {
+            $certificates = DB::table('material_certificates')->where('project_id', $project->id)
+                ->orderByDesc('registered_at')->orderBy('id')->limit(self::REGISTRY_LIMIT)->get();
+
+            $byCertificate = DB::table('material_certificate_bindings')->where('project_id', $project->id)
+                ->whereIn('certificate_id', $certificates->pluck('id'))
+                ->orderBy('bound_at')->orderBy('id')->get()->groupBy('certificate_id');
+
+            foreach ($certificates as $row) {
+                $history = $byCertificate->get($row->id, collect());
+                // The current position is the last one: bindings are append-only,
+                // so a re-bind is a later fact, not an edit of an earlier one.
+                $row->bindings = $history;
+                $row->binding = $history->last();
+            }
+
+            $certificate = $certificateId !== null && $certificateId !== ''
+                ? $certificates->firstWhere('id', $certificateId)
+                : null;
+
+            return [
+                'project' => $project,
+                'certificates' => $certificates,
+                'certificate' => $certificate,
+                'bindings' => $certificate !== null ? $certificate->bindings : collect(),
+                'coverage' => $this->coverage($project, $actor),
+                'nominated' => $this->nominations->nominationFor($project, $actor, 'bind_certificate'),
+                'registerNominated' => $this->nominations->nominationFor($project, $actor, 'register_certificate'),
+                'certTypes' => InspectionResultService::CERT_TYPES,
+                'bindingLabels' => $this->bindingLabels($lang),
+                'companies' => DB::table('project_company')->join('companies', 'companies.id', '=', 'project_company.company_id')
+                    ->where('project_id', $project->id)->select('companies.*')->orderBy('code')->get()->keyBy('id'),
+            ];
+        });
+    }
+
+    private function bindingLabels(string $lang): array
+    {
+        return [
+            'CUSTODY_LOT_HEAT' => $lang === 'fa' ? 'متصل به custody (lot و heat)' : 'Bound to custody (lot and heat)',
+            'CUSTODY_HEAT' => $lang === 'fa' ? 'متصل به custody (heat)' : 'Bound to custody (heat)',
+            'UNRESOLVED' => $lang === 'fa' ? 'بی‌اتصال (با دلیل)' : 'Unresolved (with a reason)',
+        ];
     }
 
     /**
