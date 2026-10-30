@@ -8,6 +8,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\GateDemoController;
 use App\Http\Controllers\InspectionNotificationController;
 use App\Http\Controllers\InspectionResultController;
+use App\Http\Controllers\ItpSignOffController;
 use App\Http\Controllers\MaterialsController;
 use App\Http\Controllers\OrderGapController;
 use App\Http\Controllers\PipingConfigController;
@@ -166,6 +167,10 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     // Quality nomination register (ADR-048 A.4g slice 1) — who may record what.
     Route::get('/projects/{projectCode}/quality/nominations', [QualityNominationController::class, 'show'])->middleware('cache.headers:private;no_store;max_age=0')->name('quality.nominations');
     Route::post('/projects/{projectCode}/quality/nominations', [QualityNominationController::class, 'store'])->name('quality.nominations.store');
+
+    // ITP stage sign-offs (ADR-048 A.4h slice 2) — what happened at the stage.
+    Route::get('/projects/{projectCode}/quality/sign-offs', [ItpSignOffController::class, 'show'])->middleware('cache.headers:private;no_store;max_age=0')->name('quality.sign-offs');
+    Route::post('/projects/{projectCode}/quality/sign-offs', [ItpSignOffController::class, 'store'])->name('quality.sign-offs.store');
 
     // Recording inspection results (ADR-048 A.4h slice 1) — weld, NDT, test pack.
     Route::get('/projects/{projectCode}/quality/results', [InspectionResultController::class, 'show'])->middleware('cache.headers:private;no_store;max_age=0')->name('quality.results');

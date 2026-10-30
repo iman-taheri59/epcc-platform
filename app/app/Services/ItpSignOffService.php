@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Company;
 use App\Models\Project;
 use App\Models\User;
+use App\Services\ResultRecorderPolicyService;
 use App\Support\TenantContext;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
@@ -34,7 +36,16 @@ final class ItpSignOffService
 {
     public const OUTCOMES = ['ACCEPTED', 'ACCEPTED_WITH_COMMENTS', 'REJECTED', 'WAIVED_NOT_ATTENDED'];
 
-    public function __construct(private readonly TenantContext $tenant) {}
+    /** Outcomes that are never recorded without saying why. */
+    public const REASONED = ['ACCEPTED_WITH_COMMENTS', 'REJECTED', 'WAIVED_NOT_ATTENDED'];
+
+    /** A screen is not a report: the worklist is capped rather than paginated. */
+    public const WORKLIST_LIMIT = 200;
+
+    public function __construct(
+        private readonly TenantContext $tenant,
+        private readonly ResultRecorderPolicyService $nominations,
+    ) {}
 
     /** Runs $fn in the sign-off session contract: project, signing company, actor. */
     private function scoped(Project $project, User $actor, callable $fn): mixed
@@ -123,6 +134,81 @@ final class ItpSignOffService
                 'point' => (string) $row->point,
             ];
         });
+    }
+
+    /**
+     * Everything the sign-off screen needs, read under the same session
+     * contract the write uses.
+     *
+     * The worklist is deliberately "whatever RLS lets this company see"
+     * rather than a query of our own. A notice is visible to the company that
+     * issued it and, once issued, to the companies it was sent to — which is
+     * exactly the rule this screen should enforce: you cannot sign a stage you
+     * were never asked to attend. Stating that in PHP as well would be a
+     * second copy that can drift from the policy.
+     */
+    public function dashboard(Project $project, User $actor, ?string $noticeId = null, string $lang = 'fa'): array
+    {
+        return $this->scoped($project, $actor, function () use ($project, $actor, $noticeId, $lang): array {
+            $notices = DB::table('inspection_notifications as n')
+                ->join('inspection_itp_stages as s', 's.id', '=', 'n.stage_id')
+                ->where('n.project_id', $project->id)
+                ->where('n.state', 'ISSUED')
+                // A cancelled notice is a request that was withdrawn; signing it
+                // would be answering a question nobody is asking any more.
+                ->whereNotExists(fn ($q): mixed => $q->selectRaw('1')
+                    ->from('inspection_notification_cancellations as nc')
+                    ->whereColumn('nc.notification_id', 'n.id'))
+                ->select('n.*', 's.point as point', 's.sequence as stage_sequence')
+                ->orderByDesc('n.created_at')->orderBy('n.id')
+                ->limit(self::WORKLIST_LIMIT)->get();
+
+            $notice = $noticeId !== null && $noticeId !== '' ? $notices->firstWhere('id', $noticeId) : null;
+            $signOffs = $notice !== null ? $this->signOffsFor($project, $actor, (string) $notice->id) : collect();
+
+            return [
+                'project' => $project,
+                'notices' => $notices,
+                'notice' => $notice,
+                'signOffs' => $signOffs,
+                'latest' => $signOffs->groupBy('company_id')->map(fn (Collection $rows): mixed => $rows->last())->values(),
+                // A correction chains to a rejection of YOUR company — the guard
+                // refuses any other target, so offering the rest would be
+                // offering a refusal.
+                'corrections' => $signOffs->where('company_id', $actor->company_id)
+                    ->where('outcome', 'REJECTED')->values(),
+                'nominated' => $this->nominations->nominationFor($project, $actor, 'sign_off_stage'),
+                // The employer is the only company that may waive a HOLD point,
+                // so the screen has to know which one it is talking to.
+                'isEmployer' => $actor->company_id === $project->owner_company_id,
+                'companies' => Company::whereIn('id', DB::table('project_company')
+                    ->where('project_id', $project->id)->select('company_id'))
+                    ->orderBy('code')->get()->keyBy('id'),
+                'outcomes' => self::OUTCOMES,
+                'outcomeLabels' => $this->outcomeLabels($lang),
+                'pointLabels' => $this->pointLabels($lang),
+            ];
+        });
+    }
+
+    private function outcomeLabels(string $lang): array
+    {
+        return [
+            'ACCEPTED' => $lang === 'fa' ? 'پذیرفته' : 'Accepted',
+            'ACCEPTED_WITH_COMMENTS' => $lang === 'fa' ? 'پذیرفته با نظر' : 'Accepted with comments',
+            'REJECTED' => $lang === 'fa' ? 'مردود' : 'Rejected',
+            'WAIVED_NOT_ATTENDED' => $lang === 'fa' ? 'انصراف (بدون حضور)' : 'Waived (not attended)',
+        ];
+    }
+
+    private function pointLabels(string $lang): array
+    {
+        return [
+            'H' => $lang === 'fa' ? 'توقف (H)' : 'Hold (H)',
+            'W' => $lang === 'fa' ? 'شاهد (W)' : 'Witness (W)',
+            'R' => $lang === 'fa' ? 'بازبینی مدارک (R)' : 'Review (R)',
+            'M' => $lang === 'fa' ? 'پایش (M)' : 'Monitor (M)',
+        ];
     }
 
     /** Every sign-off recorded against one notification, oldest first. */
