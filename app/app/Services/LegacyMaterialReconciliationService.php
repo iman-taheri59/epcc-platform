@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Services\ResultRecorderPolicyService;
 use App\Support\TenantContext;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
@@ -41,7 +42,13 @@ final class LegacyMaterialReconciliationService
 {
     public const DECISIONS = ['TAKE_OVER', 'RETIRE'];
 
-    public function __construct(private readonly TenantContext $tenant) {}
+    /** A screen is not a report: the worklist is capped rather than paginated. */
+    public const LOT_LIMIT = 200;
+
+    public function __construct(
+        private readonly TenantContext $tenant,
+        private readonly ResultRecorderPolicyService $nominations,
+    ) {}
 
     /** Runs $fn in the receipt session contract: project, company, receipt actor. */
     private function scoped(Project $project, User $actor, callable $fn): mixed
@@ -150,6 +157,88 @@ final class LegacyMaterialReconciliationService
                 'sequence' => (int) $row->sequence,
             ];
         });
+    }
+
+    /**
+     * Everything the reconciliation screen needs: the cutover worklist, the
+     * lots already decided, the chain for the selected one, and — the part
+     * that keeps the form honest — the custody records that MAY take this lot
+     * over.
+     *
+     * A TAKE_OVER must point at custody attesting the lot's own heat, because
+     * a different heat is different steel. Offering every custody record and
+     * letting the guard refuse the wrong ones would be asking someone to make
+     * a decision in order to be told it was never theirs to make.
+     */
+    public function dashboard(Project $project, User $actor, ?string $lotId = null, string $lang = 'fa'): array
+    {
+        return $this->scoped($project, $actor, function () use ($project, $actor, $lotId, $lang): array {
+            $pending = $this->pending($project, $actor);
+
+            $decidedLots = DB::table('material_lots')->where('project_id', $project->id)
+                ->whereIn('id', DB::table('material_legacy_reconciliations')
+                    ->where('project_id', $project->id)->distinct()->pluck('lot_id'))
+                ->orderBy('item_code')->orderBy('lot_code')->limit(self::LOT_LIMIT)->get();
+
+            $chains = DB::table('material_legacy_reconciliations')->where('project_id', $project->id)
+                ->whereIn('lot_id', $decidedLots->pluck('id'))->orderBy('sequence')->get()->groupBy('lot_id');
+
+            foreach ($decidedLots as $lot) {
+                $lot->decisions = $chains->get($lot->id, collect());
+                // The head is the current decision; the chain behind it is the
+                // record of how we got here and is never rewritten.
+                $lot->decision = $lot->decisions->last();
+            }
+
+            $lot = $lotId !== null && $lotId !== ''
+                ? ($pending->firstWhere('id', $lotId) ?? $decidedLots->firstWhere('id', $lotId))
+                : null;
+
+            $chain = $lot !== null && isset($lot->decisions) ? $lot->decisions : collect();
+
+            return [
+                'project' => $project,
+                'pending' => $pending,
+                'decided' => $decidedLots,
+                'lot' => $lot,
+                'chain' => $chain,
+                // A later decision supersedes the head rather than editing it,
+                // so the form must quote the head it was looking at.
+                'head' => $chain->last()?->id,
+                'custody' => $lot !== null ? $this->takeOverCandidates($project, (string) $lot->heat_number) : collect(),
+                'nominated' => $this->nominations->nominationFor($project, $actor, 'reconcile_legacy'),
+                'decisions' => self::DECISIONS,
+                'decisionLabels' => $this->decisionLabels($lang),
+            ];
+        });
+    }
+
+    /**
+     * Custody that may take this lot over: the records whose effective heat
+     * is the lot's own. A lot with no heat of its own may be taken over by
+     * any controlled receipt — there is nothing to mismatch.
+     */
+    private function takeOverCandidates(Project $project, string $heat): \Illuminate\Support\Collection
+    {
+        $query = DB::table('piping_custody_records as r')->where('r.project_id', $project->id)
+            ->select('r.id', 'r.shipment_ref', 'r.received_at')
+            ->selectRaw("btrim(COALESCE(epcc_piping_effective_receipt(r.id)->>'heat_ref', '')) AS heat_ref")
+            ->selectRaw("epcc_piping_effective_receipt(r.id)->>'lot_ref' AS lot_ref")
+            ->orderBy('r.created_at')->orderBy('r.id')->limit(self::LOT_LIMIT);
+
+        if ($heat !== '') {
+            $query->whereRaw("btrim(COALESCE(epcc_piping_effective_receipt(r.id)->>'heat_ref', '')) = ?", [$heat]);
+        }
+
+        return $query->get();
+    }
+
+    private function decisionLabels(string $lang): array
+    {
+        return [
+            'TAKE_OVER' => $lang === 'fa' ? 'تحویل‌گرفتن (این custody دوباره دریافتش می‌کند)' : 'Take over (this custody re-receives it)',
+            'RETIRE' => $lang === 'fa' ? 'بازنشسته‌کردن (نمی‌آید، و این چرایش است)' : 'Retire (it is not coming across, and here is why)',
+        ];
     }
 
     /** The decision chain for one lot, oldest first. */
