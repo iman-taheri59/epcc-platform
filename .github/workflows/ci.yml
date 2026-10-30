@@ -388,6 +388,11 @@ jobs:
         env:
           SHARD: ${{ matrix.shard }}
           SHARDS: "4"
+          # A cold headless Chrome on a shared runner can take longer than the
+          # default 30s render budget, and a PDF test that fails because the
+          # host was busy is a flake, not a finding. Same documents, same
+          # assertions, more patience: production keeps the 30s default.
+          EPCC_PDF_TIMEOUT_SECONDS: "90"
         run: |
           set -uo pipefail
           php artisan config:clear --no-interaction >/dev/null 2>&1 || true

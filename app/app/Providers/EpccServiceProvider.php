@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Services\PdfRenderer;
 use App\Services\StandardsPackRepository;
 use App\Support\Reference\FittingDimensions;
 use App\Support\Reference\FlangeRatingReference;
@@ -18,6 +19,17 @@ final class EpccServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // The render budget is configuration, not a constant: 30s is right for
+        // a warm host and short for a cold browser on a shared CI runner, and a
+        // test that fails because the host was busy is a flake rather than a
+        // finding. Default unchanged, so production behaviour is untouched.
+        $this->app->bind(
+            PdfRenderer::class,
+            fn (): PdfRenderer => new PdfRenderer(
+                max(1, (int) config('epcc.pdf.timeout_seconds', 30)),
+            ),
+        );
+
         $this->app->singleton(
             StandardsPackRepository::class,
             fn (): StandardsPackRepository => new StandardsPackRepository(

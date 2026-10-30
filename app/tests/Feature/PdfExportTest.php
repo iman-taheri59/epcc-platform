@@ -38,6 +38,27 @@ final class PdfExportTest extends TestCase
         $this->seed(AuthSeeder::class);
     }
 
+    /**
+     * The render budget is configuration, not a constant. A PDF test that
+     * fails because the host was slow to cold-start a browser is a flake
+     * rather than a finding, and the only way a slow host can be given more
+     * patience is if the budget is read from somewhere an operator can set.
+     *
+     * Reflection is deliberate: the timeout is private, and adding a public
+     * accessor to production code so a test can read it would be worse than
+     * reading it here.
+     */
+    public function test_the_render_budget_comes_from_configuration(): void
+    {
+        $property = new \ReflectionProperty(PdfRenderer::class, 'timeoutSeconds');
+
+        config(['epcc.pdf.timeout_seconds' => 77]);
+        $this->assertSame(77, $property->getValue(app(PdfRenderer::class)));
+
+        config(['epcc.pdf.timeout_seconds' => 30]);
+        $this->assertSame(30, $property->getValue(app(PdfRenderer::class)));
+    }
+
     private function ctx(): TenantContext
     {
         return app(TenantContext::class);

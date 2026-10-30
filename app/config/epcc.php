@@ -42,4 +42,13 @@ return [
     'warehouse' => [
         'legacy_writes_refused' => (bool) env('EPCC_WAREHOUSE_LEGACY_WRITES_REFUSED', false),
     ],
+
+    // How long headless Chrome may take to render one document before the
+    // renderer gives up loudly. The default is the original hard-coded budget;
+    // a shared CI runner or a busy host needs more than that to cold-start a
+    // browser, and a test that fails because the host was slow is a flake, not
+    // a finding — so the budget is configurable rather than baked in.
+    'pdf' => [
+        'timeout_seconds' => (int) env('EPCC_PDF_TIMEOUT_SECONDS', 30),
+    ],
 ];
