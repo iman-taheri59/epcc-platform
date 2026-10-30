@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\Project;
 use App\Models\User;
 use App\Services\ItrCompilerService;
+use App\Services\PdfRenderer;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
@@ -246,12 +247,54 @@ final class ItrDossierHttpTest extends TestCase
         if ($available) {
             $response->assertOk();
             $response->assertHeader('content-type', 'application/pdf');
-            $this->assertStringStartsWith('%PDF', $response->streamedContent());
+            $this->assertStringStartsWith('%PDF-', $response->getContent());
         } else {
             // The generic error page does not echo the message (and should
             // not): what is asserted is the contract — never an empty PDF.
             $response->assertStatus(503);
             $this->assertStringNotContainsString('%PDF', $response->getContent());
+        }
+    }
+
+    /**
+     * The branch above can only be walked on a host that happens to have a
+     * browser, which is exactly how a wrong assertion survives a green local
+     * run. This one makes the "renderer exists" path deterministic: a stub
+     * binary stands in for Chrome, so the route is proven to hand back the
+     * renderer's bytes with the right headers on every host. It proves the
+     * route; it does not prove Chrome works.
+     */
+    public function test_the_pdf_route_returns_the_rendered_bytes_when_a_renderer_exists(): void
+    {
+        $pack = ItrDossierFixture::pack($this->tenant, $this->project, $this->owner);
+        $snapshot = app(ItrCompilerService::class)->freeze(
+            $this->project, $this->owner, (string) $pack->id, (string) Str::uuid(), 'fa',
+        );
+
+        $stub = $this->stubRenderer();
+        $this->app->instance(PdfRenderer::class, $stub);
+
+        try {
+            $this->assertTrue($stub->isAvailable(), 'the stub renderer must be reachable');
+
+            $response = $this->actingAs($this->owner)->get(route('quality.itr.pdf', [
+                'projectCode' => 'PH-14', 'lang' => 'fa', 'snapshotId' => $snapshot['id'],
+            ]));
+
+            $response->assertOk();
+            $response->assertHeader('content-type', 'application/pdf');
+            $this->assertStringStartsWith('%PDF-', $response->getContent());
+            $this->assertStringContainsString(
+                'inline; filename="itr-'.$snapshot['id'].'.pdf"',
+                (string) $response->headers->get('content-disposition'),
+            );
+            // Symfony normalises and reorders the directives, so assert the
+            // two that matter rather than one exact string.
+            $cacheControl = (string) $response->headers->get('cache-control');
+            $this->assertStringContainsString('private', $cacheControl);
+            $this->assertStringContainsString('no-store', $cacheControl);
+        } finally {
+            @unlink((string) $stub->binary());
         }
     }
 
@@ -269,6 +312,34 @@ final class ItrDossierHttpTest extends TestCase
     }
 
     // ---------------------------------------------------------------- plumbing
+
+    /**
+     * A stand-in for headless Chrome: it writes a stub PDF wherever
+     * `--print-to-pdf` asks, so the "renderer exists" branch can be tested on
+     * a host with no browser. `PdfRenderer` is final and takes its binary list
+     * as a constructor argument, so this needs no mocking framework — which is
+     * the point, because the class was written to be substituted this way.
+     */
+    private function stubRenderer(): PdfRenderer
+    {
+        $script = sys_get_temp_dir().'/epcc-itr-pdf-stub-'.Str::lower(Str::random(8)).'.sh';
+        file_put_contents($script, <<<'SH'
+#!/bin/sh
+out=""
+for arg in "$@"; do
+  case "$arg" in --print-to-pdf=*) out="${arg#--print-to-pdf=}";; esac
+done
+printf '%s\n' '%PDF-1.4 stub for the ITR route' > "$out"
+i=0
+while [ "$i" -lt 40 ]; do
+  printf '%s\n' '0123456789abcdefghijklmnopqrstuvwxyz' >> "$out"
+  i=$((i + 1))
+done
+SH);
+        chmod($script, 0700);
+
+        return new PdfRenderer(30, [$script]);
+    }
 
     private function snapshotCount(string $packId): int
     {
