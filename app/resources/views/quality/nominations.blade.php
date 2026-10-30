@@ -6,9 +6,10 @@
 @if($errors->any())<ul role="alert">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>@endif
 
 <h2>{{ __('quality_nominations.your_authority') }}</h2>
-<table border="1" cellpadding="6" cellspacing="0"><thead><tr><th>{{ __('quality_nominations.action') }}</th><th>{{ __('quality_nominations.you') }}</th></tr></thead><tbody>
+{{-- data-tt opts this table into the shared filter/sort toolbar; without it TableToolsTest fails the build. --}}
+<table data-tt border="1" cellpadding="6" cellspacing="0"><thead><tr><th data-sort="text" data-facet>{{ __('quality_nominations.action') }}</th><th data-sort="text" data-facet>{{ __('quality_nominations.you') }}</th></tr></thead><tbody>
 @foreach($actions as $action)
-<tr><td>{{ __('quality_nominations.action_'.$action) }}</td><td id="nominated-{{ $action }}">{{ $nominations[$action] ? __('quality_nominations.nominated') : __('quality_nominations.not_nominated') }}@if($nominations[$action]) <code style="font-size:80%">{{ $nominations[$action] }}</code>@endif</td></tr>
+<tr><td>{{ __('quality_nominations.action_'.$action) }}</td><td id="nominated-{{ $action }}" data-facet-value="{{ $nominations[$action] ? __('quality_nominations.nominated') : __('quality_nominations.not_nominated') }}">{{ $nominations[$action] ? __('quality_nominations.nominated') : __('quality_nominations.not_nominated') }}@if($nominations[$action]) <code style="font-size:80%">{{ $nominations[$action] }}</code>@endif</td></tr>
 @endforeach
 </tbody></table>
 
@@ -16,8 +17,8 @@
 @if($current->isEmpty())
 <p id="register-empty">{{ __('quality_nominations.none') }}</p>
 @else
-<table border="1" cellpadding="6" cellspacing="0" id="register"><thead><tr>
-<th>{{ __('quality_nominations.company') }}</th><th>{{ __('quality_nominations.action') }}</th><th>{{ __('quality_nominations.version') }}</th><th>{{ __('quality_nominations.state') }}</th><th>{{ __('quality_nominations.selectors') }}</th><th>{{ __('quality_nominations.reason') }}</th>
+<table data-tt border="1" cellpadding="6" cellspacing="0" id="register"><thead><tr>
+<th data-sort="text" data-facet>{{ __('quality_nominations.company') }}</th><th data-sort="text" data-facet>{{ __('quality_nominations.action') }}</th><th data-sort="num">{{ __('quality_nominations.version') }}</th><th data-sort="text" data-facet>{{ __('quality_nominations.state') }}</th><th>{{ __('quality_nominations.selectors') }}</th><th>{{ __('quality_nominations.reason') }}</th>
 </tr></thead><tbody>
 @foreach($current as $row)
 <tr><td>{{ $companies[$row->target_company_id]->code ?? $row->target_company_id }}</td><td>{{ __('quality_nominations.action_'.$row->action) }}</td><td>{{ $row->version }}</td><td>{{ $row->suspended ? __('quality_nominations.suspended') : __('quality_nominations.active') }}</td><td><code style="font-size:80%">{{ implode(', ', (array) json_decode($row->selectors, true)) }}</code></td><td>{{ $row->reason }}</td></tr>
