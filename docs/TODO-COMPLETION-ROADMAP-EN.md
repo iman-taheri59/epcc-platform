@@ -284,10 +284,32 @@
       Declared boundaries: recording only — no sign-off screen, no certificate
         binding, no legacy reconciliation, no ITR export, no completeness
         judgement, no bulk entry; the joint and pack lists are capped at 500 rows.
-- [ ] **A.4h Inspection results — slice 2** — HTTP/UI for ITP stage sign-offs, MTR
-      bindings and legacy reconciliations; ITR export; a reconciliation report
-      comparing a named receipt's quantity with the legacy balance. Depends:
-      A.4h slice 1 ✅. (M)
+- [x] **A.4h Inspection results — slice 2 (ITP stage sign-offs)** — HTTP/UI for
+      signing ITP stages. Depends: A.4h slice 1 ✅.
+      (Done — commit `24a1374`: `ItpSignOffController` + `quality.sign-offs` and one
+      POST over a new `ItpSignOffService::dashboard()`. Two refusals are decided
+      before the actor types: no nomination means no form, and the waiver outcome
+      is not offered on a HOLD point to anyone but the project employer, because a
+      contractor waiving the client's hold is the removal of a control, not a waiver.
+      The worklist is whatever RLS lets the session see — the issuer and, once
+      issued, the notified recipients — so the screen states "the stages you were
+      asked to attend" without a second copy of the visibility rule in PHP.
+      * Tests: `ItpSignOffHttpTest` 13 tests / 54 assertions green, all signing
+        through HTTP (the point comes back derived, a rejection without a cause is
+        refused, a correction chains and leaves both rows standing, a resubmission is
+        refused rather than double-signing, a contractor is offered no waiver and
+        cannot post one, the employer may waive only with a reason).
+      * Guide: `docs/ITP-STAGE-SIGN-OFFS-EN.md` / `-FA.md` (extended).)
+      Acceptance: a form appears only for a nominated signer ✅; the guard's own
+        function is the oracle ✅; the point is derived, never declared ✅; nothing is
+        edited — a correction is a chained sign-off ✅; guest → login, non-member →
+        forbidden ✅.
+      Declared boundaries: signing only — sign-offs are still RECORDED, not GATED
+        (the notification<->test-pack gate is A.5b); no certificate binding, legacy
+        reconciliation or ITR export surface.
+- [ ] **A.4h Inspection results — slice 3** — HTTP/UI for MTR bindings and legacy
+      reconciliations; ITR export; a reconciliation report comparing a named
+      receipt's quantity with the legacy balance. Depends: A.4h slice 2 ✅. (M)
 - [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
       digest-bound frozen snapshots; explicit completeness report (missing items
       enumerated, never silently omitted) with the existing bilingual renderer.

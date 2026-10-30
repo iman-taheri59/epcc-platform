@@ -1,6 +1,7 @@
-# ITP Hold / Witness Stage Sign-offs — ADR-048 A.4d slice 1 (EN)
+# ITP Hold / Witness Stage Sign-offs — ADR-048 A.4d slice 1 + A.4h slice 2 (EN)
 
-> Status: implemented service-only, 2026-10-29, commit `d7d5ce8`.
+> Status: service implemented 2026-10-29, commit `d7d5ce8`; **screen implemented
+> 2026-10-30, commit `24a1374`** (A.4h slice 2 — see [The surface](#the-surface-admittedly-late)).
 > Persian twin: [`ITP-STAGE-SIGN-OFFS-FA.md`](ITP-STAGE-SIGN-OFFS-FA.md).
 > Decision record: [`ADR-048-INSPECTION-TEST-RESULTS-ITR-EN.md`](ADR-048-INSPECTION-TEST-RESULTS-ITR-EN.md) (ACCEPTED, decision 3).
 > Sibling guides: [`INSPECTION-RESULTS-EN.md`](INSPECTION-RESULTS-EN.md) (results), [`ITR-COMPILER-EN.md`](ITR-COMPILER-EN.md) (dossiers).
@@ -87,8 +88,8 @@ member** read a stage that **a notification it can already read** refers to.
 - **Sign-offs are RECORDED, not yet GATED.** There is no notification↔test-pack link, so
   a test pack can still be accepted without a hold sign-off. That gate is tracked as
   **A.5b** (which also owns the ITR binding), not claimed here.
-- **No HTTP/UI.** Service-only, as with every slice so far; routes, forms and the
-  walk-down view are A.4e work.
+- **No HTTP/UI** — *closed by A.4h slice 2, see below*. At the time of writing
+  this was service-only, as with every slice so far.
 - **A sign-off is an attributed company decision, not a wet signature.** It records who,
   for which company, under which nomination, at what time, with what outcome. There is no
   signature image, no e-signature certificate and no approval workflow.
@@ -98,6 +99,66 @@ member** read a stage that **a notification it can already read** refers to.
   pre-A.4d upgrade fixture in `InspectionNotificationTest` drops this table and the
   additive policy before it re-runs the original notification migration.
 
+## The surface (admittedly late)
+
+On 2026-10-30 the sign-off got a screen: `/projects/{projectCode}/quality/sign-offs`
+(`quality.sign-offs`, plus one POST), served by `ItpSignOffController` over a new
+`ItpSignOffService::dashboard()`. It is the third quality surface and follows the rule
+the first two established — **the screen is built around the register and the guards,
+not around the forms.**
+
+Two refusals are therefore built into the screen rather than left for the submit,
+because both would otherwise be an inspector filling in a form to be told afterwards
+that the answer was always no:
+
+| Refusal | Why it is decided before you type |
+|---|---|
+| **No nomination, no form.** `sign_off_stage` is asked of `epcc_result_nomination()` — the function the guard calls — and where the answer is null the screen says so in place of the form. | Same argument as slice 1: default-deny *discovered* on submit is still default-deny, but it wastes the inspector's time and teaches them that the form lies. |
+| **A HOLD waiver is the employer's alone.** On a point of `H`, `WAIVED_NOT_ATTENDED` is not offered to a contractor at all. | A contractor waiving the client's hold is not a waiver; it is the removal of a control the employer owns. Offering the option and refusing it on submit would be that removal, politely packaged. |
+
+The employer is still subject to the same rule everyone is: a waiver must say why
+nobody attended, and the guard refuses one without a reason.
+
+**The worklist is whatever RLS lets you see.** A notice is visible to the company that
+issued it and, once issued, to the companies it was sent to — so the screen shows
+exactly "the stages you were asked to attend" without restating that in PHP. Stating it
+twice would be two copies that can drift; here the database is the only copy. A cancelled
+notice drops off the list, because a withdrawn request is not a question anybody is
+answering any more.
+
+**A correction is offered only where it can succeed.** After a rejection, the form offers
+your own company's rejections on that notice as the target of a chained sign-off — and
+nothing else, because `previous_signoff_id` must point at a REJECTED sign-off of the same
+notice *and* company. Offering the rest would be offering a refusal.
+
+**What the screen reads** (`dashboard()`): the worklist with each stage's point, the
+selected notice, the full sign-off history, the current position per company
+(`latestPerCompany()`), the rejections a correction may chain to, this actor's
+nomination, and whether this actor's company is the project's employer. A non-member of
+the project is refused at the door (403), as on the other two surfaces.
+
+## Tests (A.4h slice 2)
+
+- `tests/Feature/ItpSignOffHttpTest.php` — 13 tests / 54 assertions, all signing through
+  HTTP: the worklist shows the notice addressed to your company and hides one that was
+  never sent to you; nomination gates the form; a nominated signer signs and the point
+  comes back **derived** (`W`), not as submitted; signing without a nomination writes
+  nothing; a rejection without a cause is refused; a correction chains to the rejection it
+  replaces and leaves both rows standing; the same `request_id` is refused rather than
+  double-signing the stage; a contractor is offered no waiver on a HOLD point and cannot
+  post one either; the employer may waive a hold, but not without saying why.
+- Related regression green together — 84 tests / 368 assertions: `ItpSignOff`,
+  `InspectionNotification`, `InspectionResultHttp`, `ResultRecorderNominationsHttp`,
+  `TableTools`, `CookielessPreview`.
+- `tests/Support/QualitySignOffFixture.php` builds an issued notice through the real
+  services (register an ITP document → add a stage with a point → configure who may draft
+  and issue → create the draft → issue it). Two things it deliberately does not hide:
+  the recipient list is a **required argument**, because visibility is the rule the screen
+  is built on; and the notification settings row is **versioned**, so the version is read
+  from the table rather than counted in the fixture.
+- **A bug worth recording for the next screen**: `view($data + ['outcomes' => $filtered])`
+  keeps the LEFT operand's value for a key present in both arrays, so the HOLD filter was
+  silently discarded. `array_merge($data, [...])`, never `+`.
 ## Tests
 
 - `tests/Feature/ItpSignOffTest.php` — 11 tests / 48 assertions, green twice (the sandbox
