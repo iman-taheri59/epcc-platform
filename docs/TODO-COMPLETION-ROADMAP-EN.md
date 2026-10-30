@@ -410,12 +410,36 @@
       Acceptance: preview ≡ frozen snapshot (same SQL body) ✅; digest binds
       stored dossier ✅ + reader re-verification ✅; gaps enumerated not hidden
       ✅; freeze of a moment immutable against later evidence ✅.
+- [x] **A.5b ITR compiler — slice 1 (the notification<->test-pack gate)** — the
+      sign-off register becomes load bearing. Depends: A.4d sign-offs ✅, A.4h
+      slice 2 ✅, A.5 ✅.
+      (Done — commits `bc81536` + `233edb7`: `piping_test_pack_notifications`
+      (append-only, no unlink — a withdrawn request is already a cancellation)
+      + a gate in `epcc_guard_test_pack_transition` that refuses TESTED and
+      ACCEPTED while any linked, issued, uncancelled HOLD ('H') notice is not
+      cleared. Cleared = every notified party signed, or the employer waived the
+      hold (which only the employer may do for an H, so it is a release rather
+      than a deletion of the client's control). A REJECTED sign-off is cleared
+      by nothing but a chained correction. W/R/M points are recorded in the
+      dossier and gate nothing. One SQL function, `epcc_pack_notice_state()`, is
+      asked by the trigger, the dossier and the screen, so they cannot drift.
+      The dossier gains a `notifications` array and the completeness report a
+      `hold_notifications_not_cleared` gap; `schema_version` 1 -> 2.
+      * Tests: `PackNotificationGateTest` 18 tests / 73 assertions green, from
+        the real services and HTTP (hold stops TESTED with a PASS already
+        recorded, employer signs/waives, rejection then chained correction,
+        ACCEPTED gated too, witness point not gated, draft and cancelled
+        notices, authority, visibility, idempotency, the screen, the dossier)
+        + regression 407 tests / 3,041 assertions.
+      * Guide: `docs/PACK-NOTIFICATION-GATE-EN.md` / `-FA.md`.)
+      Acceptance: a linked HOLD gates TESTED and ACCEPTED ✅; a rejection is
+        cleared only by a correction ✅; W/R/M gate nothing ✅; only the pack's
+        company or the employer may link ✅; gate, dossier and screen ask one
+        function ✅; freezing still records reality including the gap ✅.
 - [ ] **A.5b ITR compiler — slice 2** — subsystem/system and full-dossier scopes
-      (meeting ADR-057), ITP-notification and receipt/MTR binding into the
-      dossier (depends: A.4b piece-level custody; the notification<->test-pack gate
-      needs A.4d sign-offs ✅), formal signature/approval
-      layer on snapshots, HTTP/UI surface for compile/freeze/export. Depends:
-      A.5 ✅, A.4b, F.1. (M)
+      (meeting ADR-057), receipt/MTR binding into the dossier (depends: A.4b
+      piece-level custody), formal signature/approval layer on snapshots.
+      Depends: A.5b slice 1 ✅, A.5 ✅, A.4b, F.1. (M)
 - [ ] **A.6 Implement ADR-031: TQ/NCR** — the spec is written (two modes
       IN_SYSTEM/EXTERNAL_REGISTER); it only needs implementation: record, routing (via
       ADR-049 if ready, otherwise a simple authority-gated state transition), disposition,
