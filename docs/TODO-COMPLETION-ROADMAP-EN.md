@@ -307,9 +307,34 @@
       Declared boundaries: signing only — sign-offs are still RECORDED, not GATED
         (the notification<->test-pack gate is A.5b); no certificate binding, legacy
         reconciliation or ITR export surface.
-- [ ] **A.4h Inspection results — slice 3** — HTTP/UI for MTR bindings and legacy
-      reconciliations; ITR export; a reconciliation report comparing a named
-      receipt's quantity with the legacy balance. Depends: A.4h slice 2 ✅. (M)
+- [x] **A.4h Inspection results — slice 3 (MTR registry and bindings)** — HTTP/UI
+      for registering a material certificate and binding it to the custody that
+      attests its heat. Depends: A.4h slice 2 ✅.
+      (Done — commit `67b2734`: `MtrBindingController` + `quality.mtr` and two
+      POSTs over a new `MaterialCertificateBindingService::dashboard()`. One
+      screen holds both ends of the loop — register the certificate, connect it
+      to the material — but they stay two authorities: a claim about a document
+      and a claim about material we hold. Nothing about a binding is declared by
+      the binder: heat and lot from the certificate, custody from the project,
+      item from custody's source line. Coverage sits next to the registry, so a
+      heat with zero certificates is reported rather than absent.
+      * Tests: `MtrBindingHttpTest` 13 tests / 57 assertions green, all through
+        HTTP (each form gated by its own nomination, a bind asserts the derived
+        heat and item, an unattested heat is refused until someone says why and
+        is then kept as unresolved, a resubmission is refused rather than
+        duplicated, the coverage report shows the bare heat next to the covered
+        one).
+      * Guide: `docs/MTR-BINDING-SCREEN-EN.md` / `-FA.md`.)
+      Acceptance: each form appears only with its own nomination ✅; the derived
+        values are never declarable ✅; exact matching, never fuzzy ✅; a lot
+        custody does not attest is refused, not downgraded ✅; nothing is edited
+        ✅; guest → login, non-member → forbidden ✅.
+      Declared boundaries: no document upload or PDF parsing, no bulk import,
+        no legacy reconciliation surface, no ITR export; coverage counts rather
+        than judges.
+- [ ] **A.4h Inspection results — slice 4** — HTTP/UI for legacy `material_lots`
+      reconciliation; ITR export; a reconciliation report comparing a named
+      receipt's quantity with the legacy balance. Depends: A.4h slice 3 ✅. (M)
 - [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
       digest-bound frozen snapshots; explicit completeness report (missing items
       enumerated, never silently omitted) with the existing bilingual renderer.
