@@ -114,7 +114,7 @@ second snapshot of one intent.
 
 ## Tests
 
-`ItrDossierHttpTest` — 14 tests / 61 assertions, all through HTTP:
+`ItrDossierHttpTest` — 15 tests / 70 assertions, all through HTTP:
 
 - the empty state says no pack is defined, and opening a pack shows the dossier,
   the completeness report and the gap table;
@@ -131,11 +131,21 @@ second snapshot of one intent.
 - a non-UUID `request_id` is refused and writes nothing;
 - someone outside the project cannot freeze or export;
 - the PDF route never hands back an empty document: real bytes where the
-  renderer exists, `503` where it does not.
+  renderer exists, `503` where it does not — and because that branch only ran
+  in CI, a stub binary now stands in for Chrome so it runs everywhere (see
+  below).
 
 Related regression green together — 85 tests / 379 assertions:
 `ItrSnapshot`, `InspectionResult` (unit and HTTP), `ResultRecorderNominations`,
 `TableTools`, `CookielessPreview`.
+
+A note on testing the PDF: `PdfRenderer` is `final`, but it takes its binary
+list as a constructor argument, so a stub script can stand in for Chrome — it
+writes a stub PDF wherever `--print-to-pdf` asks — and the "renderer exists"
+branch is then exercised on a host that has no browser at all. This matters
+more than it sounds: the assertion in that branch was wrong when it was first
+written, and it stayed wrong through two green local runs because the branch
+never executed here. CI found it; it should not have had to.
 
 A note for whoever extends this: `tests/Support/ItrDossierFixture` forces the
 pack's state with a direct `UPDATE` rather than `transition()`. A transition

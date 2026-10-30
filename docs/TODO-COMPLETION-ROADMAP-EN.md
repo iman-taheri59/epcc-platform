@@ -388,10 +388,11 @@
       and a button that only works sometimes is discovery-on-submit; and the
       PDF route returns 503 with an explanation where no headless browser
       exists, never an empty document.
-      * Tests: `ItrDossierHttpTest` 14 tests / 61 assertions green (dossier
+      * Tests: `ItrDossierHttpTest` 15 tests / 70 assertions green (dossier
         shown, gaps enumerated, digest format and derived kind, snapshot
         re-verified, DRAFT not freezable, `request_id` idempotent, non-member
-        refused, PDF never empty) + regression 85 tests / 379 assertions.
+        refused, PDF never empty — the "renderer exists" branch covered on
+        every host by a stub Chrome) + regression 85 tests / 379 assertions.
       * Guide: `docs/ITR-DOSSIER-SCREEN-EN.md` / `-FA.md`.)
       Acceptance: the dossier on screen is the compiler's ✅; gaps are
         enumerated rather than collapsed ✅; every listed snapshot is
