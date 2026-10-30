@@ -357,9 +357,25 @@
         → forbidden ✅.
       Declared boundaries: this reconciles the gate, not the ledger — the
         quantity reconciliation report and ITR export are still open.
-- [ ] **A.4h Inspection results — slice 5** — ITR export; a reconciliation report
+- [x] **A.4h Inspection results — slice 5 (quantity reconciliation report)** —
       comparing a named receipt's quantity with the legacy balance. Depends:
-      A.4h slice 4 ✅. (M)
+      A.4h slice 4 ✅.
+      (Done — commit `8e0c895`: `LegacyMaterialReconciliationService::quantityReport()`,
+      shown under the decisions on the legacy screen. The legacy side is the
+      ledger's opening count for the lot's own (item, heat, unit); the controlled
+      side is the quantity on the custody record the TAKE_OVER names. Units that
+      differ are not compared, a lot with no opening count is reported as one
+      rather than as zero, and a retired lot is shown with the balance it
+      released. A difference is not an error: it is a fact somebody must explain.
+      * Tests: `LegacyReconciliationHttpTest` 19 tests / 84 assertions green
+        (match, short, over, unit mismatch, no opening count, retired balance).
+      * Guide: a section of `docs/LEGACY-RECONCILIATION-SCREEN-EN.md` / `-FA.md`.)
+      Acceptance: both quantities are read from their own source ✅; a unit
+        mismatch is reported and never converted ✅; no opening count is
+        reported as one, not as zero ✅; a retired lot keeps the balance it
+        released ✅; the report never posts an adjustment of its own ✅.
+- [ ] **A.4h Inspection results — slice 6** — ITR export from the compiled
+      dossier (the compiler is A.5). Depends: A.5, A.4h slice 5 ✅. (M)
 - [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
       digest-bound frozen snapshots; explicit completeness report (missing items
       enumerated, never silently omitted) with the existing bilingual renderer.

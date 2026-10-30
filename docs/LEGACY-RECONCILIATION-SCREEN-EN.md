@@ -1,6 +1,7 @@
 # Deciding about legacy material — A.4h slice 4 (English)
 
-> Status: implemented 2026-10-30, commit `c0ea7ab`. Slice of ADR-048.
+> Status: implemented 2026-10-30, commits `c0ea7ab` (the screen) and `8e0c895` (the
+> quantity report). Slice of ADR-048.
 > همزاد فارسی: [`LEGACY-RECONCILIATION-SCREEN-FA.md`](LEGACY-RECONCILIATION-SCREEN-FA.md).
 > The decision itself was specified in A.4f and is documented in
 > [`LEGACY-MATERIAL-RECONCILIATION-EN.md`](LEGACY-MATERIAL-RECONCILIATION-EN.md);
@@ -76,17 +77,48 @@ is nothing to mismatch, so nothing is filtered.
 ## What this slice deliberately does not do
 
 - **It does not move quantities.** Reconciling the gate is not reconciling the
-  ledger; the stock ledger and ADR-047's `OPENING_COUNT` own that, and the
-  quantity reconciliation report — a named receipt's quantity against the legacy
-  balance — is still open.
+  ledger; the stock ledger and ADR-047's `OPENING_COUNT` own that. It does,
+  however, *report* the difference — see below.
 - **No bulk decision.** One lot, one decision, one reason.
 - **No ITR export** (A.5).
 - The worklist and the decided list are capped at 200 rows with no pagination,
   as on the other quality screens.
 
+## The quantity reconciliation report
+
+A.4f decided the fate of each legacy lot and was honest about what that decision
+is not: evidence. A TAKE_OVER says *this* controlled receipt re-receives *that*
+lot; it does not say the quantities agree. That question had no answer anywhere,
+so it is now answered on the same screen, under the decisions:
+
+| Column | Where it comes from |
+|---|---|
+| Legacy balance | the ledger's `OPENING_COUNT` for the lot's own (item, heat, unit) — what was brought across at cutover |
+| Receipt | the quantity on the custody record the current TAKE_OVER names |
+| Difference | receipt − balance, to three decimals |
+| Reading | `MATCH` · `SHORT` · `OVER` · `UNIT_MISMATCH` · `NO_OPENING_COUNT` · `NOT_BROUGHT_ACROSS` |
+
+Three of those readings exist because the alternative is the platform inventing
+a fact:
+
+- **Units that differ are not compared** (`UNIT_MISMATCH`). Converting metres to
+  each would mean inventing a conversion factor, so the row shows both units and
+  declines the arithmetic.
+- **A lot with no opening count is reported as one** (`NO_OPENING_COUNT`), not
+  treated as zero. *"We never counted it"* and *"we counted it as nothing"* are
+  not the same claim, and a report that prints `0.000` for the first one has
+  quietly changed the meaning of the row.
+- **A retired lot shows the balance it released** (`NOT_BROUGHT_ACROSS`). A RETIRE
+  is a decision not to bring material across; the quantity that decision let go
+  of is part of the record, not a row to drop.
+
+And one reading exists because a difference is not an error: `SHORT` and `OVER`
+are facts somebody must explain. Which side is right is not the platform's to
+guess, so the report states the difference and stops.
+
 ## Tests
 
-`LegacyReconciliationHttpTest` — 13 tests / 56 assertions, all deciding through
+`LegacyReconciliationHttpTest` — 19 tests / 84 assertions, all deciding through
 HTTP:
 
 - the worklist shows the lot and reports honestly that nothing is decided, and
@@ -102,11 +134,16 @@ HTTP:
 - deciding without a nomination writes nothing;
 - a second decision that does not name the head is refused as stale, and once it
   does name it both rows remain with the right sequence;
-- the same `request_id` is refused rather than double-deciding the lot.
+- the same `request_id` is refused rather than double-deciding the lot;
+- the quantity report: a receipt that matches the legacy balance, one short of
+  it, one above it, one whose unit differs and is therefore not compared, one
+  with no opening count (reported as such, not as zero), and a retired lot shown
+  with the balance it released.
 
-Related regression green together — 115 tests / 640 assertions:
-`LegacyMaterialReconciliation`, `PipingGrn`, `MtrBindingHttp`, `ItpSignOffHttp`,
-`InspectionResultHttp`, `PipingCustody`, `TableTools`, `CookielessPreview`.
+Related regression green together — 136 tests / 769 assertions:
+`LegacyMaterialReconciliation`, `PipingGrn`, `StockLedger`, `MtrBindingHttp`,
+`MtrCustodyBinding`, `ItpSignOffHttp`, `InspectionResultHttp`, `PipingCustody`,
+`TableTools`, `CookielessPreview`.
 
 A note for whoever extends this: `tests/Support/LegacyLotFixture` disables the
 cutoff trigger to insert a legacy row and **always restores it in a `finally`**.
