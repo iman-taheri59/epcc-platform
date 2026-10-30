@@ -390,9 +390,12 @@ final class InspectionNotificationTest extends TestCase
         $before = $this->asWriter(fn () => DB::table('material_inspections')->where('id', $inspection->id)->first());
         app(ProjectArchiveService::class)->archive($this->project, $this->owner, 'Upgrade fixture');
         // A.4d hung two dependents off these tables: the stage sign-off table and the
-        // additive stage-read policy both reference inspection_notifications. This
-        // fixture models a database that predates A.4d, so they come down first.
+        // additive stage-read policy both reference inspection_notifications. A.5b
+        // slice 1 hung a third: the pack<->notice link, whose foreign key would
+        // otherwise stop the drop below. This fixture models a database that
+        // predates A.4d, so all of them come down first.
         DB::statement('DROP TABLE IF EXISTS inspection_stage_signoffs');
+        DB::statement('DROP TABLE IF EXISTS piping_test_pack_notifications');
         DB::statement('DROP POLICY IF EXISTS stage_read_for_notified_parties ON inspection_itp_stages');
         foreach (['inspection_notification_prerequisite_events', 'inspection_notification_prerequisites', 'inspection_notification_acknowledgments', 'inspection_notification_cancellations', 'inspection_notification_draft_history', 'inspection_notifications', 'inspection_itp_stages', 'inspection_notification_settings'] as $table) {
             DB::statement('DROP TABLE '.$table);
