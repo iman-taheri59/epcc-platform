@@ -118,12 +118,13 @@ final class ItrDossierHttpTest extends TestCase
         $response = $this->actingAs($this->owner)->post(route('quality.itr.freeze', [
             'projectCode' => 'PH-14', 'lang' => 'fa',
         ]), [
-            'test_pack_id' => $pack->id,
+            'scope_kind' => 'TEST_PACK',
+            'scope_ref' => $pack->id,
             'request_id' => (string) Str::uuid(),
         ]);
 
         $response->assertRedirect(route('quality.itr', [
-            'projectCode' => 'PH-14', 'lang' => 'fa', 'pack' => $pack->id,
+            'projectCode' => 'PH-14', 'lang' => 'fa', 'scope' => 'TEST_PACK', 'ref' => $pack->id,
         ]));
         $response->assertSessionHas('status');
 
@@ -168,7 +169,8 @@ final class ItrDossierHttpTest extends TestCase
         $response = $this->actingAs($this->owner)->post(route('quality.itr.freeze', [
             'projectCode' => 'PH-14', 'lang' => 'fa',
         ]), [
-            'test_pack_id' => $pack->id,
+            'scope_kind' => 'TEST_PACK',
+            'scope_ref' => $pack->id,
             'request_id' => (string) Str::uuid(),
         ]);
 
@@ -188,10 +190,10 @@ final class ItrDossierHttpTest extends TestCase
         $url = route('quality.itr.freeze', ['projectCode' => 'PH-14', 'lang' => 'fa']);
 
         $this->actingAs($this->owner)->post($url, [
-            'test_pack_id' => $pack->id, 'request_id' => $requestId,
+            'scope_kind' => 'TEST_PACK', 'scope_ref' => $pack->id, 'request_id' => $requestId,
         ])->assertRedirect();
         $this->actingAs($this->owner)->post($url, [
-            'test_pack_id' => $pack->id, 'request_id' => $requestId,
+            'scope_kind' => 'TEST_PACK', 'scope_ref' => $pack->id, 'request_id' => $requestId,
         ])->assertSessionHasErrors();
 
         $this->assertSame(1, $this->snapshotCount((string) $pack->id));
@@ -204,7 +206,7 @@ final class ItrDossierHttpTest extends TestCase
         $this->actingAs($this->owner)->post(route('quality.itr.freeze', [
             'projectCode' => 'PH-14', 'lang' => 'fa',
         ]), [
-            'test_pack_id' => $pack->id, 'request_id' => 'not-a-uuid',
+            'scope_kind' => 'TEST_PACK', 'scope_ref' => $pack->id, 'request_id' => 'not-a-uuid',
         ])->assertSessionHasErrors();
 
         $this->assertSame(0, $this->snapshotCount((string) $pack->id));
@@ -218,7 +220,7 @@ final class ItrDossierHttpTest extends TestCase
         $this->actingAs($outsider)->post(route('quality.itr.freeze', [
             'projectCode' => 'PH-14', 'lang' => 'fa',
         ]), [
-            'test_pack_id' => $pack->id, 'request_id' => (string) Str::uuid(),
+            'scope_kind' => 'TEST_PACK', 'scope_ref' => $pack->id, 'request_id' => (string) Str::uuid(),
         ])->assertForbidden();
 
         $this->assertSame(0, $this->snapshotCount((string) $pack->id));

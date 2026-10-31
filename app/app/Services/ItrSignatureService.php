@@ -241,21 +241,23 @@ final class ItrSignatureService
     }
 
     /**
-     * What the sign form needs: the pack's frozen snapshots with the state
+     * What the sign form needs: the scope's frozen snapshots with the state
      * that decides which outcomes are honestly available.
      *
-     * @return Collection<string, array{id: string, compiled_at: string, digest: string, is_complete: bool, digest_ok: bool, head_id: ?string, head_outcome: ?string}>
+     * @return Collection<int, array{id: string, compiled_at: string, digest: string, is_complete: bool, digest_ok: bool, head_id: ?string, head_outcome: ?string}>
      */
-    public function signableFor(Project $project, User $actor, string $packId): Collection
+    public function signableFor(Project $project, User $actor, string $scopeKind, ?string $scopeRef): Collection
     {
-        if (! Str::isUuid($packId)) {
+        if ($scopeKind !== 'PROJECT' && ! Str::isUuid($scopeRef)) {
             return collect();
         }
+        $ref = $scopeKind === 'PROJECT' || ! Str::isUuid($scopeRef) ? null : $scopeRef;
 
-        return $this->scoped($project, $actor, function () use ($project, $actor, $packId): Collection {
+        return $this->scoped($project, $actor, function () use ($project, $actor, $scopeKind, $ref): Collection {
             $ids = DB::table('itr_snapshots as s')
                 ->where('s.project_id', $project->id)
-                ->where('s.test_pack_id', $packId)
+                ->where('s.scope_kind', $scopeKind)
+                ->where('s.scope_ref', $ref)
                 ->orderBy('s.compiled_at', 'desc')->orderBy('s.id')
                 ->limit(50)
                 ->pluck('s.id')

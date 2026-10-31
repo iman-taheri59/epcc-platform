@@ -125,5 +125,16 @@ return [
     'print_no_signatures' => 'No signature has been recorded on this document.',
     'print_notices' => 'Inspection notices',
     'print_no_notices' => 'No inspection notice is linked to this pack.',
-];
 
+    // A.5b slice 3a — a dossier is about a scope, not only about one pack.
+    'scopes' => 'Scope of the dossier',
+    'scopes_help' => 'A dossier is compiled for one test pack (what a contractor tests), one subsystem (what a client takes over), or the whole project. All three read the same resolver, so they cannot disagree about which lines a dossier is about.',
+    'scope' => 'Scope',
+    'scope_TEST_PACK' => 'One test pack',
+    'scope_SUBSYSTEM' => 'One subsystem',
+    'scope_PROJECT' => 'The whole project',
+    'gap_packs_without_passed_result' => 'Packs with no PASS result',
+    'gap_lines_without_test_pack' => 'Lines that belong to no test pack — never tested',
+    'test_pack' => 'Test pack',
+    'packs' => 'Test packs',
+];

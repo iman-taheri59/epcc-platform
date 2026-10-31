@@ -211,7 +211,9 @@ final class ItrSnapshotTest extends TestCase
         $this->assertEquals([['line_number' => $lineB->line_number, 'joint_seq' => $jointB->joint_seq]],
             $m['missing']['joints_without_ndt']);
         $this->assertSame([], $m['missing']['joints_with_open_rejection']);
-        $this->assertTrue($m['missing']['pack_without_passed_result']);
+        // The pack with no PASS is NAMED, not flagged: a subsystem dossier has
+        // more than one pack, and "something is missing" is not a work list.
+        $this->assertEquals([['pack_code' => 'TP-ITR-1']], $m['missing']['packs_without_passed_result']);
     }
 
     public function test_open_rejection_is_enumerated_until_the_lineage_clears_it(): void
@@ -248,11 +250,12 @@ final class ItrSnapshotTest extends TestCase
 
         $this->packResult($pack, ['result' => 'FAIL', 'failure_reason' => 'Pressure drop at flange F-12']);
         $m = $this->itr()->compile($this->project(), $this->owner(), $pack->id, 'en')['completeness'];
-        $this->assertTrue($m['missing']['pack_without_passed_result'], 'a FAIL is not a PASS');
+        $this->assertEquals([['pack_code' => 'TP-ITR-3']], $m['missing']['packs_without_passed_result'],
+            'a FAIL is not a PASS');
 
         $this->packResult($pack);
         $c = $this->itr()->compile($this->project(), $this->owner(), $pack->id, 'en');
-        $this->assertFalse($c['completeness']['missing']['pack_without_passed_result']);
+        $this->assertSame([], $c['completeness']['missing']['packs_without_passed_result']);
         $this->assertCount(2, $c['dossier']['test_results']);
         $this->assertSame('Pressure drop at flange F-12', $c['dossier']['test_results'][0]['failure_reason']);
         // numeric -> jsonb normalizes the trailing zero: 21.750 is stored as 21.75.

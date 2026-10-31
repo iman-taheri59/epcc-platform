@@ -1,9 +1,27 @@
 <!doctype html><html lang="{{ $lang }}" dir="{{ $dir }}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ __('quality_itr.title') }}</title>@include('partials.shell')</head><body><div class="app">@include('partials.sidebar')<div class="wrap">@include('partials.topbar')<section style="max-width:1100px;padding:20px;overflow-wrap:anywhere">
 <h1>{{ __('quality_itr.title') }}</h1>
 <p>{{ __('quality_itr.boundary') }}</p>
-<p><a href="{{ route('quality.itr',['projectCode'=>$project->code,'lang'=>$lang==='fa'?'en':'fa','pack'=>$pack?->id]) }}">{{ $lang==='fa'?'English':'فارسی' }}</a> · <a href="{{ route('quality.nominations',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.nominations') }}</a> · <a href="{{ route('quality.results',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.results') }}</a> · <a href="{{ route('quality.sign-offs',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.signoffs') }}</a> · <a href="{{ route('quality.mtr',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.mtr') }}</a> · <a href="{{ route('quality.legacy',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.legacy') }}</a></p>
+<p><a href="{{ route('quality.itr',['projectCode'=>$project->code,'lang'=>$lang==='fa'?'en':'fa','sel'=>$scopeKind==='PROJECT'?'PROJECT':($scopeKind==='SUBSYSTEM'?'SUB:'.$scopeRef:'PACK:'.$scopeRef)]) }}">{{ $lang==='fa'?'English':'فارسی' }}</a> · <a href="{{ route('quality.nominations',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.nominations') }}</a> · <a href="{{ route('quality.results',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.results') }}</a> · <a href="{{ route('quality.sign-offs',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.signoffs') }}</a> · <a href="{{ route('quality.mtr',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.mtr') }}</a> · <a href="{{ route('quality.legacy',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.legacy') }}</a></p>
 @if(session('status'))<p role="status">{{ session('status') }}</p>@endif
 @if($errors->any())<ul role="alert">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>@endif
+
+<h2>{{ __('quality_itr.scopes') }}</h2>
+<p>{{ __('quality_itr.scopes_help') }}</p>
+<form id="scope-form" method="get" action="{{ route('quality.itr',['projectCode'=>$project->code,'lang'=>$lang]) }}">
+<label>{{ __('quality_itr.scope') }} <select name="sel" id="scope-select">
+<option value="PROJECT" @selected($scopeKind==='PROJECT')>{{ __('quality_itr.scope_PROJECT') }} — {{ $project->code }}</option>
+<optgroup label="{{ __('quality_itr.scope_TEST_PACK') }}">
+@foreach($packs as $p)
+<option value="PACK:{{ $p->id }}" @selected($scopeKind==='TEST_PACK' && $scopeRef===$p->id)>{{ $p->code }}@if($p->subsystem?->code) · {{ $p->subsystem?->code }}@endif</option>
+@endforeach
+</optgroup>
+<optgroup label="{{ __('quality_itr.scope_SUBSYSTEM') }}">
+@foreach($subsystems as $sub)
+<option value="SUB:{{ $sub->id }}" @selected($scopeKind==='SUBSYSTEM' && $scopeRef===$sub->id)>{{ $sub->code }}@if($sub->name_en) · {{ $sub->name_en }}@endif</option>
+@endforeach
+</optgroup>
+</select></label>
+<button type="submit" id="open-scope">{{ __('quality_itr.open') }}</button></form>
 
 <h2>{{ __('quality_itr.packs') }}</h2>
 @if($packs->isEmpty())
@@ -18,13 +36,13 @@
 </tbody></table>
 @endif
 
-@if($pack)
-<h3 id="pack-heading">{{ __('quality_itr.pack') }} {{ $pack->code }} — {{ $pack->state }}</h3>
+@if($dossier !== null)
+<h3 id="scope-heading">@if($scopeKind==='PROJECT'){{ __('quality_itr.scope_PROJECT') }} — {{ $project->code }}@elseif($scopeKind==='SUBSYSTEM'){{ __('quality_itr.scope_SUBSYSTEM') }} — {{ collect($subsystems)->firstWhere('id',$scopeRef)?->code }}@else{{ __('quality_itr.pack') }} {{ $pack->code }} — {{ $pack->state }}@endif</h3>
 
 <h4>{{ __('quality_itr.dossier') }}</h4>
 <p id="dossier-kind">{{ __('quality_itr.kind') }}</p>
 <p id="completeness">{{ ($completeness['is_complete'] ?? false) ? __('quality_itr.complete_yes') : __('quality_itr.complete_no') }}</p>
-<p>{{ __('quality_itr.counts') }}: {{ __('quality_itr.lines') }} {{ (int) ($completeness['counts']['lines'] ?? 0) }} · {{ __('quality_itr.joints') }} {{ (int) ($completeness['counts']['joints'] ?? 0) }} · {{ __('quality_itr.welds') }} {{ (int) ($completeness['counts']['welds'] ?? 0) }} · {{ __('quality_itr.ndt') }} {{ (int) ($completeness['counts']['ndt'] ?? 0) }} · {{ __('quality_itr.test_results') }} {{ (int) ($completeness['counts']['test_results'] ?? 0) }}</p>
+<p>{{ __('quality_itr.counts') }}: {{ __('quality_itr.lines') }} {{ (int) ($completeness['counts']['lines'] ?? 0) }} · {{ __('quality_itr.joints') }} {{ (int) ($completeness['counts']['joints'] ?? 0) }} · {{ __('quality_itr.welds') }} {{ (int) ($completeness['counts']['welds'] ?? 0) }} · {{ __('quality_itr.ndt') }} {{ (int) ($completeness['counts']['ndt'] ?? 0) }} · {{ __('quality_itr.test_results') }} {{ (int) ($completeness['counts']['test_results'] ?? 0) }} · {{ __('quality_itr.packs') }} {{ (int) ($completeness['counts']['packs'] ?? 0) }}</p>
 
 <h4>{{ __('quality_itr.gaps') }}</h4>
 @php $missing = $completeness['missing'] ?? []; @endphp
@@ -42,12 +60,16 @@
 @if(! empty($missing['hold_notifications_not_cleared']))
 <tr><td data-facet-value="hold_notifications_not_cleared">{{ __('quality_itr.gap_hold_notifications_not_cleared') }}</td><td>@foreach($missing['hold_notifications_not_cleared'] as $h)<span>{{ $h['number'] }} — {{ __('quality_itr.hold_'.strtolower((string) $h['hold_state'])) }}</span>@if(! $loop->last) · @endif @endforeach</td></tr>
 @endif
-@if(! empty($missing['pack_without_passed_result']))
-<tr><td data-facet-value="pack_without_passed_result">{{ __('quality_itr.gap_pack_without_passed_result') }}</td><td>—</td></tr>
+@if(! empty($missing['packs_without_passed_result']))
+<tr><td data-facet-value="packs_without_passed_result">{{ __('quality_itr.gap_packs_without_passed_result') }}</td><td>@foreach($missing['packs_without_passed_result'] as $pp)<span>{{ $pp['pack_code'] }}</span>@if(! $loop->last) · @endif @endforeach</td></tr>
+@endif
+@if(! empty($missing['lines_without_test_pack']))
+<tr><td data-facet-value="lines_without_test_pack">{{ __('quality_itr.gap_lines_without_test_pack') }}</td><td>@foreach($missing['lines_without_test_pack'] as $ln)<span>{{ $ln['line_number'] }}</span>@if(! $loop->last) · @endif @endforeach</td></tr>
 @endif
 </tbody></table>
 @endif
 
+@if($pack !== null)
 <h4 id="notices-heading">{{ __('quality_itr.notices_title') }}</h4>
 <p>{{ __('quality_itr.notices_help') }}</p>
 @if($notifications->isEmpty())
@@ -76,14 +98,15 @@
 </select></label>
 <button type="submit" id="link-notice">{{ __('quality_itr.submit_link') }}</button></form>
 @endif
+@endif
 
-@if($pack->state === 'DRAFT')
+@if($scopeKind === 'TEST_PACK' && $pack->state === 'DRAFT')
 <p id="draft-note">{{ __('quality_itr.draft_note') }}</p>
 @else
 <h4>{{ __('quality_itr.freeze_title') }}</h4>
 <p>{{ __('quality_itr.freeze_help') }}</p>
 <form id="freeze-form" method="post" action="{{ route('quality.itr.freeze',['projectCode'=>$project->code,'lang'=>$lang]) }}">@csrf
-<input type="hidden" name="test_pack_id" value="{{ $pack->id }}"><input type="hidden" name="request_id" value="{{ $requestId }}">
+<input type="hidden" name="scope_kind" value="{{ $scopeKind }}"><input type="hidden" name="scope_ref" value="{{ $scopeRef }}"><input type="hidden" name="request_id" value="{{ $requestId }}">
 <button type="submit" id="freeze-snapshot">{{ __('quality_itr.submit') }}</button></form>
 @endif
 
@@ -112,7 +135,7 @@
 <p>{{ __('quality_itr.sign_help', ['company' => $acting->name($lang)]) }}</p>
 @foreach($signable as $opt)
 <form id="sign-form-{{ Str::of($opt['id'])->substr(0, 8) }}" method="post" action="{{ route('quality.itr.sign', ['projectCode' => $project->code, 'lang' => $lang]) }}">@csrf
-<input type="hidden" name="test_pack_id" value="{{ $pack->id }}"><input type="hidden" name="snapshot_id" value="{{ $opt['id'] }}">
+<input type="hidden" name="test_pack_id" value="{{ $pack?->id }}"><input type="hidden" name="scope_ref" value="{{ $scopeRef }}"><input type="hidden" name="snapshot_id" value="{{ $opt['id'] }}">
 <input type="hidden" name="previous_signature_id" value="{{ $opt['head_id'] ?? '' }}"><input type="hidden" name="request_id" value="{{ (string) Str::uuid() }}">
 <fieldset><legend><span style="font-family:monospace">{{ $opt['compiled_at'] }} · {{ substr($opt['digest'], 0, 16) }}…</span></legend>
 @if(! $opt['digest_ok'])

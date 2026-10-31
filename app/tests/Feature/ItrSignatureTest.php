@@ -422,13 +422,14 @@ final class ItrSignatureTest extends TestCase
 
         $response = $this->actingAs($this->owner)->post($this->signRoute(), [
             'test_pack_id' => $pack->id,
+            'scope_ref' => $pack->id,
             'snapshot_id' => $snapshot['id'],
             'outcome' => 'ENDORSED',
             'request_id' => (string) Str::uuid(),
         ]);
 
-        $response->assertRedirect($this->route(['pack' => $pack->id]));
-        $this->actingAs($this->owner)->get($this->route(['pack' => $pack->id]))
+        $response->assertRedirect($this->route(['scope' => 'TEST_PACK', 'ref' => $pack->id]));
+        $this->actingAs($this->owner)->get($this->route(['scope' => 'TEST_PACK', 'ref' => $pack->id]))
             ->assertOk()
             ->assertSee(__('quality_itr.sig_ENDORSED'), false);
     }

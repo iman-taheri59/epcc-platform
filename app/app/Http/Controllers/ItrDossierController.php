@@ -77,17 +77,32 @@ final class ItrDossierController extends Controller
         [$project, $lang] = $this->context($request, $projectCode);
         $actor = $request->user();
 
+        // A dossier is about a scope: one pack (what A.5 shipped), one
+        // subsystem, or the whole project. The pack list stays because a pack
+        // is still the commonest scope, and the subsystem list is what
+        // handover is actually discussed in.
+        [$scopeKind, $scopeRef] = $this->scopeFrom($request);
+
         $packs = $this->tenant->runAs($actor->company_id, fn () => PipingTestPack::where('project_id', $project->id)
             ->orderBy('code')->limit(200)->get(), $project->id);
+        $subsystems = $this->tenant->runAs($actor->company_id, fn () => DB::table('subsystems')
+            ->where('project_id', $project->id)->orderBy('code')->limit(200)->get(), $project->id);
 
-        $pack = $request->query('pack') !== null ? $packs->firstWhere('id', $request->query('pack')) : null;
-        $compiled = $pack !== null ? $this->itr->compile($project, $actor, (string) $pack->id, $lang) : null;
+        $ref = ($scopeRef === null || $scopeRef === '') ? null : $scopeRef;
+        $pack = $scopeKind === 'TEST_PACK' && $ref !== null ? $packs->firstWhere('id', $ref) : null;
+        // A scope that is not chosen — or chosen but not visible to this
+        // session — compiles nothing: an empty dossier that reads "no gaps"
+        // would be the one thing this screen must never show.
+        $scopeOpen = $scopeKind === 'PROJECT'
+            || ($ref !== null && ($pack !== null || $subsystems->contains('id', $ref)));
+        $compiled = $scopeOpen ? $this->itr->compile($project, $actor, $ref, $lang, $scopeKind) : null;
 
         // Every snapshot on the page is re-verified against its stored dossier.
         // The table is append-only, so a false here would mean tampering at the
         // database level — which is exactly the thing worth surfacing.
-        $snapshots = $pack !== null
-            ? $this->itr->snapshotsForPack($project, $actor, (string) $pack->id)->take(self::SNAPSHOT_LIMIT)
+        $snapshots = $scopeOpen
+            ? $this->itr->snapshotsForScope($project, $actor, $scopeKind, $ref)
+                ->take(self::SNAPSHOT_LIMIT)
                 ->map(fn (object $row): array => [
                     'row' => $row,
                     'valid' => (bool) ($this->itr->snapshot($project, $actor, (string) $row->id)['digest_valid'] ?? false),
@@ -107,10 +122,15 @@ final class ItrDossierController extends Controller
             'dir' => $lang === 'fa' ? 'rtl' : 'ltr',
             'user' => $actor,
             'acting' => $actor->company,
+            'scopeKind' => $scopeKind,
+            'scopeRef' => $ref,
             'packs' => $packs,
+            'subsystems' => $subsystems,
             'pack' => $pack,
             'dossier' => $compiled['dossier'] ?? null,
             'completeness' => $compiled['completeness'] ?? null,
+            // Notices are linked to packs, so the link surface belongs to the
+            // pack scope; a wider dossier carries its notices inside itself.
             'notifications' => $pack !== null
                 ? $this->notices->forPack($project, $actor, (string) $pack->id, $lang)
                 : collect(),
@@ -119,8 +139,8 @@ final class ItrDossierController extends Controller
                 : collect(),
             'snapshots' => $snapshots,
             'signatureState' => $signatureState,
-            'signable' => $pack !== null
-                ? $this->signatures->signableFor($project, $actor, (string) $pack->id)
+            'signable' => $scopeOpen
+                ? $this->signatures->signableFor($project, $actor, $scopeKind, $ref)
                 : collect(),
             // Asked of the register the guard itself asks: one definition of
             // authority, so the form is never shown to someone it would refuse.
@@ -134,21 +154,62 @@ final class ItrDossierController extends Controller
     public function freeze(Request $request, string $projectCode): RedirectResponse
     {
         [$project, $lang] = $this->context($request, $projectCode);
-        $validated = $request->validate(['test_pack_id' => ['required', 'uuid']]);
+        $validated = $request->validate([
+            'scope_kind' => ['required', Rule::in(ItrCompilerService::SCOPES)],
+            'scope_ref' => ['nullable', 'uuid'],
+            'request_id' => ['required', 'uuid'],
+        ]);
+
+        $kind = (string) $validated['scope_kind'];
+        $ref = $kind === 'PROJECT' ? null : (string) ($validated['scope_ref'] ?? '');
 
         $snapshot = $this->itr->freeze(
             $project,
             $request->user(),
-            (string) $validated['test_pack_id'],
-            (string) $request->input('request_id', ''),
+            $ref === '' ? null : $ref,
+            (string) $validated['request_id'],
             $lang,
+            $kind,
         );
 
         return redirect()->route('quality.itr', [
             'projectCode' => $projectCode,
             'lang' => $lang,
-            'pack' => $validated['test_pack_id'],
+            'scope' => $kind,
+            'ref' => $ref,
         ])->with('status', __('quality_itr.saved', ['digest' => substr($snapshot['digest'], 0, 12)]));
+    }
+
+    /**
+     * The scope the screen is showing. One select carries all three kinds
+     * (`PACK:<uuid>`, `SUB:<uuid>`, `PROJECT`), so choosing a scope is one
+     * control with no scripting — and `?pack=<uuid>` still works for every
+     * link written since A.5.
+     *
+     * @return array{0: string, 1: ?string}
+     */
+    private function scopeFrom(Request $request): array
+    {
+        $sel = (string) $request->query('sel', '');
+        if ($sel === 'PROJECT') {
+            return ['PROJECT', null];
+        }
+        if (str_starts_with($sel, 'PACK:')) {
+            return ['TEST_PACK', substr($sel, 5)];
+        }
+        if (str_starts_with($sel, 'SUB:')) {
+            return ['SUBSYSTEM', substr($sel, 4)];
+        }
+
+        // Historical form, and the one the tests and bookmarked links use.
+        $pack = (string) $request->query('pack', '');
+
+        return ['TEST_PACK', $pack === '' ? null : $pack];
+    }
+
+    private function scopeKind(Request $request): string
+    {
+        return $this->scopeFrom($request)[0];
     }
 
     /**
@@ -191,6 +252,7 @@ final class ItrDossierController extends Controller
         [$project, $lang] = $this->context($request, $projectCode);
         $validated = $request->validate([
             'test_pack_id' => ['required', 'uuid'],
+            'scope_ref' => ['nullable', 'uuid'],
             'snapshot_id' => ['required', 'uuid'],
             'outcome' => ['required', 'string', Rule::in(ItrSignatureService::OUTCOMES)],
             'reason' => ['nullable', 'string', 'max:4000'],
@@ -209,7 +271,8 @@ final class ItrDossierController extends Controller
         return redirect()->route('quality.itr', [
             'projectCode' => $projectCode,
             'lang' => $lang,
-            'pack' => $validated['test_pack_id'],
+            'scope' => $this->scopeKind($request),
+            'ref' => (string) $request->input('scope_ref', $validated['test_pack_id']),
         ])->with('status', __('quality_itr.signed', ['outcome' => __('quality_itr.sig_'.$signed['outcome'])]));
     }
 

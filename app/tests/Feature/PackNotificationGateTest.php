@@ -385,7 +385,9 @@ final class PackNotificationGateTest extends TestCase
         $dossier = json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR);
         $complete = json_decode((string) $row->completeness, true, 512, JSON_THROW_ON_ERROR);
 
-        $this->assertSame(2, $dossier['schema_version']);
+        // 2 -> 3 in A.5b slice 3a: the dossier names its scope and its packs,
+        // and the completeness report gained the gap a pack scope cannot see.
+        $this->assertSame(3, $dossier['schema_version']);
         $this->assertSame($notice, $dossier['notifications'][0]['notification_id']);
         $this->assertSame('H', $dossier['notifications'][0]['point']);
         $this->assertSame('NOT_SIGNED', $dossier['notifications'][0]['hold_state']);

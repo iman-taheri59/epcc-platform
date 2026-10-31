@@ -27,13 +27,30 @@ use Illuminate\Validation\ValidationException;
  * or NDT records, open rejections, packs without a passed result). The
  * dossier kind literally says ITR_COMPILATION_NOT_A_CERTIFICATE.
  *
- * SLICE BOUNDARIES (declared, not hidden): scope is TEST_PACK only; ITP
- * notifications and receipts are not assembled (no pack↔notification link
- * exists; receipt binding needs piece-level custody — A.4b/A.5b); MTR
- * binding to packs awaits the same; PDF export is optional at runtime.
+ * A.5b slice 3a — SCOPE. A dossier used to be about one test pack, which is
+ * the unit a contractor tests and not the unit a client takes over. It is now
+ * compiled for TEST_PACK, SUBSYSTEM or PROJECT, resolved by one SQL function
+ * (`epcc_itr_scope_lines`) that both the dossier and the completeness report
+ * read, so they cannot disagree about what a subsystem dossier is about. The
+ * pack-scope functions survive as wrappers over the general ones: a preview
+ * and a frozen snapshot must still agree byte-for-byte.
+ *
+ * SLICE BOUNDARIES (declared, not hidden): there is no system scope, because
+ * the schema has subsystems, areas and facilities and no system level, and
+ * grouping them would mean the platform inventing a hierarchy the project has
+ * not declared. Receipts are not assembled (receipt binding needs piece-level
+ * custody — A.4b), so MTR binding into the dossier awaits the same; PDF
+ * export is optional at runtime.
  */
 final class ItrCompilerService
 {
+    /**
+     * The three scopes a dossier may be compiled for. There is no SYSTEM: the
+     * project declares subsystems, areas and facilities, and a "system" would
+     * be a hierarchy the platform made up rather than one the project stated.
+     */
+    public const SCOPES = ['TEST_PACK', 'SUBSYSTEM', 'PROJECT'];
+
     public function __construct(
         private readonly TenantContext $tenant,
         private readonly PdfRenderer $pdf,
@@ -60,25 +77,35 @@ final class ItrCompilerService
      *
      * @throws ValidationException when the pack is not visible in this project
      */
-    public function compile(Project $project, User $actor, string $testPackId, string $lang = 'fa'): array
-    {
+    public function compile(
+        Project $project,
+        User $actor,
+        ?string $scopeRef,
+        string $lang = 'fa',
+        string $scopeKind = 'TEST_PACK',
+    ): array {
         $errors = [];
-        $pack = $this->uuidArg($testPackId, 'test_pack_id', $errors, $lang);
+        $scope = $this->scopeArg($scopeKind, $scopeRef, $errors, $lang);
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);
         }
 
-        return $this->scoped($project, $actor, function () use ($project, $pack, $lang): array {
-            // Visibility is checked by the read itself under RLS.
+        return $this->scoped($project, $actor, function () use ($project, $scope, $lang): array {
+            // Visibility is checked by the read itself under RLS: a scope that
+            // this session cannot see resolves to nothing, and that is a
+            // refusal rather than an empty dossier that looks finished.
+            [$existsSql, $existsBindings] = $this->scopeExists($scope['kind'], $scope['ref'], $project->id);
             $row = DB::selectOne(
-                'SELECT epcc_itr_test_pack_dossier(?,?) AS dossier, epcc_itr_test_pack_completeness(?,?) AS completeness,
-                        (SELECT 1 FROM piping_test_packs tp WHERE tp.id = ? AND tp.project_id = ?) AS visible',
-                [$project->id, $pack, $project->id, $pack, $pack, $project->id],
+                'SELECT epcc_itr_scope_dossier(?,?,?) AS dossier, epcc_itr_scope_completeness(?,?,?) AS completeness,
+                        (SELECT 1 FROM ('.$existsSql.') e) AS visible',
+                [$project->id, $scope['kind'], $scope['ref'],
+                 $project->id, $scope['kind'], $scope['ref'],
+                 ...$existsBindings],
             );
             if (! $row || $row->visible === null) {
-                throw ValidationException::withMessages(['test_pack_id' => $this->msg($lang,
-                    'بستهٔ آزمون در این پروژه پیدا نشد یا برای این جلسه قابل مشاهده نیست.',
-                    'The test pack was not found in this project or is not visible to this session.')]);
+                throw ValidationException::withMessages([
+                    $this->scopeField($scope['kind']) => $this->scopeMissingMessage($scope['kind'], $lang),
+                ]);
             }
 
             return [
@@ -86,6 +113,95 @@ final class ItrCompilerService
                 'completeness' => json_decode((string) $row->completeness, true, 512, JSON_THROW_ON_ERROR),
             ];
         });
+    }
+
+    /**
+     * The one-row test that says the scope exists and is visible to this
+     * session, with its own bindings so the caller cannot get the order wrong.
+     *
+     * @return array{0: string, 1: list<mixed>}
+     */
+    private function scopeExists(string $kind, ?string $ref, string $projectId): array
+    {
+        return match ($kind) {
+            'TEST_PACK' => ['SELECT 1 FROM piping_test_packs WHERE id = ? AND project_id = ?', [$ref, $projectId]],
+            'SUBSYSTEM' => ['SELECT 1 FROM subsystems WHERE id = ? AND project_id = ?', [$ref, $projectId]],
+            default => ['SELECT 1 FROM projects WHERE id = ? AND ?::uuid IS NULL', [$projectId, $ref]],
+        };
+    }
+
+    private function scopeMissingMessage(string $kind, string $lang): string
+    {
+        return match ($kind) {
+            'TEST_PACK' => $this->msg($lang,
+                'بستهٔ آزمون در این پروژه پیدا نشد یا برای این جلسه قابل مشاهده نیست.',
+                'The test pack was not found in this project or is not visible to this session.'),
+            'SUBSYSTEM' => $this->msg($lang,
+                'این زیرسیستم در این پروژه پیدا نشد یا برای این جلسه قابل مشاهده نیست.',
+                'The subsystem was not found in this project or is not visible to this session.'),
+            default => $this->msg($lang,
+                'این پروژه برای این جلسه قابل مشاهده نیست.',
+                'The project is not visible to this session.'),
+        };
+    }
+
+    /** The field a refusal is reported against, named for what was asked for. */
+    private function scopeField(string $kind): string
+    {
+        return match ($kind) {
+            'TEST_PACK' => 'test_pack_id',
+            'SUBSYSTEM' => 'subsystem_id',
+            default => 'scope_ref',
+        };
+    }
+
+    /**
+     * One definition of a scope, validated once: the kind must be one of the
+     * three, and a reference is required exactly when the scope names something
+     * inside the project — the project itself needs none.
+     *
+     * @param  array<string, string>  $errors
+     * @return array{kind: string, ref: ?string}
+     */
+    private function scopeArg(string $kind, ?string $ref, array &$errors, string $lang): array
+    {
+        $kind = strtoupper(trim($kind));
+        if (! in_array($kind, self::SCOPES, true)) {
+            $errors['scope_kind'] = $this->msg($lang,
+                'دامنهٔ dossier باید یکی از این‌ها باشد: TEST_PACK، SUBSYSTEM، PROJECT.',
+                'The dossier scope must be one of: TEST_PACK, SUBSYSTEM, PROJECT.');
+
+            return ['kind' => 'TEST_PACK', 'ref' => null];
+        }
+        $field = $this->scopeField($kind);
+
+        // A project dossier is the project: a reference beside it would let two
+        // rows claim the same dossier under different names, which is exactly
+        // what the resolver's one-definition rule exists to prevent.
+        if ($kind === 'PROJECT' && trim((string) $ref) !== '') {
+            $errors[$field] = $this->msg($lang,
+                'دامنهٔ کلِ پروژه نیاز به شناسه ندارد: خودِ ردیف پروژه را نام می‌برد.',
+                'The project scope takes no reference: the row already names the project.');
+
+            return ['kind' => $kind, 'ref' => null];
+        }
+
+        if ($kind === 'PROJECT') {
+            return ['kind' => $kind, 'ref' => null];
+        }
+
+        $ref = trim((string) $ref);
+        if (! Str::isUuid($ref)) {
+            // The field is named for what was asked for: a screen that posted a
+            // pack gets told about its pack, not about an abstraction.
+            $errors[$field] = $this->msg($lang,
+                'شناسهٔ دامنه باید UUID باشد.',
+                'The scope reference must be a UUID.');
+
+            return ['kind' => $kind, 'ref' => null];
+        }
+
+        return ['kind' => $kind, 'ref' => $ref];
     }
 
     /**
@@ -97,10 +213,16 @@ final class ItrCompilerService
      *
      * @throws ValidationException
      */
-    public function freeze(Project $project, User $actor, string $testPackId, string $requestId, string $lang = 'fa'): array
-    {
+    public function freeze(
+        Project $project,
+        User $actor,
+        ?string $scopeRef,
+        string $requestId,
+        string $lang = 'fa',
+        string $scopeKind = 'TEST_PACK',
+    ): array {
         $errors = [];
-        $pack = $this->uuidArg($testPackId, 'test_pack_id', $errors, $lang);
+        $scope = $this->scopeArg($scopeKind, $scopeRef, $errors, $lang);
         if (! Str::isUuid($requestId)) {
             $errors['request_id'] = $this->msg($lang, 'شناسهٔ درخواست باید UUID باشد.', 'The request id must be a UUID.');
         }
@@ -108,14 +230,15 @@ final class ItrCompilerService
             throw ValidationException::withMessages($errors);
         }
 
-        return $this->scoped($project, $actor, function () use ($project, $actor, $pack, $requestId, $lang): array {
+        return $this->scoped($project, $actor, function () use ($project, $actor, $scope, $requestId, $lang): array {
             try {
                 $id = (string) DB::table('itr_snapshots')->insertGetId([
                     'id' => (string) Str::uuid(),
                     'project_id' => $project->id,
                     'company_id' => $actor->company_id,
-                    'scope_kind' => 'TEST_PACK',
-                    'test_pack_id' => $pack,
+                    'scope_kind' => $scope['kind'],
+                    'scope_ref' => $scope['ref'],
+                    'test_pack_id' => $scope['kind'] === 'TEST_PACK' ? $scope['ref'] : null,
                     'dossier' => '{}',          // overwritten by the guard trigger
                     'completeness' => '{}',     // overwritten by the guard trigger
                     'digest' => str_repeat('0', 64), // overwritten by the guard trigger
@@ -164,9 +287,22 @@ final class ItrCompilerService
     /** Every snapshot frozen for one pack, newest first. */
     public function snapshotsForPack(Project $project, User $actor, string $testPackId): Collection
     {
+        return $this->snapshotsForScope($project, $actor, 'TEST_PACK', $testPackId);
+    }
+
+    /** Every snapshot frozen for one scope, newest first. */
+    public function snapshotsForScope(Project $project, User $actor, string $scopeKind, ?string $scopeRef): Collection
+    {
+        if (! Str::isUuid($scopeRef)) {
+            $scopeRef = null;
+        }
+
         return $this->scoped($project, $actor, fn () => DB::table('itr_snapshots')
-            ->where('project_id', $project->id)->where('test_pack_id', $testPackId)
-            ->orderBy('compiled_at', 'desc')->orderBy('id')->get());
+            ->where('project_id', $project->id)
+            ->where('scope_kind', $scopeKind)
+            ->where('scope_ref', $scopeRef)
+            ->orderBy('compiled_at', 'desc')->orderBy('id')
+            ->get());
     }
 
     /**
@@ -221,6 +357,15 @@ final class ItrCompilerService
             str_contains($m, 'ITR_PACK_NOT_FOUND') => $this->msg($lang,
                 'بستهٔ آزمون در این پروژه پیدا نشد یا قابل مشاهده نیست.',
                 'The test pack was not found in this project or is not visible.'),
+            str_contains($m, 'ITR_SUBSYSTEM_NOT_FOUND') => $this->msg($lang,
+                'این زیرسیستم در این پروژه پیدا نشد.',
+                'That subsystem was not found in this project.'),
+            str_contains($m, 'ITR_SCOPE_UNKNOWN') => $this->msg($lang,
+                'دامنهٔ dossier باید یکی از این‌ها باشد: TEST_PACK، SUBSYSTEM، PROJECT.',
+                'The dossier scope must be one of: TEST_PACK, SUBSYSTEM, PROJECT.'),
+            str_contains($m, 'ITR_SCOPE_REF_MISMATCH') => $this->msg($lang,
+                'ارجاعِ دامنه با نوعِ دامنه نمی‌خواند.',
+                'The scope reference does not match the scope kind.'),
             str_contains($m, 'ITR_PROJECT_NOT_WRITABLE') => $this->msg($lang,
                 'پروژه برای ثبت snapshot writable نیست (آرشیو).',
                 'The project is not writable for snapshot postings (archived).'),
@@ -242,17 +387,6 @@ final class ItrCompilerService
         };
 
         return ValidationException::withMessages(['itr' => $text]);
-    }
-
-    private function uuidArg(string $value, string $field, array &$errors, string $lang): ?string
-    {
-        if (! Str::isUuid($value)) {
-            $errors[$field] = $this->msg($lang, 'شناسه باید UUID باشد.', 'The id must be a UUID.');
-
-            return null;
-        }
-
-        return $value;
     }
 
     private function msg(string $lang, string $fa, string $en): string

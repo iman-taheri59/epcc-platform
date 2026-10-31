@@ -97,9 +97,28 @@
         'outcome_ACCEPTED_WITH_COMMENTS' => ['fa' => 'پذیرفته با توضیح', 'en' => 'Accepted with comments'],
         'outcome_REJECTED' => ['fa' => 'مردود', 'en' => 'Rejected'],
         'outcome_WAIVED_NOT_ATTENDED' => ['fa' => 'چشم‌پوشی — کسی نیامد', 'en' => 'Waived — nobody attended'],
+
+        // A.5b slice 3a — the document names the scope it was compiled for.
+        'scope' => ['fa' => 'دامنهٔ کتابچه', 'en' => 'Scope of the dossier'],
+        'scope_TEST_PACK' => ['fa' => 'یک بستهٔ آزمون', 'en' => 'One test pack'],
+        'scope_SUBSYSTEM' => ['fa' => 'یک زیرسیستم', 'en' => 'One subsystem'],
+        'scope_PROJECT' => ['fa' => 'کلِ پروژه', 'en' => 'The whole project'],
+        'pack' => ['fa' => 'بستهٔ آزمون', 'en' => 'Test pack'],
+        'mpass' => ['fa' => 'بسته‌هایی بی‌نتیجهٔ آزمونِ قبول', 'en' => 'Packs with no PASS test result'],
+        'mnopack' => ['fa' => 'خطوطی که به هیچ بسته‌ای نسبت داده نشده‌اند', 'en' => 'Lines assigned to no test pack'],
+        'packs' => ['fa' => 'بسته‌های آزمونِ در دامنه', 'en' => 'Test packs in scope'],
+        'pcode' => ['fa' => 'کدِ بسته', 'en' => 'Pack code'],
+        'pstate' => ['fa' => 'وضعیت', 'en' => 'State'],
     ];
     $L = fn (string $k): string => $fa ? $t[$k]['fa'] : $t[$k]['en'];
     $pack = $dossier['pack'] ?? [];
+    $scope = $dossier['scope'] ?? [];
+    $scopeKind = (string) ($dossier['scope_kind'] ?? 'TEST_PACK');
+    $scopeLabel = match ($scopeKind) {
+        'SUBSYSTEM' => ($scope['code'] ?? '—').' — '.$L('scope_SUBSYSTEM'),
+        'PROJECT' => ($scope['code'] ?? '—').' — '.$L('scope_PROJECT'),
+        default => ($pack['code'] ?? '—').' — '.$L('scope_TEST_PACK'),
+    };
     $missing = $completeness['missing'] ?? [];
     $counts = $completeness['counts'] ?? [];
     $short = fn ($v) => $v === null || $v === '' ? $L('none') : (string) $v;
@@ -128,7 +147,10 @@
 @endif
 
 <table class="meta">
-  <tr><td class="k">{{ $L('pack') }}</td><td><span class="mono">{{ $short($pack['code'] ?? null) }}</span> — {{ $fa ? $short($pack['title_fa'] ?? null) : $short($pack['title_en'] ?? null) }}</td></tr>
+  <tr><td class="k">{{ $L('scope') }}</td><td><span class="mono">{{ $scopeLabel }}</span></td></tr>
+  @if($scopeKind === 'TEST_PACK')
+    <tr><td class="k">{{ $L('pack') }}</td><td><span class="mono">{{ $short($pack['code'] ?? null) }}</span> — {{ $fa ? $short($pack['title_fa'] ?? null) : $short($pack['title_en'] ?? null) }}</td></tr>
+  @endif
   <tr><td class="k">{{ $L('subsys') }}</td><td><span class="mono">{{ $short($pack['subsystem_code'] ?? null) }}</span></td></tr>
   <tr><td class="k">{{ $L('state') }}</td><td><span class="mono">{{ $short($pack['state'] ?? null) }}</span></td></tr>
   <tr><td class="k">{{ $L('pressure') }}</td><td><span class="mono">{{ $short($pack['test_pressure'] ?? null) }} {{ $short($pack['test_pressure_unit'] ?? null) }}</span></td></tr>
@@ -148,7 +170,8 @@
   {{ $L('cjoints') }} <span class="mono">{{ (int) ($counts['joints'] ?? 0) }}</span> ·
   {{ $L('cwelds') }} <span class="mono">{{ (int) ($counts['welds'] ?? 0) }}</span> ·
   {{ $L('cndt') }} <span class="mono">{{ (int) ($counts['ndt'] ?? 0) }}</span> ·
-  {{ $L('ctests') }} <span class="mono">{{ (int) ($counts['test_results'] ?? 0) }}</span>
+  {{ $L('ctests') }} <span class="mono">{{ (int) ($counts['test_results'] ?? 0) }}</span> ·
+  {{ $L('packs') }} <span class="mono">{{ (int) ($counts['packs'] ?? 0) }}</span>
 </div>
 
 <h2>{{ $L('missing') }}</h2>
@@ -178,8 +201,19 @@
       @foreach($missing['joints_with_open_rejection'] as $m)<span class="mono">{{ $m['line_number'] }}/J{{ $short($m['joint_seq']) }}</span>@if(! $loop->last)، @endif @endforeach
     </td></tr>
   @endif
-  @if(! empty($missing['pack_without_passed_result']))
-    <tr><td class="lbl">{{ $L('mpass') }}</td><td>—</td></tr>
+  @if(! empty($missing['lines_without_test_pack']))
+    <tr><td class="lbl">{{ $L('mnopack') }}</td><td>
+      @foreach($missing['lines_without_test_pack'] as $ln)
+        <span class="mono">{{ $ln['line_number'] }}</span>@if(! $loop->last) · @endif
+      @endforeach
+    </td></tr>
+  @endif
+  @if(! empty($missing['packs_without_passed_result']))
+    <tr><td class="lbl">{{ $L('mpass') }}</td><td>
+      @foreach($missing['packs_without_passed_result'] as $pp)
+        <span class="mono">{{ $pp['pack_code'] }}</span>@if(! $loop->last) · @endif
+      @endforeach
+    </td></tr>
   @endif
   @if(($completeness['is_complete'] ?? false))
     <tr><td colspan="2">{{ $L('cyes') }}</td></tr>
@@ -228,15 +262,36 @@
   </tbody>
 </table>
 
+@if($scopeKind !== 'TEST_PACK')
+<h2>{{ $L('packs') }}</h2>
+<table class="grid">
+  <thead><tr><th>{{ $L('pcode') }}</th><th>{{ $L('pstate') }}</th><th>{{ $L('subsys') }}</th><th>{{ $L('pressure') }}</th></tr></thead>
+  <tbody>
+  @forelse($dossier['test_packs'] ?? [] as $tp)
+    <tr>
+      <td><span class="mono">{{ $tp['code'] ?? '—' }}</span></td>
+      <td><span class="mono">{{ $tp['state'] ?? '—' }}</span></td>
+      <td><span class="mono">{{ $short($tp['subsystem_code'] ?? null) }}</span></td>
+      <td><span class="mono">{{ $short($tp['test_pressure'] ?? null) }} {{ $short($tp['test_pressure_unit'] ?? null) }}</span></td>
+    </tr>
+  @empty
+    <tr><td colspan="4">{{ $L('empty') }}</td></tr>
+  @endforelse
+  </tbody>
+</table>
+@endif
+
 <h2>{{ $L('results') }}</h2>
 <table class="grid">
   <thead><tr>
+    @if($scopeKind !== 'TEST_PACK')<th>{{ $L('pcode') }}</th>@endif
     <th>{{ $L('rtype') }}</th><th>{{ $L('rmed') }}</th><th>{{ $L('rpress') }}</th>
     <th>{{ $L('rhold') }}</th><th>{{ $L('rwin') }}</th><th>{{ $L('rres') }}</th><th>{{ $L('rmode') }}</th>
   </tr></thead>
   <tbody>
   @forelse($dossier['test_results'] ?? [] as $r)
     <tr>
+      @if($scopeKind !== 'TEST_PACK')<td><span class="mono">{{ $r['test_pack_code'] ?? '—' }}</span></td>@endif
       <td><span class="mono">{{ $r['test_type'] }}</span></td>
       <td>{{ $r['medium'] }}</td>
       <td><span class="mono">{{ $r['test_pressure'] }} {{ $r['pressure_unit'] }}</span></td>
@@ -246,7 +301,7 @@
       <td>{{ $modeLabel($r['mode'] ?? 'IN_SYSTEM') }}</td>
     </tr>
   @empty
-    <tr><td colspan="7">{{ $L('empty') }}</td></tr>
+    <tr><td colspan="{{ $scopeKind === 'TEST_PACK' ? 7 : 8 }}">{{ $L('empty') }}</td></tr>
   @endforelse
   </tbody>
 </table>
