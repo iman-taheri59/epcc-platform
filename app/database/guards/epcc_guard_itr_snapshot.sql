@@ -42,6 +42,13 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM subsystems ss WHERE ss.id = NEW.scope_ref AND ss.project_id = NEW.project_id) THEN
       RAISE EXCEPTION 'ITR_SUBSYSTEM_NOT_FOUND' USING ERRCODE = '42501';
     END IF;
+  ELSIF NEW.scope_kind = 'SYSTEM' THEN
+    IF NEW.scope_ref IS NULL OR NEW.test_pack_id IS NOT NULL THEN
+      RAISE EXCEPTION 'ITR_SCOPE_REF_MISMATCH' USING ERRCODE = '23514';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM systems sy WHERE sy.id = NEW.scope_ref AND sy.project_id = NEW.project_id) THEN
+      RAISE EXCEPTION 'ITR_SYSTEM_NOT_FOUND' USING ERRCODE = '42501';
+    END IF;
   ELSIF NEW.scope_kind = 'PROJECT' THEN
     -- The project needs no reference: the row already names it, and accepting
     -- one would allow two rows to claim the same dossier under different names.

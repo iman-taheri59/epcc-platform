@@ -227,7 +227,9 @@ final class ItrScopeTest extends TestCase
         $this->assertSame('SUBSYSTEM', (string) $row->scope_kind);
         $this->assertSame($this->subsystemId(), (string) $row->scope_ref);
         $this->assertNull($row->test_pack_id);
-        $this->assertSame(3, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
+        // 3 -> 4 when the system scope landed: the dossier names the subsystems
+        // and facilities a system gathers.
+        $this->assertSame(4, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
     }
 
     public function test_a_project_dossier_can_be_frozen(): void
@@ -265,9 +267,12 @@ final class ItrScopeTest extends TestCase
 
     public function test_an_unknown_scope_is_refused_before_anything_is_stored(): void
     {
+        // AREA and FACILITY are levels the breakdown really has and the dossier
+        // does not compile for yet — which is exactly why asking for one must
+        // be refused rather than quietly answered.
         $this->assertRefused(
             fn () => $this->asOwner(fn () => app(ItrCompilerService::class)->freeze(
-                $this->project, $this->owner, $this->subsystemId(), (string) Str::uuid(), 'en', 'SYSTEM')),
+                $this->project, $this->owner, $this->subsystemId(), (string) Str::uuid(), 'en', 'AREA')),
             'must be one of',
         );
 
@@ -353,6 +358,84 @@ final class ItrScopeTest extends TestCase
         $this->assertSame(1, $this->asOwner(fn () => $itr->snapshotsForScope($this->project, $this->owner, 'SUBSYSTEM', $this->subsystemId())->count()));
     }
 
+    // ------------------------------------------------------------------ systems
+
+    public function test_a_system_dossier_is_about_every_line_of_every_subsystem_serving_it(): void
+    {
+        // The firefighting system in the fixture holds a subsystem in the
+        // plant and one in the utilities block. No area or facility can say
+        // that; the whole reason the level exists is that it can.
+        $this->lineIn($this->subsystemId('PH-14-SS-4401'), 'PH-14-FF-A');
+        $this->lineIn($this->subsystemId('PH-14-SS-4402'), 'PH-14-FF-B');
+
+        $dossier = $this->compile('SYSTEM', $this->systemId('PH-14-SY-4400'));
+
+        $this->assertSame('SYSTEM', $dossier['scope_kind']);
+        $this->assertSame(['PH-14-FF-A', 'PH-14-FF-B'], collect($dossier['lines'])->pluck('line_number')->all());
+        $this->assertEqualsCanonicalizing(['PH-14-PL-01', 'PH-14-PL-02'], $dossier['scope']['facility_codes']);
+        $this->assertEqualsCanonicalizing(['PH-14-SS-4401', 'PH-14-SS-4402'], $dossier['scope']['subsystem_codes']);
+    }
+
+    public function test_a_system_dossier_does_not_reach_into_another_system(): void
+    {
+        $this->lineIn($this->subsystemId('PH-14-SS-4401'), 'PH-14-FF-A');
+        $this->lineIn($this->subsystemId('PH-14-SS-2201'), 'PH-14-CW-A');
+
+        $dossier = $this->compile('SYSTEM', $this->systemId('PH-14-SY-4400'));
+
+        $this->assertSame(['PH-14-FF-A'], collect($dossier['lines'])->pluck('line_number')->all(),
+            'the cooling water line serves another system');
+    }
+
+    public function test_a_system_dossier_sees_the_gaps_of_every_subsystem_it_gathers(): void
+    {
+        $this->lineIn($this->subsystemId('PH-14-SS-4401'), 'PH-14-FF-A');
+        $this->lineIn($this->subsystemId('PH-14-SS-4402'), 'PH-14-FF-B');
+
+        $completeness = $this->completenessFor('SYSTEM', $this->systemId('PH-14-SY-4400'));
+
+        // Two lines, in two facilities, and neither has ever been inside a
+        // pack: a system dossier must say so about both.
+        $this->assertCount(2, $completeness['missing']['lines_without_test_pack']);
+        $this->assertSame(2, $completeness['counts']['lines']);
+    }
+
+    public function test_a_system_dossier_can_be_frozen_and_carries_the_current_schema(): void
+    {
+        $this->lineIn($this->subsystemId('PH-14-SS-4401'));
+
+        $snapshot = $this->asOwner(fn () => app(ItrCompilerService::class)->freeze(
+            $this->project, $this->owner, $this->systemId('PH-14-SY-4400'), (string) Str::uuid(), 'en', 'SYSTEM'));
+
+        $row = $this->asOwner(fn () => DB::table('itr_snapshots')->where('id', $snapshot['id'])->first());
+        $this->assertSame('SYSTEM', (string) $row->scope_kind);
+        $this->assertSame($this->systemId('PH-14-SY-4400'), (string) $row->scope_ref);
+        $this->assertSame(4, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
+    }
+
+    public function test_a_system_from_another_project_cannot_be_frozen(): void
+    {
+        $this->assertRefused(
+            fn () => $this->asOwner(fn () => app(ItrCompilerService::class)->freeze(
+                $this->project, $this->owner, (string) Str::uuid(), (string) Str::uuid(), 'en', 'SYSTEM')),
+            'سیستم|system',
+        );
+    }
+
+    public function test_the_screen_offers_the_system_scope_and_names_what_it_spans(): void
+    {
+        $this->lineIn($this->subsystemId('PH-14-SS-4401'), 'PH-14-FF-A');
+        $systemId = $this->systemId('PH-14-SY-4400');
+
+        $response = $this->actingAs($this->owner)->get($this->route(['sel' => 'SYS:'.$systemId]));
+
+        $response->assertOk();
+        $response->assertSee('value="SYS:'.$systemId.'"', false);
+        $response->assertSee('id="scope-spans"', false);
+        $response->assertSee('PH-14-SS-4401', false);
+        $response->assertSee('PH-14-PL-02', false);
+    }
+
     // ---------------------------------------------------------------- plumbing
 
     private function itr(): ItrCompilerService
@@ -387,10 +470,17 @@ final class ItrScopeTest extends TestCase
     }
 
     // RLS is on: a scope id is only an id for a session that can see the row.
-    private function subsystemId(): string
+    private function subsystemId(?string $code = null): string
     {
         return (string) $this->asOwner(fn () => DB::table('subsystems')
+            ->when($code !== null, fn ($q) => $q->where('code', $code))
             ->where('project_id', $this->project->id)->orderBy('code')->value('id'));
+    }
+
+    private function systemId(string $code): string
+    {
+        return (string) $this->asOwner(fn () => DB::table('systems')
+            ->where('project_id', $this->project->id)->where('code', $code)->value('id'));
     }
 
     private function anotherSubsystemId(): string

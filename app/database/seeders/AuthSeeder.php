@@ -525,7 +525,6 @@ final class AuthSeeder extends Seeder
             'code' => 'AR-22',
             'name_en' => 'Process area 22',
             'name_fa' => 'ناحیه فرآیندی ۲۲',
-            'unit_code' => 'U-2200',
         ]), $ph14->id);
 
         $areaElectrical = $tenant->runAs($pars->id, fn () => Area::create([
@@ -535,13 +534,38 @@ final class AuthSeeder extends Seeder
             'code' => 'AR-33',
             'name_en' => 'Electrical area 33',
             'name_fa' => 'ناحیه برق ۳۳',
-            'unit_code' => null,
         ]), $ph14->id);
+
+        /*
+         * ADR-004 amendment — the FUNCTIONAL breakdown. Where a thing is
+         * (facility / area) is the tree above; what it does is this one, and
+         * the two are deliberately different trees over the same subsystems.
+         *
+         * The fixture has to be able to tell them apart, or a reviewer cannot
+         * see that a system is not an area with another name: firefighting
+         * therefore spans BOTH facilities — the pump house in the process area
+         * of the plant and the tank foundation in the utilities block — which
+         * no single area or facility can express.
+         */
+        $systems = collect([
+            'PH-14-SY-2200' => ['Cooling water', 'آب خنک‌کننده'],
+            'PH-14-SY-3300' => ['Electrical power distribution', 'توزیع برق'],
+            'PH-14-SY-5500' => ['Metering and fiscal measurement', 'اندازه‌گیری و فروش'],
+            'PH-14-SY-6600' => ['Condensate and drains', 'میعانات و تخلیه'],
+            'PH-14-SY-4400' => ['Firefighting', 'آتش‌نشانی'],
+        ])->map(fn (array $names, string $code) => $tenant->runAs($pars->id, fn () => \App\Models\System::create([
+            'project_id' => $ph14->id,
+            'company_id' => $pars->id,
+            'code' => $code,
+            'name_en' => $names[0],
+            'name_fa' => $names[1],
+        ]), $ph14->id));
 
         // The subsystem belongs to the contractor that has to deliver it.
         $subsystem = $tenant->runAs($pars->id, fn () => Subsystem::create([
             'facility_id' => $plant->id,
             'area_id' => $areaProcess->id,
+            'system_id' => $systems['PH-14-SY-2200']->id,
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-2201',
@@ -624,7 +648,7 @@ final class AuthSeeder extends Seeder
             app(\App\Services\McCertificateService::class)->draft($subsystem, $jafari, 'en');
         }, $ph14->id);
 
-        $this->seedAdditionalSubsystems($ph14, $pars, $punch, $jafari, $rezaei, $karimi, $mcBody, $tenant, $plant, $utility, $areaElectrical);
+        $this->seedAdditionalSubsystems($ph14, $pars, $punch, $jafari, $rezaei, $karimi, $mcBody, $tenant, $plant, $utility, $areaProcess, $areaElectrical, $systems);
     }
 
     /**
@@ -654,12 +678,15 @@ final class AuthSeeder extends Seeder
         TenantContext $tenant,
         Facility $plant,
         Facility $utility,
+        Area $areaProcess,
         Area $areaElectrical,
+        \Illuminate\Support\Collection $systems,
     ): void {
         // 1. Electrical: punch items raised and ALL closed -> gate is clear.
         $electrical = $tenant->runAs($pars->id, fn () => Subsystem::create([
             'facility_id' => $plant->id,
             'area_id' => $areaElectrical->id,
+            'system_id' => $systems['PH-14-SY-3300']->id,
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-3301',
@@ -716,6 +743,7 @@ final class AuthSeeder extends Seeder
         $instrument = $tenant->runAs($pars->id, fn () => Subsystem::create([
             'facility_id' => $plant->id,
             'area_id' => null,
+            'system_id' => $systems['PH-14-SY-5500']->id,
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-5501',
@@ -752,6 +780,7 @@ final class AuthSeeder extends Seeder
         $piping = $tenant->runAs($pars->id, fn () => Subsystem::create([
             'facility_id' => $utility->id,
             'area_id' => null,
+            'system_id' => $systems['PH-14-SY-6600']->id,
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-6601',
@@ -778,12 +807,30 @@ final class AuthSeeder extends Seeder
         $tenant->runAs($pars->id, fn () => Subsystem::create([
             'facility_id' => $utility->id,
             'area_id' => null,
+            'system_id' => $systems['PH-14-SY-4400']->id,
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-4401',
             'name_en' => 'Firewater tank foundation TK-4401',
             'name_fa' => 'فونداسیون مخزن آب آتش‌نشانی TK-4401',
             'discipline' => 'CIVIL',
+        ]), $ph14->id);
+
+        // 5. Firefighting crosses the physical tree: the pump house sits in the
+        //    process area of the PLANT while the tank foundation is in the
+        //    UTILITIES block, and the client who asks for the firefighting
+        //    dossier wants both. No area or facility can say that; only a
+        //    system can. Never walked down, so it carries no punch items.
+        $tenant->runAs($pars->id, fn () => Subsystem::create([
+            'facility_id' => $plant->id,
+            'area_id' => $areaProcess->id,
+            'system_id' => $systems['PH-14-SY-4400']->id,
+            'project_id' => $ph14->id,
+            'company_id' => $pars->id,
+            'code' => 'PH-14-SS-4402',
+            'name_en' => 'Firewater pump house FP-4402',
+            'name_fa' => 'پمپ‌خانه آب آتش‌نشانی FP-4402',
+            'discipline' => 'MECHANICAL',
         ]), $ph14->id);
     }
 }

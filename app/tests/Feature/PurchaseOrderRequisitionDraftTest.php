@@ -12,6 +12,7 @@ use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\Subsystem;
+use App\Models\System;
 use App\Services\MaterialRequisitionAccessService;
 use App\Services\MaterialRequisitionEntryService;
 use App\Services\OrderGapService;
@@ -279,7 +280,9 @@ final class PurchaseOrderRequisitionDraftTest extends TestCase
             $m = MaterialItem::create(['project_id' => $this->project->id, 'discipline' => 'PIPING', 'category' => 'PIPE', 'commodity_code' => 'SAME-CODE', 'description_en' => 'Pipe', 'description_fa' => 'لوله', 'base_unit' => 'M', 'source' => 'PROJECT_CATALOGUE', 'status' => 'ACTIVE']);
             $base = ['project_id' => $this->project->id, 'company_id' => $this->writer->company_id, 'code' => 'COPY-SCOPE', 'name_en' => 'Copy scope', 'name_fa' => 'محدوده کپی'];
             $f = Facility::create($base + ['kind' => 'PLANT']);
-            $scope = Subsystem::create($base + ['facility_id' => $f->id, 'discipline' => 'PIPING']);
+            $sy = System::create($base + ['code' => 'COPY-SYSTEM', 'name_en' => 'Copy system', 'name_fa' => 'سیستم کپی']);
+            // Every subsystem names a system since the ADR-004 amendment.
+            $scope = Subsystem::create($base + ['facility_id' => $f->id, 'system_id' => $sy->id, 'discipline' => 'PIPING']);
             $line = $this->mr->items()->orderBy('line_no')->firstOrFail();
             $line->material_item_id = $m->id;
             $line->subsystem_id = $scope->id;

@@ -18,6 +18,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Optional is the whole point: Plant 3D's own refinery example has 13 areas, so
  * the level must exist for a lossless import, but a booster station with 12
  * subsystems must not be forced to invent 12 areas.
+ *
+ * The "unit" this level used to carry (`unit_code`) is gone since the ADR-004
+ * amendment that added `systems`: where a thing IS is this tree, and what it
+ * DOES is the system's, and one column answering both was the confusion.
  */
 final class Area extends Model
 {
@@ -27,7 +31,7 @@ final class Area extends Model
 
     protected $fillable = [
         'project_id', 'company_id', 'facility_id',
-        'code', 'name_en', 'name_fa', 'unit_code', 'external_ref',
+        'code', 'name_en', 'name_fa', 'external_ref',
     ];
 
     public function project(): BelongsTo
@@ -53,17 +57,5 @@ final class Area extends Model
     public function name(string $lang = 'fa'): string
     {
         return $lang === 'fa' ? $this->name_fa : $this->name_en;
-    }
-
-    /**
-     * Plant 3D keeps Area and Unit as two separate tag subparts, because one
-     * area can host more than one process unit. Displayed together when both
-     * are known, so a screen does not have to decide.
-     */
-    public function displayCode(): string
-    {
-        return $this->unit_code === null || $this->unit_code === ''
-            ? $this->code
-            : $this->code.' / '.$this->unit_code;
     }
 }

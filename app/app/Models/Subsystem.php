@@ -20,7 +20,7 @@ final class Subsystem extends Model
     use HasUuid;
 
     protected $fillable = [
-        'project_id', 'company_id', 'facility_id', 'area_id',
+        'project_id', 'company_id', 'facility_id', 'area_id', 'system_id',
         'code', 'name_en', 'name_fa', 'discipline',
     ];
 
@@ -46,6 +46,17 @@ final class Subsystem extends Model
     }
 
     /**
+     * The system this subsystem serves — the functional parent, and never
+     * optional: a subsystem with no system is a subsystem nobody can
+     * commission and no handover dossier can group. Physical location is
+     * optional (the area); function is not.
+     */
+    public function system(): BelongsTo
+    {
+        return $this->belongsTo(System::class);
+    }
+
+    /**
      * The unambiguous identifier for this subsystem.
      *
      * Subsystem codes are unique per FACILITY, not per project (the user's
@@ -68,6 +79,22 @@ final class Subsystem extends Model
         $facility = $this->relationLoaded('facility') ? $this->facility : $this->facility()->first();
 
         return $facility === null ? $this->code : $facility->code.' / '.$this->code;
+    }
+
+    /**
+     * Where this subsystem sits functionally: its system's code.
+     *
+     * The physical path (`fullCode`) and the functional one are both printed on
+     * handover documents for the same reason they are both stored: a reader
+     * looking for "everything in unit 2200" and one looking for "everything in
+     * the firefighting system" are asking different questions about the same
+     * metal.
+     */
+    public function systemPath(): string
+    {
+        $system = $this->relationLoaded('system') ? $this->system : $this->system()->first();
+
+        return $system === null ? $this->code : $system->code.' / '.$this->code;
     }
 
     public function punchItems(): HasMany

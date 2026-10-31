@@ -13,6 +13,7 @@ use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\Subsystem;
+use App\Models\System;
 use App\Services\MtoAcceptanceService;
 use App\Services\MtoStagingService;
 use App\Services\OrderGapService;
@@ -220,10 +221,16 @@ final class OrderGapTest extends TestCase
             fn () => Facility::where('project_id', $project->id)->firstOrFail()
         );
 
+        $system = $this->tenant->runAs($pars->id, fn () => System::firstOrCreate(
+            ['project_id' => $project->id, 'code' => 'SY-OG-01'],
+            ['company_id' => $pars->id, 'name_en' => 'Order gap system', 'name_fa' => 'سیستم شکاف سفارش'],
+        ), $project->id);
+
         return $this->tenant->runAs($pars->id, fn () => Subsystem::create([
             'project_id' => $project->id,
             'company_id' => $pars->id,
             'facility_id' => $facility->id,
+            'system_id' => $system->id,
             'code' => 'SS-OG-01',
             'name_en' => 'Order gap subsystem',
             'name_fa' => 'زیرسیستم شکاف سفارش',

@@ -87,6 +87,8 @@ final class ItrDossierController extends Controller
             ->orderBy('code')->limit(200)->get(), $project->id);
         $subsystems = $this->tenant->runAs($actor->company_id, fn () => DB::table('subsystems')
             ->where('project_id', $project->id)->orderBy('code')->limit(200)->get(), $project->id);
+        $systems = $this->tenant->runAs($actor->company_id, fn () => DB::table('systems')
+            ->where('project_id', $project->id)->orderBy('code')->limit(200)->get(), $project->id);
 
         $ref = ($scopeRef === null || $scopeRef === '') ? null : $scopeRef;
         $pack = $scopeKind === 'TEST_PACK' && $ref !== null ? $packs->firstWhere('id', $ref) : null;
@@ -94,7 +96,9 @@ final class ItrDossierController extends Controller
         // session — compiles nothing: an empty dossier that reads "no gaps"
         // would be the one thing this screen must never show.
         $scopeOpen = $scopeKind === 'PROJECT'
-            || ($ref !== null && ($pack !== null || $subsystems->contains('id', $ref)));
+            || ($ref !== null && ($pack !== null
+                || $subsystems->contains('id', $ref)
+                || $systems->contains('id', $ref)));
         $compiled = $scopeOpen ? $this->itr->compile($project, $actor, $ref, $lang, $scopeKind) : null;
 
         // Every snapshot on the page is re-verified against its stored dossier.
@@ -126,6 +130,7 @@ final class ItrDossierController extends Controller
             'scopeRef' => $ref,
             'packs' => $packs,
             'subsystems' => $subsystems,
+            'systems' => $systems,
             'pack' => $pack,
             'dossier' => $compiled['dossier'] ?? null,
             'completeness' => $compiled['completeness'] ?? null,
@@ -181,10 +186,10 @@ final class ItrDossierController extends Controller
     }
 
     /**
-     * The scope the screen is showing. One select carries all three kinds
-     * (`PACK:<uuid>`, `SUB:<uuid>`, `PROJECT`), so choosing a scope is one
-     * control with no scripting — and `?pack=<uuid>` still works for every
-     * link written since A.5.
+     * The scope the screen is showing. One select carries all four kinds
+     * (`PACK:<uuid>`, `SUB:<uuid>`, `SYS:<uuid>`, `PROJECT`), so choosing a
+     * scope is one control with no scripting — and `?pack=<uuid>` still works
+     * for every link written since A.5.
      *
      * @return array{0: string, 1: ?string}
      */
@@ -199,6 +204,9 @@ final class ItrDossierController extends Controller
         }
         if (str_starts_with($sel, 'SUB:')) {
             return ['SUBSYSTEM', substr($sel, 4)];
+        }
+        if (str_starts_with($sel, 'SYS:')) {
+            return ['SYSTEM', substr($sel, 4)];
         }
 
         // Historical form, and the one the tests and bookmarked links use.

@@ -49,7 +49,12 @@ final class ItrCompilerService
      * project declares subsystems, areas and facilities, and a "system" would
      * be a hierarchy the platform made up rather than one the project stated.
      */
-    public const SCOPES = ['TEST_PACK', 'SUBSYSTEM', 'PROJECT'];
+    /**
+     * What a dossier can be about. A system is the newest: the functional
+     * group a subsystem serves, which is allowed to cross facilities, and
+     * which an area — being physical — can never express.
+     */
+    public const SCOPES = ['TEST_PACK', 'SUBSYSTEM', 'SYSTEM', 'PROJECT'];
 
     public function __construct(
         private readonly TenantContext $tenant,
@@ -126,6 +131,7 @@ final class ItrCompilerService
         return match ($kind) {
             'TEST_PACK' => ['SELECT 1 FROM piping_test_packs WHERE id = ? AND project_id = ?', [$ref, $projectId]],
             'SUBSYSTEM' => ['SELECT 1 FROM subsystems WHERE id = ? AND project_id = ?', [$ref, $projectId]],
+            'SYSTEM' => ['SELECT 1 FROM systems WHERE id = ? AND project_id = ?', [$ref, $projectId]],
             default => ['SELECT 1 FROM projects WHERE id = ? AND ?::uuid IS NULL', [$projectId, $ref]],
         };
     }
@@ -139,6 +145,9 @@ final class ItrCompilerService
             'SUBSYSTEM' => $this->msg($lang,
                 'این زیرسیستم در این پروژه پیدا نشد یا برای این جلسه قابل مشاهده نیست.',
                 'The subsystem was not found in this project or is not visible to this session.'),
+            'SYSTEM' => $this->msg($lang,
+                'این سیستم در این پروژه پیدا نشد یا برای این جلسه قابل مشاهده نیست.',
+                'The system was not found in this project or is not visible to this session.'),
             default => $this->msg($lang,
                 'این پروژه برای این جلسه قابل مشاهده نیست.',
                 'The project is not visible to this session.'),
@@ -151,13 +160,14 @@ final class ItrCompilerService
         return match ($kind) {
             'TEST_PACK' => 'test_pack_id',
             'SUBSYSTEM' => 'subsystem_id',
+            'SYSTEM' => 'system_id',
             default => 'scope_ref',
         };
     }
 
     /**
      * One definition of a scope, validated once: the kind must be one of the
-     * three, and a reference is required exactly when the scope names something
+     * four, and a reference is required exactly when the scope names something
      * inside the project — the project itself needs none.
      *
      * @param  array<string, string>  $errors
@@ -168,8 +178,8 @@ final class ItrCompilerService
         $kind = strtoupper(trim($kind));
         if (! in_array($kind, self::SCOPES, true)) {
             $errors['scope_kind'] = $this->msg($lang,
-                'دامنهٔ dossier باید یکی از این‌ها باشد: TEST_PACK، SUBSYSTEM، PROJECT.',
-                'The dossier scope must be one of: TEST_PACK, SUBSYSTEM, PROJECT.');
+                'دامنهٔ dossier باید یکی از این‌ها باشد: TEST_PACK، SUBSYSTEM، SYSTEM، PROJECT.',
+                'The dossier scope must be one of: TEST_PACK, SUBSYSTEM, SYSTEM, PROJECT.');
 
             return ['kind' => 'TEST_PACK', 'ref' => null];
         }
@@ -360,9 +370,12 @@ final class ItrCompilerService
             str_contains($m, 'ITR_SUBSYSTEM_NOT_FOUND') => $this->msg($lang,
                 'این زیرسیستم در این پروژه پیدا نشد.',
                 'That subsystem was not found in this project.'),
+            str_contains($m, 'ITR_SYSTEM_NOT_FOUND') => $this->msg($lang,
+                'این سیستم در این پروژه پیدا نشد.',
+                'That system was not found in this project.'),
             str_contains($m, 'ITR_SCOPE_UNKNOWN') => $this->msg($lang,
-                'دامنهٔ dossier باید یکی از این‌ها باشد: TEST_PACK، SUBSYSTEM، PROJECT.',
-                'The dossier scope must be one of: TEST_PACK, SUBSYSTEM, PROJECT.'),
+                'دامنهٔ dossier باید یکی از این‌ها باشد: TEST_PACK، SUBSYSTEM، SYSTEM، PROJECT.',
+                'The dossier scope must be one of: TEST_PACK, SUBSYSTEM, SYSTEM, PROJECT.'),
             str_contains($m, 'ITR_SCOPE_REF_MISMATCH') => $this->msg($lang,
                 'ارجاعِ دامنه با نوعِ دامنه نمی‌خواند.',
                 'The scope reference does not match the scope kind.'),

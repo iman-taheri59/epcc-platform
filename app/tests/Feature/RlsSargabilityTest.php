@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\Facility;
 use App\Models\Project;
 use App\Models\Subsystem;
+use App\Models\System;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
@@ -73,6 +74,10 @@ final class RlsSargabilityTest extends TestCase
                     ['project_id' => $project->id, 'code' => 'RLS-PROBE'],
                     ['company_id' => $company->id, 'kind' => 'PLANT',
                         'name_en' => 'RLS probe facility', 'name_fa' => 'تاسیسات آزمون']
+                )->id,
+                'system_id' => System::firstOrCreate(
+                    ['project_id' => $project->id, 'code' => 'RLS-SYSTEM'],
+                    ['company_id' => $company->id, 'name_en' => 'RLS probe system', 'name_fa' => 'سیستم آزمون'],
                 )->id,
                 'code' => $code,
                 'name_en' => 'Sargability '.$code,

@@ -102,6 +102,9 @@
         'scope' => ['fa' => 'دامنهٔ کتابچه', 'en' => 'Scope of the dossier'],
         'scope_TEST_PACK' => ['fa' => 'یک بستهٔ آزمون', 'en' => 'One test pack'],
         'scope_SUBSYSTEM' => ['fa' => 'یک زیرسیستم', 'en' => 'One subsystem'],
+        'scope_SYSTEM' => ['fa' => 'یک سیستم', 'en' => 'One system'],
+        'spans' => ['fa' => 'زیرسیستم‌های دربرگرفته', 'en' => 'Subsystems gathered'],
+        'facilities' => ['fa' => 'واحدها', 'en' => 'Facilities'],
         'scope_PROJECT' => ['fa' => 'کلِ پروژه', 'en' => 'The whole project'],
         'pack' => ['fa' => 'بستهٔ آزمون', 'en' => 'Test pack'],
         'mpass' => ['fa' => 'بسته‌هایی بی‌نتیجهٔ آزمونِ قبول', 'en' => 'Packs with no PASS test result'],
@@ -116,6 +119,7 @@
     $scopeKind = (string) ($dossier['scope_kind'] ?? 'TEST_PACK');
     $scopeLabel = match ($scopeKind) {
         'SUBSYSTEM' => ($scope['code'] ?? '—').' — '.$L('scope_SUBSYSTEM'),
+        'SYSTEM' => ($scope['code'] ?? '—').' — '.$L('scope_SYSTEM'),
         'PROJECT' => ($scope['code'] ?? '—').' — '.$L('scope_PROJECT'),
         default => ($pack['code'] ?? '—').' — '.$L('scope_TEST_PACK'),
     };
@@ -150,6 +154,12 @@
   <tr><td class="k">{{ $L('scope') }}</td><td><span class="mono">{{ $scopeLabel }}</span></td></tr>
   @if($scopeKind === 'TEST_PACK')
     <tr><td class="k">{{ $L('pack') }}</td><td><span class="mono">{{ $short($pack['code'] ?? null) }}</span> — {{ $fa ? $short($pack['title_fa'] ?? null) : $short($pack['title_en'] ?? null) }}</td></tr>
+  @endif
+  @if($scopeKind === 'SYSTEM')
+    <tr><td class="k">{{ $L('spans') }}</td><td>
+      @foreach($scope['subsystem_codes'] ?? [] as $c)<span class="mono">{{ $c }}</span>@if(! $loop->last) · @endif @endforeach
+      @if(($scope['facility_codes'] ?? []) !== [])<br>{{ $L('facilities') }}: <span class="mono">{{ implode(' · ', $scope['facility_codes']) }}</span>@endif
+    </td></tr>
   @endif
   <tr><td class="k">{{ $L('subsys') }}</td><td><span class="mono">{{ $short($pack['subsystem_code'] ?? null) }}</span></td></tr>
   <tr><td class="k">{{ $L('state') }}</td><td><span class="mono">{{ $short($pack['state'] ?? null) }}</span></td></tr>

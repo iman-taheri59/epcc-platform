@@ -137,4 +137,11 @@ return [
     'gap_lines_without_test_pack' => 'Lines that belong to no test pack — never tested',
     'test_pack' => 'Test pack',
     'packs' => 'Test packs',
+
+    // ADR-004 amendment — the system level. A system is FUNCTIONAL and may span
+    // facilities; an area is physical and may not.
+    'scope_SYSTEM' => 'One system',
+    'systems' => 'Systems',
+    'spans' => 'Subsystems gathered',
 ];
+

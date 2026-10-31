@@ -9,6 +9,7 @@ use App\Models\Company;
 use App\Models\Facility;
 use App\Models\Project;
 use App\Models\Subsystem;
+use App\Models\System;
 use App\Support\FacilityKind;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
@@ -53,6 +54,12 @@ final class BreakdownTest extends TestCase
     private function asPars(callable $fn): mixed
     {
         return $this->tenant->runAs($this->company('EPC-PARS')->id, $fn, $this->project()->id);
+    }
+
+    /** Any system of the project: a subsystem may not be created without one. */
+    private function systemId(): string
+    {
+        return (string) $this->asPars(fn () => System::where('project_id', $this->project()->id)->value('id'));
     }
 
     // -----------------------------------------------------------------------
@@ -140,6 +147,7 @@ final class BreakdownTest extends TestCase
                 'project_id' => $this->project()->id,
                 'company_id' => $this->company('EPC-PARS')->id,
                 'facility_id' => $utility->id,
+                'system_id' => $this->systemId(),
                 'code' => 'PH-14-SS-2201', // already exists under PL-01
                 'name_en' => 'Utility twin',
                 'name_fa' => 'همتای سرویس جانبی',
@@ -164,6 +172,7 @@ final class BreakdownTest extends TestCase
                 'project_id' => $this->project()->id,
                 'company_id' => $this->company('EPC-PARS')->id,
                 'facility_id' => $plant->id,
+                'system_id' => $this->systemId(),
                 'code' => 'PH-14-SS-2201', // duplicate within the SAME facility
                 'name_en' => 'Duplicate',
                 'name_fa' => 'تکراری',
@@ -240,8 +249,10 @@ final class BreakdownTest extends TestCase
             $utility->delete();
 
             $this->assertSame(0, Subsystem::where('facility_id', $utility->id)->count());
-            // and the other plant is untouched
-            $this->assertSame(3, Subsystem::count());
+            // and the other plant is untouched: the fixture holds six
+            // subsystems, four of them in PL-01 (one of which belongs to the
+            // firefighting SYSTEM that also reaches into PL-02).
+            $this->assertSame(4, Subsystem::count());
         });
     }
 
@@ -351,18 +362,24 @@ final class BreakdownTest extends TestCase
     // -----------------------------------------------------------------------
 
     /**
-     * Plant 3D carries Area and Unit as two separate tag subparts because one
-     * area can host several process units. Flattening them on import would
-     * lose that, so they are stored — and displayed — separately.
+     * A subsystem names BOTH parents, because they answer different questions:
+     * the physical path says where it is (facility / area) and the functional
+     * path says what it does (system). The firefighting system in the demo
+     * holds a subsystem in the process area of the plant AND one in the
+     * utilities block — which no area or facility can say.
      */
-    public function test_area_shows_its_unit_code_when_there_is_one(): void
+    public function test_a_subsystem_knows_its_physical_and_its_functional_path(): void
     {
         $this->asPars(function () {
-            $withUnit = Area::where('code', 'AR-22')->firstOrFail();
-            $withoutUnit = Area::where('code', 'AR-33')->firstOrFail();
+            $acrossFacilities = System::where('code', 'PH-14-SY-4400')->firstOrFail();
+            $paths = $acrossFacilities->subsystems()->with(['facility', 'system'])
+                ->get()->map(fn ($s) => $s->fullCode().' | '.$s->systemPath())->sort()->values();
 
-            $this->assertSame('AR-22 / U-2200', $withUnit->displayCode());
-            $this->assertSame('AR-33', $withoutUnit->displayCode());
+            $this->assertSame(
+                ['PH-14-PL-01 / PH-14-SS-4402 | PH-14-SY-4400 / PH-14-SS-4402',
+                 'PH-14-PL-02 / PH-14-SS-4401 | PH-14-SY-4400 / PH-14-SS-4401'],
+                $paths->all(),
+            );
         });
     }
 
