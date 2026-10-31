@@ -35,12 +35,17 @@ use Illuminate\Validation\ValidationException;
  * pack-scope functions survive as wrappers over the general ones: a preview
  * and a frozen snapshot must still agree byte-for-byte.
  *
- * SLICE BOUNDARIES (declared, not hidden): there is no system scope, because
- * the schema has subsystems, areas and facilities and no system level, and
- * grouping them would mean the platform inventing a hierarchy the project has
- * not declared. Receipts are not assembled (receipt binding needs piece-level
- * custody — A.4b), so MTR binding into the dossier awaits the same; PDF
- * export is optional at runtime.
+ * A.5b slice 3c added the SYSTEM scope once the breakdown grew the level to
+ * point at (ADR-004 §7), and slice 3d added AREA and FACILITY — the two
+ * physical rungs that had been in the schema all along. A dossier is therefore
+ * compiled for six kinds, and every one of them is a level the project itself
+ * declared. What the platform still declines to do is invent a rung: there is
+ * no UNIT scope, because a unit is not a level in this breakdown — it is a
+ * naming convention inside a system code.
+ *
+ * SLICE BOUNDARIES (declared, not hidden): receipts are not assembled (receipt
+ * binding needs piece-level custody — A.4b), so MTR binding into the dossier
+ * awaits the same; PDF export is optional at runtime.
  */
 final class ItrCompilerService
 {
@@ -54,7 +59,7 @@ final class ItrCompilerService
      * group a subsystem serves, which is allowed to cross facilities, and
      * which an area — being physical — can never express.
      */
-    public const SCOPES = ['TEST_PACK', 'SUBSYSTEM', 'SYSTEM', 'PROJECT'];
+    public const SCOPES = ['TEST_PACK', 'SUBSYSTEM', 'SYSTEM', 'AREA', 'FACILITY', 'PROJECT'];
 
     public function __construct(
         private readonly TenantContext $tenant,
@@ -132,6 +137,8 @@ final class ItrCompilerService
             'TEST_PACK' => ['SELECT 1 FROM piping_test_packs WHERE id = ? AND project_id = ?', [$ref, $projectId]],
             'SUBSYSTEM' => ['SELECT 1 FROM subsystems WHERE id = ? AND project_id = ?', [$ref, $projectId]],
             'SYSTEM' => ['SELECT 1 FROM systems WHERE id = ? AND project_id = ?', [$ref, $projectId]],
+            'AREA' => ['SELECT 1 FROM areas WHERE id = ? AND project_id = ?', [$ref, $projectId]],
+            'FACILITY' => ['SELECT 1 FROM facilities WHERE id = ? AND project_id = ?', [$ref, $projectId]],
             default => ['SELECT 1 FROM projects WHERE id = ? AND ?::uuid IS NULL', [$projectId, $ref]],
         };
     }
@@ -148,6 +155,12 @@ final class ItrCompilerService
             'SYSTEM' => $this->msg($lang,
                 'این سیستم در این پروژه پیدا نشد یا برای این جلسه قابل مشاهده نیست.',
                 'The system was not found in this project or is not visible to this session.'),
+            'AREA' => $this->msg($lang,
+                'این ناحیه در این پروژه پیدا نشد یا برای این جلسه قابل مشاهده نیست.',
+                'The area was not found in this project or is not visible to this session.'),
+            'FACILITY' => $this->msg($lang,
+                'این واحد در این پروژه پیدا نشد یا برای این جلسه قابل مشاهده نیست.',
+                'The facility was not found in this project or is not visible to this session.'),
             default => $this->msg($lang,
                 'این پروژه برای این جلسه قابل مشاهده نیست.',
                 'The project is not visible to this session.'),
@@ -161,6 +174,8 @@ final class ItrCompilerService
             'TEST_PACK' => 'test_pack_id',
             'SUBSYSTEM' => 'subsystem_id',
             'SYSTEM' => 'system_id',
+            'AREA' => 'area_id',
+            'FACILITY' => 'facility_id',
             default => 'scope_ref',
         };
     }
@@ -178,8 +193,8 @@ final class ItrCompilerService
         $kind = strtoupper(trim($kind));
         if (! in_array($kind, self::SCOPES, true)) {
             $errors['scope_kind'] = $this->msg($lang,
-                'دامنهٔ dossier باید یکی از این‌ها باشد: TEST_PACK، SUBSYSTEM، SYSTEM، PROJECT.',
-                'The dossier scope must be one of: TEST_PACK, SUBSYSTEM, SYSTEM, PROJECT.');
+                'دامنهٔ dossier باید یکی از این‌ها باشد: TEST_PACK، SUBSYSTEM، SYSTEM، AREA، FACILITY، PROJECT.',
+                'The dossier scope must be one of: TEST_PACK, SUBSYSTEM, SYSTEM, AREA, FACILITY, PROJECT.');
 
             return ['kind' => 'TEST_PACK', 'ref' => null];
         }
@@ -373,9 +388,15 @@ final class ItrCompilerService
             str_contains($m, 'ITR_SYSTEM_NOT_FOUND') => $this->msg($lang,
                 'این سیستم در این پروژه پیدا نشد.',
                 'That system was not found in this project.'),
+            str_contains($m, 'ITR_AREA_NOT_FOUND') => $this->msg($lang,
+                'این ناحیه در این پروژه پیدا نشد.',
+                'That area was not found in this project.'),
+            str_contains($m, 'ITR_FACILITY_NOT_FOUND') => $this->msg($lang,
+                'این واحد در این پروژه پیدا نشد.',
+                'That facility was not found in this project.'),
             str_contains($m, 'ITR_SCOPE_UNKNOWN') => $this->msg($lang,
-                'دامنهٔ dossier باید یکی از این‌ها باشد: TEST_PACK، SUBSYSTEM، SYSTEM، PROJECT.',
-                'The dossier scope must be one of: TEST_PACK, SUBSYSTEM, SYSTEM, PROJECT.'),
+                'دامنهٔ dossier باید یکی از این‌ها باشد: TEST_PACK، SUBSYSTEM، SYSTEM، AREA، FACILITY، PROJECT.',
+                'The dossier scope must be one of: TEST_PACK, SUBSYSTEM, SYSTEM, AREA, FACILITY, PROJECT.'),
             str_contains($m, 'ITR_SCOPE_REF_MISMATCH') => $this->msg($lang,
                 'ارجاعِ دامنه با نوعِ دامنه نمی‌خواند.',
                 'The scope reference does not match the scope kind.'),

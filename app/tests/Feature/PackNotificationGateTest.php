@@ -389,7 +389,9 @@ final class PackNotificationGateTest extends TestCase
         // and the completeness report gained the gap a pack scope cannot see.
         // 3 -> 4 in slice 3c: a system dossier names the subsystems and
         // facilities it gathers.
-        $this->assertSame(4, $dossier['schema_version']);
+        // 4 -> 5 in slice 3d: every grouping level now also names where it
+        // sits, so a system carries its areas and an area its systems.
+        $this->assertSame(5, $dossier['schema_version']);
         $this->assertSame($notice, $dossier['notifications'][0]['notification_id']);
         $this->assertSame('H', $dossier['notifications'][0]['point']);
         $this->assertSame('NOT_SIGNED', $dossier['notifications'][0]['hold_state']);

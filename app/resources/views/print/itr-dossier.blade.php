@@ -105,6 +105,11 @@
         'scope_SYSTEM' => ['fa' => 'یک سیستم', 'en' => 'One system'],
         'spans' => ['fa' => 'زیرسیستم‌های دربرگرفته', 'en' => 'Subsystems gathered'],
         'facilities' => ['fa' => 'واحدها', 'en' => 'Facilities'],
+        // A.5b slice 3d - the two physical rungs of the same cross-reference.
+        'scope_AREA' => ['fa' => 'یک ناحیه', 'en' => 'One area'],
+        'scope_FACILITY' => ['fa' => 'یک واحد', 'en' => 'One facility'],
+        'systems' => ['fa' => 'سیستم‌ها', 'en' => 'Systems'],
+        'areas' => ['fa' => 'ناحیه‌ها', 'en' => 'Areas'],
         'scope_PROJECT' => ['fa' => 'کلِ پروژه', 'en' => 'The whole project'],
         'pack' => ['fa' => 'بستهٔ آزمون', 'en' => 'Test pack'],
         'mpass' => ['fa' => 'بسته‌هایی بی‌نتیجهٔ آزمونِ قبول', 'en' => 'Packs with no PASS test result'],
@@ -120,6 +125,8 @@
     $scopeLabel = match ($scopeKind) {
         'SUBSYSTEM' => ($scope['code'] ?? '—').' — '.$L('scope_SUBSYSTEM'),
         'SYSTEM' => ($scope['code'] ?? '—').' — '.$L('scope_SYSTEM'),
+        'AREA' => ($scope['code'] ?? '—').' — '.$L('scope_AREA'),
+        'FACILITY' => ($scope['code'] ?? '—').' — '.$L('scope_FACILITY'),
         'PROJECT' => ($scope['code'] ?? '—').' — '.$L('scope_PROJECT'),
         default => ($pack['code'] ?? '—').' — '.$L('scope_TEST_PACK'),
     };
@@ -155,9 +162,17 @@
   @if($scopeKind === 'TEST_PACK')
     <tr><td class="k">{{ $L('pack') }}</td><td><span class="mono">{{ $short($pack['code'] ?? null) }}</span> — {{ $fa ? $short($pack['title_fa'] ?? null) : $short($pack['title_en'] ?? null) }}</td></tr>
   @endif
-  @if($scopeKind === 'SYSTEM')
+  {{--
+    The cross-reference, printed on the document. A system says which
+    facilities it spans; an area says which SYSTEMS reach into it. A reader
+    holding this page is entitled to see both directions rather than infer
+    them.
+  --}}
+  @if(in_array($scopeKind, ['SYSTEM','AREA','FACILITY'], true))
     <tr><td class="k">{{ $L('spans') }}</td><td>
       @foreach($scope['subsystem_codes'] ?? [] as $c)<span class="mono">{{ $c }}</span>@if(! $loop->last) · @endif @endforeach
+      @if(($scope['system_codes'] ?? []) !== [])<br>{{ $L('systems') }}: <span class="mono">{{ implode(' · ', $scope['system_codes']) }}</span>@endif
+      @if(($scope['area_codes'] ?? []) !== [])<br>{{ $L('areas') }}: <span class="mono">{{ implode(' · ', $scope['area_codes']) }}</span>@endif
       @if(($scope['facility_codes'] ?? []) !== [])<br>{{ $L('facilities') }}: <span class="mono">{{ implode(' · ', $scope['facility_codes']) }}</span>@endif
     </td></tr>
   @endif

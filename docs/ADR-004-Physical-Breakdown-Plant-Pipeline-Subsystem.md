@@ -513,13 +513,15 @@ consulted.
    never as a column on the level.** `SY-PL01-FIRE` is the Plant 3D answer (Area
    is a tag subpart), the CFIHOS/DEXPI answer (Location is data on the tag) and
    the IEC 81346 answer (`+PL01` is a location block inside a tag, not a level).
-5. **The one gap the survey exposes.** AWP's "two maps kept live" has a
-   *construction-side* reader: the area-based user must be able to find their
-   work through the system map. In our schema that is derivable
-   (`systems ← subsystems → areas → facilities`) but it is not yet *offered*:
-   there is no `AREA` or `FACILITY` dossier scope, and no "systems touching this
-   area" view. Derivable-but-unoffered is the exact state AWP describes as the
-   current (deficient) state of the discipline. See the roadmap.
+5. **The one gap the survey exposed — now closed.** AWP's "two maps kept live"
+   has a *construction-side* reader: the area-based user must be able to find
+   their work through the system map. In our schema that was derivable
+   (`systems ← subsystems → areas → facilities`) but not *offered*, and
+   derivable-but-unoffered is exactly the state AWP describes as the current
+   (deficient) state of the discipline. ADR-048 slice 3d closed it the same day:
+   `AREA` and `FACILITY` are dossier scopes through the same resolver, an area
+   dossier names the `system_codes` that reach into it, and the screen and the
+   printed document both print the cross-reference in both directions.
 
 ### 8.5 Two things the survey suggests we may eventually want
 

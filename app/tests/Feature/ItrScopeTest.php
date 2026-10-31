@@ -27,9 +27,12 @@ use Tests\TestCase;
  * The ITR could only be compiled for a single test pack, which is the unit a
  * contractor tests and not the unit a client takes over: handover is discussed
  * per subsystem, and then for the plant. So a dossier may now be compiled for
- * TEST_PACK, SUBSYSTEM or PROJECT — and no more, because there is no system
- * level in the schema and inventing one would be the platform declaring a
- * hierarchy the project never stated.
+ * TEST_PACK, SUBSYSTEM, SYSTEM, AREA, FACILITY or PROJECT — every one of them
+ * a level the project declared, never one the platform invented. The two
+ * physical rungs (AREA, FACILITY) are the other half of the system scope: a
+ * system dossier names the facilities it spans, an area dossier names the
+ * SYSTEMS that reach into it, and both answers come out of the same resolver,
+ * so they cannot disagree.
  *
  * What makes this more than a bigger WHERE clause:
  *
@@ -227,9 +230,9 @@ final class ItrScopeTest extends TestCase
         $this->assertSame('SUBSYSTEM', (string) $row->scope_kind);
         $this->assertSame($this->subsystemId(), (string) $row->scope_ref);
         $this->assertNull($row->test_pack_id);
-        // 3 -> 4 when the system scope landed: the dossier names the subsystems
-        // and facilities a system gathers.
-        $this->assertSame(4, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
+        // 4 -> 5 when the two physical rungs landed: every grouping level now
+        // answers the same shape of question — what it holds, and where it sits.
+        $this->assertSame(5, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
     }
 
     public function test_a_project_dossier_can_be_frozen(): void
@@ -267,12 +270,14 @@ final class ItrScopeTest extends TestCase
 
     public function test_an_unknown_scope_is_refused_before_anything_is_stored(): void
     {
-        // AREA and FACILITY are levels the breakdown really has and the dossier
-        // does not compile for yet — which is exactly why asking for one must
-        // be refused rather than quietly answered.
+        // UNIT is the instructive refusal: it is a word every refinery uses and
+        // it is NOT a level in this breakdown — a unit is a naming convention
+        // inside a system code (SY-PL01-FIRE), not a rung a dossier hangs on.
+        // Asking for one must be refused, not quietly answered by something
+        // else that happens to sound like it.
         $this->assertRefused(
             fn () => $this->asOwner(fn () => app(ItrCompilerService::class)->freeze(
-                $this->project, $this->owner, $this->subsystemId(), (string) Str::uuid(), 'en', 'AREA')),
+                $this->project, $this->owner, $this->subsystemId(), (string) Str::uuid(), 'en', 'UNIT')),
             'must be one of',
         );
 
@@ -410,7 +415,7 @@ final class ItrScopeTest extends TestCase
         $row = $this->asOwner(fn () => DB::table('itr_snapshots')->where('id', $snapshot['id'])->first());
         $this->assertSame('SYSTEM', (string) $row->scope_kind);
         $this->assertSame($this->systemId('PH-14-SY-4400'), (string) $row->scope_ref);
-        $this->assertSame(4, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
+        $this->assertSame(5, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
     }
 
     public function test_a_system_from_another_project_cannot_be_frozen(): void
@@ -434,6 +439,163 @@ final class ItrScopeTest extends TestCase
         $response->assertSee('id="scope-spans"', false);
         $response->assertSee('PH-14-SS-4401', false);
         $response->assertSee('PH-14-PL-02', false);
+    }
+
+    // --------------------------------------------------------- physical scopes
+
+    public function test_an_area_dossier_is_about_every_line_of_every_subsystem_inside_it(): void
+    {
+        // AR-22 is the process area: the cooling water pump set and the
+        // firefighting pump house both sit in it.
+        $this->lineIn($this->subsystemId('PH-14-SS-2201'), 'PH-14-AR22-A');
+        $this->lineIn($this->subsystemId('PH-14-SS-4402'), 'PH-14-AR22-B');
+
+        $dossier = $this->compile('AREA', $this->areaId('AR-22'));
+
+        $this->assertSame('AREA', $dossier['scope_kind']);
+        $this->assertSame(['PH-14-AR22-A', 'PH-14-AR22-B'], collect($dossier['lines'])->pluck('line_number')->all());
+        $this->assertEqualsCanonicalizing(['PH-14-SS-2201', 'PH-14-SS-4402'], $dossier['scope']['subsystem_codes']);
+        $this->assertSame('PH-14-PL-01', $dossier['scope']['facility_code']);
+    }
+
+    public function test_an_area_dossier_does_not_reach_into_another_area(): void
+    {
+        $this->lineIn($this->subsystemId('PH-14-SS-2201'), 'PH-14-AR22-A');
+        $this->lineIn($this->subsystemId('PH-14-SS-3301'), 'PH-14-AR33-A');
+
+        $dossier = $this->compile('AREA', $this->areaId('AR-22'));
+
+        $this->assertSame(['PH-14-AR22-A'], collect($dossier['lines'])->pluck('line_number')->all(),
+            'the electrical area is another area’s business');
+    }
+
+    public function test_an_area_dossier_names_the_systems_that_reach_into_it(): void
+    {
+        // The reason these two rungs are worth having at all. AR-22 holds a
+        // cooling water subsystem AND the firefighting pump house, and
+        // firefighting also has a subsystem in the utilities block — so
+        // firefighting is not this area’s system, it merely passes through it.
+        // That is the question Advanced Work Packaging insists be answerable at
+        // all times, and it is answered by a join over the same rows rather
+        // than by a cross-reference somebody has to keep up to date by hand.
+        $this->lineIn($this->subsystemId('PH-14-SS-2201'), 'PH-14-AR22-A');
+        $this->lineIn($this->subsystemId('PH-14-SS-4402'), 'PH-14-AR22-B');
+
+        $dossier = $this->compile('AREA', $this->areaId('AR-22'));
+
+        $this->assertEqualsCanonicalizing(['PH-14-SY-2200', 'PH-14-SY-4400'], $dossier['scope']['system_codes']);
+    }
+
+    public function test_a_facility_dossier_gathers_the_subsystems_that_name_no_area(): void
+    {
+        // SS-5501 hangs straight off the plant with area_id null. It belongs in
+        // the facility’s dossier and in no area’s, which is the honest answer:
+        // it has no area. A facility scope that walked the areas instead would
+        // silently lose it.
+        $this->lineIn($this->subsystemId('PH-14-SS-5501'), 'PH-14-NOAREA-A');
+
+        $facility = $this->compile('FACILITY', $this->facilityId('PH-14-PL-01'));
+        $area = $this->compile('AREA', $this->areaId('AR-22'));
+
+        $this->assertContains('PH-14-SS-5501', $facility['scope']['subsystem_codes']);
+        $this->assertSame(['PH-14-NOAREA-A'], collect($facility['lines'])->pluck('line_number')->all());
+        $this->assertNotContains('PH-14-SS-5501', $area['scope']['subsystem_codes']);
+        $this->assertSame([], collect($area['lines'])->pluck('line_number')->all());
+    }
+
+    public function test_a_facility_without_any_area_still_has_a_dossier_of_all_of_itself(): void
+    {
+        // PH-14-PL-02 uses no areas at all. If the facility scope only walked
+        // the areas, this facility’s dossier would quietly omit every part of
+        // itself — the one thing a document about it must never do.
+        $this->lineIn($this->subsystemId('PH-14-SS-4401'), 'PH-14-PL02-A');
+        $this->lineIn($this->subsystemId('PH-14-SS-6601'), 'PH-14-PL02-B');
+
+        $dossier = $this->compile('FACILITY', $this->facilityId('PH-14-PL-02'));
+
+        $this->assertEqualsCanonicalizing(['PH-14-PL02-A', 'PH-14-PL02-B'], collect($dossier['lines'])->pluck('line_number')->all());
+        $this->assertSame([], $dossier['scope']['area_codes']);
+        $this->assertEqualsCanonicalizing(['PH-14-SY-4400', 'PH-14-SY-6600'], $dossier['scope']['system_codes']);
+    }
+
+    public function test_a_facility_dossier_names_the_areas_it_holds(): void
+    {
+        $dossier = $this->compile('FACILITY', $this->facilityId('PH-14-PL-01'));
+
+        $this->assertSame(['AR-22', 'AR-33'], $dossier['scope']['area_codes']);
+        $this->assertEqualsCanonicalizing(
+            ['PH-14-SS-2201', 'PH-14-SS-3301', 'PH-14-SS-4402', 'PH-14-SS-5501'],
+            $dossier['scope']['subsystem_codes'],
+        );
+    }
+
+    public function test_a_physical_dossier_sees_the_gaps_of_every_subsystem_it_holds(): void
+    {
+        $this->lineIn($this->subsystemId('PH-14-SS-2201'), 'PH-14-AR22-A');
+        $this->lineIn($this->subsystemId('PH-14-SS-4402'), 'PH-14-AR22-B');
+
+        $completeness = $this->completenessFor('AREA', $this->areaId('AR-22'));
+
+        // Two lines, both never inside a pack. The completeness report reads
+        // the same resolver as the dossier, so it cannot report on a different
+        // set of lines than the document it sits beside.
+        $this->assertCount(2, $completeness['missing']['lines_without_test_pack']);
+        $this->assertSame(2, $completeness['counts']['lines']);
+    }
+
+    public function test_both_physical_scopes_can_be_frozen_and_carry_the_current_schema(): void
+    {
+        $this->lineIn($this->subsystemId('PH-14-SS-2201'));
+
+        foreach (['AREA' => $this->areaId('AR-22'), 'FACILITY' => $this->facilityId('PH-14-PL-01')] as $kind => $ref) {
+            $snapshot = $this->asOwner(fn () => app(ItrCompilerService::class)->freeze(
+                $this->project, $this->owner, $ref, (string) Str::uuid(), 'en', $kind));
+            $row = $this->asOwner(fn () => DB::table('itr_snapshots')->where('id', $snapshot['id'])->first());
+            $this->assertSame($kind, (string) $row->scope_kind);
+            $this->assertNull($row->test_pack_id, 'a '.strtolower($kind).' dossier is not about one pack');
+            $this->assertSame(5, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
+        }
+    }
+
+    public function test_an_area_from_another_project_cannot_be_frozen(): void
+    {
+        $this->assertRefused(
+            fn () => $this->asOwner(fn () => app(ItrCompilerService::class)->freeze(
+                $this->project, $this->owner, (string) Str::uuid(), (string) Str::uuid(), 'en', 'AREA')),
+            'ناحیه|area',
+        );
+    }
+
+    public function test_a_facility_from_another_project_cannot_be_frozen(): void
+    {
+        $this->assertRefused(
+            fn () => $this->asOwner(fn () => app(ItrCompilerService::class)->freeze(
+                $this->project, $this->owner, (string) Str::uuid(), (string) Str::uuid(), 'en', 'FACILITY')),
+            'واحد|facility',
+        );
+    }
+
+    public function test_the_screen_offers_both_physical_scopes_and_names_what_they_hold(): void
+    {
+        $this->lineIn($this->subsystemId('PH-14-SS-2201'), 'PH-14-AR22-A');
+        $this->lineIn($this->subsystemId('PH-14-SS-4402'), 'PH-14-AR22-B');
+
+        $areaId = $this->areaId('AR-22');
+        $this->actingAs($this->owner)->get($this->route(['sel' => 'AREA:'.$areaId]))
+            ->assertOk()
+            ->assertSee('value="AREA:'.$areaId.'"', false)
+            ->assertSee('id="scope-spans"', false)
+            ->assertSee('PH-14-SS-4402', false)
+            // The cross-reference, printed where the area-based reader will
+            // see it: firefighting reaches into this area from outside it.
+            ->assertSee('Systems: PH-14-SY-2200, PH-14-SY-4400', false);
+
+        $facilityId = $this->facilityId('PH-14-PL-02');
+        $this->actingAs($this->owner)->get($this->route(['sel' => 'FAC:'.$facilityId]))
+            ->assertOk()
+            ->assertSee('value="FAC:'.$facilityId.'"', false)
+            ->assertSee('id="scope-spans"', false)
+            ->assertSee('PH-14-SS-6601', false);
     }
 
     // ---------------------------------------------------------------- plumbing
@@ -480,6 +642,18 @@ final class ItrScopeTest extends TestCase
     private function systemId(string $code): string
     {
         return (string) $this->asOwner(fn () => DB::table('systems')
+            ->where('project_id', $this->project->id)->where('code', $code)->value('id'));
+    }
+
+    private function areaId(string $code): string
+    {
+        return (string) $this->asOwner(fn () => DB::table('areas')
+            ->where('project_id', $this->project->id)->where('code', $code)->value('id'));
+    }
+
+    private function facilityId(string $code): string
+    {
+        return (string) $this->asOwner(fn () => DB::table('facilities')
             ->where('project_id', $this->project->id)->where('code', $code)->value('id'));
     }
 

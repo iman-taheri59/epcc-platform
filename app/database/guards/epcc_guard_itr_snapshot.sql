@@ -49,6 +49,23 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM systems sy WHERE sy.id = NEW.scope_ref AND sy.project_id = NEW.project_id) THEN
       RAISE EXCEPTION 'ITR_SYSTEM_NOT_FOUND' USING ERRCODE = '42501';
     END IF;
+  ELSIF NEW.scope_kind IN ('AREA', 'FACILITY') THEN
+    -- The two physical levels ADR-004 §4 introduced. Both are rungs the
+    -- breakdown really has, so neither is a hierarchy anybody invented: the
+    -- only question the guard asks is the one it asks of every other scope —
+    -- does this thing exist, in this project, and is nothing else riding along.
+    IF NEW.scope_ref IS NULL OR NEW.test_pack_id IS NOT NULL THEN
+      RAISE EXCEPTION 'ITR_SCOPE_REF_MISMATCH' USING ERRCODE = '23514';
+    END IF;
+    IF NEW.scope_kind = 'AREA' THEN
+      IF NOT EXISTS (SELECT 1 FROM areas a WHERE a.id = NEW.scope_ref AND a.project_id = NEW.project_id) THEN
+        RAISE EXCEPTION 'ITR_AREA_NOT_FOUND' USING ERRCODE = '42501';
+      END IF;
+    ELSE
+      IF NOT EXISTS (SELECT 1 FROM facilities f WHERE f.id = NEW.scope_ref AND f.project_id = NEW.project_id) THEN
+        RAISE EXCEPTION 'ITR_FACILITY_NOT_FOUND' USING ERRCODE = '42501';
+      END IF;
+    END IF;
   ELSIF NEW.scope_kind = 'PROJECT' THEN
     -- The project needs no reference: the row already names it, and accepting
     -- one would allow two rows to claim the same dossier under different names.

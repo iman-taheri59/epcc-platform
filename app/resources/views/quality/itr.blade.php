@@ -1,7 +1,22 @@
 <!doctype html><html lang="{{ $lang }}" dir="{{ $dir }}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ __('quality_itr.title') }}</title>@include('partials.shell')</head><body><div class="app">@include('partials.sidebar')<div class="wrap">@include('partials.topbar')<section style="max-width:1100px;padding:20px;overflow-wrap:anywhere">
+@php
+  // One control carries every kind, so the language toggle has to rebuild the
+  // very token the select posted rather than lose the scope on the way round.
+  $selValue = match ($scopeKind) {
+      'PROJECT' => 'PROJECT',
+      'SUBSYSTEM' => 'SUB:'.$scopeRef,
+      'SYSTEM' => 'SYS:'.$scopeRef,
+      'AREA' => 'AREA:'.$scopeRef,
+      'FACILITY' => 'FAC:'.$scopeRef,
+      default => 'PACK:'.$scopeRef,
+  };
+  // An area code is only meaningful inside its facility, so the picker says
+  // which one - AR-22 alone would be ambiguous on a project with two plants.
+  $facilityCodeOf = fn (mixed $id): ?string => collect($facilities)->firstWhere('id', $id)?->code;
+@endphp
 <h1>{{ __('quality_itr.title') }}</h1>
 <p>{{ __('quality_itr.boundary') }}</p>
-<p><a href="{{ route('quality.itr',['projectCode'=>$project->code,'lang'=>$lang==='fa'?'en':'fa','sel'=>$scopeKind==='PROJECT'?'PROJECT':($scopeKind==='SUBSYSTEM'?'SUB:'.$scopeRef:($scopeKind==='SYSTEM'?'SYS:'.$scopeRef:'PACK:'.$scopeRef))]) }}">{{ $lang==='fa'?'English':'فارسی' }}</a> · <a href="{{ route('quality.nominations',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.nominations') }}</a> · <a href="{{ route('quality.results',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.results') }}</a> · <a href="{{ route('quality.sign-offs',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.signoffs') }}</a> · <a href="{{ route('quality.mtr',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.mtr') }}</a> · <a href="{{ route('quality.legacy',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.legacy') }}</a></p>
+<p><a href="{{ route('quality.itr',['projectCode'=>$project->code,'lang'=>$lang==='fa'?'en':'fa','sel'=>$selValue]) }}">{{ $lang==='fa'?'English':'فارسی' }}</a> · <a href="{{ route('quality.nominations',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.nominations') }}</a> · <a href="{{ route('quality.results',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.results') }}</a> · <a href="{{ route('quality.sign-offs',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.signoffs') }}</a> · <a href="{{ route('quality.mtr',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.mtr') }}</a> · <a href="{{ route('quality.legacy',['projectCode'=>$project->code,'lang'=>$lang]) }}">{{ __('quality_itr.legacy') }}</a></p>
 @if(session('status'))<p role="status">{{ session('status') }}</p>@endif
 @if($errors->any())<ul role="alert">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>@endif
 
@@ -12,6 +27,16 @@
 <optgroup label="{{ __('quality_itr.scope_SYSTEM') }}">
 @foreach($systems as $sy)
 <option value="SYS:{{ $sy->id }}" @selected($scopeKind==='SYSTEM' && $scopeRef===$sy->id)>{{ $sy->code }}@if($sy->name_en) · {{ $sy->name_en }}@endif</option>
+@endforeach
+</optgroup>
+<optgroup label="{{ __('quality_itr.scope_FACILITY') }}">
+@foreach($facilities as $fc)
+<option value="FAC:{{ $fc->id }}" @selected($scopeKind==='FACILITY' && $scopeRef===$fc->id)>{{ $fc->code }}@if($fc->name_en) · {{ $fc->name_en }}@endif</option>
+@endforeach
+</optgroup>
+<optgroup label="{{ __('quality_itr.scope_AREA') }}">
+@foreach($areas as $ar)
+<option value="AREA:{{ $ar->id }}" @selected($scopeKind==='AREA' && $scopeRef===$ar->id)>{{ $ar->code }}@if($facilityCodeOf($ar->facility_id)) · {{ $facilityCodeOf($ar->facility_id) }}@endif @if($ar->name_en) · {{ $ar->name_en }}@endif</option>
 @endforeach
 </optgroup>
 <option value="PROJECT" @selected($scopeKind==='PROJECT')>{{ __('quality_itr.scope_PROJECT') }} — {{ $project->code }}</option>
@@ -42,12 +67,24 @@
 @endif
 
 @if($dossier !== null)
-<h3 id="scope-heading">@if($scopeKind==='PROJECT'){{ __('quality_itr.scope_PROJECT') }} — {{ $project->code }}@elseif($scopeKind==='SUBSYSTEM'){{ __('quality_itr.scope_SUBSYSTEM') }} — {{ collect($subsystems)->firstWhere('id',$scopeRef)?->code }}@elseif($scopeKind==='SYSTEM'){{ __('quality_itr.scope_SYSTEM') }} — {{ collect($systems)->firstWhere('id',$scopeRef)?->code }}@else{{ __('quality_itr.pack') }} {{ $pack->code }} — {{ $pack->state }}@endif</h3>
+<h3 id="scope-heading">@if($scopeKind==='PROJECT'){{ __('quality_itr.scope_PROJECT') }} — {{ $project->code }}@elseif($scopeKind==='SUBSYSTEM'){{ __('quality_itr.scope_SUBSYSTEM') }} — {{ collect($subsystems)->firstWhere('id',$scopeRef)?->code }}@elseif($scopeKind==='SYSTEM'){{ __('quality_itr.scope_SYSTEM') }} — {{ collect($systems)->firstWhere('id',$scopeRef)?->code }}@elseif($scopeKind==='AREA'){{ __('quality_itr.scope_AREA') }} — {{ collect($areas)->firstWhere('id',$scopeRef)?->code }}@elseif($scopeKind==='FACILITY'){{ __('quality_itr.scope_FACILITY') }} — {{ collect($facilities)->firstWhere('id',$scopeRef)?->code }}@else{{ __('quality_itr.pack') }} {{ $pack->code }} — {{ $pack->state }}@endif</h3>
 
 <h4>{{ __('quality_itr.dossier') }}</h4>
 <p id="dossier-kind">{{ __('quality_itr.kind') }}</p>
-@if($scopeKind==='SYSTEM')
-<p id="scope-spans">{{ __('quality_itr.spans') }}: @foreach(($dossier['scope']['subsystem_codes'] ?? []) as $c)<span>{{ $c }}</span>@if(! $loop->last) · @endif @endforeach{{ (($dossier['scope']['facility_codes'] ?? []) !== []) ? ' ('.implode(', ', $dossier['scope']['facility_codes']).')' : '' }}</p>
+{{--
+  The cross-reference. Every grouping level answers the same two questions:
+  what does it hold, and where does it sit. A system names the facilities it
+  spans; an area names the SYSTEMS that reach into it, which is the answer the
+  construction-side reader needs and the one nothing else in the platform
+  gives. AWP calls keeping this live a duty; here it is a join, not a
+  spreadsheet.
+--}}
+@if(in_array($scopeKind, ['SYSTEM','AREA','FACILITY'], true))
+<p id="scope-spans">{{ __('quality_itr.spans') }}: @foreach(($dossier['scope']['subsystem_codes'] ?? []) as $c)<span>{{ $c }}</span>@if(! $loop->last) · @endif @endforeach
+@if(($dossier['scope']['system_codes'] ?? []) !== []) · {{ __('quality_itr.systems') }}: {{ implode(', ', $dossier['scope']['system_codes']) }}@endif
+@if(($dossier['scope']['area_codes'] ?? []) !== []) · {{ __('quality_itr.areas') }}: {{ implode(', ', $dossier['scope']['area_codes']) }}@endif
+@if(($dossier['scope']['facility_codes'] ?? []) !== []) · {{ __('quality_itr.facilities') }}: {{ implode(', ', $dossier['scope']['facility_codes']) }}@endif
+</p>
 @endif
 <p id="completeness">{{ ($completeness['is_complete'] ?? false) ? __('quality_itr.complete_yes') : __('quality_itr.complete_no') }}</p>
 <p>{{ __('quality_itr.counts') }}: {{ __('quality_itr.lines') }} {{ (int) ($completeness['counts']['lines'] ?? 0) }} · {{ __('quality_itr.joints') }} {{ (int) ($completeness['counts']['joints'] ?? 0) }} · {{ __('quality_itr.welds') }} {{ (int) ($completeness['counts']['welds'] ?? 0) }} · {{ __('quality_itr.ndt') }} {{ (int) ($completeness['counts']['ndt'] ?? 0) }} · {{ __('quality_itr.test_results') }} {{ (int) ($completeness['counts']['test_results'] ?? 0) }} · {{ __('quality_itr.packs') }} {{ (int) ($completeness['counts']['packs'] ?? 0) }}</p>

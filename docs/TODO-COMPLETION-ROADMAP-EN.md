@@ -514,9 +514,34 @@
         deleted ✅; codes are unique per project and repeatable across projects
         ✅; a non-participant cannot write a system ✅; a SYSTEM dossier reaches
         into no other system ✅.
-      Deliberately not built: `AREA` and `FACILITY` dossier scopes — the two
-        physical levels are the obvious next rung of the same resolver, and are
-        not yet written.
+- [x] **A.5b ITR compiler — slice 3d (the two physical rungs: `AREA` and
+      `FACILITY` dossiers)** — the same resolver, two more branches, and the
+      cross-reference the chapter owed. A system dossier names the facilities it
+      spans; an area dossier names the **systems that reach into it**, which is
+      the answer nothing else in the platform gave and the one the
+      construction-side reader needs. Two semantics decided rather than
+      discovered: `FACILITY` gathers every subsystem that names it *including
+      those with no area* (or a facility like `PH-14-PL-02`, which uses no areas
+      at all, would have a dossier that silently omitted all of itself), and
+      `AREA` gathers only the subsystems that name that area (a subsystem hung
+      straight off its facility is in the facility's dossier and in no area's —
+      it has no area). `SYSTEM` gained `area_codes` so all three grouping levels
+      answer the same shape of question. `schema_version` 4 → 5. One thing is
+      deliberately **not** a scope: `UNIT`, which is a naming convention inside
+      a system code, not a level — asking for one is refused. Depends: A.5b
+      slice 3c ✅, slice 3a ✅, A.5 ✅. (S)
+      Acceptance: an area gathers the subsystems inside it and reaches into no
+        other area ✅; an area names the systems that touch it, including one
+        whose subsystems also sit in another facility ✅; a facility gathers the
+        subsystems that name no area ✅; a facility with no areas still has a
+        dossier of all of itself ✅; a facility names its areas ✅; a physical
+        dossier reports the gaps of everything it holds ✅; both freeze and
+        carry the current schema ✅; a foreign area and a foreign facility are
+        refused ✅; the screen offers both and prints the cross-reference ✅.
+      Deliberately not built: a `UNIT` scope (a unit is not a level in this
+        breakdown); a system hierarchy (system → sub-system → sub-sub-system) —
+        no project has asked for one and two levels answer every question a
+        handover dossier asks today.
 - [ ] **A.5b ITR compiler — slice 3b (receipt/MTR binding into the dossier)** —
       receipts (GRN) and material certificates assembled into the dossier,
       which needs piece-level custody (A.4b). Depends: A.5b slice 3a ✅, A.5 ✅,

@@ -1,8 +1,8 @@
-# The dossier and its scope — A.5b slice 3a (English)
+# The dossier and its scope — A.5b slices 3a–3d (English)
 
-> Status: implemented 2026-10-31, commits `41936319` (scopes) and `17c683b2`
-> (the system level). Slice of ADR-048, and — in its system half — an amendment
-> to ADR-004.
+> Status: implemented 2026-10-31. `41936319` (scopes), `17c683b2` (the system
+> level), and the slice that added the two physical rungs. Slice of ADR-048,
+> and — in its system half — an amendment to ADR-004.
 > Persian twin: [`ITR-SCOPES-FA.md`](ITR-SCOPES-FA.md).
 > What this widens: [`ITR-COMPILER-EN.md`](ITR-COMPILER-EN.md); the name on the
 > dossier: [`ITR-SIGNATURES-EN.md`](ITR-SIGNATURES-EN.md); the gate that made
@@ -27,7 +27,7 @@ interesting part is that a wider scope can see things a pack scope cannot, and
 one of them is a gap that had to exist for years without anybody being able to
 ask about it.
 
-## Four scopes, because four exist in the data
+## Six scopes, because six exist in the data
 
 `itr_snapshots` gained `scope_kind` and `scope_ref`:
 
@@ -36,6 +36,8 @@ ask about it.
 | `TEST_PACK` | the pack's id | one test pack — exactly what A.5 compiled |
 | `SUBSYSTEM` | the subsystem's id | every line of that subsystem, whatever pack they sit in |
 | `SYSTEM` | the system's id | every line of every subsystem serving that system, in any facility |
+| `AREA` | the area's id | every line of every subsystem inside that area |
+| `FACILITY` | the facility's id | every line of every subsystem of that facility, **including the ones that name no area** |
 | `PROJECT` | none | every line of the project |
 
 **`SYSTEM` came second, and the reason it came second is the interesting
@@ -53,6 +55,36 @@ So the level was declared rather than invented (ADR-004 §7): `systems` now
 exists, every subsystem names one (`subsystems.system_id` is NOT NULL), and the
 dossier compiles for it. The difference matters: a system dossier is an answer
 the project gave, not an answer the platform guessed.
+
+**`AREA` and `FACILITY` came last, and they are the other direction of the same
+cross-reference.** A system dossier names the facilities it spans; an area
+dossier names the *systems* that reach into it. That second answer is the one
+nothing else in the platform gave, and it is the one the construction side
+needs: the area-based reader who wants to know what functional work passes
+through their patch had to go and ask somebody. Advanced Work Packaging calls
+the maintenance of this link a duty — *"two maps, kept live"*, the area map and
+the system map — and treats a stale cross-reference as a failure mode of the
+discipline. Here it is not a maintained document; it is a join over the same
+rows the dossier is already about, so it cannot go stale.
+
+Two semantics worth stating, because both were decided rather than discovered:
+
+- **`FACILITY` gathers every subsystem that names it, including those with no
+  area.** A facility like `PH-14-PL-02` uses no areas at all; a facility scope
+  that walked the areas would produce a dossier that silently omitted every
+  part of itself.
+- **`AREA` gathers only the subsystems that name that area.** A subsystem hung
+  straight off its facility is in the facility's dossier and in no area's. That
+  is the honest answer: it has no area.
+
+One thing is deliberately **not** a scope: `UNIT`. A unit is not a level in this
+breakdown — it is a naming convention inside a system code (`SY-PL01-FIRE`),
+and asking for a unit dossier is refused rather than quietly answered by
+something that sounds like one. That is what ADR-004 §8 concluded from the
+prior-art survey: nine independent sources — Hexagon's PBS/LBS, WinPCS,
+GoCompletions, IEC 81346, NORSOK Z-007, API RP 1FSC, AWP, AVEVA E3D and SAP PM
+— keep function and location as parallel structures and none of them binds a
+system under a unit.
 
 A project scope takes **no** reference, and refuses one. The row already names
 the project; accepting a reference beside it would let two rows claim the same
@@ -139,10 +171,9 @@ document.
 - **The scope is a slice of the plant, not a claim about discipline.** A
   subsystem dossier still assembles the piping evidence that A.5 assembled; it
   gathers nothing new.
-- **`AREA` and `FACILITY` scopes are still missing.** The physical levels are
-  levels the breakdown really has, and the resolver would need one more branch
-  each; they were not what this work was about, and half-tested scopes are how
-  a document starts lying.
+- **There is no `UNIT` scope, and there will not be one** until the project
+  declares units as a level. Asking for one is refused before anything is
+  stored. A unit is expressed in a system's code, not as a rung in a tree.
 - **Not yet:** receipts (GRN) and material certificates (MTR) inside the
   dossier, which needs piece-level custody — that is **A.5b slice 3b**.
 - **Visibility is RLS, as everywhere:** a scope is only a scope for a session
@@ -153,8 +184,8 @@ document.
 
 | Rule | Enforced in |
 |---|---|
-| `scope_kind` ∈ {TEST_PACK, SUBSYSTEM, SYSTEM, PROJECT} | CHECK `itr_snapshots_check`, and `epcc_guard_itr_snapshot()` (`ITR_SCOPE_UNKNOWN`) |
-| a pack/subsystem/system scope references an existing row of that kind in this project | `epcc_guard_itr_snapshot()` (`ITR_PACK_NOT_FOUND` / `ITR_SUBSYSTEM_NOT_FOUND` / `ITR_SYSTEM_NOT_FOUND`) |
+| `scope_kind` ∈ {TEST_PACK, SUBSYSTEM, SYSTEM, AREA, FACILITY, PROJECT} | CHECK `itr_snapshots_check`, and `epcc_guard_itr_snapshot()` (`ITR_SCOPE_UNKNOWN`) |
+| a pack/subsystem/system/area/facility scope references an existing row of that kind in this project | `epcc_guard_itr_snapshot()` (`ITR_PACK_NOT_FOUND` / `ITR_SUBSYSTEM_NOT_FOUND` / `ITR_SYSTEM_NOT_FOUND` / `ITR_AREA_NOT_FOUND` / `ITR_FACILITY_NOT_FOUND`) |
 | the project scope takes no reference | `epcc_guard_itr_snapshot()` (`ITR_SCOPE_REF_MISMATCH`) |
 | lines, joints, results and gaps all come from one resolver | `epcc_itr_scope_lines()`, read by both bodies |
 | a pack in `DRAFT` cannot be frozen (pack scope only) | `epcc_guard_itr_snapshot()` (`ITR_PACK_NOT_READY`) |
@@ -166,7 +197,7 @@ The guard is a file — `database/guards/epcc_guard_itr_snapshot.sql` — applie
 
 ## Tests
 
-`tests/Feature/ItrScopeTest.php`, 19 tests / 71 assertions:
+`tests/Feature/ItrScopeTest.php`, 36 tests / 138 assertions:
 
 - a subsystem dossier is about every line of that subsystem and does not reach
   into another one; a project dossier is about all of them;
@@ -177,8 +208,16 @@ The guard is a file — `database/guards/epcc_guard_itr_snapshot.sql` — applie
 - a subsystem dossier names the pack each result belongs to;
 - a line with no pack is an enumerated gap, and every pack with no PASS is named;
 - a subsystem dossier is complete only when every pack in scope passed;
-- a draft pack still cannot be frozen, a subsystem can, and an unknown scope, a
-  foreign subsystem and a project scope carrying a reference are all refused
-  before anything is stored;
-- the screen offers all three scopes, opens the one chosen, and shows the pack
-  with no PASS as a work list rather than a flag.
+- **a SYSTEM dossier names the facilities it spans; an AREA dossier names the
+  SYSTEMS that reach into it** — the fixture's process area holds the cooling
+  water pump set and the firefighting pump house, so its dossier names two
+  systems, one of which also has a subsystem in the utilities block;
+- a FACILITY dossier gathers the subsystems that name no area, and a facility
+  that has no areas at all still has a dossier of all of itself;
+- an area dossier does not reach into another area, and reports the gaps of
+  every subsystem it holds;
+- a draft pack still cannot be frozen, a subsystem can, and an unknown scope
+  (`UNIT`), a foreign subsystem, a foreign area, a foreign facility and a
+  project scope carrying a reference are all refused before anything is stored;
+- the screen offers every scope, opens the one chosen, and shows the pack with
+  no PASS as a work list rather than a flag.

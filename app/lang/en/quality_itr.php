@@ -143,5 +143,14 @@ return [
     'scope_SYSTEM' => 'One system',
     'systems' => 'Systems',
     'spans' => 'Subsystems gathered',
+
+    // A.5b slice 3d - the two physical rungs. A system dossier names the
+    // facilities it spans; an area dossier names the SYSTEMS that reach into
+    // it. Neither is a hierarchy anyone invented: both are levels the
+    // breakdown has always declared.
+    'scope_AREA' => 'One area',
+    'scope_FACILITY' => 'One facility',
+    'areas' => 'Areas',
+    'facilities' => 'Facilities',
 ];
 
