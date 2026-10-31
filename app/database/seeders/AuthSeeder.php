@@ -547,25 +547,19 @@ final class AuthSeeder extends Seeder
          * of the plant and the tank foundation in the utilities block — which
          * no single area or facility can express.
          */
-        $systems = collect([
-            'PH-14-SY-2200' => ['Cooling water', 'آب خنک‌کننده'],
-            'PH-14-SY-3300' => ['Electrical power distribution', 'توزیع برق'],
-            'PH-14-SY-5500' => ['Metering and fiscal measurement', 'اندازه‌گیری و فروش'],
-            'PH-14-SY-6600' => ['Condensate and drains', 'میعانات و تخلیه'],
-            'PH-14-SY-4400' => ['Firefighting', 'آتش‌نشانی'],
-        ])->map(fn (array $names, string $code) => $tenant->runAs($pars->id, fn () => \App\Models\System::create([
-            'project_id' => $ph14->id,
-            'company_id' => $pars->id,
-            'code' => $code,
-            'name_en' => $names[0],
-            'name_fa' => $names[1],
-        ]), $ph14->id));
+        $systems = $this->declareSystems($ph14, $pars, $tenant);
+        // Empty when the database is still at a schema that predates the
+        // system level — which is exactly the state the forward-migration
+        // tests seed into before they run `migrate`. On that path the systems
+        // migration's own backfill assigns every existing subsystem a system
+        // derived from its area, so the upgrade is still complete.
+        $sys = fn (string $code): array => $systems->has($code) ? ['system_id' => $systems[$code]->id] : [];
 
         // The subsystem belongs to the contractor that has to deliver it.
         $subsystem = $tenant->runAs($pars->id, fn () => Subsystem::create([
             'facility_id' => $plant->id,
             'area_id' => $areaProcess->id,
-            'system_id' => $systems['PH-14-SY-2200']->id,
+            ...$sys('PH-14-SY-2200'),
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-2201',
@@ -648,7 +642,41 @@ final class AuthSeeder extends Seeder
             app(\App\Services\McCertificateService::class)->draft($subsystem, $jafari, 'en');
         }, $ph14->id);
 
-        $this->seedAdditionalSubsystems($ph14, $pars, $punch, $jafari, $rezaei, $karimi, $mcBody, $tenant, $plant, $utility, $areaProcess, $areaElectrical, $systems);
+        $this->seedAdditionalSubsystems($ph14, $pars, $punch, $jafari, $rezaei, $karimi, $mcBody, $tenant, $plant, $utility, $areaProcess, $areaElectrical, $systems, $sys);
+    }
+
+    /**
+     * The project's systems, or an empty collection on a database whose schema
+     * predates them.
+     *
+     * A seeder is not allowed to assume the newest schema: the forward-
+     * migration tests deliberately build a database at an intermediate
+     * migration, seed it, and only then run `migrate`, so anything this file
+     * writes must survive being written against a schema that has no
+     * `systems` table yet. (On that path the systems migration's own backfill
+     * gives every existing subsystem a system derived from its area.)
+     *
+     * @return \Illuminate\Support\Collection<string, \App\Models\System>
+     */
+    private function declareSystems(Project $ph14, Company $pars, TenantContext $tenant): \Illuminate\Support\Collection
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('systems')) {
+            return collect();
+        }
+
+        return collect([
+            'PH-14-SY-2200' => ['Cooling water', 'آب خنک‌کننده'],
+            'PH-14-SY-3300' => ['Electrical power distribution', 'توزیع برق'],
+            'PH-14-SY-5500' => ['Metering and fiscal measurement', 'اندازه‌گیری و فروش'],
+            'PH-14-SY-6600' => ['Condensate and drains', 'میعانات و تخلیه'],
+            'PH-14-SY-4400' => ['Firefighting', 'آتش‌نشانی'],
+        ])->map(fn (array $names, string $code) => $tenant->runAs($pars->id, fn () => \App\Models\System::create([
+            'project_id' => $ph14->id,
+            'company_id' => $pars->id,
+            'code' => $code,
+            'name_en' => $names[0],
+            'name_fa' => $names[1],
+        ]), $ph14->id));
     }
 
     /**
@@ -681,12 +709,13 @@ final class AuthSeeder extends Seeder
         Area $areaProcess,
         Area $areaElectrical,
         \Illuminate\Support\Collection $systems,
+        \Closure $sys,
     ): void {
         // 1. Electrical: punch items raised and ALL closed -> gate is clear.
         $electrical = $tenant->runAs($pars->id, fn () => Subsystem::create([
             'facility_id' => $plant->id,
             'area_id' => $areaElectrical->id,
-            'system_id' => $systems['PH-14-SY-3300']->id,
+            ...$sys('PH-14-SY-3300'),
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-3301',
@@ -743,7 +772,7 @@ final class AuthSeeder extends Seeder
         $instrument = $tenant->runAs($pars->id, fn () => Subsystem::create([
             'facility_id' => $plant->id,
             'area_id' => null,
-            'system_id' => $systems['PH-14-SY-5500']->id,
+            ...$sys('PH-14-SY-5500'),
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-5501',
@@ -780,7 +809,7 @@ final class AuthSeeder extends Seeder
         $piping = $tenant->runAs($pars->id, fn () => Subsystem::create([
             'facility_id' => $utility->id,
             'area_id' => null,
-            'system_id' => $systems['PH-14-SY-6600']->id,
+            ...$sys('PH-14-SY-6600'),
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-6601',
@@ -807,7 +836,7 @@ final class AuthSeeder extends Seeder
         $tenant->runAs($pars->id, fn () => Subsystem::create([
             'facility_id' => $utility->id,
             'area_id' => null,
-            'system_id' => $systems['PH-14-SY-4400']->id,
+            ...$sys('PH-14-SY-4400'),
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-4401',
@@ -824,7 +853,7 @@ final class AuthSeeder extends Seeder
         $tenant->runAs($pars->id, fn () => Subsystem::create([
             'facility_id' => $plant->id,
             'area_id' => $areaProcess->id,
-            'system_id' => $systems['PH-14-SY-4400']->id,
+            ...$sys('PH-14-SY-4400'),
             'project_id' => $ph14->id,
             'company_id' => $pars->id,
             'code' => 'PH-14-SS-4402',
