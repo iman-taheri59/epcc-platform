@@ -382,3 +382,159 @@ functional tree adds a grouping over the same rows; it does not move them.
   be scope taken, not scope decided.
 - **A system hierarchy** (system → sub-system → sub-sub-system). No project has
   asked for one; two levels answer every question a handover dossier asks today.
+
+---
+
+## 8. Amendment (2026-10-31) — Prior art: what comparable software and standards actually do
+
+**Status: INFORMATIONAL.** This section does not change the decision; it records
+the survey that was run *after* §7 was implemented, to check whether the
+two-parallel-trees shape is an idiosyncrasy of ours or the industry norm. It is
+the norm. Every source below was read this day; the URLs are the ones actually
+consulted.
+
+### 8.1 Completions tools keep two breakdowns and join them at the tag
+
+- **Hexagon / Intergraph Smart Completions (now Octave OnSite Completions).**
+  Step 1 of the vendor's own implementation process is *"Import Engineering
+  Data, Define Work Breakdown Structure (WBS), Systemization, Location
+  Structures"*. The product page states that **Process Breakdown Structure
+  (PBS), "also known as systemization", and Location Breakdown Structure (LBS)**
+  exist "to allocate tags, work, certification and handover, which is key to
+  review the overlap between construction and commissioning turnover
+  processes". Two structures, one tag register, neither the parent of the
+  other. — [hexagon.com product page](https://hexagon.com/products/hxgn-smart-build-field-handover),
+  [Hexagon Smart Completions brochure](https://catalogartifact.azureedge.net/publicartifacts/hexagonppm.smart_completions_smart_cloud-d28768ce-d35f-478c-9b8a-c1150f9444b1/Artifacts/Documents/Hexagon_PPM_Smart_Completions_Brochure_US.pdf)
+- **WinPCS / GoCompletions.** The object hierarchy is functional and
+  cross-discipline — *"system > sub-system > motor > cable > panel"* — while the
+  reporting axes are siblings: *"Select from the Main Menu the **System, Unit or
+  Area** on which a status report is required."* Unit and Area are alternative
+  lenses over the same rows, not levels above System. — [winpcs.com](http://www.winpcs.com/commissioning.htm)
+- **GoTechnology hub2.** At the Scope level the "Extended Logical Structure"
+  carries **System, Subsystem, Area, Module, Discipline** as attributes of the
+  scope item, and certification can be grouped by *System, Subsystem, Primary
+  Handover, Secondary Handover, System/Discipline, Subsystem/Discipline, Area,
+  Module*. Grouping is chosen per report, not frozen into one tree. — [hub2 User Guide](https://gotechnology.github.io/u/UserGuide.pdf)
+- **Falcon Global, "Systemization Guidelines"** (a working CSU method statement,
+  not a brochure). Systemization is *"the definition of the physically smallest
+  part of each of the facility's Process or Utility Systems, divided into Sub
+  Systems, so that each Sub System will function as an Operable Entity"*; the
+  boundaries are marked up on **P&IDs and SLDs** as battery limits; systems are
+  acknowledged to be *"spread across large areas in the Plant"*; and the entire
+  exercise exists to manage *"their transition from an **Areas** approach to a
+  **Systems** approach"* (PSCM — Progressive Systems Completion Methodology). A
+  system is defined as the thing that is **not** the area. — [Falcon Systemization Guidelines, 2019](https://falconglobal.net/wp-content/uploads/2019/03/Systemization-Guidelines-20190221.pdf)
+
+### 8.2 The standards say the same thing, and more formally
+
+- **IEC/ISO 81346-1.** The structuring principles are three orthogonal aspects —
+  **function-oriented, product-oriented, location-oriented** — with the prefix
+  signs `=` function, `+` location, `-` product. Its own figures include *"an
+  object accessible from three aspects"*. A designation such as
+  `=H10+UCB01-CF001` names one object seen through three lenses. The stated
+  reason: *"Function, location, and product change on different clocks… A flat
+  tag that fuses all three forces a rename every time any one of them shifts."*
+  Our two trees are two of these three aspects; **equipment/tag is the third and
+  is already modelled elsewhere.** — [IEC 81346-1:2009 abstract and contents](https://standards.iteh.ai/catalog/standards/iec/120d35da-ea1e-4ced-b394-05f0ca036f70/iec-81346-1-2009),
+  [practical summary with the aspect table](https://tagsight.io/learn/what-is-iec-81346)
+- **NORSOK Z-007 (Mechanical completion and commissioning).** It defines the
+  software category we are building: a *"Project Completion System (PCS) is a
+  computerised system for electronic documentation of Mechanical completion,
+  commissioning and preservation **by system, subsystem, area, commissioning
+  package, MC package and/or individual tag**"* — system, subsystem and area
+  enumerated as **alternative** documentation axes. And *"System: An
+  operational system **or a non-operational system**… Non-operational systems
+  are systems such as surface protection, insulation, civil, structural steel,
+  markings and signs, cable and tubing trays"* — categories that by definition
+  cannot belong to a single process unit. — [NORSOK Z-007 Rev. 2 text](https://dokumen.tips/documents/norsok-mechanical-completion-and-commissioning-z-007.html)
+- **API RP 1FSC, *Recommended Practice for Facilities Systems Completion
+  Planning and Execution*, 1st ed.** The four phases our certificates track
+  (Mechanical Completion → Pre-Commissioning → Commissioning → Performance
+  Testing/Start-Up) are the ones it defines, and *systemization* in its sense is
+  the act of producing the priority start-up sequence of subsystems. — [title and phase model](https://falconglobal.net/wp-content/uploads/2021/11/Falcon-Group-Zenator-Systems-20211122.pdf),
+  [course description](https://petroknowledge.com/courses/commissioning-start-up-with-api-rp-1fsc-foundation)
+- **CFIHOS / ISO 15926 lineage.** The DEXPI asset-lifecycle information
+  management draft records the position directly: *"DEXPI proposes the use of
+  **different functional structures** to identify units in the process model and
+  tags/functional locations in the plant model."* Location is carried on the tag
+  as data, not as the tag's parent. — [DEXPI ALC information management, 2026-02](https://dexpi.org/wp-content/uploads/2026/02/ALC-information-management_V4_for-publication_20260211.pdf)
+- **Advanced Work Packaging (CII).** The clearest statement of all, because AWP
+  is the *construction* methodology and still refuses to collapse the two:
+  *"Two maps, kept live. The Contractor shall maintain, throughout the Project,
+  a live cross-reference between (i) the area map (CWA → CWP → IWP) and (ii) the
+  system map (System → Subsystem → CxWP)"*, and the commissioning package
+  *"is organized by system and subsystem, **not by area**, and breaks the
+  location-pattern of the first four packages on purpose."* CII's own material
+  lists the shift to systems as the **future state** of the discipline:
+  *"Future state: timely mapping to System Work Packages (SWPs)… IWPs mapped to
+  system and tag level."* — [AWP spec, §2.05 and §3.01](https://taktproductioninstitute.com/advanced-work-packaging/),
+  [CII, AWP and Lean Construction](https://www.construction-institute.org/api/resource/download/7430)
+
+### 8.3 The design/authoring tools do not nest system under location either
+
+- **Plant 3D** — as §2 established: Area/Unit/Service/LocationNumber are **tag
+  subparts**, not a hierarchy table.
+- **AVEVA E3D / PDMS.** The administrative hierarchy WORLD → SITE → ZONE is
+  explicitly *not* a physical one: *"A ZONE element is not necessarily used to
+  define a physical area, it is more likely to store similar types of item for
+  easy reference, such as a piping system in one ZONE element."* The functional
+  grouping is a **separate element type**: *"You may define as a GROUP any
+  collection of elements in the database, assembling these elements as a single
+  GROUP unit."* A location tree plus an arbitrary group = the same two-aspect
+  split, implemented thirty years ago. — [AVEVA E3D 2.1 help, database element types](http://help.aveva.com/AVEVA_Everything3D/2.1/GS/GS4.4.2.html),
+  [PDMS Design Reference Manual, GROUP element](https://pdfcoffee.com/pdms-design-3-pdf-free.html)
+- **SAP PM.** A functional location may be structured by function *or* by space,
+  and SAP ships a mechanism for holding **both at once**: *alternative
+  labelling*, where the same functional location carries a second label under a
+  different structure indicator, chosen by user profile. One object, two
+  hierarchies, neither of them the master. (SAP's own warning: it is off by
+  default and must be performance-tested before use.) — [SAP learning, Configuring and Creating Functional Locations](https://learning.sap.com/courses/configuring-organizational-and-master-data-in-sap-s-4hana-service/configuring-and-creating-functional-locations),
+  [alternative labelling in practice](https://www.erpgreat.com/plant/sap-pm-questions-answers-on-functional-locations.htm)
+
+### 8.4 What the survey settles
+
+1. **Systems at project level, code unique per project — confirmed.** Not one of
+   the nine sources binds *System* under *Unit*. The closest any of them comes
+   is SAP, and SAP solves it with a second label over the same object, which is
+   strictly weaker than what we have (a real row in a real functional tree).
+2. **Two parallel trees joined at the subsystem — confirmed**, and it is what
+   AWP calls "two maps kept live". Our join is *stronger* than the industry
+   norm: AWP's cross-reference is a maintained document; ours is a foreign key,
+   so "which systems have subsystems inside area X?" is a join, not an audit.
+3. **No `facility_id` on `systems` — confirmed.** This is the finding that
+   changes a mind: the middle way offered before this survey (an optional unit
+   column) is **weaker than it first looked**. Once systems can carry a unit,
+   the first question every consumer asks becomes "which systems are in this
+   unit?", and cross-unit systems — firefighting, instrument air, flare, ESD —
+   silently drop out of the answer. That is precisely the population the level
+   exists to express. SAP's alternative labels avoid this by making the second
+   hierarchy a *view of the same object*, never a filter on it.
+4. **Where the unit then belongs: in the code, as an attribute, on the object —
+   never as a column on the level.** `SY-PL01-FIRE` is the Plant 3D answer (Area
+   is a tag subpart), the CFIHOS/DEXPI answer (Location is data on the tag) and
+   the IEC 81346 answer (`+PL01` is a location block inside a tag, not a level).
+5. **The one gap the survey exposes.** AWP's "two maps kept live" has a
+   *construction-side* reader: the area-based user must be able to find their
+   work through the system map. In our schema that is derivable
+   (`systems ← subsystems → areas → facilities`) but it is not yet *offered*:
+   there is no `AREA` or `FACILITY` dossier scope, and no "systems touching this
+   area" view. Derivable-but-unoffered is the exact state AWP describes as the
+   current (deficient) state of the discipline. See the roadmap.
+
+### 8.5 Two things the survey suggests we may eventually want
+
+Recorded, not decided, and deliberately not built:
+
+- **A start-up priority on the system/subsystem.** In both the Falcon guidelines
+  and API RP 1FSC, the *output* of systemization is not the tree — it is the
+  **priority sequence** (P1 power and safety, P2 control, P3 utilities,
+  P4 storage/handling, P5 process, P6 metering and export, in the Falcon
+  example). A nullable smallint on `systems` (and possibly on `subsystems`)
+  would carry it. Cheap to add, expensive to retro-fit once sequencing reports
+  are written against its absence.
+- **Non-operational systems.** NORSOK Z-007's list — insulation, surface
+  protection, civil, structural steel, markings and signs, cable and tubing
+  trays — are legitimate "systems" for MC purposes and are, if anything, *more*
+  cross-unit than the operational ones. Nothing in the `systems` table prevents
+  them; the naming convention and any future roll-up must simply not assume that
+  every system is a process or utility function.
