@@ -314,3 +314,71 @@ leaves the table owner exempt). Safe only because PostgreSQL DDL is transactiona
 Pipeline KP stationing and spread-based breakdown; bulk subsystem import; roll-up of
 `subsystemMaterialStatus()` to facility/area level. ADR-005 (engineering data ingestion) depends
 on this schema and remains PROPOSED.
+
+---
+
+## 7. Amendment (2026-10-31, commit `17c683b2`) — the SYSTEM level
+
+**Status: ACCEPTED.** Appended, never edited: the decision above stands, and this
+adds the level it left unmodelled.
+
+### What was missing
+
+§1 of this ADR named the problem itself: *"There is a flat middle in the model: a
+project of 4,000 subsystems has no intermediate level."* §4 answered it with
+`areas` — a physical level — and, alongside it, `areas.unit_code`, a nullable
+string described as "one process unit". That is a level the platform knew about
+and did not model, and it left two different questions sharing one answer:
+
+- **Where is it?** — physical, answered by facility and (optionally) area;
+- **What does it do?** — functional, and it crosses physical boundaries: the
+  firefighting pumps sit in the process plant and the tank foundation in the
+  utilities block, and the client who asks for the firefighting handover dossier
+  is asking a question no area can answer.
+
+### The amendment
+
+```
+project ──1:N── systems ──1:N── subsystems           (functional: what it does)
+project ──1:N── facilities ──1:N── areas(opt) ──1:N── subsystems
+                                                     (physical: where it is)
+```
+
+Two parallel trees over the same subsystems, because they are two questions.
+
+- **`systems`** — `project_id`, `company_id` (tenant), `code`, bilingual names.
+  Code unique per **project**, not per facility: a system is allowed to span
+  facilities. RLS + `FORCE ROW LEVEL SECURITY` with the identical clause used by
+  `subsystems`, `facilities` and `areas` — readable by every participant,
+  writable by the accountable company. The breakdown is the map the whole
+  project works from.
+- **`subsystems.system_id` — NOT NULL, FK `ON DELETE RESTRICT`.** A subsystem
+  that names no system is a subsystem nobody can commission. The platform is
+  greenfield and no project has been run on it, so the cost of insisting is
+  payable now; the cost of not insisting grows with every subsystem anybody
+  creates. `RESTRICT` rather than cascade: deleting a system would silently
+  orphan every subsystem's functional parent.
+- **`areas.unit_code` is DROPPED**, not deprecated. The system is the real thing
+  now, and a second column answering the same question is the drift this
+  amendment exists to remove.
+- **Systems hang off the project, not off a facility** — deliberately, and for
+  the reason §3 gave against the two-parent option: a level whose parent is
+  `COALESCE(facility, pipeline)` is a level every upward query will eventually
+  answer wrong.
+
+### What did NOT change
+
+Subsystem numbering (unique per facility), MC certificates, punch lists,
+material status and custody stay exactly as they were: they are all keyed on the
+subsystem, which is still the unit that gets mechanically completed. The
+functional tree adds a grouping over the same rows; it does not move them.
+
+### Deliberately not built
+
+- **`AREA` and `FACILITY` dossier scopes.** The ITR compiles for
+  `TEST_PACK`, `SUBSYSTEM`, `SYSTEM` and `PROJECT`. The two physical levels are
+  the obvious next rung and are cheap to add — same resolver, one more branch —
+  but they are not what this amendment was about, and adding them untested would
+  be scope taken, not scope decided.
+- **A system hierarchy** (system → sub-system → sub-sub-system). No project has
+  asked for one; two levels answer every question a handover dossier asks today.

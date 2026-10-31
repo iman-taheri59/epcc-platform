@@ -1,6 +1,8 @@
 # The dossier and its scope — A.5b slice 3a (English)
 
-> Status: implemented 2026-10-31, commit `41936319`. Slice of ADR-048.
+> Status: implemented 2026-10-31, commits `41936319` (scopes) and `17c683b2`
+> (the system level). Slice of ADR-048, and — in its system half — an amendment
+> to ADR-004.
 > Persian twin: [`ITR-SCOPES-FA.md`](ITR-SCOPES-FA.md).
 > What this widens: [`ITR-COMPILER-EN.md`](ITR-COMPILER-EN.md); the name on the
 > dossier: [`ITR-SIGNATURES-EN.md`](ITR-SIGNATURES-EN.md); the gate that made
@@ -25,7 +27,7 @@ interesting part is that a wider scope can see things a pack scope cannot, and
 one of them is a gap that had to exist for years without anybody being able to
 ask about it.
 
-## Three scopes, because three exist in the data
+## Four scopes, because four exist in the data
 
 `itr_snapshots` gained `scope_kind` and `scope_ref`:
 
@@ -33,15 +35,24 @@ ask about it.
 |---|---|---|
 | `TEST_PACK` | the pack's id | one test pack — exactly what A.5 compiled |
 | `SUBSYSTEM` | the subsystem's id | every line of that subsystem, whatever pack they sit in |
+| `SYSTEM` | the system's id | every line of every subsystem serving that system, in any facility |
 | `PROJECT` | none | every line of the project |
 
-**There is no `SYSTEM` scope**, and this is a deliberate refusal rather than an
-oversight. The breakdown is facilities, areas, subsystems (ADR-004) — there is
-no system level anywhere in the schema. Adding one to the ITR would be the
-platform declaring a hierarchy the project never stated, and every downstream
-question ("what is in system 2200?") would then have an answer the project
-never gave. When a project wants systems, that is a breakdown decision, not a
-dossier decision.
+**`SYSTEM` came second, and the reason it came second is the interesting
+part.** At first there were three scopes, and the refusal of a fourth was
+deliberate: the breakdown was facilities, areas and subsystems, and there was no
+system level anywhere in the schema — adding one to the ITR would have been the
+platform declaring a hierarchy the project never stated. That refusal was right
+*while the level did not exist*. What it could not do was notice that the
+absence was itself a gap: ADR-004 had already written down that "a project of
+4,000 subsystems has no intermediate level", and the answer it gave — `areas`,
+which is physical — cannot answer a functional question. The firefighting pumps
+sit in one facility and the tank foundation in another; no area contains both.
+
+So the level was declared rather than invented (ADR-004 §7): `systems` now
+exists, every subsystem names one (`subsystems.system_id` is NOT NULL), and the
+dossier compiles for it. The difference matters: a system dossier is an answer
+the project gave, not an answer the platform guessed.
 
 A project scope takes **no** reference, and refuses one. The row already names
 the project; accepting a reference beside it would let two rows claim the same
@@ -128,6 +139,10 @@ document.
 - **The scope is a slice of the plant, not a claim about discipline.** A
   subsystem dossier still assembles the piping evidence that A.5 assembled; it
   gathers nothing new.
+- **`AREA` and `FACILITY` scopes are still missing.** The physical levels are
+  levels the breakdown really has, and the resolver would need one more branch
+  each; they were not what this work was about, and half-tested scopes are how
+  a document starts lying.
 - **Not yet:** receipts (GRN) and material certificates (MTR) inside the
   dossier, which needs piece-level custody — that is **A.5b slice 3b**.
 - **Visibility is RLS, as everywhere:** a scope is only a scope for a session
@@ -138,8 +153,8 @@ document.
 
 | Rule | Enforced in |
 |---|---|
-| `scope_kind` ∈ {TEST_PACK, SUBSYSTEM, PROJECT} | CHECK `itr_snapshots_check`, and `epcc_guard_itr_snapshot()` (`ITR_SCOPE_UNKNOWN`) |
-| a pack/subsystem scope references an existing row of that kind in this project | `epcc_guard_itr_snapshot()` (`ITR_PACK_NOT_FOUND` / `ITR_SUBSYSTEM_NOT_FOUND`) |
+| `scope_kind` ∈ {TEST_PACK, SUBSYSTEM, SYSTEM, PROJECT} | CHECK `itr_snapshots_check`, and `epcc_guard_itr_snapshot()` (`ITR_SCOPE_UNKNOWN`) |
+| a pack/subsystem/system scope references an existing row of that kind in this project | `epcc_guard_itr_snapshot()` (`ITR_PACK_NOT_FOUND` / `ITR_SUBSYSTEM_NOT_FOUND` / `ITR_SYSTEM_NOT_FOUND`) |
 | the project scope takes no reference | `epcc_guard_itr_snapshot()` (`ITR_SCOPE_REF_MISMATCH`) |
 | lines, joints, results and gaps all come from one resolver | `epcc_itr_scope_lines()`, read by both bodies |
 | a pack in `DRAFT` cannot be frozen (pack scope only) | `epcc_guard_itr_snapshot()` (`ITR_PACK_NOT_READY`) |
@@ -155,6 +170,9 @@ The guard is a file — `database/guards/epcc_guard_itr_snapshot.sql` — applie
 
 - a subsystem dossier is about every line of that subsystem and does not reach
   into another one; a project dossier is about all of them;
+- a SYSTEM dossier gathers a subsystem in the plant and one in the utilities
+  block of the same system, reaches into no other system, names both facilities,
+  and reports the gaps of both;
 - the wrapper and the general body produce the same document, byte-for-byte;
 - a subsystem dossier names the pack each result belongs to;
 - a line with no pack is an enumerated gap, and every pack with no PASS is named;

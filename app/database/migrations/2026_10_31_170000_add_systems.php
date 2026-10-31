@@ -116,6 +116,33 @@ return new class extends Migration
         DB::unprepared('ALTER TABLE subsystems ADD COLUMN IF NOT EXISTS system_id uuid');
 
         // ---- backfill ------------------------------------------------------
+        // Runs BEFORE the `unit_code` drop below and reads that column on
+        // purpose: on a database that predates the system level, the best
+        // available declaration of a system IS the process unit the area
+        // carried. Ordering matters here.
+        //
+        // A migration runs with no `epcc.company_id` GUC, and every table below
+        // is under FORCE ROW LEVEL SECURITY — which applies to the table owner
+        // too, so the backfill would read ZERO rows and quietly do nothing.
+        // (The same trap ADR-004 §6 records, hit again.) DDL is transactional
+        // in PostgreSQL, so this is safe, and the restore below puts back BOTH
+        // ENABLE and FORCE: ENABLE alone leaves the owner exempt.
+        // The exact state of each table is READ FIRST and put back afterwards.
+        // Blanket `ENABLE` + `FORCE` would be a silent change of protection
+        // level: `projects` carries RLS with no policy and no FORCE, so the
+        // owning role is deliberately exempt, and forcing it breaks every
+        // seeder and every identity-hatch write that creates a project. (Hit
+        // exactly this way, and the failure is a 42501 on the demo seeder.)
+        $tables = ['systems', 'subsystems', 'facilities', 'areas', 'projects'];
+        $rlsBefore = DB::select(
+            'SELECT relname::text AS name, relrowsecurity AS enabled, relforcerowsecurity AS forced'
+            ." FROM pg_class WHERE relname = ANY(?::text[])",
+            ['{'.implode(',', $tables).'}'],
+        );
+
+        foreach ($tables as $table) {
+            DB::unprepared("ALTER TABLE {$table} DISABLE ROW LEVEL SECURITY");
+        }
         DB::unprepared(<<<'SQL'
 WITH cand AS (
     SELECT DISTINCT s.project_id,
@@ -171,6 +198,14 @@ UPDATE subsystems s
                      WHERE sy.project_id = s.project_id AND sy.code = (SELECT p.code || '-SYSTEMS' FROM projects p WHERE p.id = s.project_id))
  WHERE s.system_id IS NULL;
 SQL);
+
+        // The names come from pg_class, not from a caller: quoted so a name
+        // that ever needs quoting is quoted, and nothing else is interpolated.
+        foreach ($rlsBefore as $was) {
+            $name = '"'.str_replace('"', '""', (string) $was->name).'"';
+            DB::unprepared(sprintf('ALTER TABLE %s %s ROW LEVEL SECURITY', $name, $was->enabled ? 'ENABLE' : 'DISABLE'));
+            DB::unprepared(sprintf('ALTER TABLE %s %sFORCE ROW LEVEL SECURITY', $name, $was->forced ? '' : 'NO '));
+        }
 
         DB::unprepared('ALTER TABLE subsystems ALTER COLUMN system_id SET NOT NULL');
         DB::unprepared(<<<'SQL'

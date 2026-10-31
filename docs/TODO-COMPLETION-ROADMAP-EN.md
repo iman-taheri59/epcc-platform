@@ -497,6 +497,26 @@
         is evidence about ✅; a line with no pack is an enumerated gap ✅; the
         project scope takes no reference ✅; the pack scope still compiles
         exactly what it compiled before ✅.
+- [x] **A.5b ITR compiler — slice 3c (the system level and the SYSTEM
+      dossier)** — ADR-004 amendment: `systems` exists (project-scoped, code
+      unique per project, RLS+FORCE), **every subsystem names its system**
+      (`subsystems.system_id` NOT NULL, `ON DELETE RESTRICT`), and
+      `areas.unit_code` is dropped rather than deprecated. Two parallel trees
+      over the same subsystems — functional (`project → systems → subsystems`)
+      and physical (`project → facilities → areas? → subsystems`) — because
+      "what does it do" and "where is it" are different questions, and the
+      nullable `unit_code` was one column pretending to answer both. The dossier
+      compiles for `SYSTEM` through the same resolver, and names the subsystems
+      and facilities it gathers. `schema_version` 3 → 4. Depends: A.5b slice 3a
+      ✅, A.5 ✅. (M)
+      Acceptance: no subsystem can be created without a system ✅; a system
+        gathers subsystems across two facilities ✅; a system in use cannot be
+        deleted ✅; codes are unique per project and repeatable across projects
+        ✅; a non-participant cannot write a system ✅; a SYSTEM dossier reaches
+        into no other system ✅.
+      Deliberately not built: `AREA` and `FACILITY` dossier scopes — the two
+        physical levels are the obvious next rung of the same resolver, and are
+        not yet written.
 - [ ] **A.5b ITR compiler — slice 3b (receipt/MTR binding into the dossier)** —
       receipts (GRN) and material certificates assembled into the dossier,
       which needs piece-level custody (A.4b). Depends: A.5b slice 3a ✅, A.5 ✅,
