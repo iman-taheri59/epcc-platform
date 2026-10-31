@@ -68,8 +68,10 @@ completeness report enumerates every gap instead of hiding it:
   slice 2 (TODO **A.5b**), where they meet the ADR-057 turnover dossier.
 - **ITP notifications and receipts (GRN) are NOT assembled.** No pack↔
   notification link exists in the schema, and receipt binding needs
-  piece-level custody (A.4b lot/heat pairing). Padding the dossier with
-  unbound data would be the opposite of the completeness discipline.
+  piece-level custody — now DONE as A.4h slice 7 (`component_material_links`,
+  2026-10-31): a component is traced to the custody record it was cut from, and
+  `epcc_joint_material_identity()` gives each joint its parent metal on both
+  sides. What is still open is the assembly itself (A.5b slice 3b).
 - **MTR certificates are not bound to packs** for the same reason; the
   exact-heat reader from slice 1 (`certificatesForHeat`) remains the
   traceability tool until piece→heat links land.

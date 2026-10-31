@@ -86,7 +86,43 @@ Evidence: `docs/evidence/2026-10-23-piping-traceability/`. `http-en.html` / `htt
 
 No full regression, production audit, browser/load test, CI, production migration, deployment, commit or push was performed. The source package is a dependent increment over the existing project, not a full project backup or runnable distribution.
 
-## 6. Next sequence — proposed, not enabled
+## 6. The chain reaches the piece (2026-10-31, ADR-048 A.4b)
+
+This contract traced material that ARRIVED: what heat, from which PO line, under
+which amendment, with whose QC and QA. It did not — and could not — say where that
+material ended up on the plant. `component_material_links` closes that: an
+append-only register tying one **component** (a length of pipe, an elbow, a flange)
+to the custody record it was cut from.
+
+- **Why the component.** A joint joins two pieces, so a joint's parent metal is
+  the material of its two components — which is exactly what a weld map prints
+  side by side. Linking at the joint would store the same fact twice per weld and
+  lose it for flanged joints.
+- **Why a register and not a column.** A spool can honestly be one component of
+  two heats, and a statement about material gets corrected. Rows carry a
+  per-component `sequence`; the effective row is the newest, and the older one
+  stays as the record of what was said before.
+- **Derived, never declared.** Naming a custody record makes the guard read the
+  heat (and the lot, when the chain attests one) from
+  `epcc_piping_effective_receipt()`; a caller who claims a different heat is
+  corrected to the receipt's own claim. With no receipt named, the heat is an
+  `OBSERVED` reading, accepted only with a stated reason — so the dossier always
+  tells "traced to a receipt" from "someone read a stamp".
+- **Two readers.** `epcc_component_effective_material()` answers "what is this
+  piece?"; `epcc_joint_material_identity()` answers "what is this weld made of,
+  on both sides, and with which filler lot?".
+- **Default-deny.** Stating what a piece is made of is a quality claim, so it
+  requires a nomination for `link_component_material` in the results register —
+  the same register that gates recording a weld or binding an MTR.
+
+What it deliberately does **not** do: no quantity accounting. How much of a
+receipt a piece consumed, and whether that overruns what arrived, needs an
+issuance model this project has not declared — and a number that gates nothing
+is worse than no number.
+
+Tests: `tests/Feature/ComponentMaterialLinkTest.php` — 12 tests / 50 assertions.
+
+## 7. Next sequence — proposed, not enabled
 
 1. Preserve exact effective-demand provenance/validity and reconciliation semantics before introducing a demand writer; respect already accepted selection/lifecycle decisions and deferred access boundaries. Read authority needed for a real cross-MTO report requires separate approval.
 2. Design controlled QA → warehouse GRN posting, idempotency, exception boundaries, and legacy coexistence/cutover without altering the accepted preparer/QC/QA separation or inheriting warehouse permission.

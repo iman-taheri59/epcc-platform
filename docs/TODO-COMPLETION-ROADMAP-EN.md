@@ -249,9 +249,12 @@
         accepted: only members the guard would recognise appear in the directory.
       * "Am I nominated?" is answered by `epcc_result_nomination()` itself — the
         screen and the guards cannot disagree about what authority exists.
-      * One register governs all seven actions in its CHECK: record_weld,
-        record_ndt, record_pack_result, register_certificate, sign_off_stage,
-        bind_certificate, reconcile_legacy.
+      * One register governs the actions in its CHECK: record_weld, record_ndt,
+        record_pack_result, register_certificate, sign_off_stage,
+        bind_certificate, reconcile_legacy, sign_itr_snapshot (A.5b slice 2) and
+        link_component_material (A.4h slice 7). Widen it by DISCOVERY — read the
+        live constraint and union into it — never by re-declaring a remembered
+        list: re-declaring silently dropped two actions once (RUNBOOK §33).
       * Tests: `ResultRecorderNominationsHttpTest` 15 tests / 59 assertions green,
         all nominating through HTTP (own company, employer, cross-company refusal,
         empty/foreign nominee, blank reason, unknown action, stale version,
@@ -398,6 +401,45 @@
         enumerated rather than collapsed ✅; every listed snapshot is
         re-verified ✅; DRAFT is never offered a freeze ✅; the PDF route never
         returns an empty document ✅; freezing is idempotent on `request_id` ✅.
+- [x] **A.4h Inspection results — slice 7 (piece-level custody: what a component
+      was cut from)** — the sentence between the two complete worlds. Depends:
+      A.4e slice 1 ✅ (custody attests heat and lot), A.4h slice 6 ✅.
+      (Done — 2026-10-31: migration
+      `app/database/migrations/2026_10_31_180000_add_component_material_links.php`
+      + `ComponentMaterialService`. `component_material_links` is an append-only
+      register tying a PIECE to the receipt it was cut from. Migration
+      `2026_10_31_180000_add_component_material_links.php` also teaches the
+      nomination register the action `link_component_material`.
+      * The link sits on the component, not the joint: a joint joins two pieces,
+        so its parent metal is the material of its two components — which is what
+        a weld map prints side by side.
+      * A register, not a column: a fabricated spool can honestly be one
+        component of two heats, and a correction keeps the earlier statement
+        standing behind a per-component `sequence` (the effective row is newest).
+      * Derived, never declared: naming a custody record makes the guard read the
+        heat and lot from `epcc_piping_effective_receipt()`; a caller's claimed
+        heat is corrected to the receipt's own claim. With no receipt the heat is
+        an OBSERVED reading, accepted only with a stated reason.
+      * Two readers: `epcc_component_effective_material()` (what this piece is)
+        and `epcc_joint_material_identity()` (parent metal on both sides + filler
+        lot).
+      * Tests: `ComponentMaterialLinkTest` 12 tests / 50 assertions green +
+        regression 205 tests / 884 assertions (`GuardDefinitionsTest` 6/159;
+        MtrCustody + MtrBindingHttp + ResultAuthorityAndGating +
+        ComponentModelling + Joint 132/408; PipingGrn + LegacyReconciliation +
+        ItrSignature + this suite 67/317).
+      Acceptance: a traced piece carries the heat the chain attests ✅; the
+        caller's heat is corrected, never trusted ✅; an attested lot is carried
+        to the piece ✅; an unexplained observation is refused ✅; default-deny
+        without a nomination ✅; the same receipt is not attributed twice ✅;
+        append-only with the newer statement as the truth ✅; a joint reports the
+        parent metal on both sides ✅; coverage names the installed heats with no
+        certificate ✅.
+      Declared boundaries: **no quantity accounting** — how much of a receipt a
+        piece consumed needs an issuance model the project has not declared, and
+        a number that gates nothing is worse than no number; the dossier side is
+        still A.5b slice 3b, open; PIPING custody only (legacy `material_lots`
+        reconciliation stays the ADR-047 cutover item).
 - [x] **A.5 ITR compiler — slice 1 (TEST_PACK scope)** — on-demand assembler +
       digest-bound frozen snapshots; explicit completeness report (missing items
       enumerated, never silently omitted) with the existing bilingual renderer.
@@ -565,8 +607,12 @@
         register of who sequenced what, for the same reason.
 - [ ] **A.5b ITR compiler — slice 3b (receipt/MTR binding into the dossier)** —
       receipts (GRN) and material certificates assembled into the dossier,
-      which needs piece-level custody (A.4b). Depends: A.5b slice 3a ✅, A.5 ✅,
-      A.4b, F.1. (M)
+      which needs piece-level custody. Depends: A.5b slice 3a ✅, A.5 ✅,
+      **A.4h slice 7 ✅ (the piece-to-receipt link now exists — this slice reads
+      it: `epcc_joint_material_identity()` gives each joint its parent metal on
+      both sides, and the heat it names is joinable to the certificates bound to
+      it, so the dossier can print evidence about these pieces rather than a
+      list of certificates the project happens to hold)**, F.1. (M)
 - [ ] **A.6 Implement ADR-031: TQ/NCR** — the spec is written (two modes
       IN_SYSTEM/EXTERNAL_REGISTER); it only needs implementation: record, routing (via
       ADR-049 if ready, otherwise a simple authority-gated state transition), disposition,
