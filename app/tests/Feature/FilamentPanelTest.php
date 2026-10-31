@@ -727,7 +727,10 @@ final class FilamentPanelTest extends TestCase
             ->assertSuccessful()
             ->getContent();
 
-        $this->assertMatchesRegularExpression('/Showing\s+1\s+to\s+5/', $html,
+        // Six subsystems since the ADR-004 amendment: the sixth is the
+        // firewater pump house, which exists so the demo can show a system
+        // spanning two facilities. The subject here is the digits.
+        $this->assertMatchesRegularExpression('/Showing\s+1\s+to\s+6/', $html,
             'English pagination picked up Persian digits.');
     }
 
