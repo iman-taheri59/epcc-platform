@@ -150,6 +150,75 @@ final class SystemTest extends TestCase
         $this->assertNotNull($twin->id);
     }
 
+    // -------------------------------------------------------------- sequencing
+
+    public function test_a_system_carries_no_priority_until_one_is_declared(): void
+    {
+        // Null is a state, not an omission: it is a system the commissioning
+        // manager has not placed yet. The platform sorts those last rather than
+        // guessing that they are late.
+        $unsequenced = $this->asPars(fn () => System::create([
+            'project_id' => $this->project->id,
+            'company_id' => $this->pars->id,
+            'code' => 'PH-14-SY-9900',
+            'name_en' => 'Not sequenced yet',
+            'name_fa' => 'هنوز اولویت نگرفته',
+        ]));
+
+        $this->assertNull($unsequenced->startup_priority);
+    }
+
+    public function test_a_system_can_be_sequenced_after_the_fact(): void
+    {
+        // Systemization is explicitly an iterative exercise — Falcon's own
+        // guidelines say it is "definitely not a one-time event" — so the
+        // sequence has to be revisable on a system that already holds work.
+        // RLS is on: the row is only findable for a session that can see the
+        // project, so every read here goes through the tenant context too.
+        $id = $this->asPars(fn () => System::where('project_id', $this->project->id)
+            ->where('code', 'PH-14-SY-5500')->firstOrFail()->id);
+
+        $this->asPars(fn () => System::findOrFail($id)->update(['startup_priority' => 2]));
+
+        $this->assertSame(2, $this->asPars(fn () => System::findOrFail($id)->startup_priority));
+    }
+
+    public function test_a_startup_priority_of_zero_or_less_is_refused(): void
+    {
+        // A zero or a negative would sort ahead of everything a project
+        // actually sequenced, which is a quieter way of lying than a refusal.
+        foreach ([0, -1] as $bad) {
+            try {
+                $this->asPars(fn () => System::create([
+                    'project_id' => $this->project->id,
+                    'company_id' => $this->pars->id,
+                    'code' => 'PH-14-SY-BAD-'.$bad,
+                    'name_en' => 'Refused',
+                    'name_fa' => 'رد شده',
+                    'startup_priority' => $bad,
+                ]));
+                $this->fail('A priority of '.$bad.' was accepted; it should have been refused.');
+            } catch (QueryException $e) {
+                $this->assertStringContainsString('systems_startup_priority_positive', $e->getMessage());
+            }
+        }
+    }
+
+    public function test_the_demo_breakdown_is_sequenced_and_two_systems_share_a_band(): void
+    {
+        // The fixture follows the bands in API RP 1FSC / the Falcon guidelines:
+        // P1 power and safety, P3 utilities, P6 metering and export. Two
+        // systems share P1 and two share P3, so anything that sorts by priority
+        // has to be stable inside a band rather than relying on it being unique.
+        $priorities = $this->tenant->runAs($this->pars->id, fn () => System::where('project_id', $this->project->id)
+            ->orderBy('code')->pluck('startup_priority', 'code')->all(), $this->project->id);
+
+        $this->assertSame([
+            'PH-14-SY-2200' => 3, 'PH-14-SY-3300' => 1, 'PH-14-SY-4400' => 1,
+            'PH-14-SY-5500' => 6, 'PH-14-SY-6600' => 3,
+        ], $priorities);
+    }
+
     // -------------------------------------------------------------------- RLS
 
     public function test_a_company_outside_the_project_sees_no_systems(): void

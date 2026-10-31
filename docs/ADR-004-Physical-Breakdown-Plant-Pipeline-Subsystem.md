@@ -540,3 +540,81 @@ Recorded, not decided, and deliberately not built:
   cross-unit than the operational ones. Nothing in the `systems` table prevents
   them; the naming convention and any future roll-up must simply not assume that
   every system is a process or utility function.
+
+---
+
+## 9. Amendment (2026-10-31) — the start-up priority on a system
+
+**Status: ACCEPTED.** Appended, never edited: §7 stands, and this adds the one
+property the tree did not carry.
+
+### What was missing
+
+§7 gave the project a functional tree. A tree says what belongs to what; it does
+not say what must come *first*, and in this discipline those are different
+deliverables. The prior-art survey in §8 found the distinction stated plainly:
+in **API RP 1FSC** (*Recommended Practice for Facilities Systems Completion
+Planning and Execution*) and in the systemization method, the output of the
+exercise is not the breakdown — it is **the priority sequence in which the
+subsystems and systems must be live** for the plant to reach first oil. The
+Falcon guidelines name the bands their projects use: **P1** power and safety,
+**P2** control, **P3** utilities, **P4** storage and handling, **P5** process,
+**P6** metering and export. Two systems sitting side by side in the tree are not
+equal in the schedule, and a schema that can say "these two are both systems"
+but not "this one must be live before that one" is missing the output of the
+exercise it exists to support.
+
+### The amendment
+
+```
+systems.startup_priority   smallint   NULL   CHECK (startup_priority IS NULL OR startup_priority > 0)
+```
+
+- **Nullable, and that is a state rather than an omission.** A system with no
+  priority is one the commissioning manager has not placed yet. The alternative
+  — defaulting to zero, or to some "unassigned" sentinel — would sort unplaced
+  systems ahead of every system a project actually sequenced, which is a quieter
+  way of lying than admitting the question is open. Unsequenced systems sort
+  last and are still named.
+- **Positive only.** The CHECK refuses `0` and negatives for the same reason.
+- **An integer, never a band label.** The platform stores `1`, not `'P1'`,
+  because what P1 *means* is the project's convention and it is not the same
+  convention everywhere: some projects run P1–P6, others P10–P90, and some
+  sequence by a number that is not a band at all. Storing a number also means
+  two systems can share a band without ambiguity — the fixture has two at P1 and
+  two at P3, which is the ordinary case, not an edge case.
+
+### Why it is not a field that gates nothing
+
+This chapter's standing objection to a new column is that it may record
+something no behaviour reads. The priority is read in three places, all of them
+consequential:
+
+1. **It is carried on the frozen SYSTEM dossier** (`scope.startup_priority`,
+   `schema_version` 5 → 6), for the same reason a subsystem dossier carries its
+   discipline: a handover document that does not say where this system stands in
+   the start-up order leaves operations to guess at it.
+2. **The cross-reference is sequenced.** An `AREA` or `FACILITY` dossier lists
+   the `system_codes` that touch it ordered by start-up priority, not
+   alphabetically. That turns §8.4's AWP cross-reference into an answer to the
+   question the area-side reader actually asks — *what must be live first on my
+   patch?* — instead of a list they have to re-sort themselves. The fixture's
+   process area makes the difference visible: it holds cooling water (P3) and
+   firefighting (P1), so the sequenced list begins with firefighting and the
+   alphabetical one does not.
+3. **The picker lists systems in start-up order**, so the sequence is the reading
+   order on the screen, and each option shows its band (`PH-14-SY-4400 · P1`).
+
+### Deliberately not built
+
+- **A per-subsystem priority.** Both API RP 1FSC and the Falcon guidelines do
+  assign one — in the workshops, each *subsystem* gets its place in the
+  sequence. But a column with no commissioning-planning surface behind it is
+  exactly the "field that gates nothing" this section says no to: nothing today
+  would read it, and a number on a subsystem that no screen shows and no
+  document carries is a promise the platform cannot keep. It belongs to the
+  planning surface, when that exists.
+- **A register of who sequenced what, and when.** Systemization is explicitly
+  iterative — *"definitely not a one-time event"* — so the history will matter
+  eventually. It is not here, because there is no surface to show it and no
+  caller to refuse it.

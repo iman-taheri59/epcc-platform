@@ -35,7 +35,7 @@ ask about it.
 |---|---|---|
 | `TEST_PACK` | the pack's id | one test pack — exactly what A.5 compiled |
 | `SUBSYSTEM` | the subsystem's id | every line of that subsystem, whatever pack they sit in |
-| `SYSTEM` | the system's id | every line of every subsystem serving that system, in any facility |
+| `SYSTEM` | the system's id | every line of every subsystem serving that system, in any facility — and the start-up priority it was sequenced with |
 | `AREA` | the area's id | every line of every subsystem inside that area |
 | `FACILITY` | the facility's id | every line of every subsystem of that facility, **including the ones that name no area** |
 | `PROJECT` | none | every line of the project |
@@ -55,6 +55,17 @@ So the level was declared rather than invented (ADR-004 §7): `systems` now
 exists, every subsystem names one (`subsystems.system_id` is NOT NULL), and the
 dossier compiles for it. The difference matters: a system dossier is an answer
 the project gave, not an answer the platform guessed.
+
+**A system also carries where it stands in the start-up sequence**
+(`systems.startup_priority`, nullable and positive). The breakdown says what
+belongs to what; the sequence says what must be live first, and in this
+discipline those are different deliverables — API RP 1FSC and the systemization
+method both describe the exercise as producing the *order*, not the tree. It is
+recorded on the frozen SYSTEM dossier, and it orders the cross-reference below:
+an area dossier lists the systems touching it by start-up priority rather than
+alphabetically, so the area-side reader gets "what must be live first on my
+patch" instead of a list to re-sort. An unsequenced system has no priority and
+sorts last; the platform does not guess that it is late.
 
 **`AREA` and `FACILITY` came last, and they are the other direction of the same
 cross-reference.** A system dossier names the facilities it spans; an area
@@ -197,7 +208,7 @@ The guard is a file — `database/guards/epcc_guard_itr_snapshot.sql` — applie
 
 ## Tests
 
-`tests/Feature/ItrScopeTest.php`, 36 tests / 138 assertions:
+`tests/Feature/ItrScopeTest.php`, 38 tests / 142 assertions:
 
 - a subsystem dossier is about every line of that subsystem and does not reach
   into another one; a project dossier is about all of them;
@@ -212,6 +223,10 @@ The guard is a file — `database/guards/epcc_guard_itr_snapshot.sql` — applie
   SYSTEMS that reach into it** — the fixture's process area holds the cooling
   water pump set and the firefighting pump house, so its dossier names two
   systems, one of which also has a subsystem in the utilities block;
+- **and it names them in START-UP order, not alphabetical order**: that area's
+  list begins with firefighting (P1) and not with cooling water (P3), which is
+  the difference between a cross-reference and an answer;
+- a SYSTEM dossier carries the priority it was compiled under;
 - a FACILITY dossier gathers the subsystems that name no area, and a facility
   that has no areas at all still has a dossier of all of itself;
 - an area dossier does not reach into another area, and reports the gaps of

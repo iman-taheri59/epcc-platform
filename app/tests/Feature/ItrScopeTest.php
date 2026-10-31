@@ -232,7 +232,8 @@ final class ItrScopeTest extends TestCase
         $this->assertNull($row->test_pack_id);
         // 4 -> 5 when the two physical rungs landed: every grouping level now
         // answers the same shape of question — what it holds, and where it sits.
-        $this->assertSame(5, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
+        // 5 -> 6 when the start-up priority landed on the document.
+        $this->assertSame(6, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
     }
 
     public function test_a_project_dossier_can_be_frozen(): void
@@ -415,7 +416,7 @@ final class ItrScopeTest extends TestCase
         $row = $this->asOwner(fn () => DB::table('itr_snapshots')->where('id', $snapshot['id'])->first());
         $this->assertSame('SYSTEM', (string) $row->scope_kind);
         $this->assertSame($this->systemId('PH-14-SY-4400'), (string) $row->scope_ref);
-        $this->assertSame(5, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
+        $this->assertSame(6, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
     }
 
     public function test_a_system_from_another_project_cannot_be_frozen(): void
@@ -553,7 +554,7 @@ final class ItrScopeTest extends TestCase
             $row = $this->asOwner(fn () => DB::table('itr_snapshots')->where('id', $snapshot['id'])->first());
             $this->assertSame($kind, (string) $row->scope_kind);
             $this->assertNull($row->test_pack_id, 'a '.strtolower($kind).' dossier is not about one pack');
-            $this->assertSame(5, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
+            $this->assertSame(6, json_decode((string) $row->dossier, true, 512, JSON_THROW_ON_ERROR)['schema_version']);
         }
     }
 
@@ -587,8 +588,10 @@ final class ItrScopeTest extends TestCase
             ->assertSee('id="scope-spans"', false)
             ->assertSee('PH-14-SS-4402', false)
             // The cross-reference, printed where the area-based reader will
-            // see it: firefighting reaches into this area from outside it.
-            ->assertSee('Systems: PH-14-SY-2200, PH-14-SY-4400', false);
+            // see it — and in START-UP order, not alphabetical: firefighting
+            // (P1) before cooling water (P3), even though it reaches in from
+            // another facility.
+            ->assertSee('Systems: PH-14-SY-4400, PH-14-SY-2200', false);
 
         $facilityId = $this->facilityId('PH-14-PL-02');
         $this->actingAs($this->owner)->get($this->route(['sel' => 'FAC:'.$facilityId]))
@@ -596,6 +599,35 @@ final class ItrScopeTest extends TestCase
             ->assertSee('value="FAC:'.$facilityId.'"', false)
             ->assertSee('id="scope-spans"', false)
             ->assertSee('PH-14-SS-6601', false);
+    }
+
+    public function test_a_system_dossier_carries_the_priority_it_was_compiled_under(): void
+    {
+        // A handover document that does not say where this system stands in the
+        // start-up order leaves operations to guess at it. Firefighting is P1 in
+        // the fixture: nothing starts before it.
+        $this->lineIn($this->subsystemId('PH-14-SS-4401'), 'PH-14-FF-A');
+
+        $dossier = $this->compile('SYSTEM', $this->systemId('PH-14-SY-4400'));
+
+        $this->assertSame(1, $dossier['scope']['startup_priority']);
+    }
+
+    public function test_an_area_dossier_lists_the_systems_touching_it_in_start_up_order(): void
+    {
+        // The payoff of having both a sequence and a cross-reference. Process
+        // area AR-22 holds the cooling water pump set (P3) and the firefighting
+        // pump house (P1). Alphabetically the list would begin with cooling
+        // water; in start-up order it begins with firefighting, and that is the
+        // order the reader needs — power and safety before utilities, every
+        // time, in every project.
+        $this->lineIn($this->subsystemId('PH-14-SS-2201'), 'PH-14-AR22-A');
+        $this->lineIn($this->subsystemId('PH-14-SS-4402'), 'PH-14-AR22-B');
+
+        $dossier = $this->compile('AREA', $this->areaId('AR-22'));
+
+        $this->assertSame(['PH-14-SY-4400', 'PH-14-SY-2200'], $dossier['scope']['system_codes'],
+            'the systems are listed in the order commissioning needs them, not alphabetically');
     }
 
     // ---------------------------------------------------------------- plumbing

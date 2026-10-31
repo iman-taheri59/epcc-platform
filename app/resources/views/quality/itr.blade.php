@@ -26,7 +26,7 @@
 <label>{{ __('quality_itr.scope') }} <select name="sel" id="scope-select">
 <optgroup label="{{ __('quality_itr.scope_SYSTEM') }}">
 @foreach($systems as $sy)
-<option value="SYS:{{ $sy->id }}" @selected($scopeKind==='SYSTEM' && $scopeRef===$sy->id)>{{ $sy->code }}@if($sy->name_en) · {{ $sy->name_en }}@endif</option>
+<option value="SYS:{{ $sy->id }}" @selected($scopeKind==='SYSTEM' && $scopeRef===$sy->id)>{{ $sy->code }}@if($sy->startup_priority !== null) · P{{ $sy->startup_priority }}@endif @if($sy->name_en) · {{ $sy->name_en }}@endif</option>
 @endforeach
 </optgroup>
 <optgroup label="{{ __('quality_itr.scope_FACILITY') }}">
@@ -81,6 +81,7 @@
 --}}
 @if(in_array($scopeKind, ['SYSTEM','AREA','FACILITY'], true))
 <p id="scope-spans">{{ __('quality_itr.spans') }}: @foreach(($dossier['scope']['subsystem_codes'] ?? []) as $c)<span>{{ $c }}</span>@if(! $loop->last) · @endif @endforeach
+@if(($dossier['scope']['startup_priority'] ?? null) !== null) · {{ __('quality_itr.priority') }}: P{{ $dossier['scope']['startup_priority'] }}@endif
 @if(($dossier['scope']['system_codes'] ?? []) !== []) · {{ __('quality_itr.systems') }}: {{ implode(', ', $dossier['scope']['system_codes']) }}@endif
 @if(($dossier['scope']['area_codes'] ?? []) !== []) · {{ __('quality_itr.areas') }}: {{ implode(', ', $dossier['scope']['area_codes']) }}@endif
 @if(($dossier['scope']['facility_codes'] ?? []) !== []) · {{ __('quality_itr.facilities') }}: {{ implode(', ', $dossier['scope']['facility_codes']) }}@endif

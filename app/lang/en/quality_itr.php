@@ -149,6 +149,7 @@ return [
     // it. Neither is a hierarchy anyone invented: both are levels the
     // breakdown has always declared.
     'scope_AREA' => 'One area',
+    'priority' => 'Start-up priority',
     'scope_FACILITY' => 'One facility',
     'areas' => 'Areas',
     'facilities' => 'Facilities',

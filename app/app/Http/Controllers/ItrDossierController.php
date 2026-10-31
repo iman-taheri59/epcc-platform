@@ -87,8 +87,13 @@ final class ItrDossierController extends Controller
             ->orderBy('code')->limit(200)->get(), $project->id);
         $subsystems = $this->tenant->runAs($actor->company_id, fn () => DB::table('subsystems')
             ->where('project_id', $project->id)->orderBy('code')->limit(200)->get(), $project->id);
+        // Systems are listed in START-UP order, not alphabetical order: the
+        // picker's reading order is then the sequence commissioning needs, and
+        // unsequenced systems (priority null) fall to the end rather than
+        // pretending to be first. Postgres puts NULLs last on ASC by default.
         $systems = $this->tenant->runAs($actor->company_id, fn () => DB::table('systems')
-            ->where('project_id', $project->id)->orderBy('code')->limit(200)->get(), $project->id);
+            ->where('project_id', $project->id)
+            ->orderBy('startup_priority')->orderBy('code')->limit(200)->get(), $project->id);
         $areas = $this->tenant->runAs($actor->company_id, fn () => DB::table('areas')
             ->where('project_id', $project->id)->orderBy('code')->limit(200)->get(), $project->id);
         $facilities = $this->tenant->runAs($actor->company_id, fn () => DB::table('facilities')

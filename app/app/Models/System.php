@@ -27,6 +27,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Every subsystem names a system (NOT NULL). A subsystem that names none is a
  * subsystem nobody can commission, and the system is the unit handover is
  * argued about — which is why the ITR compiles for one.
+ *
+ * A system also carries, optionally, the place it holds in the START-UP
+ * SEQUENCE (`startup_priority`). Null is a state and not an omission: it is a
+ * system the commissioning manager has not placed yet, and it sorts last rather
+ * than being guessed at. The sequence is the output of systemization, not a
+ * property of the tree — two systems side by side in the breakdown are not
+ * equal in the schedule.
  */
 final class System extends Model
 {
@@ -37,6 +44,12 @@ final class System extends Model
     protected $fillable = [
         'project_id', 'company_id',
         'code', 'name_en', 'name_fa',
+        'startup_priority',
+    ];
+
+    /** @var array<string, string> */
+    protected $casts = [
+        'startup_priority' => 'integer',
     ];
 
     public function project(): BelongsTo

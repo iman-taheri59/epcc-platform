@@ -664,19 +664,39 @@ final class AuthSeeder extends Seeder
             return collect();
         }
 
+        /*
+         * The third element is the start-up priority — the output of
+         * systemization, per API RP 1FSC and the Falcon guidelines: P1 power
+         * and safety, P2 control, P3 utilities, P4 storage and handling, P5
+         * process, P6 metering and export. Deliberately uneven, because an even
+         * fixture cannot tell the rules apart: TWO systems share P1, two share
+         * P3, and one sits alone at P6, so a query that sorts by priority has
+         * to be stable inside a band and still has to place a lone system.
+         */
         return collect([
-            'PH-14-SY-2200' => ['Cooling water', 'آب خنک‌کننده'],
-            'PH-14-SY-3300' => ['Electrical power distribution', 'توزیع برق'],
-            'PH-14-SY-5500' => ['Metering and fiscal measurement', 'اندازه‌گیری و فروش'],
-            'PH-14-SY-6600' => ['Condensate and drains', 'میعانات و تخلیه'],
-            'PH-14-SY-4400' => ['Firefighting', 'آتش‌نشانی'],
-        ])->map(fn (array $names, string $code) => $tenant->runAs($pars->id, fn () => \App\Models\System::create([
-            'project_id' => $ph14->id,
-            'company_id' => $pars->id,
-            'code' => $code,
-            'name_en' => $names[0],
-            'name_fa' => $names[1],
-        ]), $ph14->id));
+            'PH-14-SY-2200' => ['Cooling water', 'آب خنک‌کننده', 3],
+            'PH-14-SY-3300' => ['Electrical power distribution', 'توزیع برق', 1],
+            'PH-14-SY-5500' => ['Metering and fiscal measurement', 'اندازه‌گیری و فروش', 6],
+            'PH-14-SY-6600' => ['Condensate and drains', 'میعانات و تخلیه', 3],
+            'PH-14-SY-4400' => ['Firefighting', 'آتش‌نشانی', 1],
+        ])->map(function (array $names, string $code) use ($ph14, $pars, $tenant) {
+            $payload = [
+                'project_id' => $ph14->id,
+                'company_id' => $pars->id,
+                'code' => $code,
+                'name_en' => $names[0],
+                'name_fa' => $names[1],
+            ];
+
+            // The seeder does not get to assume the newest schema: the
+            // forward-migration tests seed at an intermediate migration, where
+            // this column may not exist yet (RUNBOOK §32 item 8).
+            if (\Illuminate\Support\Facades\Schema::hasColumn('systems', 'startup_priority')) {
+                $payload['startup_priority'] = $names[2];
+            }
+
+            return $tenant->runAs($pars->id, fn () => \App\Models\System::create($payload), $ph14->id);
+        });
     }
 
     /**

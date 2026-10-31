@@ -391,7 +391,9 @@ final class PackNotificationGateTest extends TestCase
         // facilities it gathers.
         // 4 -> 5 in slice 3d: every grouping level now also names where it
         // sits, so a system carries its areas and an area its systems.
-        $this->assertSame(5, $dossier['schema_version']);
+        // 5 -> 6 when the system's start-up priority was recorded on the
+        // document.
+        $this->assertSame(6, $dossier['schema_version']);
         $this->assertSame($notice, $dossier['notifications'][0]['notification_id']);
         $this->assertSame('H', $dossier['notifications'][0]['point']);
         $this->assertSame('NOT_SIGNED', $dossier['notifications'][0]['hold_state']);

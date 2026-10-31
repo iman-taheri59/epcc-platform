@@ -542,6 +542,27 @@
         breakdown); a system hierarchy (system → sub-system → sub-sub-system) —
         no project has asked for one and two levels answer every question a
         handover dossier asks today.
+- [x] **ADR-004 amendment — a system carries its start-up priority** — the
+      output of systemization is not the tree, it is the SEQUENCE: API RP 1FSC
+      and the systemization method both describe the exercise as producing the
+      order in which systems must be live (P1 power and safety … P6 metering and
+      export). `systems.startup_priority` is a nullable positive smallint —
+      nullable because an unsequenced system has no declared priority and must
+      not be given one, positive because a zero would sort ahead of everything a
+      project actually sequenced. An integer, never a band label, because what
+      P1 means is the project's convention. Read in three places so it is not a
+      field that gates nothing: carried on the frozen SYSTEM dossier
+      (`schema_version` 5 → 6), the AREA/FACILITY cross-reference lists the
+      systems touching it in start-up order rather than alphabetically, and the
+      picker lists systems in that order. Depends: A.5b slice 3c ✅, A.5 ✅. (S)
+      Acceptance: a system carries no priority until one is declared ✅; it can
+        be re-sequenced after the fact ✅; zero and negatives are refused ✅;
+        the demo breakdown is sequenced with two systems sharing P1 ✅; a SYSTEM
+        dossier records the priority it was compiled under ✅; an area dossier
+        lists its systems in start-up order, not alphabetical ✅.
+      Deliberately not built: a per-subsystem priority — the workshops do assign
+        one, but with no planning surface behind it nothing would read it; and a
+        register of who sequenced what, for the same reason.
 - [ ] **A.5b ITR compiler — slice 3b (receipt/MTR binding into the dossier)** —
       receipts (GRN) and material certificates assembled into the dossier,
       which needs piece-level custody (A.4b). Depends: A.5b slice 3a ✅, A.5 ✅,

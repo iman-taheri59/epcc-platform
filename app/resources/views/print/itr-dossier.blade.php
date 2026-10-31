@@ -109,6 +109,9 @@
         'scope_AREA' => ['fa' => 'یک ناحیه', 'en' => 'One area'],
         'scope_FACILITY' => ['fa' => 'یک واحد', 'en' => 'One facility'],
         'systems' => ['fa' => 'سیستم‌ها', 'en' => 'Systems'],
+        // ADR-004 amendment - the start-up sequence is the output of
+        // systemization, and a handover document records it.
+        'priority' => ['fa' => 'اولویتِ راه‌اندازی', 'en' => 'Start-up priority'],
         'areas' => ['fa' => 'ناحیه‌ها', 'en' => 'Areas'],
         'scope_PROJECT' => ['fa' => 'کلِ پروژه', 'en' => 'The whole project'],
         'pack' => ['fa' => 'بستهٔ آزمون', 'en' => 'Test pack'],
@@ -171,6 +174,8 @@
   @if(in_array($scopeKind, ['SYSTEM','AREA','FACILITY'], true))
     <tr><td class="k">{{ $L('spans') }}</td><td>
       @foreach($scope['subsystem_codes'] ?? [] as $c)<span class="mono">{{ $c }}</span>@if(! $loop->last) · @endif @endforeach
+      @if(($scope['startup_priority'] ?? null) !== null)<br>{{ $L('priority') }}: <span class="mono">P{{ $scope['startup_priority'] }}</span>@endif
+      @if(($scope['startup_priority'] ?? null) !== null)<br>{{ $L('priority') }}: <span class="mono">P{{ $scope['startup_priority'] }}</span>@endif
       @if(($scope['system_codes'] ?? []) !== [])<br>{{ $L('systems') }}: <span class="mono">{{ implode(' · ', $scope['system_codes']) }}</span>@endif
       @if(($scope['area_codes'] ?? []) !== [])<br>{{ $L('areas') }}: <span class="mono">{{ implode(' · ', $scope['area_codes']) }}</span>@endif
       @if(($scope['facility_codes'] ?? []) !== [])<br>{{ $L('facilities') }}: <span class="mono">{{ implode(' · ', $scope['facility_codes']) }}</span>@endif
