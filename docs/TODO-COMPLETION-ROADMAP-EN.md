@@ -475,10 +475,32 @@
         signature chains and never edits ✅; the document's self-description
         follows its signatures ✅; the `kind` still does not claim a
         certificate ✅.
-- [ ] **A.5b ITR compiler — slice 3** — subsystem/system scopes and the
-      full-dossier assembly (meeting ADR-057), and receipt/MTR binding into the
-      dossier (depends: A.4b piece-level custody). Depends: A.5b slice 2 ✅,
-      A.5 ✅, A.4b, F.1. (M)
+- [x] **A.5b ITR compiler — slice 3a (dossier scopes)** — a dossier is compiled
+      for a SCOPE, not only for one pack. `itr_snapshots` gained `scope_kind`
+      (TEST_PACK / SUBSYSTEM / PROJECT) and `scope_ref`, and
+      `epcc_itr_scope_lines()` is the single resolver of "which lines does this
+      dossier mean" — the dossier and the completeness report both read it, so
+      they cannot disagree about what a subsystem dossier is about. A subsystem
+      dossier NAMES the pack every result came from, and the completeness report
+      gained the gap a pack dossier could never see: a line assigned to no test
+      pack has never been tested, and a subsystem dossier silent about it would
+      be the most dangerous kind of green. There is no SYSTEM scope, because
+      there is no system level in the schema and inventing one would be the
+      platform declaring a hierarchy the project never stated; a subsystem has
+      no "ready" declaration either, so the premature-freeze refusal stays a
+      rule of the pack scope. `schema_version` 2 → 3, the pack functions are now
+      thin wrappers over the general body (preview and frozen snapshot still
+      agree byte-for-byte), and the screen offers all three scopes. Depends:
+      A.5b slice 2 ✅, A.5 ✅. (M)
+      Acceptance: one resolver decides all three scopes ✅; a subsystem dossier
+        does not reach into another subsystem ✅; every result names the pack it
+        is evidence about ✅; a line with no pack is an enumerated gap ✅; the
+        project scope takes no reference ✅; the pack scope still compiles
+        exactly what it compiled before ✅.
+- [ ] **A.5b ITR compiler — slice 3b (receipt/MTR binding into the dossier)** —
+      receipts (GRN) and material certificates assembled into the dossier,
+      which needs piece-level custody (A.4b). Depends: A.5b slice 3a ✅, A.5 ✅,
+      A.4b, F.1. (M)
 - [ ] **A.6 Implement ADR-031: TQ/NCR** — the spec is written (two modes
       IN_SYSTEM/EXTERNAL_REGISTER); it only needs implementation: record, routing (via
       ADR-049 if ready, otherwise a simple authority-gated state transition), disposition,
