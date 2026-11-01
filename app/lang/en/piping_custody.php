@@ -9,6 +9,7 @@ return [
     'stale' => 'Responsibilities changed. Reload the register and review the new form before submitting.',
     'unlinked_required' => 'Give a reason for recording without a resolved PO line.',
     'source_unavailable' => 'The source line is unavailable within your original project/source scope.',
+    'release_blocked' => 'This order is held: an inspection has failed and no release note covers it. A release must be recorded before the material can be received.',
     'unit_or_source' => 'Use the exact source unit; a linked entry cannot also have an unlinked reason. No unit conversion.',
     'retry_conflict' => 'This request key was already used with different data. Do not overwrite the record; review it first.',
     'source_line_id' => 'Exact PO line (optional)',

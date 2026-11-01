@@ -18,7 +18,11 @@ use Illuminate\Validation\ValidationException;
 /** ADR-046 physical facts only. Never calls legacy WarehouseService or performs acceptance/GRN. */
 final class PipingCustodyService
 {
-    public function __construct(private readonly TenantContext $tenant, private readonly ProjectArchiveService $archives) {}
+    public function __construct(
+        private readonly TenantContext $tenant,
+        private readonly ProjectArchiveService $archives,
+        private readonly InspectionReleaseNoteService $releases,
+    ) {}
 
     /** Scope the original caller, not the custodian/owner; restore actor GUC on nesting and failure. */
     public function scoped(Project $project, User $actor, callable $fn): mixed
@@ -143,9 +147,16 @@ final class PipingCustodyService
                 } else {
                     $line = DB::table('purchase_order_items as l')->join('purchase_orders as p', 'p.id', '=', 'l.purchase_order_id')
                         ->where('l.id', $data['source_line_id'])->where('p.project_id', $project->id)->where('l.project_id', $project->id)
-                        ->where('p.discipline', 'PIPING')->select('l.unit')->first();
+                        ->where('p.discipline', 'PIPING')->select('l.unit', 'l.purchase_order_id')->first();
                     if (! $line) {
                         $this->fail('source_unavailable');
+                    }
+                    // The release gate (ADR-060). An inspection that failed and
+                    // was never released must not become a custody record: a
+                    // receipt is the moment material becomes usable, and this
+                    // is the last point at which refusing costs nothing.
+                    if ($this->releases->isBlocked($project, $actor, $line->purchase_order_id)) {
+                        $this->fail('release_blocked');
                     }
                     if ($line->unit !== $data['unit'] || $data['unlinked_reason'] !== null) {
                         $this->fail('unit_or_source');
