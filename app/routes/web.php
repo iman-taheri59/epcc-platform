@@ -230,8 +230,8 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::post('/projects/{projectCode}/procurement/order-author-access', [MaterialsController::class, 'configurePurchaseOrderAuthors'])->name('procurement.order-author-access');
     Route::post('/projects/{projectCode}/procurement/order-execution-access', [MaterialsController::class, 'configurePurchaseOrderExecutionAccess'])->name('procurement.order-execution-access');
     Route::post('/projects/{projectCode}/procurement/requisitions', [MaterialsController::class, 'createRequisition'])->name('procurement.requisitions.create');
-    Route::post('/projects/{projectCode}/procurement/inspection-author-access', [MaterialsController::class, 'configureInspectionAuthors'])->name('procurement.inspection-author-access');
-    Route::post('/projects/{projectCode}/procurement/orders/{orderId}/inspections', [MaterialsController::class, 'recordInspection'])->whereUuid('orderId')->name('procurement.orders.inspections.create');
+    Route::post('/projects/{projectCode}/procurement/release-issuer-access', [MaterialsController::class, 'configureReleaseIssuers'])->name('procurement.release-issuer-access');
+    Route::post('/projects/{projectCode}/procurement/orders/{orderId}/lines/{lineId}/release-notes', [MaterialsController::class, 'issueReleaseNote'])->whereUuid('orderId')->whereUuid('lineId')->name('procurement.orders.release-notes.create');
     Route::post('/projects/{projectCode}/procurement/author-access', [MaterialsController::class, 'configureRequisitionAuthors'])->name('procurement.author-access');
     Route::post('/projects/{projectCode}/procurement/requisition', [MaterialsController::class, 'advanceRequisition'])->name('procurement.requisition');
     Route::post('/projects/{projectCode}/procurement/forecast', [MaterialsController::class, 'forecast'])->name('procurement.forecast');

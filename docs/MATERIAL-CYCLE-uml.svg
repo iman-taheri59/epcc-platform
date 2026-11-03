@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2196" height="3078" viewBox="0 0 2196 3078" font-family="DejaVu Sans, Tahoma, Vazirmatn, Segoe UI, Helvetica, Arial, sans-serif">
+<defs>
+<marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#455a64"/></marker>
+<marker id="arrowd" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#8d6e63"/></marker>
+
+</defs>
+<rect width="2196" height="3078" fill="#ffffff"/>
+<text font-size="22" font-weight="700" fill="#1a237e" x="24" y="36">The material cycle — as implemented</text>
+<text font-size="16" font-weight="700" fill="#283593" x="24" y="60">چرخهٔ متریال، همان‌طور که پیاده‌سازی شده</text>
+<text font-size="12" fill="#546e7a" x="24" y="80">EPCC platform · every box is a real table, every arrow a real foreign key (dashed = derived / no direct FK)</text>
+<text font-size="12" fill="#546e7a" x="24" y="96">Generated from the live schema: 123 tables, information_schema columns + foreign keys + CHECK enums + ProcurementState transitions</text>
+<rect x="12" y="106" width="2172" height="154" rx="8" fill="#e8f0fe" opacity="0.28"/>
+<text font-size="13" font-weight="700" fill="#263238" x="22" y="126">1 · Demand intake</text>
+<text font-size="11.5" fill="#37474f" x="22" y="144">ورودی تقاضا</text>
+<text font-size="9.5" fill="#607d8b" x="22" y="162">MTO</text>
+<rect x="12" y="294" width="2172" height="154" rx="8" fill="#e8f0fe" opacity="0.28"/>
+<text font-size="13" font-weight="700" fill="#263238" x="22" y="314">2 · Demand accepted</text>
+<text font-size="11.5" fill="#37474f" x="22" y="332">پذیرش تقاضا</text>
+<text font-size="9.5" fill="#607d8b" x="22" y="350">MTO</text>
+<rect x="12" y="482" width="2172" height="184" rx="8" fill="#e6f4ea" opacity="0.28"/>
+<text font-size="13" font-weight="700" fill="#263238" x="22" y="502">3 · Requisition</text>
+<text font-size="11.5" fill="#37474f" x="22" y="520">درخواست مصالح</text>
+<text font-size="9.5" fill="#607d8b" x="22" y="538">MR</text>
+<rect x="12" y="700" width="2172" height="169" rx="8" fill="#fff4e5" opacity="0.28"/>
+<text font-size="13" font-weight="700" fill="#263238" x="22" y="720">4 · Purchase order</text>
+<text font-size="11.5" fill="#37474f" x="22" y="738">سفارش خرید</text>
+<text font-size="9.5" fill="#607d8b" x="22" y="756">PO</text>
+<rect x="12" y="903" width="2172" height="244" rx="8" fill="#fdecea" opacity="0.28"/>
+<text font-size="13" font-weight="700" fill="#263238" x="22" y="923">5 · Receipt into custody</text>
+<text font-size="11.5" fill="#37474f" x="22" y="941">دریافت به custody</text>
+<text font-size="9.5" fill="#607d8b" x="22" y="959">CUSTODY</text>
+<rect x="12" y="1181" width="2172" height="154" rx="8" fill="#f3e8fd" opacity="0.28"/>
+<text font-size="13" font-weight="700" fill="#263238" x="22" y="1201">6 · Receiving QC / QA</text>
+<text font-size="11.5" fill="#37474f" x="22" y="1219">کنترل کیفیتِ دریافت</text>
+<text font-size="9.5" fill="#607d8b" x="22" y="1237">QC·QA</text>
+<rect x="12" y="1369" width="2172" height="214" rx="8" fill="#e0f7fa" opacity="0.28"/>
+<text font-size="13" font-weight="700" fill="#263238" x="22" y="1389">7 · Goods receipt</text>
+<text font-size="11.5" fill="#37474f" x="22" y="1407">رسید انبار</text>
+<text font-size="9.5" fill="#607d8b" x="22" y="1425">GRN</text>
+<rect x="12" y="1617" width="2172" height="199" rx="8" fill="#e8f5e9" opacity="0.28"/>
+<text font-size="13" font-weight="700" fill="#263238" x="22" y="1637">8 · Stock ledger</text>
+<text font-size="11.5" fill="#37474f" x="22" y="1655">دفتر موجودی</text>
+<text font-size="9.5" fill="#607d8b" x="22" y="1673">STOCK</text>
+<rect x="12" y="1850" width="2172" height="199" rx="8" fill="#fff8e1" opacity="0.28"/>
+<text font-size="13" font-weight="700" fill="#263238" x="22" y="1870">9 · Certificates</text>
+<text font-size="11.5" fill="#37474f" x="22" y="1888">گواهی مصالح</text>
+<text font-size="9.5" fill="#607d8b" x="22" y="1906">MTR</text>
+<rect x="12" y="2083" width="2172" height="229" rx="8" fill="#fce4ec" opacity="0.28"/>
+<text font-size="13" font-weight="700" fill="#263238" x="22" y="2103">10 · Piece-level custody</text>
+<text font-size="11.5" fill="#37474f" x="22" y="2121">custody سطح قطعه</text>
+<text font-size="9.5" fill="#607d8b" x="22" y="2139">A.4b</text>
+<rect x="12" y="2346" width="2172" height="154" rx="8" fill="#ede7f6" opacity="0.28"/>
+<text font-size="13" font-weight="700" fill="#263238" x="22" y="2366">11 · Line, pack, results</text>
+<text font-size="11.5" fill="#37474f" x="22" y="2384">خط، بسته، نتایج</text>
+<text font-size="9.5" fill="#607d8b" x="22" y="2402">ITR</text>
+<rect x="12" y="2534" width="2172" height="169" rx="8" fill="#eceff1" opacity="0.28"/>
+<text font-size="13" font-weight="700" fill="#263238" x="22" y="2554">12 · Legacy warehouse</text>
+<text font-size="11.5" fill="#37474f" x="22" y="2572">انبار قدیمی</text>
+<text font-size="9.5" fill="#607d8b" x="22" y="2590">ADR-047</text>
+<rect x="12" y="2737" width="2172" height="199" rx="8" fill="#f1f8e9" opacity="0.28"/>
+<text font-size="13" font-weight="700" fill="#263238" x="22" y="2757">13 · Catalogue &amp; engineering</text>
+<text font-size="11.5" fill="#37474f" x="22" y="2775">کاتالوگ و مهندسی</text>
+<text font-size="9.5" fill="#607d8b" x="22" y="2793">MASTER</text>
+<rect x="170" y="118" width="300" height="100" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="170" y="118" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="170" y="134" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="178" y="133">mto_documents</text>
+<text font-size="11" fill="#37474f" x="178" y="156">discipline</text>
+<text font-size="11" fill="#37474f" x="178" y="171">document_number</text>
+<text font-size="11" fill="#37474f" x="178" y="186">source_type</text>
+<text font-size="11" fill="#37474f" x="178" y="201">cde_document_id</text>
+<rect x="496" y="118" width="300" height="130" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="496" y="118" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="496" y="134" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="504" y="133">mto_revisions</text>
+<text font-size="11" fill="#37474f" x="504" y="156">revision_code</text>
+<text font-size="11" fill="#37474f" x="504" y="171">state</text>
+<text font-size="11" fill="#37474f" x="504" y="186">source_file_hash</text>
+<text font-size="11" fill="#37474f" x="504" y="201">scope_mode</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="504" y="216">state:</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="504" y="231">DRAFT|UNDER_REVIEW|ACCEPTED|SUPERSEDED|REJECTED</text>
+<rect x="822" y="118" width="300" height="130" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="822" y="118" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="822" y="134" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="830" y="133">mto_staging_rows</text>
+<text font-size="11" fill="#37474f" x="830" y="156">mto_item_no</text>
+<text font-size="11" fill="#37474f" x="830" y="171">raw_description</text>
+<text font-size="11" fill="#37474f" x="830" y="186">raw_quantity</text>
+<text font-size="11" fill="#37474f" x="830" y="201">material_item_id</text>
+<text font-size="11" fill="#37474f" x="830" y="216">validation_state</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="830" y="231">validation: ACCEPTABLE|BLOCKED_*</text>
+<rect x="170" y="306" width="300" height="115" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="170" y="306" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="170" y="322" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="178" y="321">accepted_mto_batches</text>
+<text font-size="11" fill="#37474f" x="178" y="344">document_number</text>
+<text font-size="11" fill="#37474f" x="178" y="359">revision_code</text>
+<text font-size="11" fill="#37474f" x="178" y="374">state</text>
+<text font-size="11" fill="#37474f" x="178" y="389">accepted_at</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="404">state: ACCEPTED</text>
+<rect x="496" y="306" width="300" height="130" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="496" y="306" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="496" y="322" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="504" y="321">accepted_mto_rows</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="504" y="344">«append-only»</text>
+<text font-size="11" fill="#37474f" x="504" y="359">mto_item_no</text>
+<text font-size="11" fill="#37474f" x="504" y="374">material_item_id</text>
+<text font-size="11" fill="#37474f" x="504" y="389">gross_quantity</text>
+<text font-size="11" fill="#37474f" x="504" y="404">canonical_quantity</text>
+<text font-size="11" fill="#37474f" x="504" y="419">material_category</text>
+<rect x="822" y="306" width="300" height="100" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="822" y="306" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="822" y="322" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="830" y="321">mto_acceptance_journal</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="830" y="344">«append-only»</text>
+<text font-size="11" fill="#37474f" x="830" y="359">ordinal</text>
+<text font-size="11" fill="#37474f" x="830" y="374">origin</text>
+<text font-size="11" fill="#37474f" x="830" y="389">selection_state</text>
+<rect x="1148" y="306" width="300" height="100" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="1148" y="306" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="1148" y="322" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="1156" y="321">mto_scope_observations</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="1156" y="344">«append-only»</text>
+<text font-size="11" fill="#37474f" x="1156" y="359">origin</text>
+<text font-size="11" fill="#37474f" x="1156" y="374">admission_state</text>
+<text font-size="11" fill="#37474f" x="1156" y="389">payload_hash</text>
+<rect x="170" y="494" width="300" height="100" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="170" y="494" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="170" y="510" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="178" y="509">mr_author_policies</text>
+<text font-size="11" fill="#37474f" x="178" y="532">version</text>
+<text font-size="11" fill="#37474f" x="178" y="547">selectors</text>
+<text font-size="11" fill="#37474f" x="178" y="562">reason</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="577">nomination</text>
+<rect x="496" y="494" width="300" height="160" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="496" y="494" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="496" y="510" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="504" y="509">material_requisitions</text>
+<text font-size="11" fill="#37474f" x="504" y="532">number</text>
+<text font-size="11" fill="#37474f" x="504" y="547">state</text>
+<text font-size="11" fill="#37474f" x="504" y="562">discipline</text>
+<text font-size="11" fill="#37474f" x="504" y="577">material_category</text>
+<text font-size="11" fill="#37474f" x="504" y="592">raised_by</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="504" y="607"></text>
+<text font-size="10" fill="#00695c" font-style="italic" x="504" y="622">DRAFT→SUBMITTED→TECHNICAL_APPROVED→APPROVED→ORDERED</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="504" y="637">/ REJECTED→DRAFT</text>
+<rect x="822" y="494" width="300" height="115" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="822" y="494" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="822" y="510" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="830" y="509">material_requisition_items</text>
+<text font-size="11" fill="#37474f" x="830" y="532">line_no</text>
+<text font-size="11" fill="#37474f" x="830" y="547">item_code</text>
+<text font-size="11" fill="#37474f" x="830" y="562">quantity</text>
+<text font-size="11" fill="#37474f" x="830" y="577">unit</text>
+<text font-size="11" fill="#37474f" x="830" y="592">material_item_id</text>
+<rect x="170" y="712" width="300" height="145" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="170" y="712" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="170" y="728" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="178" y="727">purchase_orders</text>
+<text font-size="11" fill="#37474f" x="178" y="750">number</text>
+<text font-size="11" fill="#37474f" x="178" y="765">state</text>
+<text font-size="11" fill="#37474f" x="178" y="780">vendor_company_id</text>
+<text font-size="11" fill="#37474f" x="178" y="795">discipline</text>
+<text font-size="11" fill="#37474f" x="178" y="810">material_category</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="825"></text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="840">DRAFT|ISSUED|PARTIALLY_RECEIVED|RECEIVED|CANCELLED</text>
+<rect x="496" y="712" width="300" height="130" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="496" y="712" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="496" y="728" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="504" y="727">purchase_order_items</text>
+<text font-size="11" fill="#37474f" x="504" y="750">line_no</text>
+<text font-size="11" fill="#37474f" x="504" y="765">item_code</text>
+<text font-size="11" fill="#37474f" x="504" y="780">quantity</text>
+<text font-size="11" fill="#37474f" x="504" y="795">unit_price</text>
+<text font-size="11" fill="#37474f" x="504" y="810">material_item_id</text>
+<text font-size="11" fill="#37474f" x="504" y="825">supersedes_id</text>
+<rect x="822" y="712" width="300" height="130" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="822" y="712" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="822" y="728" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="830" y="727">po_execution_decisions</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="830" y="750">«append-only»</text>
+<text font-size="11" fill="#37474f" x="830" y="765">purpose</text>
+<text font-size="11" fill="#37474f" x="830" y="780">sequence</text>
+<text font-size="11" fill="#37474f" x="830" y="795">content_hash</text>
+<text font-size="11" fill="#37474f" x="830" y="810">snapshot</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="830" y="825">purpose: finance|issue</text>
+<rect x="1148" y="712" width="300" height="100" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="1148" y="712" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="1148" y="728" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="1156" y="727">po_pricing_revisions</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="1156" y="750">«append-only»</text>
+<text font-size="11" fill="#37474f" x="1156" y="765">sequence</text>
+<text font-size="11" fill="#37474f" x="1156" y="780">content_hash</text>
+<text font-size="11" fill="#37474f" x="1156" y="795">snapshot</text>
+<rect x="1474" y="712" width="300" height="85" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="1474" y="712" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="1474" y="728" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="1482" y="727">po_mr_allocations</text>
+<text font-size="11" fill="#37474f" x="1482" y="750">quantity</text>
+<text font-size="11" fill="#37474f" x="1482" y="765">approved_quantity</text>
+<text font-size="11" fill="#37474f" x="1482" y="780">issue_decision_id</text>
+<rect x="1800" y="712" width="300" height="70" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="1800" y="712" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="1800" y="728" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="1808" y="727">po_item_allocations</text>
+<text font-size="11" fill="#37474f" x="1808" y="750">quantity</text>
+<text font-size="11" fill="#37474f" x="1808" y="765">subsystem_id</text>
+<rect x="170" y="915" width="300" height="115" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="170" y="915" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="170" y="931" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="178" y="930">piping_receipt_author_policies</text>
+<text font-size="11" fill="#37474f" x="178" y="953">version</text>
+<text font-size="11" fill="#37474f" x="178" y="968">actions</text>
+<text font-size="11" fill="#37474f" x="178" y="983">suspended</text>
+<text font-size="11" fill="#37474f" x="178" y="998">custodian_company_id</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="1013">nomination</text>
+<rect x="496" y="915" width="300" height="100" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="496" y="915" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="496" y="931" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="504" y="930">piping_receipt_nomination_index</text>
+<text font-size="11" fill="#37474f" x="504" y="953">action</text>
+<text font-size="11" fill="#37474f" x="504" y="968">selector</text>
+<text font-size="11" fill="#37474f" x="504" y="983">policy_id</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="504" y="998">derived</text>
+<rect x="822" y="915" width="300" height="220" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="822" y="915" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="822" y="931" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="830" y="930">piping_custody_records</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="830" y="953">«append-only»</text>
+<text font-size="11" fill="#37474f" x="830" y="968">sequence</text>
+<text font-size="11" fill="#37474f" x="830" y="983">heat_ref</text>
+<text font-size="11" fill="#37474f" x="830" y="998">quantity</text>
+<text font-size="11" fill="#37474f" x="830" y="1013">unit</text>
+<text font-size="11" fill="#37474f" x="830" y="1028">location_kind</text>
+<text font-size="11" fill="#37474f" x="830" y="1043">document_status</text>
+<text font-size="11" fill="#37474f" x="830" y="1058">state</text>
+<text font-size="11" fill="#37474f" x="830" y="1073">source_line_id</text>
+<text font-size="11" fill="#37474f" x="830" y="1088">unlinked_reason</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="830" y="1103">location: QUARANTINE|… doc:</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="830" y="1118">MISSING|PRESENT_UNVERIFIED|…</text>
+<rect x="1148" y="915" width="300" height="160" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="1148" y="915" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="1148" y="931" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="1156" y="930">piping_custody_amendments</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="1156" y="953">«append-only»</text>
+<text font-size="11" fill="#37474f" x="1156" y="968">sequence</text>
+<text font-size="11" fill="#37474f" x="1156" y="983">heat_ref</text>
+<text font-size="11" fill="#37474f" x="1156" y="998">lot_ref</text>
+<text font-size="11" fill="#37474f" x="1156" y="1013">source_kind</text>
+<text font-size="11" fill="#37474f" x="1156" y="1028">payload_hash</text>
+<text font-size="11" fill="#37474f" x="1156" y="1043">reason</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="1156" y="1058">source_kind: LINKED|UNRESOLVED</text>
+<rect x="1474" y="915" width="300" height="85" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="1474" y="915" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="1474" y="931" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="1482" y="930">piping_custody_amendment_sources</text>
+<text font-size="11" fill="#37474f" x="1482" y="953">source_line_id</text>
+<text font-size="11" fill="#37474f" x="1482" y="968">source_snapshot</text>
+<text font-size="11" fill="#37474f" x="1482" y="983">source_fingerprint</text>
+<rect x="170" y="1193" width="300" height="130" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="170" y="1193" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="170" y="1209" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="178" y="1208">piping_receiving_reviews</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="178" y="1231">«append-only»</text>
+<text font-size="11" fill="#37474f" x="178" y="1246">sequence</text>
+<text font-size="11" fill="#37474f" x="178" y="1261">observed_result</text>
+<text font-size="11" fill="#37474f" x="178" y="1276">findings</text>
+<text font-size="11" fill="#37474f" x="178" y="1291">custody_fingerprint</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="1306">NO_NONCONFORMITY|NONCONFORMITY|INCOMPLETE</text>
+<rect x="496" y="1193" width="300" height="130" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="496" y="1193" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="496" y="1209" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="504" y="1208">piping_qa_decisions</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="504" y="1231">«append-only»</text>
+<text font-size="11" fill="#37474f" x="504" y="1246">decision</text>
+<text font-size="11" fill="#37474f" x="504" y="1261">source_basis</text>
+<text font-size="11" fill="#37474f" x="504" y="1276">open_conditions</text>
+<text font-size="11" fill="#37474f" x="504" y="1291">declarations</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="504" y="1306">ACCEPTED|HOLD|REJECTED</text>
+<rect x="822" y="1193" width="300" height="85" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="822" y="1193" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="822" y="1209" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="830" y="1208">piping_qa_evidence</text>
+<text font-size="11" fill="#37474f" x="830" y="1231">file_id</text>
+<text font-size="11" fill="#37474f" x="830" y="1246">kind</text>
+<text font-size="11" fill="#37474f" x="830" y="1261">snapshot</text>
+<rect x="1148" y="1193" width="300" height="70" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="1148" y="1193" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="1148" y="1209" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="1156" y="1208">piping_qa_amendment_source_bases</text>
+<text font-size="11" fill="#37474f" x="1156" y="1231">source_line_id</text>
+<text font-size="11" fill="#37474f" x="1156" y="1246">snapshot</text>
+<rect x="170" y="1381" width="300" height="190" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="170" y="1381" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="170" y="1397" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="178" y="1396">piping_grn_records</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="178" y="1419">«append-only»</text>
+<text font-size="11" fill="#37474f" x="178" y="1434">number</text>
+<text font-size="11" fill="#37474f" x="178" y="1449">heat_ref</text>
+<text font-size="11" fill="#37474f" x="178" y="1464">quantity</text>
+<text font-size="11" fill="#37474f" x="178" y="1479">unit</text>
+<text font-size="11" fill="#37474f" x="178" y="1494">state</text>
+<text font-size="11" fill="#37474f" x="178" y="1509">custody_id</text>
+<text font-size="11" fill="#37474f" x="178" y="1524">qa_id</text>
+<text font-size="11" fill="#37474f" x="178" y="1539">review_id</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="1554">state: POSTED</text>
+<rect x="496" y="1381" width="300" height="85" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="496" y="1381" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="496" y="1397" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="504" y="1396">piping_grn_posted_index</text>
+<text font-size="11" fill="#37474f" x="504" y="1419">custody_id</text>
+<text font-size="11" fill="#37474f" x="504" y="1434">grn_id</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="504" y="1449">derived · one GRN per custody</text>
+<rect x="822" y="1381" width="300" height="85" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="822" y="1381" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="822" y="1397" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="830" y="1396">piping_accepted_stock_entries</text>
+<text font-size="11" fill="#37474f" x="830" y="1419">quantity</text>
+<text font-size="11" fill="#37474f" x="830" y="1434">unit</text>
+<text font-size="11" fill="#37474f" x="830" y="1449">custodian_company_id</text>
+<rect x="170" y="1629" width="300" height="175" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="170" y="1629" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="170" y="1645" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="178" y="1644">stock_ledger_entries</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="178" y="1667">«append-only»</text>
+<text font-size="11" fill="#37474f" x="178" y="1682">ordinal</text>
+<text font-size="11" fill="#37474f" x="178" y="1697">kind</text>
+<text font-size="11" fill="#37474f" x="178" y="1712">item_code</text>
+<text font-size="11" fill="#37474f" x="178" y="1727">heat_ref</text>
+<text font-size="11" fill="#37474f" x="178" y="1742">quantity</text>
+<text font-size="11" fill="#37474f" x="178" y="1757">grn_id</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="1772"></text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="1787">RECEIPT|ISSUE|ADJUSTMENT_IN|ADJUSTMENT_OUT|OPENING_COUNT</text>
+<rect x="496" y="1629" width="300" height="55" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="496" y="1629" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="496" y="1645" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="504" y="1644">stock_ledger_clocks</text>
+<text font-size="11" fill="#37474f" x="504" y="1667">last_ordinal</text>
+<rect x="170" y="1862" width="300" height="145" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="170" y="1862" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="170" y="1878" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="178" y="1877">material_certificates</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="178" y="1900">«append-only»</text>
+<text font-size="11" fill="#37474f" x="178" y="1915">certificate_type</text>
+<text font-size="11" fill="#37474f" x="178" y="1930">heat_ref</text>
+<text font-size="11" fill="#37474f" x="178" y="1945">lot_ref</text>
+<text font-size="11" fill="#37474f" x="178" y="1960">certificate_ref</text>
+<text font-size="11" fill="#37474f" x="178" y="1975">issuer_name</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="1990">EN10204_3_1|EN10204_3_2|MILL_MTR|OTHER</text>
+<rect x="496" y="1862" width="300" height="175" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="496" y="1862" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="496" y="1878" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="504" y="1877">material_certificate_bindings</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="504" y="1900">«append-only»</text>
+<text font-size="11" fill="#37474f" x="504" y="1915">binding</text>
+<text font-size="11" fill="#37474f" x="504" y="1930">heat_ref</text>
+<text font-size="11" fill="#37474f" x="504" y="1945">lot_ref</text>
+<text font-size="11" fill="#37474f" x="504" y="1960">custody_id</text>
+<text font-size="11" fill="#37474f" x="504" y="1975">custody_amendment_id</text>
+<text font-size="11" fill="#37474f" x="504" y="1990">unlinked_reason</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="504" y="2005">CUSTODY_HEAT|CUSTODY_LOT_HEAT|UNRESOLVED ·</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="504" y="2020">heat/lot derived</text>
+<rect x="170" y="2095" width="300" height="205" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="170" y="2095" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="170" y="2111" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="178" y="2110">component_material_links</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="178" y="2133">«append-only»</text>
+<text font-size="11" fill="#37474f" x="178" y="2148">component_id</text>
+<text font-size="11" fill="#37474f" x="178" y="2163">custody_id</text>
+<text font-size="11" fill="#37474f" x="178" y="2178">link</text>
+<text font-size="11" fill="#37474f" x="178" y="2193">heat_ref</text>
+<text font-size="11" fill="#37474f" x="178" y="2208">lot_ref</text>
+<text font-size="11" fill="#37474f" x="178" y="2223">sequence</text>
+<text font-size="11" fill="#37474f" x="178" y="2238">unlinked_reason</text>
+<text font-size="11" fill="#37474f" x="178" y="2253">reason</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="2268">CUSTODY_HEAT|CUSTODY_LOT_HEAT|OBSERVED ·</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="2283">heat/lot derived</text>
+<rect x="496" y="2095" width="300" height="130" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="496" y="2095" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="496" y="2111" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="504" y="2110">components</text>
+<text font-size="11" fill="#37474f" x="504" y="2133">template_code</text>
+<text font-size="11" fill="#37474f" x="504" y="2148">sequence</text>
+<text font-size="11" fill="#37474f" x="504" y="2163">nominal_size</text>
+<text font-size="11" fill="#37474f" x="504" y="2178">schedule</text>
+<text font-size="11" fill="#37474f" x="504" y="2193">material_code</text>
+<text font-size="11" fill="#37474f" x="504" y="2208">length_mm</text>
+<rect x="822" y="2095" width="300" height="100" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="822" y="2095" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="822" y="2111" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="830" y="2110">ports</text>
+<text font-size="11" fill="#37474f" x="830" y="2133">component_id</text>
+<text font-size="11" fill="#37474f" x="830" y="2148">role</text>
+<text font-size="11" fill="#37474f" x="830" y="2163">end_type</text>
+<text font-size="11" fill="#37474f" x="830" y="2178">is_connected</text>
+<rect x="1148" y="2095" width="300" height="145" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="1148" y="2095" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="1148" y="2111" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="1156" y="2110">joints</text>
+<text font-size="11" fill="#37474f" x="1156" y="2133">joint_seq</text>
+<text font-size="11" fill="#37474f" x="1156" y="2148">joint_type</text>
+<text font-size="11" fill="#37474f" x="1156" y="2163">state</text>
+<text font-size="11" fill="#37474f" x="1156" y="2178">numbering_policy</text>
+<text font-size="11" fill="#37474f" x="1156" y="2193">port_a_id</text>
+<text font-size="11" fill="#37474f" x="1156" y="2208">port_b_id</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="1156" y="2223">MODELLED→FITTED · CHECK port_a_id &lt; port_b_id</text>
+<rect x="170" y="2358" width="300" height="130" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="170" y="2358" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="170" y="2374" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="178" y="2373">piping_lines</text>
+<text font-size="11" fill="#37474f" x="178" y="2396">line_number</text>
+<text font-size="11" fill="#37474f" x="178" y="2411">nominal_size</text>
+<text font-size="11" fill="#37474f" x="178" y="2426">piping_class_id</text>
+<text font-size="11" fill="#37474f" x="178" y="2441">release_state</text>
+<text font-size="11" fill="#37474f" x="178" y="2456">test_pack_id</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="2471">DRAFT|RELEASED|AFC_CONFIRMED</text>
+<rect x="496" y="2358" width="300" height="100" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="496" y="2358" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="496" y="2374" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="504" y="2373">piping_test_packs</text>
+<text font-size="11" fill="#37474f" x="504" y="2396">code</text>
+<text font-size="11" fill="#37474f" x="504" y="2411">state</text>
+<text font-size="11" fill="#37474f" x="504" y="2426">test_pressure</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="504" y="2441">DRAFT→READY→TESTED→ACCEPTED</text>
+<rect x="822" y="2358" width="300" height="115" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="822" y="2358" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="822" y="2374" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="830" y="2373">joint_weld_records</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="830" y="2396">«append-only»</text>
+<text font-size="11" fill="#37474f" x="830" y="2411">kind</text>
+<text font-size="11" fill="#37474f" x="830" y="2426">welded_by_code</text>
+<text font-size="11" fill="#37474f" x="830" y="2441">weld_process</text>
+<text font-size="11" fill="#37474f" x="830" y="2456">consumable_lot_ref</text>
+<rect x="1148" y="2358" width="300" height="115" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="1148" y="2358" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="1148" y="2374" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="1156" y="2373">joint_ndt_results</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="1156" y="2396">«append-only»</text>
+<text font-size="11" fill="#37474f" x="1156" y="2411">method</text>
+<text font-size="11" fill="#37474f" x="1156" y="2426">result</text>
+<text font-size="11" fill="#37474f" x="1156" y="2441">technique_ref</text>
+<text font-size="11" fill="#37474f" x="1156" y="2456">previous_result_id</text>
+<rect x="170" y="2546" width="300" height="130" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="170" y="2546" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="170" y="2562" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="178" y="2561">material_lots</text>
+<text font-size="11" fill="#37474f" x="178" y="2584">lot_code</text>
+<text font-size="11" fill="#37474f" x="178" y="2599">item_code</text>
+<text font-size="11" fill="#37474f" x="178" y="2614">heat_number</text>
+<text font-size="11" fill="#37474f" x="178" y="2629">inspection_result</text>
+<text font-size="11" fill="#37474f" x="178" y="2644">mtc_document_id</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="2659">legacy world</text>
+<rect x="496" y="2546" width="300" height="115" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="496" y="2546" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="496" y="2562" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="504" y="2561">material_movements</text>
+<text font-size="11" fill="#37474f" x="504" y="2584">type</text>
+<text font-size="11" fill="#37474f" x="504" y="2599">quantity</text>
+<text font-size="11" fill="#37474f" x="504" y="2614">from_location</text>
+<text font-size="11" fill="#37474f" x="504" y="2629">to_location</text>
+<text font-size="11" fill="#37474f" x="504" y="2644">reverses_movement_id</text>
+<rect x="822" y="2546" width="300" height="145" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="822" y="2546" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="822" y="2562" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="830" y="2561">material_legacy_reconciliations</text>
+<text font-size="9.5" font-weight="700" fill="#b71c1c" x="830" y="2584">«append-only»</text>
+<text font-size="11" fill="#37474f" x="830" y="2599">decision</text>
+<text font-size="11" fill="#37474f" x="830" y="2614">lot_id</text>
+<text font-size="11" fill="#37474f" x="830" y="2629">custody_id</text>
+<text font-size="11" fill="#37474f" x="830" y="2644">heat_ref</text>
+<text font-size="11" fill="#37474f" x="830" y="2659">sequence</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="830" y="2674">TAKE_OVER|RETIRE</text>
+<rect x="170" y="2749" width="300" height="175" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="170" y="2749" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="170" y="2765" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="178" y="2764">material_items</text>
+<text font-size="11" fill="#37474f" x="178" y="2787">category</text>
+<text font-size="11" fill="#37474f" x="178" y="2802">commodity_code</text>
+<text font-size="11" fill="#37474f" x="178" y="2817">base_unit</text>
+<text font-size="11" fill="#37474f" x="178" y="2832">material_spec</text>
+<text font-size="11" fill="#37474f" x="178" y="2847">grade</text>
+<text font-size="11" fill="#37474f" x="178" y="2862">status</text>
+<text font-size="11" fill="#37474f" x="178" y="2877">source</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="2892"></text>
+<text font-size="10" fill="#00695c" font-style="italic" x="178" y="2907">PIPE|FITTING|FLANGE|VALVE|GASKET|BOLT_NUT|SPECIALTY|SUPPORT</text>
+<rect x="496" y="2749" width="300" height="130" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="496" y="2749" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="496" y="2765" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="504" y="2764">piping_classes</text>
+<text font-size="11" fill="#37474f" x="504" y="2787">code</text>
+<text font-size="11" fill="#37474f" x="504" y="2802">material</text>
+<text font-size="11" fill="#37474f" x="504" y="2817">pressure_rating</text>
+<text font-size="11" fill="#37474f" x="504" y="2832">state</text>
+<text font-size="11" fill="#37474f" x="504" y="2847">dn_span</text>
+<text font-size="10" fill="#00695c" font-style="italic" x="504" y="2862">PMS</text>
+<rect x="822" y="2749" width="300" height="85" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="822" y="2749" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="822" y="2765" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="830" y="2764">piping_class_rules</text>
+<text font-size="11" fill="#37474f" x="830" y="2787">rule_kind</text>
+<text font-size="11" fill="#37474f" x="830" y="2802">dn_range</text>
+<text font-size="11" fill="#37474f" x="830" y="2817">value</text>
+<rect x="1148" y="2749" width="300" height="100" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="1148" y="2749" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="1148" y="2765" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="1156" y="2764">piping_class_branch_rules</text>
+<text font-size="11" fill="#37474f" x="1156" y="2787">header_range</text>
+<text font-size="11" fill="#37474f" x="1156" y="2802">branch_range</text>
+<text font-size="11" fill="#37474f" x="1156" y="2817">component_type</text>
+<text font-size="11" fill="#37474f" x="1156" y="2832">reinforcement</text>
+<rect x="1474" y="2749" width="300" height="100" rx="6" fill="#ffffff" stroke="#455a64" stroke-width="1.1"/>
+<rect x="1474" y="2749" width="300" height="22" rx="6" fill="#eceff1"/>
+<rect x="1474" y="2765" width="300" height="6" fill="#eceff1"/>
+<text font-size="13" font-weight="700" fill="#1a237e" x="1482" y="2764">material_inspections</text>
+<text font-size="11" fill="#37474f" x="1482" y="2787">number</text>
+<text font-size="11" fill="#37474f" x="1482" y="2802">result</text>
+<text font-size="11" fill="#37474f" x="1482" y="2817">stage</text>
+<text font-size="11" fill="#37474f" x="1482" y="2832">purchase_order_id</text>
+<path d="M796,183 L822,183" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<path d="M972,248 L972,277 L646,277 L646,306" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="809" y="272" text-anchor="middle" fill="#455a64">source_staging_row_id</text>
+<path d="M646,436 L646,465 L972,465 L972,494" fill="none" stroke="#8d6e63" stroke-width="1.1" marker-end="url(#arrowd)" stroke-dasharray="5,4"/>
+<text font-size="9.5" x="809" y="460" text-anchor="middle" fill="#8d6e63">demand → requisition</text>
+<path d="M972,609 L972,660 L646,660 L646,712" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="809" y="655" text-anchor="middle" fill="#455a64">requisition_item_id</text>
+<path d="M646,654 L646,683 L320,683 L320,712" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="483" y="678" text-anchor="middle" fill="#455a64">requisition_id</text>
+<path d="M646,842 L646,862 L1624,862 L1624,797" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<path d="M320,857 L320,877 L972,877 L972,842" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="646" y="872" text-anchor="middle" fill="#455a64">finance → issue</text>
+<path d="M646,842 L646,878 L972,878 L972,915" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="809" y="873" text-anchor="middle" fill="#455a64">source_line_id</text>
+<path d="M1122,1025 L1148,995" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="1135" y="1020" text-anchor="middle" fill="#455a64">custody_id</text>
+<path d="M1448,995 L1474,957" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<path d="M972,1135 L972,1164 L320,1164 L320,1193" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="646" y="1159" text-anchor="middle" fill="#455a64">custody_id</text>
+<path d="M470,1258 L496,1258" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="483" y="1253" text-anchor="middle" fill="#455a64">review_id</text>
+<path d="M646,1323 L646,1352 L320,1352 L320,1381" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="483" y="1347" text-anchor="middle" fill="#455a64">qa_id</text>
+<path d="M972,1135 L972,1157 L2134,1157 L2134,1365 L320,1365 L320,1381" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="1227" y="1360" text-anchor="middle" fill="#455a64">custody_id (1:1)</text>
+<path d="M320,1571 L320,1591 L972,1591 L972,1466" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="646" y="1586" text-anchor="middle" fill="#455a64">grn_id</text>
+<path d="M320,1571 L320,1600 L320,1600 L320,1629" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="320" y="1595" text-anchor="middle" fill="#455a64">grn_id → RECEIPT</text>
+<path d="M646,1862 L646,1840 L2152,1840 L2152,1151 L972,1151 L972,1135" fill="none" stroke="#8d6e63" stroke-width="1.1" marker-end="url(#arrowd)" stroke-dasharray="5,4"/>
+<text font-size="9.5" x="1562" y="1146" text-anchor="middle" fill="#8d6e63">custody_id</text>
+<path d="M470,1934 L496,1949" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="483" y="1929" text-anchor="middle" fill="#455a64">certificate_id</text>
+<path d="M972,1135 L972,1157 L2170,1157 L2170,2079 L320,2079 L320,2095" fill="none" stroke="#8d6e63" stroke-width="1.1" marker-end="url(#arrowd)" stroke-dasharray="5,4"/>
+<text font-size="9.5" x="1245" y="2074" text-anchor="middle" fill="#8d6e63">custody_id — heat DERIVED</text>
+<path d="M470,2197 L496,2160" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="483" y="2192" text-anchor="middle" fill="#455a64">component_id</text>
+<path d="M796,2160 L822,2145" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="809" y="2155" text-anchor="middle" fill="#455a64">component_id</text>
+<path d="M1122,2145 L1148,2167" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="1135" y="2140" text-anchor="middle" fill="#455a64">port_a_id / port_b_id</text>
+<path d="M320,2358 L320,2291 L646,2291 L646,2225" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="483" y="2286" text-anchor="middle" fill="#455a64">piping_line_id</text>
+<path d="M470,2423 L496,2408" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="483" y="2418" text-anchor="middle" fill="#455a64">test_pack_id</text>
+<path d="M1298,2240 L1298,2299 L972,2299 L972,2358" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="1135" y="2294" text-anchor="middle" fill="#455a64">joint_id</text>
+<path d="M1298,2240 L1298,2299 L1298,2299 L1298,2358" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="1298" y="2294" text-anchor="middle" fill="#455a64">joint_id</text>
+<path d="M470,2611 L496,2603" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="483" y="2606" text-anchor="middle" fill="#455a64">lot_id</text>
+<path d="M320,2676 L320,2696 L972,2696 L972,2691" fill="none" stroke="#455a64" stroke-width="1.1" marker-end="url(#arrow)"/>
+<text font-size="9.5" x="646" y="2691" text-anchor="middle" fill="#455a64">lot_id</text>
+<path d="M972,2546 L972,2524 L2188,2524 L2188,1158 L972,1158 L972,1135" fill="none" stroke="#8d6e63" stroke-width="1.1" marker-end="url(#arrowd)" stroke-dasharray="5,4"/>
+<text font-size="9.5" x="1580" y="1153" text-anchor="middle" fill="#8d6e63">custody_id — TAKE_OVER</text>
+<path d="M320,2749 L320,2727 L2134,2727 L2134,2023 L320,2023 L320,2007" fill="none" stroke="#8d6e63" stroke-width="1.1" marker-end="url(#arrowd)" stroke-dasharray="5,4"/>
+<text font-size="9.5" x="1227" y="2018" text-anchor="middle" fill="#8d6e63">material_item_id</text>
+<rect x="12" y="2996" width="2172" height="54" rx="8" fill="#fafafa" stroke="#cfd8dc"/>
+<text font-size="11" fill="#37474f" x="26" y="3012">«append-only» — no UPDATE/DELETE policy exists; a correction is a NEW row, and the newest row (by sequence / ordinal) is the truth.</text>
+<text font-size="11" fill="#37474f" x="26" y="3030">Dashed arrow = derived, or a join that is not a foreign key.  Every table here is RLS + FORCE ROW LEVEL SECURITY, scoped by (project_id, company_id).</text>
+<text font-size="11" fill="#37474f" x="26" y="3046">heat_ref / lot_ref on material_certificate_bindings and component_material_links are DERIVED from the custody chain — a caller never states them.</text>
+</svg>

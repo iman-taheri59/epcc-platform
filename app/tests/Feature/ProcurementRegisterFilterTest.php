@@ -7,11 +7,14 @@ namespace Tests\Feature;
 use App\Models\Company;
 use App\Models\MaterialRequisition;
 use App\Models\Plan;
+use App\Models\ProjectMembership;
+use App\Models\PurchaseOrderItem;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\User;
 use App\Services\MaterialRequisitionAccessService;
 use App\Services\MaterialRequisitionEntryService;
+use App\Services\InspectionReleaseNoteService;
 use App\Services\ProcurementService;
 use App\Services\ProjectArchiveService;
 use App\Services\PurchaseOrderAccessService;
@@ -70,6 +73,12 @@ final class ProcurementRegisterFilterTest extends TestCase
 
         return app($kind === 'mr' ? MaterialRequisitionEntryService::class : PurchaseOrderEntryService::class)->create($this->project, $this->writer, $data);
     }
+
+    private function inspector(): User
+    {
+        return $this->userByEmail('tehrani@pmc.example');
+    }
+
 
     private function url(array $filters = [], string $project = 'PH-14'): string
     {
@@ -295,21 +304,40 @@ final class ProcurementRegisterFilterTest extends TestCase
 
     private function inspectionFixtures(): array
     {
-        return $this->bound(function (): array {
-            $rows = [];
-            for ($i = 1; $i <= 26; $i++) {
-                $rows[] = ['id' => (string) Str::uuid(), 'project_id' => $this->project->id, 'company_id' => $this->writer->company_id,
-                    'purchase_order_id' => $this->pos[0]->id, 'number' => 'PAGE-INSPECTION-'.$i, 'sequence' => 1000,
-                    'result' => 'FAIL', 'stage' => 'WORKS', 'findings_en' => '<script>inspection()</script>', 'findings_fa' => 'یافتهٔ بازرسی',
-                    'inspected_by' => $this->writer->id, 'inspected_at' => now(), 'created_at' => now(), 'updated_at' => now()];
-            }
-            // Read fixtures, not a new human inspection-recording permission or operational receipt test.
-            DB::table('material_inspections')->insert($rows);
-            $ids = array_column($rows, 'id');
-            rsort($ids, SORT_STRING);
+        $service = app(InspectionReleaseNoteService::class);
 
-            return $ids;
-        });
+        // Only the project OWNER's company may write the nomination register,
+        // so the nomination is made there and the releases are signed in the
+        // nominee's own session. That is the real path, not a shortcut: these
+        // fixtures only exist to be read back by the register page.
+        // The line is read INSIDE a tenant session: outside one, RLS returns
+        // nothing and the fixture would look like it has no line at all.
+        $line = app(TenantContext::class)->runAs($this->owner->company_id,
+            fn () => $this->pos[0]->items()->firstOrFail(), $this->project->id);
+
+        app(TenantContext::class)->runAs($this->owner->company_id, function () use ($service): void {
+            $service->configure($this->project, $this->owner, [
+                'selectors' => ['user:'.$this->inspector()->id],
+                'reason' => 'Read fixture: nominate the recorder so the register can be filled.',
+            ]);
+        }, $this->project->id);
+
+        $ids = app(TenantContext::class)->runAs($this->inspector()->company_id, function () use ($service, $line): array {
+            $ids = [];
+            for ($i = 1; $i <= 26; $i++) {
+                $ids[] = $service->issue($this->project, $this->inspector(), $this->pos[0]->id, $line->id, [
+                    'stage' => 'WORKS', 'outcome' => 'NOT_RELEASED',
+                    'findings_en' => '<script>inspection()</script>', 'findings_fa' => 'یافتهٔ بازرسی',
+                    'inspector_user_id' => $this->inspector()->id, 'released_at' => now()->toDateString(),
+                ])->id;
+            }
+
+            // The register page reads newest-first (sequence desc), and the
+            // service numbers each release in turn.
+            return array_reverse($ids);
+        }, $this->project->id);
+
+        return $ids;
     }
 
     public function test_inspection_pages_preserve_all_three_page_parameters_and_independent_results(): void
@@ -362,25 +390,43 @@ final class ProcurementRegisterFilterTest extends TestCase
     {
         $this->inspectionFixtures();
         $other = Project::where('code', 'BB-2')->firstOrFail();
-        app(TenantContext::class)->runAs($this->writer->company_id, fn () => DB::table('material_inspections')->insert([
-            'id' => (string) Str::uuid(), 'project_id' => $other->id, 'company_id' => $this->writer->company_id, 'number' => 'BB2-INSPECTION',
-            'sequence' => 9000, 'result' => 'PASS', 'stage' => 'WORKS', 'inspected_by' => $this->writer->id, 'inspected_at' => now(),
-        ]), $other->id);
+        // A row in ANOTHER project, built the same way as the rest: it exists
+        // to prove such a row never leaks into this project's counts.
+        $other = Project::where('code', 'BB-2')->firstOrFail();
+        $ownerOther = app(TenantContext::class)->runAs($other->owner_company_id,
+            fn () => User::where('is_active', true)->where('company_id', $other->owner_company_id)->firstOrFail(),
+            $other->id);
+        app(TenantContext::class)->runAs($ownerOther->company_id, function () use ($other, $ownerOther): void {
+            $service = app(InspectionReleaseNoteService::class);
+            $service->configure($other, $ownerOther, ['selectors' => ['user:'.$ownerOther->id],
+                'reason' => 'Read fixture: the row under test lives in another project.']);
+            $vendor = Company::where('code', 'VEN-AZAR')->firstOrFail();
+            $po = PurchaseOrder::create(['project_id' => $other->id, 'company_id' => $ownerOther->company_id,
+                'vendor_company_id' => $vendor->id, 'number' => 'BB-2-PO-ISOLATION', 'sequence' => 910, 'state' => 'ISSUED',
+                'title_en' => 'Other project order', 'title_fa' => 'سفارش پروژهٔ دیگر', 'currency' => 'IRR',
+                'total_value' => '10.00', 'promised_date' => '2026-10-01', 'forecast_date' => '2026-10-05']);
+            $line = PurchaseOrderItem::create(['project_id' => $other->id, 'purchase_order_id' => $po->id,
+                'line_no' => 1, 'item_code' => 'BB2-LINE', 'description_en' => 'Other project line',
+                'description_fa' => 'قلمِ پروژهٔ دیگر', 'unit' => 'EA', 'quantity' => '1.000', 'unit_price' => '10.00']);
+            $service->issue($other, $ownerOther, $po->id, $line->id, ['stage' => 'WORKS', 'outcome' => 'RELEASED',
+                'inspector_user_id' => $ownerOther->id, 'released_at' => now()->toDateString()]);
+        }, $other->id);
+
         $this->actingAs($this->userByEmail('mousavi@sahand.example'));
         // Existing policy makes inspections project-participant-visible; do not invent buyer-only hiding.
         $count = app(TenantContext::class)->runAs($this->userByEmail('mousavi@sahand.example')->company_id,
-            fn () => DB::table('material_inspections')->where('project_id', $this->project->id)->count(), $this->project->id);
+            fn () => DB::table('inspection_release_notes')->where('project_id', $this->project->id)->count(), $this->project->id);
         $this->assertSame($count, $this->get($this->url(['inspection_page' => 2]))->assertOk()->viewData('inspections')->total());
         $this->assertSame(26, $count);
         $outside = $this->userByEmail('ahmadi@nigc.example');
-        app(TenantContext::class)->runAs($outside->company_id, fn () => $this->assertSame(0, DB::table('material_inspections')->count()), $this->project->id);
+        app(TenantContext::class)->runAs($outside->company_id, fn () => $this->assertSame(0, DB::table('inspection_release_notes')->count()), $this->project->id);
         $this->actingAs($outside)->get($this->url(['inspection_page' => 2]))->assertNotFound();
         $this->actingAs($this->writer);
         $this->assertSame(1, $this->get($this->url([], 'BB-2'))->assertOk()->viewData('inspections')->total());
         app(ProjectArchiveService::class)->archive($this->project, $this->owner, 'Inspection read-only paging');
         $snapshot = fn () => $this->bound(function (): array {
             $rows = [];
-            foreach (['material_inspections', 'material_requisitions', 'material_requisition_items', 'purchase_orders', 'purchase_order_items', 'po_pricing_revisions', 'po_execution_decisions', 'po_mr_allocations'] as $table) {
+            foreach (['material_requisitions', 'material_requisition_items', 'purchase_orders', 'purchase_order_items', 'po_pricing_revisions', 'po_execution_decisions', 'po_mr_allocations'] as $table) {
                 $rows[$table] = DB::table($table)->orderBy('id')->get()->toJson();
             }
 
@@ -407,7 +453,7 @@ final class ProcurementRegisterFilterTest extends TestCase
         }
         $this->assertCount(1, $page->viewData('inspections'));
         $this->assertFalse($page->viewData('inspections')->first()->relationLoaded('purchaseOrder'));
-        $this->assertCount(1, collect($queries)->filter(fn ($q) => str_contains($q['query'], 'from "material_inspections"') && str_contains($q['query'], 'limit 25 offset 25')));
+        $this->assertCount(1, collect($queries)->filter(fn ($q) => str_contains($q['query'], 'from "inspection_release_notes"') && str_contains($q['query'], 'limit 25 offset 25')));
     }
 
     public function test_number_english_persian_and_independent_queries_search_only_headers(): void

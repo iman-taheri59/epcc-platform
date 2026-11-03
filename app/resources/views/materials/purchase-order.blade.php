@@ -62,11 +62,11 @@
 <td>{{ $num($lot->balance($lot->movements)) }}</td><td>{{ $lot->unit }}</td><td>{{ $lot->inspection_result ? \App\Support\ProcurementState::inspectionLabel($lot->inspection_result)[$lang] : $L('unknown') }}</td></tr>
 @empty<tr><td colspan="7">{{ $L('no_lots') }}</td></tr>@endforelse
 </tbody></table></div>
-@include('materials.inspection-entry')
+@include('materials.release-note')
 <h2>{{ $L('inspections') }}</h2>
 <div class="po-scroll"><table data-tt><thead><tr>@foreach(['number','stage','result','inspector','date','findings'] as $key)<th>{{ $L($key) }}</th>@endforeach</tr></thead><tbody>
-@forelse($order->inspections as $inspection)
-<tr><td>{{ $inspection->number }}</td><td>{{ \App\Support\ProcurementState::stageLabel($inspection->stage)[$lang] }}</td><td>{{ \App\Support\ProcurementState::inspectionLabel($inspection->result)[$lang] }}</td><td>{{ $inspection->recorded_actor_name ?? $inspection->inspector?->name ?? $L('unknown') }}@if($inspection->entry_policy_id)<br><small>{{ __('inspection_entry.policy') }}: <bdi>{{ $inspection->entry_policy_id }}</bdi> · {{ __('inspection_entry.recorded') }}: <bdi>{{ $inspection->created_at }}</bdi></small>@endif</td><td>{{ $date($inspection->inspected_at) }}</td><td>{{ $inspection->findings($lang) ?? '—' }}</td></tr>
+@forelse($order->releaseNotes as $inspection)
+<tr><td>{{ $inspection->number }}</td><td>{{ \App\Support\ProcurementState::stageLabel($inspection->stage)[$lang] }}</td><td>{{ \App\Support\ProcurementState::inspectionLabel($inspection->verdict())[$lang] }}</td><td>{{ $inspection->attributedTo() ?: $L('unknown') }}@if($inspection->issuer_policy_id)<br><small>{{ __('inspection_release_notes.policy') }}: <bdi>{{ $inspection->issuer_policy_id }}</bdi> · {{ __('inspection_release_notes.recorded') }}: <bdi>{{ $inspection->created_at }}</bdi></small>@endif</td><td>{{ $date($inspection->released_at) }}</td><td>{{ $inspection->findings($lang) ?? '—' }}</td></tr>
 @empty<tr><td colspan="6">{{ $L('no_inspections') }}</td></tr>@endforelse
 </tbody></table></div>
 </div></div></body></html>

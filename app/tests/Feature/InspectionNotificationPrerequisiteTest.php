@@ -151,7 +151,7 @@ final class InspectionNotificationPrerequisiteTest extends TestCase
     public function test_recipient_registers_multiple_separate_prerequisites_without_rewriting_issue_or_business_data(): void
     {
         $this->issue();
-        $tables = ['inspection_notifications', 'inspection_notification_cancellations', 'inspection_notification_acknowledgments', 'inspection_notification_draft_history', 'inspection_notification_settings', 'inspection_itp_stages', 'material_inspections', 'purchase_orders', 'material_requisitions', 'material_lots', 'material_movements'];
+        $tables = ['inspection_notifications', 'inspection_notification_cancellations', 'inspection_notification_acknowledgments', 'inspection_notification_draft_history', 'inspection_notification_settings', 'inspection_itp_stages', 'purchase_orders', 'material_requisitions', 'material_lots', 'material_movements'];
         $snapshot = fn () => $this->asWriter(function () use ($tables) {
             $out = [];
             foreach ($tables as $t) {

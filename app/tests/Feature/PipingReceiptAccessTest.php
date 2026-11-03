@@ -83,7 +83,7 @@ final class PipingReceiptAccessTest extends TestCase
     {
         $snapshot = fn () => $this->scoped($this->buyer, function (): array {
             $out = [];
-            foreach (['purchase_orders', 'purchase_order_items', 'material_lots', 'material_movements', 'material_inspections', 'material_requisitions'] as $table) {
+            foreach (['purchase_orders', 'purchase_order_items', 'material_lots', 'material_movements', 'material_requisitions'] as $table) {
                 $out[$table] = DB::table($table)->orderBy('id')->get()->toJson();
             }
 

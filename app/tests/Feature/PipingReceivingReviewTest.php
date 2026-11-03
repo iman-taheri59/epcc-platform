@@ -153,7 +153,7 @@ final class PipingReceivingReviewTest extends TestCase
     {
         $this->configure();
         $id = $this->arrival();
-        $snapshot = fn () => $this->tenant($this->buyer, fn () => [DB::table('material_lots')->orderBy('id')->get()->toJson(), DB::table('material_movements')->orderBy('id')->get()->toJson(), DB::table('purchase_orders')->orderBy('id')->get()->toJson(), DB::table('material_inspections')->orderBy('id')->get()->toJson()]);
+        $snapshot = fn () => $this->tenant($this->buyer, fn () => [DB::table('material_lots')->orderBy('id')->get()->toJson(), DB::table('material_movements')->orderBy('id')->get()->toJson(), DB::table('purchase_orders')->orderBy('id')->get()->toJson(), DB::table('inspection_release_notes')->orderBy('id')->get()->toJson()]);
         $before = $snapshot();
         $receiptBefore = $this->records($this->buyer)->sole();
         foreach (['en', 'fa'] as $lang) {

@@ -10,26 +10,30 @@ use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\User;
-use App\Services\InspectionAccessService;
-use App\Services\InspectionEntryService;
 use App\Services\InspectionReleaseNoteService;
 use App\Services\PipingCustodyService;
 use App\Services\PipingReceiptAccessService;
 use App\Services\PurchaseOrderAccessService;
 use App\Services\PurchaseOrderEntryService;
+use App\Support\ProcurementState;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 /**
- * ADR-060. The release is the verdict an inspection could never carry: an
- * observation says what the inspector saw, a release says what may now happen
- * to the material. These tests exist because a FAIL with nowhere to land is the
- * same as no inspection at all — which is exactly what the platform had.
+ * ADR-060, as amended by the ADR-041 merge.
+ *
+ * One record now carries both the finding and the decision. These tests are the
+ * ones that decide whether the merge kept what mattered: goods that have
+ * already ARRIVED can still be inspected (ON_ARRIVAL), a verdict still reaches
+ * the lot in the vocabulary the warehouse screens speak, and a refusal holds
+ * the order until a release covers it.
  */
 final class InspectionReleaseNoteTest extends TestCase
 {
@@ -57,14 +61,15 @@ final class InspectionReleaseNoteTest extends TestCase
         $this->issuer = $this->userByEmail('tehrani@pmc.example');
         $this->owner = $this->userByEmail('karimi@nioc.example');
 
-        $poPolicy = ['version' => 0, 'selectors' => ['user:'.$this->buyer->id], 'suspend' => false, 'reason' => 'IRN fixture'];
-        app(PurchaseOrderAccessService::class)->configure($this->project, $this->owner, $poPolicy);
+        app(PurchaseOrderAccessService::class)->configure($this->project, $this->owner, [
+            'version' => 0, 'selectors' => ['user:'.$this->buyer->id], 'suspend' => false, 'reason' => 'IRN fixture',
+        ]);
 
         $vendor = $this->bound(fn () => Company::where('code', 'VEN-AZAR')->firstOrFail()->id);
         $this->order = app(PurchaseOrderEntryService::class)->create($this->project, $this->buyer, [
             'title_en' => 'Release note source', 'title_fa' => 'منبع تأییدیهٔ آزادسازی',
             'discipline' => 'PIPING', 'material_category' => 'PIPE', 'vendor_company_id' => $vendor,
-            'lines' => [['item_code' => 'IRL-1', 'description_en' => 'Pipe', 'description_fa' => 'لوله', 'unit' => 'M', 'quantity' => '2.100']],
+            'lines' => [['item_code' => 'IRN-1', 'description_en' => 'Pipe', 'description_fa' => 'لوله', 'unit' => 'M', 'quantity' => '2.100']],
         ]);
         $this->line = $this->bound(fn () => PurchaseOrderItem::where('purchase_order_id', $this->order->id)->firstOrFail());
     }
@@ -82,40 +87,11 @@ final class InspectionReleaseNoteTest extends TestCase
         ]);
     }
 
-    private bool $authorNominated = false;
-
-    /** Once: the inspection register refuses to re-configure on a stale version. */
-    private function nominateInspectionAuthor(): void
-    {
-        if ($this->authorNominated) {
-            return;
-        }
-
-        app(InspectionAccessService::class)->configure($this->project, $this->owner, [
-            'version' => 0, 'selectors' => ['user:'.$this->issuer->id], 'suspend' => false,
-            'reason' => 'Independent inspection fixture',
-        ]);
-        $this->authorNominated = true;
-    }
-
-    /** @param  array<string, mixed>  $overrides */
-    private function inspection(array $overrides = []): mixed
-    {
-        $this->nominateInspectionAuthor();
-
-        return app(InspectionEntryService::class)->create($this->project, $this->issuer, $this->order->id, array_merge([
-            'purchase_order_id' => $this->order->id, 'result' => 'FAIL', 'stage' => 'PRE_SHIPMENT',
-            'inspection_date' => '2026-11-01',
-            'findings_en' => 'Wall thickness below the specified minimum on two lengths.',
-            'findings_fa' => 'ضخامتِ دیواره در دو شاخه کمتر از حدِ مقرر است.',
-        ], $overrides));
-    }
-
     /** @param  array<string, mixed>  $overrides */
     private function release(array $overrides = []): InspectionReleaseNote
     {
         return app(InspectionReleaseNoteService::class)->issue($this->project, $this->issuer, $this->order->id, $this->line->id, array_merge([
-            'stage' => 'PRE_SHIPMENT', 'outcome' => 'RELEASED', 'released_at' => '2026-11-01',
+            'stage' => 'PRE_SHIPMENT', 'outcome' => 'RELEASED', 'released_at' => '2026-11-02',
             'inspector_user_id' => $this->issuer->id,
         ], $overrides));
     }
@@ -130,29 +106,56 @@ final class InspectionReleaseNoteTest extends TestCase
         return $this->bound(fn () => DB::table('inspection_release_notes')->orderBy('sequence')->get()->all());
     }
 
+    private function nominateCustody(): void
+    {
+        app(PipingReceiptAccessService::class)->configure($this->project, $this->owner, [
+            'version' => 0, 'suspend' => false, 'reason' => 'IRN gate fixture',
+            'custodian_company_id' => $this->buyer->company_id,
+            'actions' => [
+                'custody_mrr' => ['user:'.$this->buyer->id],
+                'receiving_qc' => ['user:'.$this->issuer->id],
+                'acceptance_qa' => ['user:'.$this->owner->id],
+                'post_grn' => ['user:'.$this->buyer->id],
+            ],
+        ]);
+    }
+
+    /** A receipt tied to a purchase order line, the way a real one is. */
+    private function receive(): string
+    {
+        return app(PipingCustodyService::class)->create($this->project, $this->buyer, [
+            'expected_policy_id' => app(PipingCustodyService::class)->policyId($this->project, $this->buyer, 'custody_mrr'),
+            'request_id' => (string) Str::uuid(),
+            'source_line_id' => $this->line->id,
+            'unlinked_reason' => null,
+            'shipment_ref' => 'IRN-GATE', 'package_ref' => null,
+            'received_at' => '2026-11-02T08:00:00+03:30',
+            'observed_description' => 'Pipe received against the order line',
+            'quantity' => '1.000', 'unit' => 'M', 'heat_ref' => 'H-IRN-1',
+            'location_kind' => 'QUARANTINE', 'location_ref' => 'Bay Q',
+            'document_status' => 'MISSING', 'notes' => null,
+        ]);
+    }
+
     public function test_release_is_refused_without_nomination(): void
     {
-        $this->expectException(ValidationException::class);
-
         try {
             $this->release();
+            $this->fail('An un-nominated release was accepted.');
         } catch (ValidationException $e) {
             $this->assertSame('IRN_NOT_NOMINATED', $e->validator->errors()->first('release'));
-
-            throw $e;
         }
     }
 
-    public function test_numbering_is_project_scoped_and_carries_its_own_series(): void
+    public function test_numbering_carries_the_irn_series_the_owner_uses(): void
     {
         $this->nominateIssuer();
 
         $first = $this->release();
         $second = $this->release(['outcome' => 'RELEASED_WITH_HOLDS', 'holds_note_en' => 'MTC to follow within seven days.']);
 
-        // -IRL-, because -IRN- already belongs to inspection OBSERVATIONS.
-        $this->assertSame('PH-14-IRL-0001', $first->number);
-        $this->assertSame('PH-14-IRL-0002', $second->number);
+        $this->assertSame('PH-14-IRN-0001', $first->number);
+        $this->assertSame('PH-14-IRN-0002', $second->number);
         $this->assertSame([1, 2], array_map(fn ($r) => (int) $r->sequence, $this->notes()));
     }
 
@@ -166,22 +169,22 @@ final class InspectionReleaseNoteTest extends TestCase
         $this->assertSame($this->line->id, $note->purchase_order_item_id);
     }
 
-    public function test_a_failed_inspection_blocks_the_order_and_a_release_clears_it(): void
+    public function test_a_refusal_blocks_the_order_and_a_later_release_clears_it(): void
     {
         $this->nominateIssuer();
         $this->assertSame('NOT_REQUIRED', $this->statusFor());
 
-        $inspection = $this->inspection();
+        $this->release(['outcome' => 'NOT_RELEASED', 'findings_en' => 'Wall thickness below the specified minimum on two lengths.']);
         $this->assertSame('BLOCKED', $this->statusFor());
 
-        $this->release(['source_inspection_id' => $inspection->id]);
+        $this->release(['outcome' => 'RELEASED']);
         $this->assertSame('RELEASED', $this->statusFor());
     }
 
     public function test_the_gate_refuses_receipt_while_blocked(): void
     {
         $this->nominateIssuer();
-        $this->inspection();
+        $this->release(['outcome' => 'NOT_RELEASED', 'findings_fa' => 'ضخامتِ دیواره کمتر از حدِ مقرر است.']);
 
         $this->expectException(ValidationException::class);
 
@@ -189,39 +192,49 @@ final class InspectionReleaseNoteTest extends TestCase
             ->assertReceivable($this->project, $this->issuer, $this->order->id, 'en');
     }
 
-    public function test_a_passed_or_conditional_inspection_does_not_block(): void
+    public function test_a_clean_or_conditional_release_does_not_block(): void
     {
         $this->nominateIssuer();
-        $this->inspection(['result' => 'PASS']);
-        $this->inspection(['result' => 'CONDITIONAL']);
+        $this->release(['outcome' => 'RELEASED']);
+        $this->release(['outcome' => 'RELEASED_WITH_HOLDS', 'holds_note_en' => 'MTC to follow.']);
 
-        // Only a failure holds material. Absence of inspection and a verdict
-        // short of failure are planning matters, not quality holds.
-        $this->assertSame('NOT_REQUIRED', $this->statusFor());
-    }
-
-    public function test_a_refusal_blocks_and_a_later_release_supersedes_it(): void
-    {
-        $this->nominateIssuer();
-        $inspection = $this->inspection();
-
-        $this->release(['outcome' => 'NOT_RELEASED', 'source_inspection_id' => $inspection->id]);
-        $this->assertSame('BLOCKED', $this->statusFor());
-
-        $this->release(['outcome' => 'RELEASED', 'source_inspection_id' => $inspection->id]);
+        // Only a refusal holds material. A hold travels with the material; it
+        // does not stop it, and disposing of it belongs to TQ/NCR (ADR-031).
         $this->assertSame('RELEASED', $this->statusFor());
     }
 
-    public function test_a_refusal_must_name_the_inspection_it_refuses(): void
+    public function test_anything_other_than_a_clean_release_must_state_findings(): void
     {
         $this->nominateIssuer();
 
         try {
             $this->release(['outcome' => 'NOT_RELEASED']);
-            $this->fail('A refusal without an inspection was accepted.');
+            $this->fail('A refusal with no stated findings was accepted.');
         } catch (ValidationException $e) {
-            $this->assertSame('IRN_REFUSAL_WITHOUT_INSPECTION', $e->validator->errors()->first('release'));
+            $this->assertSame(__('inspection_release_notes.findings_required'), $e->validator->errors()->first('release'));
         }
+    }
+
+    public function test_the_guard_refuses_a_silent_refusal_even_bypassing_the_service(): void
+    {
+        $this->nominateIssuer();
+
+        // Defence in depth: the service is not the only thing standing between
+        // a silent refusal and a vendor who cannot act on it.
+        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectExceptionMessageMatches('/IRN_FINDINGS_REQUIRED/');
+
+        $this->bound(function (): void {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$this->issuer->id]);
+            DB::table('inspection_release_notes')->insert([
+            'id' => (string) Str::uuid(), 'project_id' => $this->project->id,
+            'company_id' => $this->issuer->company_id, 'purchase_order_id' => $this->order->id,
+            'purchase_order_item_id' => $this->line->id, 'number' => 'BYPASS', 'sequence' => 500,
+            'stage' => 'PRE_SHIPMENT', 'outcome' => 'NOT_RELEASED',
+            'inspector_user_id' => $this->issuer->id,
+            'released_at' => now(), 'issued_by' => $this->issuer->id, 'created_at' => now(),
+        ]);
+        });
     }
 
     public function test_a_release_with_holds_must_state_them(): void
@@ -229,7 +242,7 @@ final class InspectionReleaseNoteTest extends TestCase
         $this->nominateIssuer();
 
         try {
-            $this->release(['outcome' => 'RELEASED_WITH_HOLDS']);
+            $this->release(['outcome' => 'RELEASED_WITH_HOLDS', 'findings_en' => 'Two lengths short.']);
             $this->fail('A release with unstated holds was accepted.');
         } catch (ValidationException $e) {
             $this->assertSame('IRN_HOLDS_UNSTATED', $e->validator->errors()->first('release'));
@@ -254,11 +267,42 @@ final class InspectionReleaseNoteTest extends TestCase
         $firm = $this->bound(fn () => Company::where('code', 'VEN-AZAR')->firstOrFail()->id);
 
         // The inspector is a person at a firm who will never hold an account.
-        $note = $this->release(['inspector_user_id' => null, 'inspector_name' => 'M. Sadeghi', 'inspector_company_id' => $firm]);
+        $note = $this->release([
+            'inspector_user_id' => null, 'inspector_name' => 'M. Sadeghi', 'inspector_company_id' => $firm,
+        ]);
 
         $this->assertNull($note->inspector_user_id);
         $this->assertSame('M. Sadeghi', $note->inspector_name);
         $this->assertTrue($note->releases());
+    }
+
+    public function test_goods_that_have_already_arrived_can_still_be_inspected(): void
+    {
+        $this->nominateIssuer();
+
+        // The capability the merge had to preserve: ADR-041's ON_ARRIVAL stage
+        // is how received goods get inspected. Losing it would have removed
+        // inspection of received material altogether.
+        $note = $this->release(['stage' => 'ON_ARRIVAL', 'outcome' => 'RELEASED']);
+        $this->assertSame('ON_ARRIVAL', $note->stage);
+
+        $works = $this->release(['stage' => 'WORKS', 'outcome' => 'RELEASED']);
+        $this->assertSame('WORKS', $works->stage);
+    }
+
+    public function test_the_lot_verdict_keeps_the_vocabulary_the_warehouse_screens_speak(): void
+    {
+        $this->nominateIssuer();
+
+        // material_lots.inspection_result feeds a live warehouse screen and
+        // uninspectedLots(). Those were built around PASS/CONDITIONAL/FAIL, so
+        // the merged record answers in that vocabulary rather than making every
+        // screen learn a new one.
+        $this->assertSame(ProcurementState::INSPECTION_PASS, $this->release(['outcome' => 'RELEASED'])->verdict());
+        $this->assertSame(ProcurementState::INSPECTION_CONDITIONAL,
+            $this->release(['outcome' => 'RELEASED_WITH_HOLDS', 'holds_note_en' => 'MTC to follow.'])->verdict());
+        $this->assertSame(ProcurementState::INSPECTION_FAIL,
+            $this->release(['outcome' => 'NOT_RELEASED', 'findings_en' => 'Damaged threading.'])->verdict());
     }
 
     public function test_a_release_cannot_be_written_against_a_line_the_caller_cannot_see(): void
@@ -267,9 +311,7 @@ final class InspectionReleaseNoteTest extends TestCase
         $this->release();
 
         // Rejected at the model layer, under RLS, before the guard is reached.
-        // The guard's IRN_LINE_NOT_FOUND is the backstop for a caller who got
-        // past it; the point is that neither layer lets it through.
-        $this->expectException(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+        $this->expectException(ModelNotFoundException::class);
 
         app(InspectionReleaseNoteService::class)->issue($this->project, $this->issuer, $this->order->id, '00000000-0000-0000-0000-000000000000', [
             'stage' => 'PRE_SHIPMENT', 'outcome' => 'RELEASED', 'inspector_user_id' => $this->issuer->id,
@@ -297,68 +339,70 @@ final class InspectionReleaseNoteTest extends TestCase
         $this->assertSame([1, 2], array_map('intval', $versions));
     }
 
+    public function test_withdrawing_the_nomination_takes_release_authority_away(): void
+    {
+        $this->nominateIssuer();
+        $this->assertTrue(app(InspectionReleaseNoteService::class)->allows($this->project, $this->issuer));
+
+        // An empty list is a suspension, not an error: authority is
+        // default-deny, so an owner must be able to take it back.
+        $this->nominateIssuer([]);
+        $this->assertFalse(app(InspectionReleaseNoteService::class)->allows($this->project, $this->issuer));
+    }
+
     public function test_a_non_owner_cannot_nominate_issuers(): void
     {
-        $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
+        $this->expectException(HttpException::class);
 
         app(InspectionReleaseNoteService::class)->configure($this->project, $this->buyer, [
             'selectors' => ['user:'.$this->issuer->id], 'reason' => 'Not mine to nominate',
         ]);
     }
 
-    private function nominateCustody(): void
-    {
-        app(PipingReceiptAccessService::class)->configure($this->project, $this->owner, [
-            'version' => 0, 'suspend' => false, 'reason' => 'IRN gate fixture',
-            'custodian_company_id' => $this->buyer->company_id,
-            'actions' => [
-                'custody_mrr' => ['user:'.$this->buyer->id],
-                'receiving_qc' => ['user:'.$this->issuer->id],
-                'acceptance_qa' => ['user:'.$this->owner->id],
-                'post_grn' => ['user:'.$this->buyer->id],
-            ],
-        ]);
-    }
-
-    /** A receipt tied to a purchase order line, the way a real one is. */
-    private function receive(): string
-    {
-        return app(PipingCustodyService::class)->create($this->project, $this->buyer, [
-            'expected_policy_id' => app(PipingCustodyService::class)->policyId($this->project, $this->buyer, 'custody_mrr'),
-            'request_id' => (string) Str::uuid(),
-            'source_line_id' => $this->line->id,
-            'unlinked_reason' => null,
-            'shipment_ref' => 'IRN-GATE', 'package_ref' => null,
-            'received_at' => '2026-11-01T08:00:00+03:30',
-            'observed_description' => 'Pipe received against the order line',
-            'quantity' => '1.000', 'unit' => 'M', 'heat_ref' => 'H-IRN-1',
-            'location_kind' => 'QUARANTINE', 'location_ref' => 'Bay Q',
-            'document_status' => 'MISSING', 'notes' => null,
-        ]);
-    }
-
-    public function test_a_failed_inspection_blocks_physical_receipt(): void
+    public function test_a_refusal_blocks_physical_receipt(): void
     {
         $this->nominateCustody();
         $this->nominateIssuer();
-        $this->inspection();
+        $this->release(['outcome' => 'NOT_RELEASED', 'findings_en' => 'Wall thickness below the minimum.']);
 
         try {
             $this->receive();
-            $this->fail('Material whose inspection failed was received.');
+            $this->fail('Material that was refused release was received.');
         } catch (ValidationException $e) {
             $this->assertStringContainsString('held', $e->errors()['receipt'][0]);
         }
     }
 
-    public function test_the_receipt_proceeds_once_a_release_covers_the_failure(): void
+    public function test_the_receipt_proceeds_once_a_release_covers_the_refusal(): void
     {
         $this->nominateCustody();
         $this->nominateIssuer();
-        $inspection = $this->inspection();
 
-        $this->release(['source_inspection_id' => $inspection->id]);
+        $this->release(['outcome' => 'NOT_RELEASED', 'findings_en' => 'Wall thickness below the minimum.']);
+        $this->release(['outcome' => 'RELEASED']);
 
         $this->assertNotSame('', $this->receive());
+    }
+
+    public function test_a_second_release_on_one_line_does_not_release_another(): void
+    {
+        $this->nominateIssuer();
+
+        $second = $this->bound(fn () => PurchaseOrderItem::create([
+            'project_id' => $this->project->id, 'purchase_order_id' => $this->order->id,
+            'line_no' => 2, 'item_code' => 'IRN-2', 'description_en' => 'Gasket', 'description_fa' => 'واشر',
+            'unit' => 'EA', 'quantity' => '4.000',
+        ]));
+
+        $this->release(['outcome' => 'RELEASED']);
+        $this->assertSame('RELEASED', $this->statusFor());
+
+        // The gate is per line: releasing the pipe says nothing about the gasket.
+        app(InspectionReleaseNoteService::class)->issue($this->project, $this->issuer, $this->order->id, $second->id, [
+            'stage' => 'PRE_SHIPMENT', 'outcome' => 'NOT_RELEASED',
+            'findings_en' => 'Wrong material grade.', 'inspector_user_id' => $this->issuer->id,
+        ]);
+
+        $this->assertSame('BLOCKED', $this->statusFor());
     }
 }

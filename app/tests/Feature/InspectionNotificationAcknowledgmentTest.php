@@ -199,7 +199,7 @@ final class InspectionNotificationAcknowledgmentTest extends TestCase
     public function test_explicit_company_acknowledgment_is_not_a_read_tracker_and_does_not_mutate_issued_content_or_business_records(): void
     {
         $this->issue();
-        $tables = ['inspection_notifications', 'inspection_notification_cancellations', 'inspection_notification_draft_history', 'inspection_notification_settings', 'inspection_itp_stages', 'material_inspections', 'purchase_orders', 'material_requisitions', 'material_lots', 'material_movements'];
+        $tables = ['inspection_notifications', 'inspection_notification_cancellations', 'inspection_notification_draft_history', 'inspection_notification_settings', 'inspection_itp_stages', 'purchase_orders', 'material_requisitions', 'material_lots', 'material_movements'];
         $snapshot = fn () => $this->asWriter(function () use ($tables) {
             $out = [];
             foreach ($tables as $table) {

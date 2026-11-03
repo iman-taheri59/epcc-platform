@@ -135,7 +135,7 @@ final class InspectionNotificationTest extends TestCase
     {
         return $this->asWriter(function () {
             $out = [];
-            foreach (['purchase_orders', 'purchase_order_items', 'material_requisitions', 'material_requisition_items', 'material_inspections', 'material_lots', 'material_movements', 'po_execution_decisions', 'po_mr_allocations', 'po_pricing_revisions'] as $table) {
+            foreach (['purchase_orders', 'purchase_order_items', 'material_requisitions', 'material_requisition_items', 'material_lots', 'material_movements', 'po_execution_decisions', 'po_mr_allocations', 'po_pricing_revisions'] as $table) {
                 $out[$table] = DB::table($table)->orderBy('id')->get()->toJson();
             }
 
@@ -386,8 +386,9 @@ final class InspectionNotificationTest extends TestCase
 
     public function test_forward_upgrade_on_populated_archived_project_creates_no_implicit_main_or_grants(): void
     {
-        $inspection = app(TenantContext::class)->runAs($this->recipient->company_id, fn () => app(WarehouseService::class)->inspect($this->project, $this->recipient, 'PASS', 'WORKS'), $this->project->id);
-        $before = $this->asWriter(fn () => DB::table('material_inspections')->where('id', $inspection->id)->first());
+        // A forward upgrade must create no implicit rows: the merged
+        // inspection register is empty before and must stay empty after.
+        $before = $this->asWriter(fn () => DB::table('inspection_release_notes')->count());
         app(ProjectArchiveService::class)->archive($this->project, $this->owner, 'Upgrade fixture');
         // A.4d hung two dependents off these tables: the stage sign-off table and the
         // additive stage-read policy both reference inspection_notifications. A.5b
@@ -405,7 +406,7 @@ final class InspectionNotificationTest extends TestCase
         foreach (['inspection_notifications', 'inspection_itp_stages', 'inspection_notification_settings'] as $table) {
             $this->assertSame(0, $this->asWriter(fn () => DB::table($table)->count()));
         }
-        $this->assertEquals($before, $this->asWriter(fn () => DB::table('material_inspections')->where('id', $inspection->id)->first()));
+        $this->assertSame($before, $this->asWriter(fn () => DB::table('inspection_release_notes')->count()));
     }
 
     public function test_optional_po_binds_only_visible_same_project_same_discipline_source_without_copying_commercial_data(): void

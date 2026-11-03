@@ -77,6 +77,41 @@ final class InspectionReleaseNoteService
     }
 
     /**
+     * Everything the configuration screen needs. Candidate list is read inside
+     * the tenant scope: outside it, RLS returns nobody and every selector looks
+     * invalid.
+     *
+     * @return array<string, mixed>
+     */
+    public function dashboard(Project $project, User $actor): array
+    {
+        return $this->actingAs($actor, $project, function () use ($project, $actor): array {
+            $fresh = User::with('company.plan')->whereKey($actor->id)->where('is_active', true)->first();
+            $canConfigure = $fresh !== null && $this->canConfigure($project, $fresh);
+            $policies = DB::table('irn_issuer_policies')
+                ->where('project_id', $project->id)->orderByDesc('version')->limit(20)->get();
+            $current = $policies->first();
+
+            return [
+                'current' => $current,
+                'selectors' => $current ? json_decode($current->selectors, true, 512, JSON_THROW_ON_ERROR) : [],
+                'history' => $policies,
+                'canConfigure' => $canConfigure,
+                'options' => $canConfigure ? $this->eligible($project) : [],
+            ];
+        });
+    }
+
+    /** Is this actor nominated to release material? Read fresh, never cached. */
+    public function allows(Project $project, User $actor): bool
+    {
+        return $this->actingAs($actor, $project, fn (): bool => DB::selectOne(
+            'SELECT epcc_irn_nomination(?, ?, ?) AS policy_id',
+            [$project->id, $actor->company_id, $actor->id]
+        )->policy_id !== null);
+    }
+
+    /**
      * Is this order held? Every receipt path asks the same question, so the
      * answer is defined once — in epcc_po_release_status() — and read here.
      */
@@ -151,7 +186,7 @@ final class InspectionReleaseNoteService
                 // invalid.
                 $data = Validator::make(['issuers' => $input], [
                     'issuers' => ['array:selectors,reason'],
-                    'issuers.selectors' => ['required', 'array', 'min:1', 'max:100'],
+                    'issuers.selectors' => ['present', 'array', 'max:100'],
                     'issuers.selectors.*' => ['string', Rule::in(array_keys($this->eligible($project)))],
                     'issuers.reason' => ['required', 'string', 'min:3', 'max:2000'],
                 ])->validate()['issuers'];
@@ -203,16 +238,26 @@ final class InspectionReleaseNoteService
 
                     $data = Validator::make(['release' => $input], $this->rules($project, $order, $line))->validate()['release'];
 
+                    // Carried over from the retired observation (ADR-041): a
+                    // verdict that is not a clean release must say why, or the
+                    // vendor has nothing to act on.
+                    if ($data['outcome'] === 'NOT_RELEASED'
+                        && trim((string) ($data['findings_en'] ?? '')) === ''
+                        && trim((string) ($data['findings_fa'] ?? '')) === '') {
+                        throw ValidationException::withMessages(['release' => __('inspection_release_notes.findings_required')]);
+                    }
+
                     $note = new InspectionReleaseNote([
                         'project_id' => $project->id,
                         'company_id' => $actor->company_id,
                         'purchase_order_item_id' => $line->id,
-                        'source_inspection_id' => $data['source_inspection_id'] ?? null,
                         'stage' => $data['stage'],
                         'outcome' => $data['outcome'],
                         'inspector_company_id' => $data['inspector_company_id'] ?? null,
                         'inspector_user_id' => $data['inspector_user_id'] ?? null,
                         'inspector_name' => $data['inspector_name'] ?? null,
+                        'findings_en' => $data['findings_en'] ?? null,
+                        'findings_fa' => $data['findings_fa'] ?? null,
                         'holds_note_en' => $data['holds_note_en'] ?? null,
                         'holds_note_fa' => $data['holds_note_fa'] ?? null,
                         'released_at' => $data['released_at'] ?? null,
@@ -234,13 +279,11 @@ final class InspectionReleaseNoteService
     private function rules(Project $project, PurchaseOrder $order, PurchaseOrderItem $line): array
     {
         return [
-            'release' => ['array:stage,outcome,source_inspection_id,inspector_user_id,inspector_company_id,inspector_name,holds_note_en,holds_note_fa,released_at,previous_release_note_id'],
+            'release' => ['array:stage,outcome,inspector_user_id,inspector_company_id,inspector_name,findings_en,findings_fa,holds_note_en,holds_note_fa,released_at,previous_release_note_id'],
             'release.stage' => ['required', 'string', Rule::in(InspectionReleaseNote::STAGES)],
             'release.outcome' => ['required', 'string', Rule::in(InspectionReleaseNote::OUTCOMES)],
-            'release.source_inspection_id' => ['nullable', 'uuid',
-                Rule::exists('material_inspections', 'id')->where(fn ($q) => $q
-                    ->where('project_id', $project->id)->where('purchase_order_id', $order->id)),
-            ],
+            'release.findings_en' => ['nullable', 'string', 'max:8000'],
+            'release.findings_fa' => ['nullable', 'string', 'max:8000'],
             'release.inspector_user_id' => ['nullable', 'uuid', Rule::exists('users', 'id')],
             'release.inspector_company_id' => ['nullable', 'uuid', Rule::exists('companies', 'id')],
             'release.inspector_name' => ['nullable', 'string', 'max:255'],

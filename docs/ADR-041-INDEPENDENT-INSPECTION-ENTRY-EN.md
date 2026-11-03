@@ -1,6 +1,11 @@
 # ADR-041 — independently nominated inspection entry, original PO visibility
 
 2026-10-19 · **OWNER AUTHORITY DECISIONS ACCEPTED / BOUNDED ENTRY IMPLEMENTED, TARGETED VERIFIED**
+**SUPERSEDED 2026-11-02 by [ADR-060](ADR-060-INSPECTION-RELEASE-NOTES-EN.md).** The owner's decision was that this record was
+always meant to be the Inspection Release Note and was built wrong: it carried the `-IRN-` series and came from a third-party
+inspector, but had no effect on anything. `material_inspections`, `inspection_author_policies` and the services below are gone;
+the merged record carries the findings, the ON_ARRIVAL stage and the `-IRN-` series. Read ADR-060 for what is true now; the text
+below is history.
 Companion: [فارسی](ADR-041-INDEPENDENT-INSPECTION-ENTRY-FA.md).
 
 ## Explicit owner selections

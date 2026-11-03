@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Company;
-use App\Models\MaterialInspection;
+use App\Models\InspectionReleaseNote;
 use App\Models\MaterialLot;
 use App\Models\MaterialMovement;
 use App\Models\Project;
@@ -69,95 +69,6 @@ final class WarehouseService
     // بازرسی - inspection
     // -----------------------------------------------------------------------
 
-    /** @throws ValidationException */
-    public function inspect(
-        Project $project,
-        User $user,
-        string $result,
-        string $stage,
-        ?PurchaseOrder $po = null,
-        ?string $findingsEn = null,
-        ?string $findingsFa = null,
-        string $lang = 'fa',
-    ): MaterialInspection {
-        if (! in_array($result, ProcurementState::INSPECTION_ALL, true)) {
-            throw ValidationException::withMessages([
-                'result' => $lang === 'fa' ? 'نتیجهٔ بازرسی معتبر نیست.' : 'That inspection result is not valid.',
-            ]);
-        }
-
-        if (! in_array($stage, ProcurementState::STAGE_ALL, true)) {
-            throw ValidationException::withMessages([
-                'stage' => $lang === 'fa' ? 'مرحلهٔ بازرسی معتبر نیست.' : 'That inspection stage is not valid.',
-            ]);
-        }
-
-        $company = Company::findOrFail($user->company_id);
-
-        /*
-         * Who may inspect is enforced even though the RESULT does not block
-         * anything. Advisory means the verdict does not stop a receipt; it
-         * does not mean the contractor can sign its own material off as
-         * passed. An inspection record with no independence is worse than no
-         * record, because it looks like assurance.
-         */
-        if (! in_array($company->tenant_type, self::INSPECTOR_TYPES, true)) {
-            throw ValidationException::withMessages([
-                'company' => $lang === 'fa'
-                    ? 'فقط بازرس شخص ثالث، مشاور، مدیریت پیمان یا کارفرما می‌تواند بازرسی ثبت کند.'
-                    : 'Only a TPI, consultant, management contractor or the employer may record an inspection.',
-            ]);
-        }
-
-        // A failure that says nothing cannot be acted on by the vendor.
-        if ($result !== ProcurementState::INSPECTION_PASS
-            && trim((string) $findingsFa) === '' && trim((string) $findingsEn) === '') {
-            throw ValidationException::withMessages([
-                'findings' => $lang === 'fa'
-                    ? 'برای نتیجهٔ مردود یا مشروط، ثبت یافته‌ها الزامی است.'
-                    : 'A failed or conditional inspection must record its findings.',
-            ]);
-        }
-
-        return DB::transaction(function () use ($project, $user, $result, $stage, $po, $findingsEn, $findingsFa): MaterialInspection {
-            Project::whereKey($project->id)->lockForUpdate()->first();
-
-            $seq = 1 + (int) MaterialInspection::where('project_id', $project->id)->max('sequence');
-
-            return MaterialInspection::create([
-                'project_id' => $project->id,
-                'company_id' => $user->company_id,
-                'purchase_order_id' => $po?->id,
-                'number' => sprintf('%s-IRN-%04d', $project->code, $seq),
-                'sequence' => $seq,
-                'result' => $result,
-                'stage' => $stage,
-                'findings_en' => $findingsEn,
-                'findings_fa' => $findingsFa,
-                'inspected_by' => $user->id,
-                'inspected_at' => now(),
-            ]);
-        });
-    }
-
-    /**
-     * Attach an inspection verdict to a lot.
-     *
-     * Copies the result onto the lot so warehouse screens need no join. The
-     * copy is a cache of a FACT THAT DOES NOT CHANGE (this inspection said
-     * this), not of a derived quantity, which is why it is safe here while a
-     * cached stock balance would not be.
-     */
-    public function applyInspection(MaterialLot $lot, MaterialInspection $inspection): MaterialLot
-    {
-        $lot->update([
-            'inspection_id' => $inspection->id,
-            'inspection_result' => $inspection->result,
-        ]);
-
-        return $lot->refresh();
-    }
-
     // -----------------------------------------------------------------------
     // ورود به انبار - goods receipt
     // -----------------------------------------------------------------------
@@ -180,7 +91,7 @@ final class WarehouseService
         ?string $heatNumber = null,
         ?string $serialNumber = null,
         ?string $location = null,
-        ?MaterialInspection $inspection = null,
+        ?InspectionReleaseNote $releaseNote = null,
         ?string $mtcDocumentId = null,
         ?Subsystem $subsystem = null,
         string $lang = 'fa',
@@ -215,7 +126,7 @@ final class WarehouseService
         return DB::transaction(function () use (
             $project, $user, $po, $itemCode, $descriptionEn, $descriptionFa,
             $unit, $quantity, $heatNumber, $serialNumber, $location,
-            $inspection, $mtcDocumentId, $subsystem
+            $releaseNote, $mtcDocumentId, $subsystem
         ): MaterialLot {
             Project::whereKey($project->id)->lockForUpdate()->first();
 
@@ -234,8 +145,8 @@ final class WarehouseService
                 'heat_number' => $heatNumber,
                 'serial_number' => $serialNumber,
                 'mtc_document_id' => $mtcDocumentId,
-                'inspection_id' => $inspection?->id,
-                'inspection_result' => $inspection?->result,
+                'release_note_id' => $releaseNote?->id,
+                'inspection_result' => $releaseNote?->verdict(),
             ]);
 
             $this->post(

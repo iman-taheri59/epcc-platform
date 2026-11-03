@@ -1,38 +1,32 @@
--- Inspection Release Notes (IRN) — ADR-060.
+-- Inspection Release Notes (IRN) — ADR-060, as amended by the ADR-041 merge.
 --
--- THE GAP THIS CLOSES. The platform could record that an inspector LOOKED at
--- material (material_inspections: PASS / FAIL / CONDITIONAL) and it could
--- record that the material ARRIVED (the custody chain). It could not record
--- the act that connects the two: the inspector's release, which is what tells
--- a warehouse "this may ship" and a site "this may be received". ADR-041 made
--- inspection advisory on purpose, and that was the right call at the time —
--- but it left a FAIL verdict with nowhere to land. Nothing downstream of a
--- failed inspection asked whether anyone had released the material, so the
--- answer was always yes.
+-- ONE RECORD, NOT TWO. The platform used to hold two overlapping things:
+-- `material_inspections` — what the inspector SAW (PASS / FAIL / CONDITIONAL plus
+-- findings, at WORKS / PRE_SHIPMENT / ON_ARRIVAL) — and this register, what may
+-- now HAPPEN to the material. They were numbered from the same idea (the
+-- observation even carried the -IRN- series) and neither could answer the
+-- question the other existed to answer, because an observation with no release
+-- changed nothing and a release with no observation could not say why.
 --
--- WHAT A RELEASE NOTE IS, AND IS NOT. An inspection OBSERVATION says what the
--- inspector saw. A RELEASE says what may now happen to the material. They are
--- different acts by different authorities, which is why they are different
--- tables with different nomination registers: the engineer who records an
--- observation is not automatically the party who may release goods for
--- shipment.
+-- The owner's decision: the observation was always meant to BE the release
+-- note, and was built wrong. So there is one record now. It carries the
+-- findings AND the decision, in the -IRN- series, at any of the three stages —
+-- including ON_ARRIVAL, which is how goods that have already arrived get
+-- inspected.
 --
--- THE ACRONYM COLLISION, RESOLVED ONCE. `%s-IRN-%04d` already exists in this
--- platform as the number series for inspection OBSERVATIONS (ADR-041). The
--- owner's "IRN" means the third-party RELEASE certificate. One acronym for two
--- documents is exactly how a warehouse ends up releasing material against an
--- observation number, so the release note takes its own series, `-IRL-`, and
--- the observation series is left untouched.
+-- WHAT SURVIVES THE MERGE, AND WHY IT MATTERS. Two things the observation did
+-- that the release note did not, both kept:
+--   * FINDINGS are mandatory for anything other than a clean release. A
+--     refusal that says nothing cannot be acted on by the vendor — the same
+--     rule the inspection entry applied to a failed verdict (ADR-041).
+--   * STAGE includes WORKS and ON_ARRIVAL, not just release points, because
+--     inspecting goods at the vendor's works and inspecting them on arrival are
+--     both real inspections of real material.
 --
--- THIRD PARTIES ARE NOT ALWAYS USERS. The inspector may be a platform user,
--- or a person at an inspection firm who will never hold an account. Both are
+-- THIRD PARTIES ARE NOT ALWAYS USERS. The inspector may be a platform user, or
+-- a person at an inspection firm who will never hold an account. Both are
 -- representable, and neither may be anonymous: the guard accepts a user, or a
 -- named person AT a firm — never a blank attribution.
---
--- A RELEASE THAT SAYS NOTHING CANNOT BE ACTED ON. RELEASED_WITH_HOLDS must
--- state its holds in at least one language; NOT_RELEASED must name the
--- inspection it refuses. This is the same rule the inspection entry already
--- applies to a failed verdict (ADR-041), carried across to the release.
 
 CREATE OR REPLACE FUNCTION public.epcc_guard_inspection_release_note()
  RETURNS trigger
@@ -54,8 +48,8 @@ BEGIN
     RAISE EXCEPTION 'IRN_AUTHORITY' USING ERRCODE = '42501';
   END IF;
 
-  -- Whose release it is. Releasing material for shipment is a quality claim,
-  -- so it is default-deny behind its own register, exactly like a result.
+  -- Whose release it is. Releasing material is a quality claim, so it is
+  -- default-deny behind its own register, exactly like a result.
   NEW.issuer_policy_id := epcc_irn_nomination(NEW.project_id, NEW.company_id, NEW.issued_by);
   IF NEW.issuer_policy_id IS NULL THEN
     RAISE EXCEPTION 'IRN_NOT_NOMINATED' USING ERRCODE = '42501';
@@ -73,17 +67,11 @@ BEGIN
   -- Derived, never declared: the order is read off the line, not trusted.
   NEW.purchase_order_id := v_po;
 
-  IF NEW.source_inspection_id IS NOT NULL
-     AND NOT EXISTS (SELECT 1 FROM material_inspections mi
-                      WHERE mi.id = NEW.source_inspection_id
-                        AND mi.project_id = NEW.project_id
-                        AND mi.purchase_order_id = v_po) THEN
-    RAISE EXCEPTION 'IRN_INSPECTION_NOT_FOUND' USING ERRCODE = '42501';
-  END IF;
-
   NEW.inspector_name := NULLIF(btrim(COALESCE(NEW.inspector_name, '')), '');
   NEW.holds_note_en := NULLIF(btrim(COALESCE(NEW.holds_note_en, '')), '');
   NEW.holds_note_fa := NULLIF(btrim(COALESCE(NEW.holds_note_fa, '')), '');
+  NEW.findings_en := NULLIF(btrim(COALESCE(NEW.findings_en, '')), '');
+  NEW.findings_fa := NULLIF(btrim(COALESCE(NEW.findings_fa, '')), '');
 
   -- Third-party identity: a platform user, or a named person at a firm.
   IF NEW.inspector_user_id IS NULL
@@ -91,22 +79,25 @@ BEGIN
     RAISE EXCEPTION 'IRN_INSPECTOR_UNATTRIBUTED' USING ERRCODE = '23514';
   END IF;
 
+  -- A REFUSAL must say why. A vendor handed "not released" with no stated
+  -- reason has nothing to act on, which is how the same material comes back on
+  -- the next truck. A release WITH HOLDS has already spoken: the holds note is
+  -- its statement, and demanding findings as well would be demanding twice.
+  IF NEW.outcome = 'NOT_RELEASED'
+     AND NEW.findings_en IS NULL AND NEW.findings_fa IS NULL THEN
+    RAISE EXCEPTION 'IRN_FINDINGS_REQUIRED' USING ERRCODE = '23514';
+  END IF;
+
   IF NEW.outcome = 'RELEASED_WITH_HOLDS'
      AND NEW.holds_note_en IS NULL AND NEW.holds_note_fa IS NULL THEN
     RAISE EXCEPTION 'IRN_HOLDS_UNSTATED' USING ERRCODE = '23514';
-  END IF;
-
-  -- A refusal is a response to something. Releasing nothing into a refusal
-  -- would leave a block with no origin to clear.
-  IF NEW.outcome = 'NOT_RELEASED' AND NEW.source_inspection_id IS NULL THEN
-    RAISE EXCEPTION 'IRN_REFUSAL_WITHOUT_INSPECTION' USING ERRCODE = '23514';
   END IF;
 
   SELECT COALESCE(MAX(sequence), 0) + 1 INTO v_seq
     FROM inspection_release_notes WHERE project_id = NEW.project_id;
   NEW.sequence := v_seq;
   SELECT code INTO v_code FROM projects WHERE id = NEW.project_id;
-  NEW.number := v_code || '-IRL-' || lpad(v_seq::text, 4, '0');
+  NEW.number := v_code || '-IRN-' || lpad(v_seq::text, 4, '0');
   NEW.released_at := COALESCE(NEW.released_at, now());
 
   RETURN NEW;

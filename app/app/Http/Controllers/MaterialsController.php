@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Company;
-use App\Models\MaterialInspection;
+use App\Models\InspectionReleaseNote;
 use App\Models\MaterialItem;
 use App\Models\MaterialLot;
 use App\Models\MaterialMovement;
@@ -13,8 +13,7 @@ use App\Models\MaterialRequisition;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\Subsystem;
-use App\Services\InspectionAccessService;
-use App\Services\InspectionEntryService;
+use App\Services\InspectionReleaseNoteService;
 use App\Services\MaterialRequisitionAccessService;
 use App\Services\MaterialRequisitionDetailsService;
 use App\Services\MaterialRequisitionEntryService;
@@ -65,8 +64,7 @@ final class MaterialsController extends Controller
         private readonly PurchaseOrderEntryService $poEntry,
         private readonly WarehouseService $wh,
         private readonly MaterialRequisitionAccessService $mrAccess,
-        private readonly InspectionAccessService $inspectionAccess,
-        private readonly InspectionEntryService $inspectionEntry,
+        private readonly InspectionReleaseNoteService $releaseNotes,
         private readonly MaterialRequisitionEntryService $mrEntry,
         private readonly ProjectFittingDefinitionService $projectAccess,
     ) {}
@@ -242,15 +240,15 @@ final class MaterialsController extends Controller
                 'items.subsystem', 'items.requisitionItem',
                 'lots' => fn ($q) => $q->orderBy('lot_code'),
                 'lots.movements', 'lots.purchaseOrderItem',
-                'inspections' => fn ($q) => $q->orderByDesc('sequence'),
-                'inspections.inspector'])
+                'releaseNotes' => fn ($q) => $q->orderByDesc('sequence'),
+                'releaseNotes.inspectorUser'])
             ->findOrFail($orderId), $project->id);
 
         return view('materials.purchase-order', [
             'lang' => $lang, 'dir' => $lang === 'fa' ? 'rtl' : 'ltr',
             'user' => $user, 'acting' => $user->company, 'project' => $project,
             'order' => $order, 'jalaliDate' => $this->today($lang),
-            'canRecordInspection' => $this->inspectionAccess->allows($project, $user, $order->discipline),
+            'canIssueReleaseNote' => $this->releaseNotes->allows($project, $user),
         ] + $this->poPricing->context($project, $user, $order));
     }
 
@@ -298,7 +296,7 @@ final class MaterialsController extends Controller
             $registerFilters[$key] = trim($validated[$key] ?? '');
         }
 
-        [$requisitions, $orders, $inspections, $vendors, $mrAuthorAccess, $canRaiseMr, $mrSubsystems, $poAuthorAccess, $canRaisePo, $poExecutionAccess, $lateOrderCount, $inspectionAuthorAccess] = $this->tenant->runAs(
+        [$requisitions, $orders, $inspections, $vendors, $mrAuthorAccess, $canRaiseMr, $mrSubsystems, $poAuthorAccess, $canRaisePo, $poExecutionAccess, $lateOrderCount, $releaseIssuerAccess] = $this->tenant->runAs(
             $user->company_id,
             function () use ($project, $user, $categoryFilter, $registerFilters, $validated): array {
                 $requisitions = MaterialRequisition::with(['items.subsystem', 'company'])
@@ -320,7 +318,7 @@ final class MaterialsController extends Controller
                     ->whereColumn('forecast_date', '>', 'promised_date')->count();
                 $orders = $ordersQuery->paginate(25, ['*'], 'po_page', (int) ($validated['po_page'] ?? 1))->withQueryString();
 
-                $inspections = MaterialInspection::with('company')
+                $inspections = InspectionReleaseNote::with('company')
                     ->where('project_id', $project->id)
                     ->orderByDesc('sequence')->orderByDesc('id')
                     ->paginate(25, ['*'], 'inspection_page', (int) ($validated['inspection_page'] ?? 1))->withQueryString();
@@ -334,7 +332,7 @@ final class MaterialsController extends Controller
                     ->orderBy('code')
                     ->get();
 
-                return [$requisitions, $orders, $inspections, $vendors, $this->mrAccess->dashboard($project, $user), $this->mrAccess->allows($project, $user), Subsystem::where('project_id', $project->id)->orderBy('code')->get(), $this->poAccess->dashboard($project, $user), $this->poAccess->allows($project, $user), $this->poExecutionAccess->dashboard($project, $user), $lateOrderCount, $this->inspectionAccess->dashboard($project, $user)];
+                return [$requisitions, $orders, $inspections, $vendors, $this->mrAccess->dashboard($project, $user), $this->mrAccess->allows($project, $user), Subsystem::where('project_id', $project->id)->orderBy('code')->get(), $this->poAccess->dashboard($project, $user), $this->poAccess->allows($project, $user), $this->poExecutionAccess->dashboard($project, $user), $lateOrderCount, $this->releaseNotes->dashboard($project, $user)];
             },
             $project->id,
         );
@@ -350,7 +348,7 @@ final class MaterialsController extends Controller
             'categoryFilter' => $categoryFilter,
             'registerFilters' => $registerFilters,
             'lateOrderCount' => $lateOrderCount,
-            'inspectionAuthorAccess' => $inspectionAuthorAccess,
+            'releaseIssuerAccess' => $releaseIssuerAccess,
             'poAuthorAccess' => $poAuthorAccess, 'canRaisePo' => $canRaisePo,
             'poExecutionAccess' => $poExecutionAccess,
             'inspections' => $inspections,
@@ -445,24 +443,24 @@ final class MaterialsController extends Controller
             ->with('status', __('po_entry.access_saved'));
     }
 
-    public function configureInspectionAuthors(Request $request, string $projectCode): RedirectResponse
+    public function configureReleaseIssuers(Request $request, string $projectCode): RedirectResponse
     {
         $project = $this->resolveProject($request->user(), $projectCode);
-        $request->validate(['inspection_access' => ['required', 'array']]);
-        $this->inspectionAccess->configure($project, $request->user(), $request->input('inspection_access'));
+        $request->validate(['release_issuers' => ['required', 'array']]);
+        $this->releaseNotes->configure($project, $request->user(), $request->input('release_issuers'));
 
         return redirect()->route('procurement', ['projectCode' => $projectCode, 'lang' => $this->lang($request)])
-            ->with('status', __('inspection_entry.access_saved'));
+            ->with('status', __('inspection_release_notes.access_saved'));
     }
 
-    public function recordInspection(Request $request, string $projectCode, string $orderId): RedirectResponse
+    public function issueReleaseNote(Request $request, string $projectCode, string $orderId, string $lineId): RedirectResponse
     {
         $project = $this->resolveProject($request->user(), $projectCode);
-        $request->validate(['inspection' => ['required', 'array']]);
-        $this->inspectionEntry->create($project, $request->user(), $orderId, $request->input('inspection'));
+        $request->validate(['release' => ['required', 'array']]);
+        $this->releaseNotes->issue($project, $request->user(), $orderId, $lineId, $request->input('release'));
 
         return redirect()->route('procurement.orders.show', ['projectCode' => $projectCode, 'orderId' => $orderId, 'lang' => $this->lang($request)])
-            ->with('status', __('inspection_entry.saved'));
+            ->with('status', __('inspection_release_notes.saved'));
     }
 
     public function configureRequisitionAuthors(Request $request, string $projectCode): RedirectResponse

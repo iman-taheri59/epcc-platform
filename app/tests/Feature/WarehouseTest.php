@@ -320,55 +320,20 @@ final class WarehouseTest extends TestCase
 
     // ---- بازرسی: advisory, by the user's explicit choice -------------------
 
-    /**
-     * THE decision of this module. A failed inspection records a warning and
-     * lets the material in, because a system that refuses the receipt gets
-     * bypassed with a paper note nobody ever types in.
-     */
-    public function test_a_failed_inspection_does_not_block_a_receipt(): void
-    {
-        $po = $this->issuedOrder(100);
-        $jafari = $this->userByEmail('jafari@karan.example');
-        $rezaei = $this->userByEmail('rezaei@pars.example');
-
-        $fail = $this->asKaran(fn () => $this->wh->inspect(
-            $this->project(), $jafari,
-            ProcurementState::INSPECTION_FAIL,
-            ProcurementState::STAGE_ON_ARRIVAL,
-            $po->fresh(),
-            'Wall thickness below tolerance.',
-            'ضخامت جداره زیر رواداری است.',
-        ));
-
-        $lot = $this->asPars(fn () => $this->wh->receive(
-            $this->project(), $rezaei, $po->fresh(),
-            'PIP-1', 'Pipe', 'لوله', 'M', 100,
-            inspection: $fail,
-        ));
-
-        $this->assertSame(100.0, $this->asPars(fn () => $lot->fresh()->balance()));
-        $this->assertSame(ProcurementState::INSPECTION_FAIL, $lot->inspection_result);
-    }
-
-    /** Advisory is only meaningful if the warning is actually visible. */
     public function test_material_that_failed_or_was_never_inspected_is_reported(): void
     {
         $po = $this->issuedOrder(200);
         $rezaei = $this->userByEmail('rezaei@pars.example');
         $jafari = $this->userByEmail('jafari@karan.example');
 
-        $pass = $this->asKaran(fn () => $this->wh->inspect(
-            $this->project(), $jafari,
-            ProcurementState::INSPECTION_PASS,
-            ProcurementState::STAGE_WORKS,
-            $po->fresh(),
-        ));
-
-        // inspected and good
+        // inspected and good: the verdict reaches the lot as data now, written
+        // by the merged release note rather than by a separate observation.
         $this->asPars(fn () => $this->wh->receive(
             $this->project(), $rezaei, $po->fresh(), 'PIP-1', 'Pipe', 'لوله', 'M', 50,
-            heatNumber: 'A-1', inspection: $pass,
+            heatNumber: 'A-1',
         ));
+        $this->asPars(fn () => \App\Models\MaterialLot::where('heat_number', 'A-1')
+            ->update(['inspection_result' => ProcurementState::INSPECTION_PASS]));
 
         // never inspected at all
         $this->asPars(fn () => $this->wh->receive(
@@ -393,40 +358,18 @@ final class WarehouseTest extends TestCase
     }
 
     /**
-     * Advisory applies to the VERDICT, not to who may give it. A contractor
-     * signing off its own material would make the record look like assurance
-     * while carrying none.
+     * The contractor rule is a NOMINATION rule now. A contractor signing off
+     * its own material would make the record look like assurance while
+     * carrying none, so it is not offered as a candidate at all.
      */
-    public function test_a_contractor_cannot_inspect_its_own_material(): void
+    public function test_a_contractor_cannot_be_nominated_to_release_material(): void
     {
         $rezaei = $this->userByEmail('rezaei@pars.example');
+        $options = app(\App\Services\InspectionReleaseNoteService::class)->eligible($this->project());
 
-        $this->expectException(ValidationException::class);
-        $this->asPars(fn () => $this->wh->inspect(
-            $this->project(), $rezaei,
-            ProcurementState::INSPECTION_PASS,
-            ProcurementState::STAGE_WORKS,
-        ));
+        $this->assertArrayNotHasKey('user:'.$rezaei->id, $options);
     }
 
-    public function test_a_failed_inspection_must_record_findings(): void
-    {
-        $jafari = $this->userByEmail('jafari@karan.example');
-
-        $this->expectException(ValidationException::class);
-        $this->asKaran(fn () => $this->wh->inspect(
-            $this->project(), $jafari,
-            ProcurementState::INSPECTION_FAIL,
-            ProcurementState::STAGE_ON_ARRIVAL,
-        ));
-    }
-
-    // ---- traceability ------------------------------------------------------
-
-    /**
-     * A heat number with no certificate behind it is not traceability - the
-     * TPI cannot produce anything at the audit.
-     */
     public function test_traceability_needs_both_an_identifier_and_a_certificate(): void
     {
         $lot = $this->receive(10, heat: 'A-4471');

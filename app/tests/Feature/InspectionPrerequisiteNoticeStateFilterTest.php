@@ -175,7 +175,7 @@ final class InspectionPrerequisiteNoticeStateFilterTest extends TestCase
         $cancelledNotice = $this->newNotice([$this->recipient->company_id]);
         $cancelled = $this->create(['item_reference' => 'CANCELLED NOTICE ITEM']);
         $this->cancelCurrent();
-        $tables = ['inspection_notifications', 'inspection_notification_prerequisites', 'inspection_notification_prerequisite_events', 'inspection_notification_cancellations', 'inspection_notification_acknowledgments', 'inspection_notification_draft_history', 'material_inspections', 'purchase_orders', 'material_requisitions', 'material_lots', 'material_movements'];
+        $tables = ['inspection_notifications', 'inspection_notification_prerequisites', 'inspection_notification_prerequisite_events', 'inspection_notification_cancellations', 'inspection_notification_acknowledgments', 'inspection_notification_draft_history', 'purchase_orders', 'material_requisitions', 'material_lots', 'material_movements'];
         $snapshot = fn () => $this->asWriter(function () use ($tables) {
             $out = [];
             foreach ($tables as $t) {

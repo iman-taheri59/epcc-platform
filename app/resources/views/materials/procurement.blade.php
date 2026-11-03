@@ -115,7 +115,7 @@
   @include('materials.mr-entry')
   @include('materials.po-entry')
   @include('materials.po-execution-access')
-  @include('materials.inspection-access')
+  @include('materials.release-issuer-access')
 
   <form method="get" action="{{ route('procurement', ['projectCode'=>$project->code]) }}">
     <input type="hidden" name="lang" value="{{ $lang }}">
@@ -272,7 +272,7 @@
     @foreach($inspections as $i)
       <tr>
         <td class="mono">{{ $i->number }}</td>
-        <td><span class="st {{ $i->result }}">{{ \App\Support\ProcurementState::inspectionLabel($i->result)[$lang] }}</span></td>
+        <td><span class="st {{ $i->result }}">{{ \App\Support\ProcurementState::inspectionLabel($i->verdict())[$lang] }}</span></td>
         <td>{{ \App\Support\ProcurementState::stageLabel($i->stage)[$lang] }}</td>
         <td class="mono">{{ $i->company?->code }}</td>
         <td class="muted" style="max-width:320px">{{ $i->findings($lang) ?? '—' }}</td>

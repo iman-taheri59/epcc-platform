@@ -65,9 +65,10 @@ final class PurchaseOrder extends Model
         return $this->hasMany(MaterialLot::class);
     }
 
-    public function inspections(): HasMany
+    /** The inspection register for this order: release notes, in IRN series. */
+    public function releaseNotes(): HasMany
     {
-        return $this->hasMany(MaterialInspection::class);
+        return $this->hasMany(InspectionReleaseNote::class, 'purchase_order_id')->orderByDesc('sequence');
     }
 
     public function title(string $lang = 'fa'): string

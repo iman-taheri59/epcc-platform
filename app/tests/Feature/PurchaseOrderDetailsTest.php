@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\Company;
-use App\Models\MaterialInspection;
 use App\Models\MaterialLot;
 use App\Models\Plan;
 use App\Models\Project;
@@ -90,12 +89,9 @@ final class PurchaseOrderDetailsTest extends TestCase
             MaterialLot::create(['project_id' => $this->project->id, 'company_id' => $this->actor->company_id,
                 'purchase_order_id' => $this->order->id, 'lot_code' => 'LOT-DETAIL', 'item_code' => 'DETAIL-VALVE',
                 'description_en' => 'Lot', 'description_fa' => 'محموله', 'unit' => 'EA', 'heat_number' => 'HEAT-99', 'inspection_result' => 'FAIL']);
-            MaterialInspection::create(['project_id' => $this->project->id, 'company_id' => $this->actor->company_id,
-                'purchase_order_id' => $this->order->id, 'number' => 'IRN-DETAIL', 'sequence' => 901, 'result' => 'FAIL', 'stage' => 'ON_ARRIVAL',
-                'inspected_by' => $this->actor->id, 'inspected_at' => now(), 'findings_en' => 'Synthetic failed inspection']);
         });
         $this->actingAs($this->actor)->get($this->url())->assertOk()->assertSee('LOT-DETAIL')->assertSee('HEAT-99')
-            ->assertSee('Exact PO line not linked')->assertSee('Synthetic failed inspection')
+            ->assertSee('Exact PO line not linked')
             ->assertSee('Failed')->assertSee('do not establish usable stock');
     }
 
@@ -124,7 +120,7 @@ final class PurchaseOrderDetailsTest extends TestCase
     {
         app(ProjectArchiveService::class)->archive($this->project, $this->userByEmail('karimi@nioc.example'), 'Synthetic archive');
         $snapshot = fn () => $this->bound(fn () => array_map(fn ($t) => DB::table($t)->orderBy('id')->get()->toJson(),
-            ['purchase_orders', 'purchase_order_items', 'material_lots', 'material_inspections', 'material_movements']));
+            ['purchase_orders', 'purchase_order_items', 'material_lots', 'material_movements']));
         $before = $snapshot();
         $this->actingAs($this->actor)->get($this->url())->assertOk();
         $this->assertSame($before, $snapshot());

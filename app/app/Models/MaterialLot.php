@@ -27,7 +27,7 @@ final class MaterialLot extends Model
         'project_id', 'company_id', 'purchase_order_id', 'purchase_order_item_id',
         'subsystem_id', 'lot_code', 'item_code', 'description_en',
         'description_fa', 'unit', 'heat_number', 'serial_number',
-        'mtc_document_id', 'inspection_result', 'inspection_id',
+        'mtc_document_id', 'inspection_result', 'release_note_id',
     ];
 
     public function project(): BelongsTo
@@ -62,9 +62,10 @@ final class MaterialLot extends Model
         return $this->belongsTo(Document::class, 'mtc_document_id');
     }
 
-    public function inspection(): BelongsTo
+    /** The inspection this lot carries the verdict of, now a release note. */
+    public function releaseNote(): BelongsTo
     {
-        return $this->belongsTo(MaterialInspection::class, 'inspection_id');
+        return $this->belongsTo(InspectionReleaseNote::class, 'release_note_id');
     }
 
     public function movements(): HasMany

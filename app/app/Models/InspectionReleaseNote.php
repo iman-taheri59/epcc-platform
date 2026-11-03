@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\HasUuid;
+use App\Support\ProcurementState;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -25,7 +26,8 @@ final class InspectionReleaseNote extends Model
 {
     use HasUuid;
 
-    public const STAGES = ['PRE_SHIPMENT', 'ON_ARRIVAL'];
+    /** WORKS: at the vendor's. ON_ARRIVAL: goods that have already landed. */
+    public const STAGES = ['WORKS', 'PRE_SHIPMENT', 'ON_ARRIVAL'];
 
     public const OUTCOMES = ['RELEASED', 'RELEASED_WITH_HOLDS', 'NOT_RELEASED'];
 
@@ -34,9 +36,9 @@ final class InspectionReleaseNote extends Model
 
     protected $fillable = [
         'project_id', 'company_id', 'purchase_order_id', 'purchase_order_item_id',
-        'source_inspection_id', 'number', 'sequence', 'stage', 'outcome',
+        'number', 'sequence', 'stage', 'outcome',
         'inspector_company_id', 'inspector_user_id', 'inspector_name',
-        'holds_note_en', 'holds_note_fa', 'released_at',
+        'findings_en', 'findings_fa', 'holds_note_en', 'holds_note_fa', 'released_at',
         'issued_by', 'issuer_policy_id', 'previous_release_note_id',
     ];
 
@@ -60,12 +62,6 @@ final class InspectionReleaseNote extends Model
     public function line(): BelongsTo
     {
         return $this->belongsTo(PurchaseOrderItem::class, 'purchase_order_item_id');
-    }
-
-    /** The inspection this release answers, when it answers one. */
-    public function inspection(): BelongsTo
-    {
-        return $this->belongsTo(MaterialInspection::class, 'source_inspection_id');
     }
 
     public function inspectorUser(): BelongsTo
@@ -93,6 +89,30 @@ final class InspectionReleaseNote extends Model
     public function holds(string $lang = 'fa'): ?string
     {
         return $lang === 'fa' ? $this->holds_note_fa : $this->holds_note_en;
+    }
+
+    /**
+     * What the inspector saw. Mandatory for anything other than a clean
+     * release: a vendor handed a refusal with nothing stated has no way to act
+     * on it, which is how the same material comes back on the next truck.
+     */
+    public function findings(string $lang = 'fa'): ?string
+    {
+        return $lang === 'fa' ? $this->findings_fa : $this->findings_en;
+    }
+
+    /**
+     * The verdict in the vocabulary the lot and warehouse screens already
+     * speak. The merged record is the source now, but those screens were built
+     * around PASS / CONDITIONAL / FAIL and are left undisturbed.
+     */
+    public function verdict(): string
+    {
+        return match ($this->outcome) {
+            'RELEASED' => ProcurementState::INSPECTION_PASS,
+            'RELEASED_WITH_HOLDS' => ProcurementState::INSPECTION_CONDITIONAL,
+            default => ProcurementState::INSPECTION_FAIL,
+        };
     }
 
     /** Who released it — a platform user's name, or the external inspector. */
