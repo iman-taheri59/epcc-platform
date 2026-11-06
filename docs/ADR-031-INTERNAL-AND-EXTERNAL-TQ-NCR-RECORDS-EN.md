@@ -130,3 +130,61 @@ acknowledgement specific to the chosen mode: internal draft **not issued or
 approved**, or external metadata **report and signature not verified**. Field
 errors remain separate and no success acknowledgement is set on a failed
 capture. The feedback is informational and is not an audit decision.
+
+## A project-level register that closes the inspection loop (2026-11-03)
+
+The register that exists is **schedule-specific** (`pipe_schedule_discrepancy_reports`,
+2026-10-15): it hangs off a pipe-schedule exception request and nothing else. That
+leaves the loop open at exactly the point the platform now has a gate for: a release
+note can refuse a purchase order line, and the refusal blocks receipt — but it starts
+no process. The refusal is a dead end, so the same material comes back on the next
+truck with no record of why it was sent away.
+
+So this slice generalises the register to the project, keeping the two provenance
+modes and the discipline that made the first slice correct.
+
+### Decisions
+
+- `register_scope = project`: ONE register, `project_discrepancy_reports`, instead of
+  one per source. A discrepancy is a project fact; only its *source* varies.
+- `source = exactly one, enforced`: a row points at exactly one of a purchase order
+  line, a component, a pipe-schedule request, a test pack, or a release note. A CHECK
+  requires at least one and the guard requires that whichever is set belongs to THIS
+  project. Polymorphism without a project check is how one tenant's NCR starts
+  blocking another tenant's line.
+- `state = derived_from_events, never declared`: `project_discrepancy_events` is
+  append-only and carries RAISED, ANSWERED (TQ), DISPOSED (NCR), CLOSED and
+  EXTERNAL_VERIFIED. Status is read off the events. A column saying "CLOSED" that no
+  event supports is a claim, not a record.
+- `provenance = two shapes, never mixed`: the same non-overlapping IN_SYSTEM /
+  EXTERNAL_REGISTER shapes the schedule slice established, carried over unchanged.
+  An externally registered report is still not described as issued or signed by the
+  application.
+- `gate = unresolved holds the line`: `epcc_po_release_status` returns BLOCKED when a
+  TQ on the line has no ANSWERED event, or an NCR has no DISPOSED event — on top of
+  the release-note rule. This is the sentence already in this ADR: unresolved matters
+  stay on hold at agreed issue/procurement/fabrication gates. It does NOT override a
+  release: a release says the material may move; a disposition says the discrepancy is
+  answered. Both are needed, and either one missing holds the line.
+
+### Acceptance list
+
+- A report cannot reference another project's line, component or pack (guard raises
+  `DR_SOURCE_NOT_FOUND`).
+- Both provenance shapes are enforced by CHECK, not only by the service.
+- Events are append-only: UPDATE and DELETE touch zero rows.
+- A TQ with no answer, and an NCR with no disposition, keep the purchase order line
+  BLOCKED; a disposition that arrives later clears it.
+- RLS: the recording company writes its own; project participants read.
+- A company outside the project is refused, and tenant/company-scope denial is tested.
+
+### Deliberately NOT built in this slice
+
+- No in-system issue, routing or signature workflow, and no signatory matrix. An
+  authenticated click is still not a binding electronic signature.
+- No independent external-verification *authority*: who may verify an external record
+  is still an open question in this ADR and is not answered here.
+- No file storage and no mandatory hash.
+- No migration of the existing schedule-specific register. The two coexist; this one
+  is the general one, and folding the old one in is a later, separate decision.
+- No claim that a captured external record is authentic. Unverified is unverified.
