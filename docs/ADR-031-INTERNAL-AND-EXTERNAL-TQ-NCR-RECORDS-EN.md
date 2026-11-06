@@ -188,3 +188,25 @@ modes and the discipline that made the first slice correct.
 - No migration of the existing schedule-specific register. The two coexist; this one
   is the general one, and folding the old one in is a later, separate decision.
 - No claim that a captured external record is authentic. Unverified is unverified.
+
+### Implemented (2026-11-03)
+
+Migration `2026_11_03_100000`, guard `epcc_guard_project_discrepancy`, and
+`ProjectDiscrepancyRegisterTest`: **12 tests / 36 assertions**, plus the
+affected region green (442 tests / 3892 assertions).
+
+What is now true:
+
+- `project_discrepancy_reports` and `project_discrepancy_events`, both
+  append-only, both RLS-scoped to project participants.
+- `DR_SOURCE_NOT_FOUND` when the source does not belong to the project;
+  `DR_REPORT_NOT_FOUND` and `DR_EVENT_WITHOUT_RAISED` for the event log.
+- `epcc_discrepancy_state(project, report)` reads OPEN / ANSWERED / CLOSED off
+  the events. TQ is answered, NCR is disposed, and neither event satisfies
+  the other — tested both ways.
+- `epcc_po_release_status` now also returns BLOCKED while any line of the
+  order carries an OPEN discrepancy.
+
+Still not built, by design: no issue, routing or signature workflow; no
+external-verification authority; no file or mandatory hash; and the existing
+schedule-specific register is untouched — folding it in is a later decision.
