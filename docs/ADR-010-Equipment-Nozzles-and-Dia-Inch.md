@@ -262,3 +262,51 @@ migrating any joint. Nothing earlier is blocked by it.
    **the branch nominal size**, reported **separately** from butt-weld
    dia-inch per proposal P-21 rather than absorbed into it. Confirm the
    convention (and any norm-based weighting) when the welding phase is designed.
+
+---
+
+## 3.6 Built (2026-11-09)
+
+Migration `2026_11_04_100000`, guard `epcc_guard_equipment`, and
+`EquipmentNozzleTest`: **9 tests / 17 assertions**, with the joint, component,
+piping and compatibility region green (384 tests / 2072 assertions) and the
+whole suite green on CI (2234 tests / 28139 assertions, 0 failures, 0 errors,
+0 skipped).
+
+The claim in §3.1 is now proved rather than asserted. `EquipmentNozzleTest`
+writes a joint between a component port and a nozzle port through the ordinary
+`port_a_id` / `port_b_id` columns. If `joints` had needed a discriminator it
+would have needed a migration, not a test.
+
+What is now true:
+
+- `equipment` and `equipment_nozzles`, both RLS-scoped, with the FK from
+  `ports.nozzle_id` that the `ports` table has been waiting for since
+  2026-09-17, and a unique `(nozzle_id, seq)` so a nozzle's ports are numbered
+  once for the same reason a component's are.
+- Equipment sits on a subsystem, so punch items and MC certificates reach it
+  with no new plumbing — a vessel is MC-able for free.
+- Open-end is derived: unconnected AND not spare. `EQ_*` guard codes hold the
+  outside world equipment points at (subsystem, purchase order line,
+  datasheets) to this project.
+
+Scope discipline held, per §3.5: no internals, trays, seals, drivers as
+separate tags, foundations or preservation.
+
+### Two things worth remembering
+
+- **A joint stores its two ports in a fixed order** (`joints_ordered_pair`).
+  Three local runs passed with one draw of random UUIDs and CI failed on the
+  next. A test that writes two UUIDs into ordered columns must order them
+  itself, or it is a coin flip.
+- **A fitted joint must say who fitted it and when.** The nozzle end gets no
+  exemption from `joints_fitted_needs_evidence`.
+
+### Not built yet
+
+No service, controller or screen. This slice is the structure and the proof;
+`EquipmentNozzleTest` still hand-writes its nozzle ports because nothing
+creates them yet. The nozzle schedule report (§3.4) and equipment-to-piping
+compatibility through `PortCompatibility` are the natural next increments —
+the latter is the one that catches flange rating mismatches at model-entry
+time instead of at bolt-up.
