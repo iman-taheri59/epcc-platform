@@ -9,6 +9,8 @@ use App\Models\Document;
 use App\Models\MaterialLot;
 use App\Models\Project;
 use App\Models\Subsystem;
+use App\Models\PurchaseOrderItem;
+use App\Services\InspectionReleaseNoteService;
 use App\Services\ProcurementService;
 use App\Services\WarehouseService;
 use App\Support\ProcurementState;
@@ -59,6 +61,26 @@ final class ProcurementSeeder extends Seeder
         $sadeghi = $u('sadeghi@pars.example');  // EPC engineer - technical
         $karimi = $u('karimi@nioc.example');    // employer - commercial
         $jafari = $u('jafari@karan.example');   // MC - inspects
+
+        // The MC body is nominated to release material. The nomination is the
+        // project owner's to make, not the inspector's to assume.
+        app(InspectionReleaseNoteService::class)->configure($ph14, $karimi, [
+            'selectors' => ['user:'.$jafari->id],
+            'reason' => 'MC body releases material it has witnessed at inspection',
+        ]);
+
+        // One release note per verdict, issued by the nominated inspector
+        // against a specific line. A verdict without a line is an opinion.
+        $release = function (Project $p, $po, string $outcome, string $stage, string $en, string $fa, string $date) use ($tenant, $jafari, $karan) {
+            $line = $tenant->runAs($karan->id, fn () => PurchaseOrderItem::where('purchase_order_id', $po->id)->firstOrFail(), $p->id);
+
+            return $tenant->runAs($karan->id, fn () => app(InspectionReleaseNoteService::class)->issue(
+                $p, $jafari, $po->id, $line->id, [
+                    'stage' => $stage, 'outcome' => $outcome,
+                    'findings_en' => $en, 'findings_fa' => $fa,
+                    'inspector_user_id' => $jafari->id, 'released_at' => $date,
+                ]), $p->id);
+        };
 
         /*
          * Subsystems are under RLS, so they need a tenant binding - not
@@ -171,15 +193,11 @@ final class ProcurementSeeder extends Seeder
 
         $tenant->runAs($pars->id, fn () => $proc->issuePurchaseOrder($po1, $rezaei), $ph14->id);
 
-        // The MC body inspects at the vendor's works and passes it.
-        $insp1 = $tenant->runAs($karan->id, fn () => $wh->inspect(
-            $ph14, $jafari,
-            ProcurementState::INSPECTION_PASS,
-            ProcurementState::STAGE_WORKS,
-            $po1->refresh(),
+        // The MC body inspects at the vendor's works and releases it.
+        $note1 = $release($ph14, $po1, 'RELEASED', 'WORKS',
             'Hydrostatic test witnessed. Body and seat tight. Certificates reviewed.',
             'تست هیدرواستاتیک شاهد شد. بدنه و نشیمنگاه آب‌بند است. گواهی‌ها بررسی شد.',
-        ), $ph14->id);
+            '2026-08-20');
 
         $lot1 = $tenant->runAs($pars->id, fn () => $wh->receive(
             $ph14, $rezaei, $po1->refresh(),
@@ -190,7 +208,7 @@ final class ProcurementSeeder extends Seeder
             heatNumber: null,
             serialNumber: 'AZ-2026-5510',
             location: 'WH-A RACK 14',
-            inspection: $insp1,
+            releaseNote: $note1,
             mtcDocumentId: $mtc?->id,
             subsystem: $mech,
         ), $ph14->id);
@@ -230,14 +248,10 @@ final class ProcurementSeeder extends Seeder
         $tenant->runAs($pars->id, fn () => $proc->issuePurchaseOrder($po2, $rezaei), $ph14->id);
 
         // Heat A-4471: good.
-        $inspGood = $tenant->runAs($karan->id, fn () => $wh->inspect(
-            $ph14, $jafari,
-            ProcurementState::INSPECTION_PASS,
-            ProcurementState::STAGE_ON_ARRIVAL,
-            $po2->refresh(),
+        $noteGood = $release($ph14, $po2, 'RELEASED', 'ON_ARRIVAL',
             'Dimensional check and MTC review satisfactory for heat A-4471.',
             'کنترل ابعادی و بررسی گواهی مواد برای ذوب A-4471 رضایت‌بخش است.',
-        ), $ph14->id);
+            '2026-09-05');
 
         $lotGood = $tenant->runAs($pars->id, fn () => $wh->receive(
             $ph14, $rezaei, $po2->refresh(),
@@ -248,41 +262,30 @@ final class ProcurementSeeder extends Seeder
             heatNumber: 'A-4471',
             serialNumber: null,
             location: 'YARD-1 BAY 3',
-            inspection: $inspGood,
+            releaseNote: $noteGood,
             mtcDocumentId: $mtc?->id,
             subsystem: $piping,
         ), $ph14->id);
 
         /*
-         * Heat A-4472: FAILED. Received anyway - that is the advisory rule in
-         * action. It counts as stock, carries a warning, and appears in
-         * uninspectedLots(). Blocking it here is what the user explicitly did
-         * NOT want.
+         * Heat A-4472: REFUSED.
+         *
+         * This used to be "failed but received anyway", which was the advisory
+         * rule in action — and it is exactly what ADR-060 reversed. Under the
+         * release-note rule a refusal BLOCKS receipt, so this heat never
+         * becomes stock. It is not an un-traceable lot in the warehouse; it is
+         * material that was sent back, with the finding recorded so the vendor
+         * has something to act on.
+         *
+         * The refusal also lands on the SAME line as the good heat, and the
+         * line's latest word is a refusal, so the line is now held. That is
+         * the point: the good receipt above already happened, and the line
+         * does not quietly stay open on the strength of it.
          */
-        $inspBad = $tenant->runAs($karan->id, fn () => $wh->inspect(
-            $ph14, $jafari,
-            ProcurementState::INSPECTION_FAIL,
-            ProcurementState::STAGE_ON_ARRIVAL,
-            $po2->refresh(),
+        $noteBad = $release($ph14, $po2, 'NOT_RELEASED', 'ON_ARRIVAL',
             'Heat A-4472: wall thickness below tolerance on 3 joints; MTC not supplied.',
-            'ذوب A-4472: ضخامت جداره در ۳ شاخه زیر رواداری است؛ گواهی مواد ارائه نشده.',
-        ), $ph14->id);
-
-        $tenant->runAs($pars->id, fn () => $wh->receive(
-            $ph14, $rezaei, $po2->refresh(),
-            'PIP-CS-6-SCH40',
-            '6" CS pipe, SCH 40, API 5L X60 PSL2',
-            'لولهٔ فولادی ۶ اینچ، رده ۴۰، API 5L X60 PSL2',
-            'M', 180,
-            heatNumber: 'A-4472',
-            serialNumber: null,
-            location: 'YARD-1 BAY 4',
-            inspection: $inspBad,
-            // No MTC - this lot is not fully traceable, and the register
-            // should say so rather than imply the paperwork exists.
-            mtcDocumentId: null,
-            subsystem: $piping,
-        ), $ph14->id);
+            'ذوب A-4472: ضخامت جداره در ۳ شاخه زیر رواداری است؛ گواهی مواد ارائه نشد.',
+            '2026-09-05');
 
         // Part of the good heat goes out, but only part of it reaches site -
         // so "in transit" is a non-zero number somebody has to chase.
