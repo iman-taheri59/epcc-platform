@@ -156,12 +156,20 @@ final class EquipmentNozzleTest extends TestCase
 
         // The ordinary columns, nothing added for nozzles. If `joints` had
         // needed a discriminator, this insert would not be the whole story.
-        $this->asOwner(function () use ($componentPort, $nozzlePort, $line): void {
+        // A joint stores its two ports in a fixed order, so a joint is never
+        // recorded twice with the ends swapped. Which end is which carries no
+        // meaning, so the test compares the pair, not the positions.
+        [$first, $second] = [$componentPort, $nozzlePort];
+        if (strcmp($first, $second) > 0) {
+            [$first, $second] = [$second, $first];
+        }
+
+        $this->asOwner(function () use ($first, $second, $line): void {
             DB::table('joints')->insert([
                 'id' => (string) Str::uuid(), 'project_id' => $this->project()->id,
                 'company_id' => $this->project()->owner_company_id,
                 'piping_line_id' => $line->id,
-                'port_a_id' => $componentPort, 'port_b_id' => $nozzlePort,
+                'port_a_id' => $first, 'port_b_id' => $second,
                 'numbering_policy' => 'REQUIRED', 'joint_seq' => 1, 'joint_type' => 'BW', 'state' => 'FITTED',
                 'compatibility_state' => 'VALID', 'source' => 'MANUAL',
                 // A fitted joint has to say who fitted it and when, the same
@@ -169,13 +177,15 @@ final class EquipmentNozzleTest extends TestCase
                 'fitted_by_code' => 'W-1', 'fitted_at' => now(),
                 'created_by' => $this->owner()->id, 'created_at' => now(), 'updated_at' => now(),
             ]);
-            DB::table('ports')->whereIn('id', [$componentPort, $nozzlePort])->update(['is_connected' => true]);
+            DB::table('ports')->whereIn('id', [$first, $second])->update(['is_connected' => true]);
         });
 
         $joint = $this->asOwner(fn () => DB::table('joints')->first());
         $this->assertNotNull($joint);
-        $this->assertSame($componentPort, $joint->port_a_id);
-        $this->assertSame($nozzlePort, $joint->port_b_id);
+        $this->assertSame(
+            collect([$componentPort, $nozzlePort])->sort()->values()->all(),
+            collect([$joint->port_a_id, $joint->port_b_id])->sort()->values()->all(),
+        );
 
         $owners = $this->asOwner(fn () => DB::table('ports')
             ->whereIn('id', [$componentPort, $nozzlePort])->pluck('owner_kind')->sort()->values()->all());
