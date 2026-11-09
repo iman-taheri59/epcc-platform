@@ -104,6 +104,9 @@ final class Navigation
                     $this->item('project.piping', 'qaqc', "/projects/{$code}/piping", [
                         'fa' => 'رجیستر خطوط لوله', 'en' => 'Piping line register',
                     ], $plan, $lang, $currentPath),
+                    $this->item('project.equipment', 'qaqc', "/projects/{$code}/equipment", [
+                        'fa' => 'تجهیزات و جدول نازل‌ها', 'en' => 'Equipment & nozzle schedule',
+                    ], $plan, $lang, $currentPath),
                     $this->item('project.inspection-notifications', 'qaqc', "/projects/{$code}/inspection-notifications", [
                         'fa' => 'نوتیفیکیشن بازرسی ITP', 'en' => 'ITP inspection notifications',
                     ], $plan, $lang, $currentPath),
@@ -213,6 +216,8 @@ final class Navigation
             'project.vendortr' => '<path d="M3 9h13v8H3z"/><path d="M16 11h3l2 3v3h-5z"/><circle cx="7" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/>',
             'project.punch' => '<path d="M9 11l2.5 2.5L16 9"/><circle cx="12" cy="12" r="9"/>',
             'project.piping' => '<path d="M3 12h18"/><path d="M7 9v6"/><path d="M17 9v6"/>',
+            // A vessel on its side with one nozzle branching off the top.
+            'project.equipment' => '<rect x="4" y="9" width="13" height="7" rx="3.5"/><path d="M13 9V5.5h3.5"/><path d="M20 11.5h1.5"/>',
             // A shopping-cart outline for buying, a crate for the warehouse.
             'project.procurement' => '<path d="M3 4h2l2.4 10.4a2 2 0 0 0 2 1.6h7.4a2 2 0 0 0 2-1.55L20.5 8H6"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/>',
             'project.materials' => '<path d="M3 8.5L12 4l9 4.5v7L12 20l-9-4.5z"/><path d="M3 8.5L12 13l9-4.5M12 13v7"/>',

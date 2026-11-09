@@ -61,13 +61,22 @@ final class AuthSeeder extends Seeder
 
         // ---------------- Roles (gate 4) ----------------
         $roles = [
+            // equipment.maintain is the MODELLING capability: it belongs to
+            // whoever builds and supervises the piping model, not to QC or to
+            // site execution. They can see the register with plain
+            // project.view — seeing a vessel is not the same as being allowed
+            // to declare one, and conflating the two is how a register ends up
+            // with two entries for the same tag.
+            //
             // doc.review is the reviewer's capability: raise comments on
             // someone else's drawing. It is deliberately NOT part of doc.* for
             // the originator - answering comments is doc.issue.
             ['employer_rep', 'Employer Representative', 'نمایندهٔ کارفرما',
-                ['cert.view', 'cert.approve', 'project.*', 'doc.view', 'doc.review', 'punch.*', 'engineering.report.capture']],
+                ['cert.view', 'cert.approve', 'project.*', 'doc.view', 'doc.review', 'punch.*',
+                 'engineering.report.capture', 'equipment.maintain']],
             ['project_manager', 'Project Manager', 'مدیر پروژه',
-                ['cert.view', 'cert.submit', 'project.view', 'doc.*', 'punch.*', 'engineering.report.capture']],
+                ['cert.view', 'cert.submit', 'project.view', 'doc.*', 'punch.*',
+                 'engineering.report.capture', 'equipment.maintain']],
             ['qc_inspector', 'QC Inspector', 'بازرس کنترل کیفیت',
                 ['cert.view', 'punch.*', 'project.view', 'engineering.report.capture']],
             ['site_engineer', 'Site Engineer', 'مهندس اجرا',
@@ -77,7 +86,8 @@ final class AuthSeeder extends Seeder
             // all. Which ACTIONS it may take is decided by PunchListService,
             // not by withholding the capability.
             ['consultant', 'Consultant / supervisor', 'مشاور / ناظر',
-                ['cert.view', 'cert.verify', 'project.view', 'doc.view', 'doc.review', 'punch.*', 'engineering.report.capture']],
+                ['cert.view', 'cert.verify', 'project.view', 'doc.view', 'doc.review', 'punch.*',
+                 'engineering.report.capture', 'equipment.maintain']],
             // The MANAGEMENT CONTRACTOR (مدیریت پیمان) administers the contract
             // for the employer: it walks systems down, checks what the
             // contractor claims, and signs off completion on the employer's
@@ -86,7 +96,7 @@ final class AuthSeeder extends Seeder
             // capability, because the SRS matrix gives MC "Raise/Verify" and
             // OWN "Approve close".
             ['mc_supervisor', 'Management contractor supervisor', 'ناظر مدیریت پیمان',
-                ['punch.*', 'project.view', 'doc.view', 'engineering.report.capture']],
+                ['punch.*', 'project.view', 'doc.view', 'engineering.report.capture', 'equipment.maintain']],
         ];
 
         foreach ($roles as [$code, $en, $fa, $caps]) {

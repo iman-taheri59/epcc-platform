@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ComponentController;
+use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\DemandReaderController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\GateDemoController;
@@ -218,6 +219,14 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::post('/projects/{projectCode}/inspection-notifications/{notificationId}/issue', [InspectionNotificationController::class, 'issue'])->whereUuid('notificationId')->name('inspection-notifications.issue');
 
     Route::get('/projects/{projectCode}/procurement', [MaterialsController::class, 'procurement'])->name('procurement');
+    // ADR-010 §3 — equipment, and the nozzle schedule that says what is
+    // attached to each one.
+    Route::get('/projects/{projectCode}/equipment', [EquipmentController::class, 'index'])->name('equipment');
+    Route::post('/projects/{projectCode}/equipment', [EquipmentController::class, 'store'])->name('equipment.store');
+    Route::get('/projects/{projectCode}/equipment/{equipmentId}', [EquipmentController::class, 'show'])
+        ->whereUuid('equipmentId')->name('equipment.show');
+    Route::post('/projects/{projectCode}/equipment/{equipmentId}/nozzles', [EquipmentController::class, 'storeNozzle'])
+        ->whereUuid('equipmentId')->name('equipment.nozzles.store');
     Route::get('/projects/{projectCode}/procurement/execution/{buyerId}', [MaterialsController::class, 'purchaseOrderExecutionWorkspace'])->whereUuid('buyerId')->name('procurement.execution');
     Route::get('/projects/{projectCode}/procurement/execution/{buyerId}/{orderId}', [MaterialsController::class, 'purchaseOrderExecutionWorkspace'])->whereUuid('buyerId')->whereUuid('orderId')->name('procurement.execution.order');
     Route::post('/projects/{projectCode}/procurement/execution/{buyerId}/{orderId}/{purpose}', [MaterialsController::class, 'executePurchaseOrder'])->whereUuid('buyerId')->whereUuid('orderId')->whereIn('purpose', ['finance', 'issue'])->name('procurement.execution.act');

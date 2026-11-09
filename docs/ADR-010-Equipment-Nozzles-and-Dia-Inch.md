@@ -310,3 +310,52 @@ creates them yet. The nozzle schedule report (§3.4) and equipment-to-piping
 compatibility through `PortCompatibility` are the natural next increments —
 the latter is the one that catches flange rating mismatches at model-entry
 time instead of at bolt-up.
+
+## 3.7 Built (2026-11-09) — the service and the screen
+
+The register now runs end to end. `EquipmentService` owns the model,
+`EquipmentController` serves two screens, and equipment sits in the sidebar
+next to piping rather than in a spreadsheet.
+
+**The capability, and why it is shaped that way.** `equipment.maintain` is a
+MODELLING capability, not a viewing one. It sits on employer_rep,
+project_manager, consultant and mc_supervisor. It is deliberately withheld
+from qc_inspector and site_engineer — and that withholding is the interesting
+part, because those two still READ the register through plain `project.view`.
+A QC inspector who cannot see what the nozzles are cannot inspect the welds on
+them, but a QC inspector who can move a nozzle around is rewriting the design
+to suit the welds. `EquipmentRegisterTest` holds both halves: he gets a 200 on
+the index with no create form at all, and a 403 if he posts anyway.
+
+**The schedule is the deliverable.** `nozzleSchedule()` walks
+nozzle → port → joint → other port → component → line, and reports
+`is_open_end = connected_line IS NULL AND NOT is_spare`. Nothing stores it.
+The screen shows the line where there is one, UNCONNECTED where there is not,
+and SPARE where it is capped. That distinction is the reason §3 exists at all:
+a capped spare is a design decision, and putting it on the worklist as
+unfinished work is how a hydrotest gets delayed by a nozzle nobody ever meant
+to weld.
+
+### Three things worth remembering
+
+- **`whereKey()` is Eloquent only.** On `DB::table(...)` it emits
+  `column "key" does not exist`, and the only symptom is a later, unrelated
+  `current transaction is aborted` from the next `set_config`. The subsystem
+  guard in `validated()` uses `where('id', ...)` for exactly this reason.
+- **Every write policy on these tables demands `created_by` =
+  `epcc.result_actor_id`.** `TenantContext::runAs()` sets the company and the
+  project but not the actor, so the service wraps its writes in `actingAs()`,
+  borrowed from `InspectionReleaseNoteService`. Without it the INSERT is
+  refused with 42501 and nothing on the PHP side says why.
+- **`project_piping_config` is writable only by the company that owns it.**
+  Test fixtures that build a line must run as the employer's representative,
+  not the EPC's, or `configFor($project)->update(...)` fails.
+
+### Not built yet
+
+Equipment-to-piping compatibility through `PortCompatibility` — the increment
+that catches a flange rating mismatch at model-entry time instead of at
+bolt-up. Also deliberately out: internals, trays, seals, drivers as separate
+tags, foundations, preservation. A nozzle port is still created by the test
+helper rather than by the service, because nothing in the product has asked
+for one yet.
