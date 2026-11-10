@@ -139,6 +139,17 @@ final class EquipmentRegisterTest extends TestCase
                 'tag' => 'N1', 'nozzle_type' => 'PROCESS', 'nps_label' => '6"', 'is_spare' => false,
                 'created_by' => $this->pm()->id, 'created_at' => now(), 'updated_at' => now(),
             ], $overrides));
+
+            // The port, because a nozzle with no port is a nozzle nobody can
+            // weld to — what the service does in declarePort().
+            DB::table('ports')->insert([
+                'id' => (string) Str::uuid(), 'project_id' => $project->id,
+                'company_id' => $project->owner_company_id,
+                'owner_kind' => 'NOZZLE', 'nozzle_id' => $id, 'seq' => 1, 'role' => 'END',
+                'nominal_size' => '6"', 'nominal_size_decimal' => 6.0,
+                'end_type' => $overrides['end_type'] ?? 'BW',
+                'is_connected' => false, 'created_at' => now(), 'updated_at' => now(),
+            ]);
         }, $project->id);
 
         return $id;
@@ -233,6 +244,91 @@ final class EquipmentRegisterTest extends TestCase
             $this->project()->id,
         );
         $this->assertSame(1, (int) $count);
+    }
+
+
+    public function test_a_nozzle_is_declared_with_the_port_that_makes_it_connectable(): void
+    {
+        $id = $this->equipment();
+
+        $this->actingAs($this->pm())
+            ->post(route('equipment.nozzles.store', ['projectCode' => 'PH-14', 'equipmentId' => $id]), [
+                'tag' => 'N1',
+                'nozzle_type' => 'PROCESS',
+                'nps_label' => '6"',
+                'nps_decimal' => 6.0,
+                'end_type' => 'BW',
+                'schedule' => 'STD',
+            ]);
+
+        // ADR-010 §3.1 says a nozzle owns a port like a component does. That
+        // is a claim about a table, and a claim is not a row: without this
+        // there is nothing to weld to and the schedule could only ever say
+        // UNCONNECTED no matter what the welders did.
+        $port = $this->tenant->runAs(
+            $this->project()->owner_company_id,
+            fn () => DB::table('ports')
+                ->join('equipment_nozzles', 'equipment_nozzles.id', '=', 'ports.nozzle_id')
+                ->where('equipment_nozzles.equipment_id', $id)
+                ->select('ports.*')
+                ->first(),
+            $this->project()->id,
+        );
+
+        $this->assertNotNull($port, 'Declaring a nozzle must create its port.');
+        $this->assertSame('NOZZLE', $port->owner_kind);
+        $this->assertSame('END', $port->role);
+        $this->assertSame('BW', $port->end_type);
+        $this->assertFalse((bool) $port->is_connected);
+    }
+
+    public function test_two_nozzles_are_refused_because_nothing_owns_the_number(): void
+    {
+        $id = $this->equipment();
+        $a = $this->nozzleViaService($id, ['tag' => 'N1']);
+        $b = $this->nozzleViaService($id, ['tag' => 'N2']);
+
+        $portA = $this->tenant->runAs(
+            $this->project()->owner_company_id,
+            fn () => DB::table('ports')->where('nozzle_id', $a)->value('id'),
+            $this->project()->id,
+        );
+        $portB = $this->tenant->runAs(
+            $this->project()->owner_company_id,
+            fn () => DB::table('ports')->where('nozzle_id', $b)->value('id'),
+            $this->project()->id,
+        );
+
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+
+        $this->tenant->runAs(
+            $this->owner()->company_id,
+            fn () => app(\App\Services\JointService::class)->join(
+                \App\Models\Port::query()->findOrFail($portA),
+                \App\Models\Port::query()->findOrFail($portB),
+                $this->owner(),
+            ),
+            $this->project()->id,
+        );
+    }
+
+    /** A nozzle made by the service, so it has its port. */
+    private function nozzleViaService(string $equipmentId, array $overrides = []): string
+    {
+        $project = $this->project();
+        $pm = $this->pm();
+
+        return $this->tenant->runAs($pm->company_id, function () use ($project, $pm, $equipmentId, $overrides): string {
+            return app(EquipmentService::class)
+                ->addNozzle($project, $pm, $equipmentId, array_merge([
+                    'tag' => 'N1',
+                    'nozzle_type' => 'PROCESS',
+                    'nps_label' => '6"',
+                    'nps_decimal' => 6.0,
+                    'end_type' => 'BW',
+                ], $overrides))
+                ->id;
+        }, $project->id);
     }
 
     public function test_the_screen_refuses_a_subsystem_from_another_project(): void
@@ -351,46 +447,34 @@ final class EquipmentRegisterTest extends TestCase
     }
 
     /**
-     * Weld a line's component to a nozzle, through the ordinary `joints`
-     * columns. This is ADR-010 §3's whole claim: no discriminator, no new
-     * table — the nozzle is simply another port owner.
+     * Weld a line's component to a nozzle, through JointService — the way the
+     * application actually does it.
+     *
+     * Nothing here writes to `joints` by hand. That matters: the point of
+     * ADR-010 §3.1 is that a pipe-to-nozzle weld needs no change to the joint
+     * table, and a test that inserts the row itself proves nothing about
+     * whether the application can make one.
      */
-    private function weldLineToNozzle(PipingLine $line, string $nozzleId): void
+    private function weldLineToNozzle(PipingLine $line, string $nozzleId): \App\Models\Joint
     {
         $project = $this->project();
         $owner = $this->owner();
 
-        $this->tenant->runAs($owner->company_id, function () use ($project, $owner, $line, $nozzleId): void {
+        return $this->tenant->runAs($owner->company_id, function () use ($project, $owner, $line, $nozzleId) {
             DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
 
-            $pipe = app(\App\Services\ComponentService::class)->place($line, $owner, 'PIPE');
-            $componentPort = $pipe->ports->first()->id;
+            $pipePort = app(\App\Services\ComponentService::class)
+                ->place($line, $owner, 'PIPE')
+                ->ports->first()->id;
 
-            $nozzlePort = (string) Str::uuid();
-            DB::table('ports')->insert([
-                'id' => $nozzlePort, 'project_id' => $project->id, 'company_id' => $owner->company_id,
-                'owner_kind' => 'NOZZLE', 'nozzle_id' => $nozzleId, 'seq' => 1, 'role' => 'END',
-                'is_connected' => false, 'created_at' => now(), 'updated_at' => now(),
-            ]);
+            $nozzlePort = DB::table('ports')->where('nozzle_id', $nozzleId)->value('id');
+            $this->assertNotNull($nozzlePort, 'The nozzle must have a port to weld to.');
 
-            // A joint stores its two ends in a fixed order, so sort them the
-            // way the CHECK constraint expects rather than trusting the draw.
-            [$first, $second] = [(string) $componentPort, $nozzlePort];
-            if (strcmp($first, $second) > 0) {
-                [$first, $second] = [$second, $first];
-            }
-
-            DB::table('joints')->insert([
-                'id' => (string) Str::uuid(), 'project_id' => $project->id, 'company_id' => $owner->company_id,
-                'piping_line_id' => $line->id,
-                'port_a_id' => $first, 'port_b_id' => $second,
-                'numbering_policy' => 'REQUIRED', 'joint_seq' => 1, 'joint_type' => 'BW', 'state' => 'FITTED',
-                'compatibility_state' => 'VALID', 'source' => 'MANUAL',
-                'fitted_by_code' => 'W-1', 'fitted_at' => now(),
-                'created_by' => $owner->id, 'created_at' => now(), 'updated_at' => now(),
-            ]);
-
-            DB::table('ports')->whereIn('id', [$first, $second])->update(['is_connected' => true]);
+            return app(\App\Services\JointService::class)->join(
+                \App\Models\Port::query()->findOrFail($pipePort),
+                \App\Models\Port::query()->findOrFail($nozzlePort),
+                $owner,
+            );
         }, $project->id);
     }
 
@@ -434,7 +518,11 @@ final class EquipmentRegisterTest extends TestCase
         $nozzleId = $this->nozzle($id, ['tag' => 'N1']);
         $line = $this->line();
 
-        $this->weldLineToNozzle($line, $nozzleId);
+        $joint = $this->weldLineToNozzle($line, $nozzleId);
+
+        // The joint takes its line from the pipe side: a nozzle belongs to
+        // equipment, not to a line, so it has no line number to contribute.
+        $this->assertSame($line->id, $joint->piping_line_id);
 
         $schedule = $this->tenant->runAs(
             $this->project()->owner_company_id,
@@ -468,6 +556,134 @@ final class EquipmentRegisterTest extends TestCase
             ->assertSee($line->line_number)
             ->assertSee(__('equipment.unconnected'))
             ->assertSee(__('equipment.spare'));
+    }
+
+
+    /**
+     * The cross-line rule, held by the database rather than by PHP.
+     *
+     * The service has always refused a joint between two lines. What it could
+     * not do is stop a direct INSERT, and the suite writes joints by hand in
+     * more than one place. These two tests bypass JointService entirely: if
+     * the rule is only in PHP, they pass while the database happily holds a
+     * joint that no service would have made.
+     */
+    public function test_the_database_refuses_a_joint_spanning_two_lines(): void
+    {
+        $first = $this->line();
+        $second = $this->anotherLine();
+
+        $portA = $this->pipePortOn($first);
+        $portB = $this->pipePortOn($second);
+
+        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectExceptionMessageMatches('/JT_LINE_MISMATCH/');
+
+        $this->insertJoint($portA, $portB, $first->id);
+    }
+
+    public function test_the_database_accepts_a_joint_whose_nozzle_side_owns_no_line(): void
+    {
+        $line = $this->line();
+        $nozzleId = $this->nozzle($this->equipment());
+
+        $pipePort = $this->pipePortOn($line);
+        $nozzlePort = $this->tenant->runAs(
+            $this->project()->owner_company_id,
+            fn () => DB::table('ports')->where('nozzle_id', $nozzleId)->value('id'),
+            $this->project()->id,
+        );
+
+        $this->insertJoint($pipePort, $nozzlePort, $line->id);
+
+        $count = $this->tenant->runAs(
+            $this->project()->owner_company_id,
+            fn () => DB::table('joints')->count(),
+            $this->project()->id,
+        );
+        $this->assertSame(1, (int) $count);
+    }
+
+    public function test_the_database_refuses_a_joint_between_two_nozzles(): void
+    {
+        $id = $this->equipment();
+        $portA = $this->tenant->runAs(
+            $this->project()->owner_company_id,
+            fn () => DB::table('ports')->where('nozzle_id', $this->nozzle($id, ['tag' => 'N1']))->value('id'),
+            $this->project()->id,
+        );
+        $portB = $this->tenant->runAs(
+            $this->project()->owner_company_id,
+            fn () => DB::table('ports')->where('nozzle_id', $this->nozzle($id, ['tag' => 'N2']))->value('id'),
+            $this->project()->id,
+        );
+
+        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectExceptionMessageMatches('/JT_NO_LINE_SIDE/');
+
+        $this->insertJoint($portA, $portB, $this->line()->id);
+    }
+
+    /** A second line on the same project, so a cross-line pair is possible. */
+    private function anotherLine(): \App\Models\PipingLine
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+
+        return $this->tenant->runAs($owner->company_id, function () use ($project, $owner): \App\Models\PipingLine {
+            $lines = app(\App\Services\PipingLineService::class);
+            $class = \App\Models\PipingClass::firstOrCreate(
+                ['project_id' => $project->id, 'code' => 'A1'],
+                ['company_id' => $owner->company_id, 'description_en' => 'CS 150#'],
+            );
+
+            return $lines->create(
+                \App\Models\Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail(),
+                $owner,
+                ['nominal_size' => '6', 'service_code' => 'P', 'piping_class_id' => $class->id],
+            );
+        }, $project->id);
+    }
+
+    /** @return string port id */
+    private function pipePortOn(\App\Models\PipingLine $line): string
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+
+        return $this->tenant->runAs($owner->company_id, function () use ($project, $owner, $line): string {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+
+            return (string) app(\App\Services\ComponentService::class)
+                ->place($line, $owner, 'PIPE')
+                ->ports->first()->id;
+        }, $project->id);
+    }
+
+    /** Writes a joint by hand, bypassing JointService on purpose. */
+    private function insertJoint(string $portA, string $portB, string $lineId): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+
+        [$first, $second] = [$portA, $portB];
+        if (strcmp($first, $second) > 0) {
+            [$first, $second] = [$second, $first];
+        }
+
+        $this->tenant->runAs($owner->company_id, function () use ($project, $owner, $first, $second, $lineId): void {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+
+            DB::table('joints')->insert([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'project_id' => $project->id, 'company_id' => $owner->company_id,
+                'piping_line_id' => $lineId,
+                'port_a_id' => $first, 'port_b_id' => $second,
+                'numbering_policy' => 'NOT_APPLICABLE', 'joint_type' => 'FLANGED',
+                'state' => 'MODELLED', 'compatibility_state' => 'VALID', 'source' => 'MANUAL',
+                'created_by' => $owner->id, 'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }, $project->id);
     }
 
     public function test_the_register_is_scoped_to_its_own_project(): void

@@ -8,6 +8,7 @@ use App\Models\Equipment;
 use App\Models\EquipmentNozzle;
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Port;
 use App\Support\AuthorizationPipeline;
 use App\Support\TenantContext;
 use Illuminate\Support\Facades\DB;
@@ -45,6 +46,7 @@ final class EquipmentService
         private readonly TenantContext $tenant,
         private readonly AuthorizationPipeline $authz,
         private readonly ProjectArchiveService $archives,
+        private readonly \App\Support\Reference\PipeReference $reference,
     ) {}
 
     public function allows(Project $project, User $actor): bool
@@ -164,7 +166,7 @@ final class EquipmentService
 
             $data['tag'] = trim($data['tag']);
 
-            return EquipmentNozzle::create($data + [
+            $nozzle = EquipmentNozzle::create($data + [
                 'id' => (string) Str::uuid(),
                 'project_id' => $project->id,
                 'company_id' => $actor->company_id,
@@ -172,6 +174,10 @@ final class EquipmentService
                 'is_spare' => (bool) ($data['is_spare'] ?? false),
                 'created_by' => $actor->id,
             ]);
+
+            $this->declarePort($nozzle, $project, $actor);
+
+            return $nozzle;
         }, $project->id);
     }
 
@@ -195,6 +201,60 @@ final class EquipmentService
                 DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$prior ?? '']);
             }
         }, $project->id);
+    }
+
+    /**
+     * Give a nozzle the port that makes it a PORT OWNER in fact, not in claim.
+     *
+     * ADR-010 §3.1 says a nozzle owns a port exactly like a component does —
+     * that is what lets a pipe weld to one without touching `joints`. But
+     * asserting it in a document does not create the row: until something
+     * does, the register shows a nozzle that nothing can be connected to, and
+     * the schedule can only ever say UNCONNECTED.
+     *
+     * Created from the nozzle's own dimensions, in the same breath, so the two
+     * cannot drift apart. What is carried is what `ports` can actually hold —
+     * size and end type, which is what compatibility and dia-inch read today.
+     * Rating and facing stay on the nozzle: `ports` has nowhere to put them,
+     * and flange-rating compatibility is a later increment, not this one.
+     *
+     * A spare gets one too. A capped spare is still a physical flange on the
+     * vessel; it will simply never be welded. The schedule distinguishes the
+     * two, which is the distinction §3 exists to protect.
+     */
+    private function declarePort(EquipmentNozzle $nozzle, Project $project, User $actor): void
+    {
+        // `ports_size_pair_complete` wants the label and the decimal together
+        // or not at all, and the nozzle form asks only for the label. So the
+        // decimal is derived from the label through the reference pack rather
+        // than required — otherwise declaring "6\"" would be refused with a
+        // database error about a column the person never saw.
+        $label = $nozzle->nps_label;
+        $decimal = $nozzle->nps_decimal !== null ? (float) $nozzle->nps_decimal : null;
+
+        if ($label !== null && $decimal === null) {
+            $decimal = $this->reference->resolveLabel($label)?->npsDecimal;
+        }
+        if ($label !== null && $decimal === null) {
+            // An unrecognised label keeps the port sizeable later but must not
+            // half-fill the pair now.
+            $label = null;
+        }
+
+        Port::create([
+            'id' => (string) Str::uuid(),
+            'project_id' => $project->id,
+            'company_id' => $actor->company_id,
+            'owner_kind' => 'NOZZLE',
+            'nozzle_id' => $nozzle->id,
+            'seq' => 1,
+            'role' => 'END',
+            'nominal_size' => $label,
+            'nominal_size_decimal' => $decimal,
+            'end_type' => $nozzle->end_type,
+            'schedule' => $nozzle->schedule,
+            'is_connected' => false,
+        ]);
     }
 
     private function assertMayMaintain(Project $project, User $actor): void

@@ -51,7 +51,23 @@ final class JointService
      *
      * Called by ComponentService::attach() for the normal modelling gesture,
      * and directly when closing a loop between two components that already
-     * exist (a line that comes back on itself, a tie-in to a header).
+     * exist on the same line — a line that comes back on itself.
+     *
+     * Two connections this does NOT make, both refused on purpose rather than
+     * unfinished by accident:
+     *
+     *   - a TIE-IN, where the two ends sit on different lines. A joint carries
+     *     one piping_line_id and takes its number from that line, and the
+     *     number is what binds the weld to a hydrotest pack and an ITR. Until
+     *     someone decides which line owns it, the joint cannot be numbered and
+     *     so cannot exist. (ADR-006 §13, R-2/P-22 — open design.)
+     *   - a BRANCH ON A HEADER WALL. PCF resolves that by projecting the tap
+     *     onto the header centreline: there is no port on the header side to
+     *     join to. A stub-in modelled as an olet would corrupt the MTO, so it
+     *     is not faked that way either.
+     *
+     * Both are reported at intake rather than swallowed — see
+     * PcfAdmission::withUnrepresentable.
      *
      * @param  array<string, mixed>  $attributes
      */
@@ -419,17 +435,24 @@ final class JointService
         $componentA = Component::query()->find($a->component_id);
         $componentB = Component::query()->find($b->component_id);
 
-        if ($componentA === null || $componentB === null) {
-            // Phase 3b: one side may be a NOZZLE port with no component. The
-            // joint table needs no change for that (ADR-010 section 3.1), but
-            // THIS lookup does, so it refuses clearly rather than crashing on
-            // a null.
+        // A NOZZLE port belongs to equipment, not to a line, so it claims no
+        // line of its own: the joint takes the line from whichever side does
+        // have one. This is the case ADR-010 §3.1 exists for — the joint
+        // table needed no change to hold a pipe-to-nozzle weld, only this
+        // lookup did.
+        if ($componentA === null && $componentB === null) {
+            // Two nozzles and no pipe: there is no line to number the joint
+            // against, and piping_line_id is NOT NULL. Refused rather than
+            // made up.
             throw ValidationException::withMessages([
-                'port_id' => __('epcc.joint.nozzle_not_supported'),
+                'port_id' => __('epcc.joint.both_ends_are_nozzles'),
             ]);
         }
 
-        if ($componentA->piping_line_id !== $componentB->piping_line_id) {
+        $lineA = $componentA?->piping_line_id;
+        $lineB = $componentB?->piping_line_id;
+
+        if ($lineA !== null && $lineB !== null && $lineA !== $lineB) {
             // Cross-line joints are real (a tie-in), but they need a decision
             // about which line owns the number before they can be allowed.
             throw ValidationException::withMessages([
@@ -437,7 +460,7 @@ final class JointService
             ]);
         }
 
-        return PipingLine::query()->findOrFail($componentA->piping_line_id);
+        return PipingLine::query()->findOrFail($lineA ?? $lineB);
     }
 
     private function wallFor(Port $port): ?float

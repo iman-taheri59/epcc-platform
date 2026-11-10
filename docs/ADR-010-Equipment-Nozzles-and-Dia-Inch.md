@@ -359,3 +359,53 @@ bolt-up. Also deliberately out: internals, trays, seals, drivers as separate
 tags, foundations, preservation. A nozzle port is still created by the test
 helper rather than by the service, because nothing in the product has asked
 for one yet.
+
+## 3.8 Built (2026-11-10) — what a joint may connect, and saying so
+
+Three gaps §3.7 left open, closed together because they are one question: what
+may a joint actually connect, and does the system say so when the answer is no.
+
+**The nozzle path is open.** `addNozzle()` now declares the nozzle's port as it
+declares the nozzle, from the nozzle's own dimensions, so the two cannot drift.
+Without it the register showed a nozzle that nothing could be welded to and the
+schedule could only ever say UNCONNECTED. `JointService::lineFor()` takes the
+line from whichever side has one — a nozzle belongs to equipment, not to a
+line, and contributes no number. Two nozzles and no pipe stays refused.
+
+**The cross-line rule is now true in the database.** `epcc_guard_joint_line`
+rejects a joint whose component sides disagree with its `piping_line_id`, and
+one whose only sides are nozzles. It permits the nozzle case by design; writing
+it before the nozzle path opened would have made the two fight. The service
+refusal was never the weakness — the weakness was that `joints` is a table and
+the test suite writes to it directly.
+
+**PCF says what it cannot represent.** Three warnings at intake:
+`cross_line_component` (a component carrying a PIPELINE-REFERENCE other than
+the file's own), `tap_connection` (a branch landing on a header wall), and
+`branch_on_header_wall` (a TEE-SET-ON / TEE-SET-IN component, which PCF writes
+as a whole component rather than a tap). None of them was reported before; a
+file with a tie-in imported clean and was read as an ordinary run of the file's
+own line. A silently reshaped model is worse than a refused one — a refusal
+sends someone to look.
+
+### Four things worth remembering
+
+- **`ports_size_pair_complete` wants the size label and the decimal together or
+  not at all.** The nozzle form asks only for the label, so `declarePort()`
+  derives the decimal from it via `PipeReference::resolveLabel()`. Without that,
+  declaring `6"` was refused by a database error about a column nobody had seen.
+- **`epcc.result_actor_id` must be set before `ComponentService::place()`**, not
+  only before writes to `equipment`. The symptom is an RLS refusal on `ports`,
+  which does not mention the actor at all.
+- **`equipment_shape` requires name_en and name_fa of at least two trimmed
+  characters.** A fixture using `'S'` fails the insert, not a validation rule.
+- **The `both_ends_are_nozzles` message already existed, unwired, in both
+  language files.** Someone anticipated this case and never connected it. Worth
+  grepping `lang/` for an unused key before inventing one.
+
+### Not built, and not faked
+
+Tie-ins between lines and branch welds on a header wall remain refused — the
+first is ADR-006 §13 (R-2/P-22), an open design; the second has no port to join
+to, and modelling a stub-in as an olet would put a purchased fitting in the MTO
+that does not exist. Neither is worked around.

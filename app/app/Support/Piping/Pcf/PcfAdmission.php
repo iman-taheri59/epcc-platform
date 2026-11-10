@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Piping\Pcf;
 
+use App\Support\Piping\BranchConnectionType;
 use InvalidArgumentException;
 
 /** Bounded, read-only intake for PCF text; does not authorize model writes. */
@@ -58,6 +59,71 @@ final class PcfAdmission
             }
         }
 
-        return $file;
+        return $this->withUnrepresentable($file);
+    }
+
+    /**
+     * Report what the file says that the joint model cannot hold.
+     *
+     * This layer writes nothing, so it can never break the model. What it can
+     * do — and what it did before this existed — is say nothing while the
+     * design quietly becomes something it is not. A PCF that ties into another
+     * line, or lands a branch on a header wall, used to import with zero
+     * warnings and be treated as an ordinary run of the file's own line. That
+     * is worse than a refusal: a refused file sends someone to look, a
+     * silently reshaped one does not.
+     *
+     * Both shapes of pipe-to-pipe branch are caught, because PCF writes them
+     * two different ways: a fitting-less branch carries a TAP-POINT, while the
+     * set-on and set-in variants are whole components whose centre sits on the
+     * header. The classification already knows which types those are, so it is
+     * reused rather than a second list of type names that would drift from it.
+     */
+    private function withUnrepresentable(PcfFile $file): PcfFile
+    {
+        $extra = [];
+        $line = $file->lineNumber();
+
+        foreach ($file->components as $component) {
+            $own = $component->attribute('PIPELINE-REFERENCE');
+
+            if ($own !== null && $line !== null && strcasecmp($own, $line) !== 0) {
+                $extra[] = new PcfWarning(
+                    $component->sourceLine,
+                    'cross_line_component',
+                    $own,
+                );
+            }
+
+            $branch = PcfBranchClassification::fromType($component->type);
+
+            if (($branch['connection_type'] ?? null) === BranchConnectionType::P2P) {
+                $extra[] = new PcfWarning(
+                    $component->sourceLine,
+                    'branch_on_header_wall',
+                    $component->type,
+                );
+            }
+
+            foreach ($component->keypoints as $point) {
+                if ($point->kind === 'TAP-POINT') {
+                    $extra[] = new PcfWarning(
+                        $point->sourceLine,
+                        'tap_connection',
+                        $component->type,
+                    );
+                }
+            }
+        }
+
+        if ($extra === []) {
+            return $file;
+        }
+
+        return new PcfFile(
+            $file->header,
+            $file->components,
+            [...$file->warnings, ...$extra],
+        );
     }
 }
