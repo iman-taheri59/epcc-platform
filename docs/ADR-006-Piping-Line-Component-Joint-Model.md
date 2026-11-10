@@ -665,3 +665,68 @@ Unmapped legacy lines are rejected until mapped; do not invent a class or
 interpret an unparseable line number as an exemption. This requirement is
 accepted but NOT yet enforced in code/DB. See ADR-027 for rollout and
 existing-row preflight.
+
+
+## 14. Branch welds on a header wall — P-22 built (2026-11-10)
+
+§13 above recorded this as an open design. It is now built, as a **frozen
+header reference** rather than a synthesised wall port — the leaning recorded
+there, and confirmed by the research since
+(`docs/RESEARCH-PLANT3D-PCF-P2P-BRANCHES-EN.md` §4.8, §5.1): PCF's own idiom for
+a fitting-less branch is `TAP-CONNECTION` with an optional
+`UNIQUE-COMPONENT-IDENTIFIER` naming the host, and ISOGEN resolves the point by
+projection onto the header centreline. No port on the header, ever.
+
+**Schema.** `joints.port_b_id` becomes nullable and the joint instead carries
+`branch_header_component_id`, `branch_station_mm` and `branch_offset_mm`. The
+branch port always occupies `port_a_id`, so it stays NOT NULL and a branch port
+still cannot be welded twice.
+
+**Four invariants had to be restated, and every one of them fails SILENTLY on a
+NULL** — which is the whole reason this needed care rather than a column and a
+hope:
+
+| constraint | what happens with a NULL | restated as |
+|---|---|---|
+| `joints_port_b_unique` | NULLs are distinct, so a branch welds unlimited times | partial index, `WHERE port_b_id IS NOT NULL` |
+| `joints_port_pair_unique` | the same | partial index |
+| `joints_ordered_pair` | the comparison is NULL, and a NULL CHECK PASSES | `port_b_id IS NULL OR port_a_id < port_b_id` |
+| the cascade | a wall joint references the component, not a port | `ON DELETE RESTRICT` |
+
+Plus two new constraints: `joints_other_side` (exactly one of a second port or a
+header reference) and `joints_wall_reference_complete` (a header reference
+without a station and an offset is a shrug).
+
+**The payoff, which is why it was done this way.** `openPorts()` is untouched:
+the header keeps exactly two ends no matter how many branches land on it. A
+synthesised wall port would have made a header with three branches look like a
+pipe with five ends — corrupting the query ADR-009 §2.3 calls the most useful in
+the system.
+
+**The line guard had to learn the difference between a branch and a tie-in.** A
+branch is cross-line *by nature* — one line welds onto another — whereas a
+tie-in joins two line ends and neither side owns the number. A branch joint is
+owned by the BRANCH line: that crew makes the weld, their isometric carries it,
+and their line numbers it. The header is a thing being welded to. `JT_LINE_
+MISMATCH` therefore checks only the branch side when `port_b_id` is NULL.
+
+**Two axes, because we have no geometry.** Plant 3D stores the circumferential
+offset and derives the station from 3D coordinates; we cannot derive anything,
+so both are stored: `branch_station_mm` along the header from its upstream end,
+and `branch_offset_mm` signed from the centreline (0 = concentric). Both are
+bounds-checked at creation — the station within the header's length, the offset
+within its outer radius — because a location that cannot be checked is a note,
+not a design.
+
+**Numbering and dia-inch.** A wall weld is numbered on the branch line like any
+other weld. `diaInch()` used to return null for a joint with one port, which is
+exactly how the most expensive welds on a line go unpaid; it now returns the
+branch size. `isWeld()` accepts `BRANCH_STUB_IN` and `BRANCH_STUB_ON`
+(ADR-008 §9.2 / P-21).
+
+**Deliberately not built.** No UI creates a wall joint, and no importer populates
+one from a PCF `TAP-CONNECTION` — the parser still looks for a `TAP-POINT`
+keyword that does not exist in the standard (research §5.2), so the input side
+is the next piece. The pad thickness is recorded but nothing verifies it against
+ASME B31.3 §304.3.3 at joint level; the calculator exists and the class gate
+runs at publication only.

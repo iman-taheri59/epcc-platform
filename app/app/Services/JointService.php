@@ -173,6 +173,203 @@ final class JointService
     }
 
     /**
+     * Weld a branch pipe onto the wall of a header — the fitting-less branch.
+     *
+     * ADR-006 §13 / P-22. There is no second port: a pipe has two ends and no
+     * port on its side, so the joint records a FROZEN REFERENCE instead — the
+     * header component, a station along it, and an offset from its centreline.
+     * The alternative, inventing a port on the header wall, would put a fake
+     * end on the header and corrupt openPorts(), which drives the worklist, the
+     * progress metric and the import validator.
+     *
+     * This is the shape the PMS calls P2P, and the shape PCF writes as a tap
+     * connection and Plant 3D calls a tap weld. It is also the weld that
+     * carries the real cost premium: the header has to be cut, the branch end
+     * coped to match it, and the weld follows a saddle rather than a flat
+     * girth.
+     *
+     * The joint belongs to the BRANCH line, not the header's. The branch pipe's
+     * crew makes this weld, their isometric carries it, and their line numbers
+     * it. The header is a thing being welded to.
+     *
+     * @param  string  $kind  JointBranchKind::STUB_IN or ::STUB_ON
+     * @param  array<string, mixed>  $attributes
+     *
+     * @throws ValidationException
+     */
+    public function joinToWall(
+        Port $branchPort,
+        Component $header,
+        string $kind,
+        float $stationMm,
+        float $offsetMm,
+        User $actor,
+        array $attributes = [],
+    ): Joint {
+        $line = $this->lineFor($branchPort, null);
+
+        $project = Project::query()->findOrFail($line->project_id);
+        $this->archives->assertWritable($project);
+
+        if (! in_array($kind, [JointBranchKind::STUB_IN, JointBranchKind::STUB_ON], true)) {
+            throw ValidationException::withMessages([
+                'branch_kind' => 'A wall joint is a stub-in or a stub-on, not a fitting.',
+            ]);
+        }
+
+        $this->assertWallGeometry($header, $stationMm, $offsetMm);
+
+        $verdict = $this->wallVerdictFor($line, $header, $branchPort);
+
+        return DB::transaction(function () use (
+            $branchPort, $header, $kind, $stationMm, $offsetMm, $line, $actor, $attributes, $verdict,
+        ): Joint {
+            PipingLine::query()->whereKey($line->id)->lockForUpdate()->first();
+
+            $fresh = Port::query()->whereKey($branchPort->id)->first();
+
+            if ($fresh === null) {
+                throw ValidationException::withMessages([
+                    'port_id' => __('epcc.joint.port_missing'),
+                ]);
+            }
+
+            if ($fresh->is_connected) {
+                throw ValidationException::withMessages([
+                    'port_id' => __('epcc.component.port_already_connected', ['port' => $fresh->label()]),
+                ]);
+            }
+
+            // Numbered when the branch end is weldable. PL takes its numbering
+            // from whatever it is welded to - welded to a header wall that is a
+            // stub-in weld, and a stub-in weld is a weld.
+            $numbered = $fresh->end_type !== null
+                && (bool) ($this->reference->endType((string) $fresh->end_type)['weldable'] ?? false);
+
+            $joint = Joint::create([
+                'project_id' => $line->project_id,
+                'company_id' => $actor->company_id,
+                'piping_line_id' => $line->id,
+                'port_a_id' => $fresh->id,
+
+                // The other side is a point on a wall, not a port.
+                'port_b_id' => null,
+                'branch_header_component_id' => $header->id,
+                'branch_station_mm' => $stationMm,
+                'branch_offset_mm' => $offsetMm,
+
+                'joint_seq' => $numbered ? $this->nextSeq($line) : null,
+                'numbering_policy' => $numbered
+                    ? Joint::NUMBERING_REQUIRED
+                    : Joint::NUMBERING_NOT_APPLICABLE,
+
+                'joint_type' => match ($kind) {
+                    JointBranchKind::STUB_IN => Joint::TYPE_BRANCH_STUB_IN,
+                    JointBranchKind::STUB_ON => Joint::TYPE_BRANCH_STUB_ON,
+                },
+                'branch_kind' => $kind,
+                ...$verdict,
+                'state' => Joint::STATE_MODELLED,
+
+                'nominal_size' => $fresh->nominal_size,
+                'nominal_size_decimal' => $fresh->nominal_size_decimal,
+                'schedule' => $fresh->schedule,
+                'thickness_mm' => $this->wallFor($fresh),
+
+                'shop_field' => $attributes['shop_field'] ?? null,
+                'spool_id' => $attributes['spool_id'] ?? null,
+                'isometric_sheet_no' => $attributes['isometric_sheet_no'] ?? null,
+
+                'compatibility_state' => Verdict::VALID,
+                'compatibility_notes' => null,
+
+                'source' => $this->resolveSource($attributes),
+                'external_ref' => $attributes['external_ref'] ?? null,
+                'created_by' => $actor->id,
+            ]);
+
+            Port::query()->whereKey($fresh->id)->update(['is_connected' => true]);
+
+            return $joint->fresh(['portA', 'branchHeaderComponent']);
+        });
+    }
+
+    /**
+     * A station and an offset that could actually describe a point on this pipe.
+     *
+     * Refuses rather than guesses, because a location that cannot be checked is
+     * a note, not a design — and the two things this number feeds are the
+     * spool drawing and the branch cut length, neither of which tolerates a
+     * shrug.
+     */
+    private function assertWallGeometry(Component $header, float $stationMm, float $offsetMm): void
+    {
+        $length = $header->length_mm;
+
+        if ($length === null) {
+            throw ValidationException::withMessages([
+                'branch_station_mm' => 'The header has no length, so a station along it cannot be checked.',
+            ]);
+        }
+
+        if ($stationMm < 0 || $stationMm > (float) $length) {
+            throw ValidationException::withMessages([
+                'branch_station_mm' => "The station must lie within the header, 0 to {$length} mm.",
+            ]);
+        }
+
+        // Beyond this the branch misses the pipe altogether. The bound is the
+        // header's outer radius: a stub-in penetrates to the bore and a stub-on
+        // saddles the outside, so both land at about the same distance from the
+        // centreline.
+        $nps = $header->nominal_size;
+
+        if ($nps === null) {
+            throw ValidationException::withMessages([
+                'branch_offset_mm' => 'The header has no nominal size, so an offset from its centreline cannot be checked.',
+            ]);
+        }
+
+        $radius = $this->reference->size((string) $nps)->odMm / 2.0;
+
+        if (abs($offsetMm) > $radius) {
+            throw ValidationException::withMessages([
+                'branch_offset_mm' => "The branch centreline must meet the header; the limit is {$radius} mm from its centreline.",
+            ]);
+        }
+    }
+
+    /**
+     * What the class says about a branch onto this header, asked the same way
+     * `branchVerdictFor()` asks it for a fitting branch — from the line's
+     * ISSUED SNAPSHOT, never the live rules.
+     *
+     * @return array{branch_class_type: string|null, branch_class_p2p_kind: string|null, branch_pad_thickness_mm: float|null, branch_rule_state: string|null}
+     */
+    private function wallVerdictFor(PipingLine $line, Component $header, Port $branchPort): array
+    {
+        return $this->resolveVerdict(
+            $line,
+            $this->dnOfSize($header->nominal_size),
+            $this->dnOfSize($branchPort->nominal_size),
+        );
+    }
+
+    /** @param  string|null  $nps */
+    private function dnOfSize(?string $nps): ?int
+    {
+        if ($nps === null) {
+            return null;
+        }
+
+        try {
+            return $this->reference->size($nps)->dn;
+        } catch (UnknownSizeException) {
+            return null;
+        }
+    }
+
+    /**
      * Break a joint, reopening both of its ports.
      *
      * This is the method phase 2 could not have: with no joint row there was
@@ -201,7 +398,8 @@ final class JointService
         }
 
         DB::transaction(function () use ($joint): void {
-            $portIds = [$joint->port_a_id, $joint->port_b_id];
+            // A branch joint has no second port; array_filter drops the null.
+            $portIds = array_values(array_filter([$joint->port_a_id, $joint->port_b_id]));
 
             $joint->delete();
 
@@ -230,10 +428,17 @@ final class JointService
             return collect();
         }
 
-        return Joint::query()
+        $query = Joint::query()
             ->whereIn('port_a_id', $portIds)
-            ->orWhereIn('port_b_id', $portIds)
-            ->get();
+            ->orWhereIn('port_b_id', $portIds);
+
+        // A component can also be the HEADER that other lines branch onto.
+        // Missing these would reproduce exactly the failure the docblock above
+        // describes: the branch would be left recorded as welded to something
+        // that no longer exists, invisible to the open-ends worklist.
+        $query->orWhere('branch_header_component_id', $component->id);
+
+        return $query->get();
     }
 
     // ---------------------------------------------------------- numbering --
@@ -361,11 +566,15 @@ final class JointService
         $a = $joint->portA;
         $b = $joint->portB;
 
-        if ($a === null || $b === null) {
-            // The ports are gone but the joint row is not - only reachable
-            // mid-transaction or in corrupt data. Falling back to the frozen
-            // nominal_size would be wrong: that is the size of ONE end, and
-            // for a reducing weld the other end may be smaller.
+        if ($b === null) {
+            // A joint on a header wall has one port by construction. The weld
+            // is charged on the branch size, which is the size of that one
+            // port - and dia-inch is money, so this must not quietly return
+            // null and disappear from the roll-up.
+            return $a?->nominal_size_decimal;
+        }
+
+        if ($a === null) {
             return null;
         }
 
@@ -584,6 +793,37 @@ final class JointService
             return [...$unasked, 'branch_rule_state' => JointBranchRuleState::NO_RULE];
         }
 
+        return $this->resolveVerdict($line, $headerDn, $branchDn, $unasked);
+    }
+
+    /**
+     * Ask the line's issued class what this header x branch pair should be.
+     *
+     * Shared by fitting branches and wall branches, so that both are held to
+     * the same answer whether or not the branch has a fitting in it.
+     *
+     * @param  array<string, mixed>|null  $unasked  what to return when there is nothing to ask
+     * @return array{branch_class_type: string|null, branch_class_p2p_kind: string|null, branch_pad_thickness_mm: float|null, branch_rule_state: string|null}
+     */
+    private function resolveVerdict(
+        PipingLine $line,
+        ?int $headerDn,
+        ?int $branchDn,
+        ?array $unasked = null,
+    ): array {
+        $unasked ??= [
+            'branch_class_type' => null,
+            'branch_class_p2p_kind' => null,
+            'branch_pad_thickness_mm' => null,
+            'branch_rule_state' => null,
+        ];
+
+        if ($headerDn === null || $branchDn === null) {
+            // Could not even ask. Treated as NO_RULE rather than inventing a
+            // fourth state: the action is the same, open the branch table.
+            return [...$unasked, 'branch_rule_state' => JointBranchRuleState::NO_RULE];
+        }
+
         try {
             $specification = $this->issuedPms->forLine($line);
         } catch (ValidationException) {
@@ -644,10 +884,12 @@ final class JointService
             : [$second, $first];
     }
 
-    private function lineFor(Port $a, Port $b): PipingLine
+    private function lineFor(Port $a, ?Port $b): PipingLine
     {
         $componentA = Component::query()->find($a->component_id);
-        $componentB = Component::query()->find($b->component_id);
+        // A joint on a header wall has no second port: the other side
+        // is a point on the header, which is a different line entirely.
+        $componentB = $b === null ? null : Component::query()->find($b->component_id);
 
         // A NOZZLE port belongs to equipment, not to a line, so it claims no
         // line of its own: the joint takes the line from whichever side does

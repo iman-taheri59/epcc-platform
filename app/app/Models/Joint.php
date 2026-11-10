@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Component;
 use App\Support\Piping\BranchConnectionType;
 use App\Support\Piping\JointBranchKind;
 use App\Support\Piping\JointBranchRuleState;
@@ -31,6 +32,7 @@ final class Joint extends Model
         'joint_seq', 'numbering_policy',
         'joint_type', 'branch_kind', 'state',
         'branch_class_type', 'branch_class_p2p_kind',
+        'branch_header_component_id', 'branch_station_mm', 'branch_offset_mm',
         'branch_pad_thickness_mm', 'branch_rule_state',
         'fitted_by_code', 'fitted_at',
         'nominal_size', 'nominal_size_decimal', 'schedule', 'thickness_mm',
@@ -44,9 +46,18 @@ final class Joint extends Model
         'nominal_size_decimal' => 'float',
         'thickness_mm' => 'float',
         'branch_pad_thickness_mm' => 'float',
+        'branch_station_mm' => 'float',
+        'branch_offset_mm' => 'float',
         'compatibility_notes' => 'array',
         'fitted_at' => 'datetime',
     ];
+
+    // ADR-008 §9.2 / P-21: branch welds are a formal joint type, not a butt
+    // weld with an asterisk. They are counted and reported separately, and
+    // dia-inch must not silently absorb them.
+    public const TYPE_BRANCH_STUB_IN = 'BRANCH_STUB_IN';
+
+    public const TYPE_BRANCH_STUB_ON = 'BRANCH_STUB_ON';
 
     public const STATE_MODELLED = 'MODELLED';
 
@@ -107,7 +118,14 @@ final class Joint extends Model
      */
     public function isWeld(): bool
     {
-        return in_array($this->joint_type, ['BUTT_WELD', 'SOCKET_WELD', 'FABRICATED'], true);
+        return in_array($this->joint_type, [
+            'BUTT_WELD', 'SOCKET_WELD', 'FABRICATED',
+
+            // A branch weld is a weld. Leaving these out would drop the most
+            // expensive welds on the line out of every dia-inch roll-up, which
+            // is the opposite of what ADR-008 §9.2 asked for.
+            self::TYPE_BRANCH_STUB_IN, self::TYPE_BRANCH_STUB_ON,
+        ], true);
     }
 
     public function isFitted(): bool
@@ -154,6 +172,14 @@ final class Joint extends Model
             [BranchConnectionType::P2P, JointBranchKind::CROSS],
             [BranchConnectionType::P2P, JointBranchKind::OLET] => 'FITTING_WHERE_CLASS_SAYS_NONE',
 
+            // The class asked for no fitting, and none was used — but WHICH
+            // stub matters. A stub-in seats inside the header bore and a
+            // stub-on saddles the outside; they are different welds and take
+            // different preparation.
+            [BranchConnectionType::P2P, JointBranchKind::STUB_IN],
+            [BranchConnectionType::P2P, JointBranchKind::STUB_ON] =>
+                $this->branch_class_p2p_kind === $this->branch_kind ? 'AGREES' : 'MISMATCH',
+
             [BranchConnectionType::TEE, JointBranchKind::TEE] => 'AGREES',
 
             // An olet is the fitting that realises a WELDOLET or SOCKOLET cell.
@@ -167,6 +193,24 @@ final class Joint extends Model
 
             default => 'MISMATCH',
         };
+    }
+
+    /**
+     * The header this branch is welded onto, when the joint is on a wall.
+     *
+     * Null for every ordinary joint. A pipe has two ends and no port on its
+     * side, so the header contributes no port — the joint points at the
+     * component and at a location on it instead (ADR-006 §13, P-22).
+     */
+    public function branchHeaderComponent(): BelongsTo
+    {
+        return $this->belongsTo(Component::class, 'branch_header_component_id');
+    }
+
+    /** True when this joint lands on a header wall rather than another port. */
+    public function isOnWall(): bool
+    {
+        return $this->branch_header_component_id !== null;
     }
 
     /** The other end of the joint, given one of its ports. */
