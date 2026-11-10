@@ -8,6 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ __('equipment.title') }} — {{ $project->code }}</title>
 @include('partials.shell')
+@include('partials.tabletools')
 <style>
   .eq-card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; margin:14px 0; }
   .eq-card h2 { font-size:15px; margin:0 0 8px; }
@@ -94,15 +95,15 @@
     @if($equipment->isEmpty())
       <p class="help">{{ __('equipment.empty') }}</p>
     @else
-      <table>
+      <table data-tt>
         <thead>
           <tr>
-            <th>{{ __('equipment.tag_number') }}</th>
-            <th>{{ __('equipment.equipment_type') }}</th>
-            <th>{{ $lang === 'fa' ? __('equipment.name_fa') : __('equipment.name_en') }}</th>
-            <th>{{ __('equipment.subsystem') }}</th>
-            <th>{{ __('equipment.state') }}</th>
-            <th>{{ __('equipment.nozzle_count') }}</th>
+            <th data-sort="text">{{ __('equipment.tag_number') }}</th>
+            <th data-sort="text">{{ __('equipment.equipment_type') }}</th>
+            <th data-sort="text">{{ $lang === 'fa' ? __('equipment.name_fa') : __('equipment.name_en') }}</th>
+            <th data-sort="text">{{ __('equipment.subsystem') }}</th>
+            <th data-sort="text">{{ __('equipment.state') }}</th>
+            <th class="num">{{ __('equipment.nozzle_count') }}</th>
           </tr>
         </thead>
         <tbody>

@@ -10,6 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ $equipment->tag_number }} — {{ $project->code }}</title>
 @include('partials.shell')
+@include('partials.tabletools')
 <style>
   .eq-card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; margin:14px 0; }
   .eq-card h2 { font-size:15px; margin:0 0 8px; }
@@ -71,17 +72,17 @@
     @if($schedule === [])
       <p class="help">{{ __('equipment.no_nozzles') }}</p>
     @else
-      <table>
+      <table data-tt>
         <thead>
           <tr>
-            <th>{{ __('equipment.tag') }}</th>
-            <th>{{ __('equipment.nozzle_type') }}</th>
-            <th>{{ __('equipment.nps') }}</th>
-            <th>{{ __('equipment.dn') }}</th>
-            <th>{{ __('equipment.end_type') }}</th>
-            <th>{{ __('equipment.rating') }}</th>
-            <th>{{ __('equipment.facing') }}</th>
-            <th>{{ __('equipment.connected_line') }}</th>
+            <th data-sort="text">{{ __('equipment.tag') }}</th>
+            <th data-sort="text">{{ __('equipment.nozzle_type') }}</th>
+            <th data-sort="text">{{ __('equipment.nps') }}</th>
+            <th class="num" data-sort="number">{{ __('equipment.dn') }}</th>
+            <th data-sort="text">{{ __('equipment.end_type') }}</th>
+            <th data-sort="text">{{ __('equipment.rating') }}</th>
+            <th data-sort="text">{{ __('equipment.facing') }}</th>
+            <th data-sort="text">{{ __('equipment.connected_line') }}</th>
           </tr>
         </thead>
         <tbody>
