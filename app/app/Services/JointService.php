@@ -11,6 +11,8 @@ use App\Models\Port;
 use App\Models\Project;
 use App\Models\User;
 use App\Support\LineReleaseState;
+use App\Support\Piping\Exceptions\UnknownBranchTemplate;
+use App\Support\Piping\JointBranchKind;
 use App\Support\Piping\PortCompatibility;
 use App\Support\Piping\Verdict;
 use App\Support\Reference\PipeReference;
@@ -137,6 +139,7 @@ final class JointService
                     ? Joint::NUMBERING_REQUIRED
                     : Joint::NUMBERING_NOT_APPLICABLE,
                 'joint_type' => $this->compatibility->jointType($freshA, $freshB),
+                'branch_kind' => $this->branchKindFor($freshA, $freshB),
                 'state' => Joint::STATE_MODELLED,
 
                 // Frozen from the ports at creation. A joint accepted at
@@ -372,7 +375,11 @@ final class JointService
      * full-scan aggregate under RLS measured 11x slower (ADR-006 section 6),
      * so those have to be incrementally maintained counters.
      *
-     * @return array{welds: int, fitted: int, dia_inch: float, dia_inch_fitted: float}
+     * @return array{
+     *     welds: int, fitted: int, dia_inch: float, dia_inch_fitted: float,
+     *     branch_welds: int, branch_dia_inch: float,
+     *     branch_by_kind: array<string, array{welds: int, dia_inch: float}>
+     * }
      */
     public function lineMetrics(PipingLine $line): array
     {
@@ -385,6 +392,15 @@ final class JointService
         $fitted = 0;
         $dia = 0.0;
         $diaFitted = 0.0;
+
+        // Branch connections, carried separately rather than folded into the
+        // totals. The owner's requirement (2026-11-10): a branch costs more to
+        // execute and weld than an ordinary weld, so the register has to be
+        // able to tell them apart; ADR-008 §9.2 says branch welds must be
+        // counted and reported separately and must not be silently absorbed.
+        $branchWelds = 0;
+        $branchDia = 0.0;
+        $byKind = [];
 
         foreach ($joints as $joint) {
             $value = $this->diaInch($joint);
@@ -400,17 +416,92 @@ final class JointService
                 $fitted++;
                 $diaFitted += $value;
             }
+
+            if ($joint->branch_kind === null) {
+                continue;
+            }
+
+            $branchWelds++;
+            $branchDia += $value;
+
+            $byKind[$joint->branch_kind] ??= ['welds' => 0, 'dia_inch' => 0.0];
+            $byKind[$joint->branch_kind]['welds']++;
+            $byKind[$joint->branch_kind]['dia_inch'] += $value;
+        }
+
+        foreach ($byKind as $kind => $totals) {
+            $byKind[$kind]['dia_inch'] = round($totals['dia_inch'], 4);
         }
 
         return [
+            // Totals are unchanged in meaning and still INCLUDE branch welds:
+            // a branch weld is a weld, and a dia-inch is a dia-inch. What was
+            // wrong before was that nothing could see them separately, not
+            // that they were counted. The complement is welds - branch_welds.
             'welds' => $welds,
             'fitted' => $fitted,
             'dia_inch' => round($dia, 4),
             'dia_inch_fitted' => round($diaFitted, 4),
+
+            'branch_welds' => $branchWelds,
+            'branch_dia_inch' => round($branchDia, 4),
+
+            // Only kinds that actually occur. Zero rows are not written for
+            // kinds that do not: a report that says "0 stub-in" invites the
+            // reader to believe stub-ins were looked for and ruled out, and
+            // today they cannot be represented at all.
+            'branch_by_kind' => $byKind,
         ];
     }
 
     // ------------------------------------------------------------ helpers --
+
+    /**
+     * Whether this joint is a branch connection, and of what kind.
+     *
+     * Decided by the ROLE of the ports, not by their sizes and not by the end
+     * types: a tee's two RUN ports take ordinary welds along the line, and only
+     * its BRANCH port makes the joint a branch connection. That distinction is
+     * the whole reason the role exists ("the branch is always seq 3 and rules
+     * refer to it by role", in the ports migration) — it just was never read by
+     * the joint layer until now.
+     *
+     * Deliberately narrow about what it claims. This reports the branch welds
+     * the model can SEE: a branch made through a purchased fitting. The two
+     * branch shapes that carry the real cost premium — an olet's fabricated end
+     * welded onto the header, and a stub-in on the header wall — are not
+     * representable yet and therefore report null here rather than being
+     * guessed (ADR-006 §13, P-22). See JointBranchKind.
+     *
+     * @return string|null null for a weld in the run, which is the ordinary case
+     */
+    public function branchKindFor(Port $a, Port $b): ?string
+    {
+        // Deterministic order: a joint with a branch port on BOTH sides is not
+        // a shape the templates produce, but if one ever appears the kind must
+        // not depend on which way round the caller passed the ports.
+        foreach ([$a, $b] as $port) {
+            if ($port->role !== 'BRANCH') {
+                continue;
+            }
+
+            $component = $port->component;
+
+            if ($component === null) {
+                continue;
+            }
+
+            $kind = JointBranchKind::fromTemplate((string) $component->template_code);
+
+            if ($kind === null) {
+                throw UnknownBranchTemplate::forTemplate((string) $component->template_code);
+            }
+
+            return $kind;
+        }
+
+        return null;
+    }
 
     /**
      * Sort the pair so the CHECK is satisfied, whatever order the caller used.

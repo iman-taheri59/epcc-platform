@@ -492,3 +492,52 @@ membership of each class specification in a revision. `PUBLISHED` on a class
 is a technical gate, not evidence of CDE document approval. Do not describe
 this implementation as a complete PMS document or use class publication alone
 to infer a governing document revision for line registration. See ADR-028.
+
+### 9.4 Branch connections are separable in the joint register (built 2026-11-10)
+
+Owner requirement: «در پروژه‌ها معمولاً قیمت اجرا و جوشکاری اتصال انشعاب از
+قیمت اجرا و جوشکاری جوش معمولی بیشتر است. سیستم باید بتواند اتصالات انشعابی را
+از معمولی تفکیک کند» — a branch connection costs more to execute and weld than
+an ordinary weld, so the register must be able to tell them apart. §9.2 asked
+for the same thing in specification language. This is the first slice of it.
+
+**Built.** `joints.branch_kind`, nullable, CHECK-constrained, indexed
+(`WHERE branch_kind IS NOT NULL`). Derived at joint creation from the **port
+role**, not from sizes or end types, and frozen like `joint_type`: a tee's two
+RUN ports take ordinary welds along the line and only its BRANCH port makes the
+joint a branch connection. `JointService::branchKindFor()` does it; the
+vocabulary is `JointBranchKind` (`TEE`, `CROSS`, `OLET`, with `STUB_IN` and
+`STUB_ON` reserved). `lineMetrics()` now returns `branch_welds`,
+`branch_dia_inch` and `branch_by_kind` alongside the totals.
+
+**Why the totals still include branch welds.** They are welds, and a dia-inch is
+a dia-inch. What was wrong was that nothing could see them separately — not that
+they were counted. The complement is `welds - branch_welds`.
+
+**Why the vocabulary is not `BranchConnectionType`.** The class declares
+(TEE/WELDOLET/SOCKOLET/P2P); the register observes (this joint sits on the
+branch port of a fitting). §9.2's deviation check — "a joint contradicting its
+class is a deviation" — needs both, so the register keeps its own observation
+rather than overwriting it with the verdict. Comparing the two is step 2 and is
+not built.
+
+**Deliberately not built, and why it matters commercially.** The two branch
+shapes carrying the real premium are the ones **not** covered here:
+
+- an olet's fabricated `FA` end welded onto the header, and
+- a stub-in / stub-on on the header wall.
+
+Both are contour welds: the header is cut, the branch end is coped to match,
+and the weld follows a saddle rather than a flat girth. Neither is representable
+— an olet's RUN port connects to nothing today (BW-to-FA is refused on purpose,
+`PortCompatibility::evaluateEnds()`), and a stub-in has no port on the header at
+all (ADR-006 §13, P-22). So `branch_kind` is null for them and they are absent
+from every report. `STUB_IN` and `STUB_ON` are in the CHECK only so a future
+writer cannot invent a spelling; **no code path produces them**, and
+`branchKindFor()` must not be extended to guess one from sizes.
+
+**Valuation is not decided here.** No multiplier is folded into dia-inch. The
+factor is a property of the contract and the fabricator, not of the weld; baking
+it in would produce a number that looks physical but is commercial and is
+therefore unarguable. The register reports branch welds by kind, each with its
+branch size. The rate table prices them.

@@ -16,6 +16,7 @@ use App\Services\ComponentService;
 use App\Services\JointService;
 use App\Services\PipingLineService;
 use App\Support\LineReleaseState;
+use App\Support\Piping\JointBranchKind;
 use App\Support\Piping\PortCompatibility;
 use App\Support\Piping\Verdict;
 use App\Support\TenantContext;
@@ -663,6 +664,103 @@ final class JointTest extends TestCase
         $this->assertSame(2, $metrics['welds']);
         $this->assertSame(8.0, $metrics['dia_inch']);
         $this->assertSame(0, $metrics['fitted']);
+    }
+
+    public function test_a_branch_weld_and_an_ordinary_weld_of_the_same_size_are_told_apart(): void
+    {
+        // The owner's requirement, 2026-11-10: a branch connection costs more
+        // to execute and weld than an ordinary weld, so the register has to be
+        // able to separate them. Dia-inch alone cannot - both of these joints
+        // are 2 dia-inch. That is the point: dia-inch measures weld metal, and
+        // most of the extra cost of a branch is cutting the header, coping the
+        // branch end, and fitting up on a curved surface.
+        $line = $this->line('2');
+
+        $metrics = $this->asOwner(function () use ($line) {
+            $tee = $this->components()->place($line, $this->owner(), 'TEE');
+            $this->components()->attach($tee->ports->firstWhere('role', 'BRANCH'), $this->owner(), 'PIPE');
+
+            $pipe = $this->components()->place($line, $this->owner(), 'PIPE');
+            $this->components()->attach($pipe->ports->first(), $this->owner(), 'PIPE');
+
+            return $this->joints()->lineMetrics($line->fresh());
+        });
+
+        // Two welds, two dia-inch each - identical by the old measure.
+        $this->assertSame(2, $metrics['welds']);
+        $this->assertSame(4.0, $metrics['dia_inch']);
+
+        // Only one of them is a branch connection, and that is now visible.
+        $this->assertSame(1, $metrics['branch_welds']);
+        $this->assertSame(2.0, $metrics['branch_dia_inch']);
+        $this->assertSame(['TEE' => ['welds' => 1, 'dia_inch' => 2.0]], $metrics['branch_by_kind']);
+    }
+
+    public function test_a_weld_along_the_run_is_not_a_branch_connection(): void
+    {
+        // A tee has two RUN ports and one BRANCH port. Welding a pipe to a RUN
+        // port is an ordinary weld in the line, however much the tee itself
+        // cost - which is why the classification reads the port ROLE and not
+        // the template code on its own.
+        $line = $this->line('6');
+
+        $kind = $this->asOwner(function () use ($line) {
+            $tee = $this->components()->place($line, $this->owner(), 'TEE');
+            $r = $this->components()->attach($tee->ports->firstWhere('role', 'RUN'), $this->owner(), 'PIPE');
+
+            return $r['joint']->branch_kind;
+        });
+
+        $this->assertNull($kind);
+    }
+
+    public function test_an_olet_branch_weld_is_classified_from_the_port_role(): void
+    {
+        $line = $this->line('6');
+
+        $kind = $this->asOwner(function () use ($line) {
+            $olet = $this->components()->place($line, $this->owner(), 'OLET', [
+                'port_sizes' => [2 => '2'],
+            ]);
+
+            $r = $this->components()->attach($olet->ports->firstWhere('role', 'BRANCH'), $this->owner(), 'PIPE');
+
+            return $r['joint']->branch_kind;
+        });
+
+        $this->assertSame(JointBranchKind::OLET, $kind);
+    }
+
+    public function test_the_wall_side_kinds_are_reserved_but_nothing_produces_them_yet(): void
+    {
+        // The honest line on what this does NOT yet do. STUB_IN and STUB_ON are
+        // in the CHECK so a future writer cannot invent a spelling, but no code
+        // path derives them: a stub-in has no port on the header at all, so
+        // there is nothing for branchKindFor() to read (ADR-006 §13, P-22).
+        // The welds that carry the real premium - an olet's fabricated end onto
+        // the header, and a stub-in - are still unrepresentable.
+        $this->assertNotContains(JointBranchKind::STUB_IN, JointBranchKind::DERIVABLE);
+        $this->assertNotContains(JointBranchKind::STUB_ON, JointBranchKind::DERIVABLE);
+
+        $this->assertContains(JointBranchKind::STUB_IN, JointBranchKind::ALL);
+        $this->assertContains(JointBranchKind::STUB_ON, JointBranchKind::ALL);
+    }
+
+    public function test_the_database_refuses_a_branch_kind_nobody_declares(): void
+    {
+        $line = $this->line('6');
+
+        $this->expectException(\Illuminate\Database\QueryException::class);
+
+        $this->asOwner(function () use ($line) {
+            $tee = $this->components()->place($line, $this->owner(), 'TEE');
+            $r = $this->components()->attach($tee->ports->firstWhere('role', 'BRANCH'), $this->owner(), 'PIPE');
+
+            // A latrolet is a real fitting. It is also not in our vocabulary,
+            // and a branch connection smuggled in under a spelling the reports
+            // do not look for is exactly the understatement this prevents.
+            DB::table('joints')->where('id', $r['joint']->id)->update(['branch_kind' => 'LATROLET']);
+        });
     }
 
     // -------------------------------------------------------------- fit-up --

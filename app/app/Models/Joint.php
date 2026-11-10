@@ -25,7 +25,7 @@ final class Joint extends Model
         'project_id', 'company_id', 'piping_line_id',
         'port_a_id', 'port_b_id',
         'joint_seq', 'numbering_policy',
-        'joint_type', 'state',
+        'joint_type', 'branch_kind', 'state',
         'fitted_by_code', 'fitted_at',
         'nominal_size', 'nominal_size_decimal', 'schedule', 'thickness_mm',
         'shop_field', 'spool_id', 'isometric_sheet_no',
