@@ -106,6 +106,103 @@ final class JointBoundaryTest extends TestCase
         }, $project->id);
     }
 
+    // ── Case 0: the ordinary branch, which is what a branch usually means ──
+
+    /**
+     * A branch off a header through a TEE — the ordinary case, and it works.
+     *
+     * This is what "pipe to pipe" means on most jobs: one pipe running, another
+     * branching off it. The branch is not welded to the header's wall; it is
+     * welded to a tee let into the run, and a tee has a real BRANCH port. Two
+     * joints come out of it, header-to-tee and tee-to-branch, both numbered on
+     * the one line because everything here belongs to it.
+     */
+    public function test_case_0_a_branch_through_a_tee_is_fully_modelled(): void
+    {
+        $line = $this->line();
+        $project = $this->project();
+        $owner = $this->owner();
+
+        $joints = $this->tenant->runAs(
+            $owner->company_id,
+            function () use ($project, $owner, $line): int {
+                DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+                $components = app(ComponentService::class);
+
+                // The header run.
+                $header = $components->place($line, $owner, 'PIPE', ['length_mm' => 6000]);
+
+                // The tee let into it. A pipe has two RUN ports and no END;
+                // the branch side of a tee is the one with role BRANCH.
+                $tee = $components->attach($header->ports->last(), $owner, 'TEE')['component'];
+
+                $branchPort = $tee->ports->firstWhere('role', 'BRANCH');
+                $this->assertNotNull($branchPort, 'A tee must offer a branch port.');
+
+                // And the branch itself.
+                $components->attach($branchPort, $owner, 'PIPE', ['length_mm' => 1500]);
+
+                return (int) DB::table('joints')->where('piping_line_id', $line->id)->count();
+            },
+            $project->id,
+        );
+
+        $this->assertSame(2, $joints, 'A branch through a tee makes two joints.');
+    }
+
+    /**
+     * An OLET cannot be connected to its header, and the reason is the reason
+     * case 3 exists.
+     *
+     * An olet is not a fitting you put between two pipe ends. It is the fitting
+     * you weld ONTO a header wall, and its header-side port says so: it carries
+     * end type FA (fabricated). BW-to-FA is refused on purpose — different
+     * preparations, no transition piece modelled — so the olet cannot join a
+     * pipe end. And it cannot sit on the wall either, because a pipe has two
+     * ends and no port on its wall.
+     *
+     * So an olet can be placed, and a branch can be welded to its BRANCH end,
+     * but its header side connects to nothing. That is not a bug in the olet;
+     * it is the same missing piece as the stub-in, wearing a purchased part
+     * number. ADR-006 §13 (R-2/P-22), still open.
+     */
+    public function test_case_0b_an_olets_header_side_connects_to_nothing(): void
+    {
+        $line = $this->line();
+        $project = $this->project();
+        $owner = $this->owner();
+
+        $olet = $this->tenant->runAs(
+            $owner->company_id,
+            fn () => app(ComponentService::class)->place($line, $owner, 'OLET'),
+            $project->id,
+        );
+
+        $runPort = $olet->ports->firstWhere('role', 'RUN');
+        $branchPort = $olet->ports->firstWhere('role', 'BRANCH');
+
+        $this->assertSame('FA', $runPort->end_type, 'The header side of an olet is a fabricated weld onto a wall.');
+        $this->assertSame('BW', $branchPort->end_type);
+
+        // A branch CAN be welded to the branch end...
+        $this->tenant->runAs($owner->company_id, function () use ($project, $owner, $branchPort): void {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+            app(ComponentService::class)->attach($branchPort, $owner, 'PIPE', ['length_mm' => 1500]);
+        }, $project->id);
+
+        // ...but the header side cannot be welded to a pipe end at all.
+        $verdict = app(\App\Support\Piping\PortCompatibility::class)->evaluate(
+            $runPort,
+            $this->tenant->runAs(
+                $owner->company_id,
+                fn () => app(ComponentService::class)->place($line, $owner, 'PIPE')->ports->first(),
+                $project->id,
+            ),
+        );
+
+        $this->assertTrue($verdict->isInvalid(), 'FA against BW must be refused, not warned about.');
+    }
+
     // ── Case 1 ────────────────────────────────────────────────────────────
 
     public function test_case_1_two_components_on_one_line_do_join(): void
