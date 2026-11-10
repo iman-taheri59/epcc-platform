@@ -9,12 +9,15 @@ use App\Models\Joint;
 use App\Models\PipingLine;
 use App\Models\Port;
 use App\Models\Project;
+use App\Services\PmsPinnedClassSpecification;
 use App\Models\User;
 use App\Support\LineReleaseState;
 use App\Support\Piping\Exceptions\UnknownBranchTemplate;
+use App\Support\Piping\JointBranchRuleState;
 use App\Support\Piping\JointBranchKind;
 use App\Support\Piping\PortCompatibility;
 use App\Support\Piping\Verdict;
+use App\Support\Reference\Exceptions\UnknownSizeException;
 use App\Support\Reference\PipeReference;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -44,6 +47,7 @@ final class JointService
         private readonly PortCompatibility $compatibility,
         private readonly PipeReference $reference,
         private readonly ProjectArchiveService $archives,
+        private readonly PmsPinnedClassSpecification $issuedPms,
     ) {}
 
     // -------------------------------------------------------------- join --
@@ -140,6 +144,7 @@ final class JointService
                     : Joint::NUMBERING_NOT_APPLICABLE,
                 'joint_type' => $this->compatibility->jointType($freshA, $freshB),
                 'branch_kind' => $this->branchKindFor($freshA, $freshB),
+                ...$this->branchVerdictFor($line, $freshA, $freshB),
                 'state' => Joint::STATE_MODELLED,
 
                 // Frozen from the ports at creation. A joint accepted at
@@ -378,6 +383,7 @@ final class JointService
      * @return array{
      *     welds: int, fitted: int, dia_inch: float, dia_inch_fitted: float,
      *     branch_welds: int, branch_dia_inch: float,
+     *     branch_ungoverned: int, branch_padded: int,
      *     branch_by_kind: array<string, array{welds: int, dia_inch: float}>
      * }
      */
@@ -401,6 +407,8 @@ final class JointService
         $branchWelds = 0;
         $branchDia = 0.0;
         $byKind = [];
+        $ungoverned = 0;
+        $padded = 0;
 
         foreach ($joints as $joint) {
             $value = $this->diaInch($joint);
@@ -424,6 +432,18 @@ final class JointService
             $branchWelds++;
             $branchDia += $value;
 
+            // The report that gets chased: a branch weld the class never
+            // spoke to. Either the line was never given an issued class, or
+            // the branch table has no cell for this size pair.
+            if ($joint->branch_rule_state !== null
+                && $joint->branch_rule_state !== JointBranchRuleState::RULE) {
+                $ungoverned++;
+            }
+
+            if ($joint->branch_pad_thickness_mm !== null) {
+                $padded++;
+            }
+
             $byKind[$joint->branch_kind] ??= ['welds' => 0, 'dia_inch' => 0.0];
             $byKind[$joint->branch_kind]['welds']++;
             $byKind[$joint->branch_kind]['dia_inch'] += $value;
@@ -445,6 +465,8 @@ final class JointService
 
             'branch_welds' => $branchWelds,
             'branch_dia_inch' => round($branchDia, 4),
+            'branch_ungoverned' => $ungoverned,
+            'branch_padded' => $padded,
 
             // Only kinds that actually occur. Zero rows are not written for
             // kinds that do not: a report that says "0 stub-in" invites the
@@ -477,30 +499,131 @@ final class JointService
      */
     public function branchKindFor(Port $a, Port $b): ?string
     {
-        // Deterministic order: a joint with a branch port on BOTH sides is not
-        // a shape the templates produce, but if one ever appears the kind must
-        // not depend on which way round the caller passed the ports.
+        $port = $this->branchPortOf($a, $b);
+
+        if ($port === null || $port->component === null) {
+            return null;
+        }
+
+        $kind = JointBranchKind::fromTemplate((string) $port->component->template_code);
+
+        if ($kind === null) {
+            throw UnknownBranchTemplate::forTemplate((string) $port->component->template_code);
+        }
+
+        return $kind;
+    }
+
+    /**
+     * The port that makes this joint a branch connection, or null.
+     *
+     * Deterministic order: a joint with a branch port on BOTH sides is not a
+     * shape the templates produce, but if one ever appears the answer must not
+     * depend on which way round the caller passed the ports.
+     */
+    private function branchPortOf(Port $a, Port $b): ?Port
+    {
         foreach ([$a, $b] as $port) {
-            if ($port->role !== 'BRANCH') {
-                continue;
+            if ($port->role === 'BRANCH') {
+                return $port;
             }
-
-            $component = $port->component;
-
-            if ($component === null) {
-                continue;
-            }
-
-            $kind = JointBranchKind::fromTemplate((string) $component->template_code);
-
-            if ($kind === null) {
-                throw UnknownBranchTemplate::forTemplate((string) $component->template_code);
-            }
-
-            return $kind;
         }
 
         return null;
+    }
+
+    /**
+     * What the line's issued PMS class says this branch should be.
+     *
+     * Read from the ISSUED SNAPSHOT, never from the live piping-class rows.
+     * ComponentService settled that convention for pipe schedules - "inherits
+     * the line's issued PMS specification, not the mutable/current piping-class
+     * rules" - and a weld is a stronger case for it still: a joint is a
+     * physical fact, and a class revision issued next month must not
+     * retroactively change what this weld was built to.
+     *
+     * Asked only for branch welds. A weld in the run has no business answering
+     * for a branch table, and asking would put a verdict on every joint in the
+     * line.
+     *
+     * Records rather than refuses. Plant 3D refuses to connect when the branch
+     * table has no cell for the pair, which is the right behaviour once there
+     * is a screen for the branch table - there is not one today, so a refusal
+     * would be a wall the user cannot climb. Every ungoverned branch weld is
+     * instead marked, and `branch_ungoverned` in lineMetrics() counts them.
+     *
+     * @return array{branch_class_type: string|null, branch_class_p2p_kind: string|null, branch_pad_thickness_mm: float|null, branch_rule_state: string|null}
+     */
+    public function branchVerdictFor(PipingLine $line, Port $a, Port $b): array
+    {
+        $unasked = [
+            'branch_class_type' => null,
+            'branch_class_p2p_kind' => null,
+            'branch_pad_thickness_mm' => null,
+            'branch_rule_state' => null,
+        ];
+
+        $branchPort = $this->branchPortOf($a, $b);
+
+        if ($branchPort === null) {
+            return $unasked;
+        }
+
+        $fitting = $branchPort->component;
+
+        // The branch table is keyed on hEADER x BRANCH. The header is the
+        // fitting's run size - which is NOT any port of this joint. A tee's
+        // branch weld carries the branch size on both of its ports; the run
+        // size only exists on the tee's sibling RUN port.
+        $headerDn = $this->dnOfPort($fitting?->ports->firstWhere('role', 'RUN'));
+        $branchDn = $this->dnOfPort($branchPort);
+
+        if ($headerDn === null || $branchDn === null) {
+            // Could not even ask. Treated as NO_RULE rather than inventing a
+            // fourth state: the action is the same, open the branch table.
+            return [...$unasked, 'branch_rule_state' => JointBranchRuleState::NO_RULE];
+        }
+
+        try {
+            $specification = $this->issuedPms->forLine($line);
+        } catch (ValidationException) {
+            return [...$unasked, 'branch_rule_state' => JointBranchRuleState::NO_SNAPSHOT];
+        }
+
+        try {
+            $rule = $this->issuedPms->branchRuleFromSpecification($specification, $headerDn, $branchDn);
+        } catch (ValidationException) {
+            return [...$unasked, 'branch_rule_state' => JointBranchRuleState::NO_RULE];
+        }
+
+        // Only a PAD rule carries a thickness - the class table enforces the
+        // pairing with a CHECK, but the snapshot is a JSON copy and a copy can
+        // drift. Re-stating the invariant here keeps a stray number off a weld
+        // that was never padded.
+        $padded = ($rule['reinforcement'] ?? null) === 'PAD';
+
+        return [
+            'branch_class_type' => $rule['component_type'] ?? null,
+            'branch_class_p2p_kind' => $rule['p2p_kind'] ?? null,
+            'branch_pad_thickness_mm' => $padded && isset($rule['pad_thickness'])
+                ? (float) $rule['pad_thickness']
+                : null,
+            'branch_rule_state' => JointBranchRuleState::RULE,
+        ];
+    }
+
+    /** DN of a port's nominal size, or null when the port or size is unknown. */
+    private function dnOfPort(?Port $port): ?int
+    {
+        if ($port === null || $port->nominal_size === null) {
+            return null;
+        }
+
+        try {
+            return $this->reference->size((string) $port->nominal_size)->dn;
+        } catch (UnknownSizeException) {
+            return null;
+        }
     }
 
     /**

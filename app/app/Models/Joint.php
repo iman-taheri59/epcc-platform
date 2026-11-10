@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Support\Piping\BranchConnectionType;
+use App\Support\Piping\JointBranchKind;
+use App\Support\Piping\JointBranchRuleState;
+
 use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +30,8 @@ final class Joint extends Model
         'port_a_id', 'port_b_id',
         'joint_seq', 'numbering_policy',
         'joint_type', 'branch_kind', 'state',
+        'branch_class_type', 'branch_class_p2p_kind',
+        'branch_pad_thickness_mm', 'branch_rule_state',
         'fitted_by_code', 'fitted_at',
         'nominal_size', 'nominal_size_decimal', 'schedule', 'thickness_mm',
         'shop_field', 'spool_id', 'isometric_sheet_no',
@@ -37,6 +43,7 @@ final class Joint extends Model
         'joint_seq' => 'integer',
         'nominal_size_decimal' => 'float',
         'thickness_mm' => 'float',
+        'branch_pad_thickness_mm' => 'float',
         'compatibility_notes' => 'array',
         'fitted_at' => 'datetime',
     ];
@@ -106,6 +113,60 @@ final class Joint extends Model
     public function isFitted(): bool
     {
         return $this->state === self::STATE_FITTED;
+    }
+
+    /**
+     * Whether this branch weld contradicts the class it was built to.
+     *
+     * ADR-008 section 9.2: "a joint contradicting its class is a deviation".
+     * The comparison is possible only because the register keeps its own
+     * OBSERVATION (`branch_kind`) alongside the class's DECLARATION
+     * (`branch_class_type`); overwriting one with the other would destroy the
+     * only evidence that they differ.
+     *
+     * Returns null for anything that is not a branch weld - a weld in the run
+     * has no verdict to contradict.
+     *
+     * `UNMATCHED` is the honest answer where the vocabularies cannot be made
+     * to meet: a CROSS branch is a branch connection, but BranchConnectionType
+     * has no CROSS (TEE/WELDOLET/SOCKOLET/P2P only), so no declared value can
+     * ever agree with it. Calling that a deviation would be wrong - the gap is
+     * in the PMS vocabulary, not in the weld.
+     */
+    public function branchDeviation(): ?string
+    {
+        if ($this->branch_kind === null) {
+            return null;
+        }
+
+        if ($this->branch_rule_state !== JointBranchRuleState::RULE) {
+            // Not a contradiction: nobody ever said what this should be. The
+            // action is to classify the line or add the missing cell, not to
+            // chase the weld.
+            return 'UNGOVERNED';
+        }
+
+        return match ([$this->branch_class_type, $this->branch_kind]) {
+            // The class says no fitting, and a fitting was used anyway. This is
+            // the expensive one: a purchased fitting appears in the MTO that
+            // the class never called for.
+            [BranchConnectionType::P2P, JointBranchKind::TEE],
+            [BranchConnectionType::P2P, JointBranchKind::CROSS],
+            [BranchConnectionType::P2P, JointBranchKind::OLET] => 'FITTING_WHERE_CLASS_SAYS_NONE',
+
+            [BranchConnectionType::TEE, JointBranchKind::TEE] => 'AGREES',
+
+            // An olet is the fitting that realises a WELDOLET or SOCKOLET cell.
+            [BranchConnectionType::WELDOLET, JointBranchKind::OLET],
+            [BranchConnectionType::SOCKOLET, JointBranchKind::OLET] => 'AGREES',
+
+            // A cross cannot be expressed in the class vocabulary at all.
+            [BranchConnectionType::TEE, JointBranchKind::CROSS],
+            [BranchConnectionType::WELDOLET, JointBranchKind::CROSS],
+            [BranchConnectionType::SOCKOLET, JointBranchKind::CROSS] => 'UNMATCHED',
+
+            default => 'MISMATCH',
+        };
     }
 
     /** The other end of the joint, given one of its ports. */

@@ -541,3 +541,59 @@ factor is a property of the contract and the fabricator, not of the weld; baking
 it in would produce a number that looks physical but is commercial and is
 therefore unarguable. The register reports branch welds by kind, each with its
 branch size. The rate table prices them.
+
+### 9.5 The class verdict travels with the branch weld (built 2026-11-10)
+
+Step 2 of the §9.2 work. §9.4 gave the register its own OBSERVATION
+(`branch_kind`, from the port role). This gives it the class's DECLARATION, and
+the space between the two.
+
+**Built.** `joints` gains `branch_class_type`, `branch_class_p2p_kind`,
+`branch_pad_thickness_mm` and `branch_rule_state`, all CHECK-constrained and all
+nullable. `JointService::branchVerdictFor()` fills them at joint creation, for
+branch welds only; `Joint::branchDeviation()` compares the two vocabularies.
+
+**Read from the issued snapshot, never from the live rules.** Same convention
+ComponentService already settled for pipe schedules — "inherits the line's
+issued PMS specification, not the mutable/current piping-class rules". A weld is
+a stronger case for it than a pipe: a joint is a physical fact, and a class
+revision issued next month must not retroactively restate what this weld was
+built to. `branch_pad_thickness_mm` is frozen rather than referenced for the same
+reason — the pad was bought, cut and welded at that thickness.
+
+**Two vocabularies, deliberately.** `branch_kind` (`JointBranchKind`) is what the
+model saw; `branch_class_type` (`BranchConnectionType`) is what the class
+declared. They cannot be derived from one another, and keeping both is what
+makes the deviation check possible — overwriting the observation with the
+verdict would destroy the only evidence that they differ. `branchDeviation()`
+returns `AGREES`, `MISMATCH`, `FITTING_WHERE_CLASS_SAYS_NONE`, `UNMATCHED` or
+`UNGOVERNED`.
+
+**Records rather than refuses.** Plant 3D refuses to connect when the branch
+table has no cell for the pair — "Without an entry, Plant 3D does not create a
+connection at that point". That is the right behaviour once there is a screen
+for the branch table, and there is not one today; a refusal would be a wall the
+user cannot climb. So an ungoverned branch weld is marked instead, and
+`lineMetrics()` reports `branch_ungoverned` and `branch_padded`.
+
+`branch_rule_state` distinguishes the two ways of being ungoverned, because two
+different people chase them: `NO_SNAPSHOT` means the line was never given an
+issued class (an upstream data gap); `NO_RULE` means the class exists but has no
+cell for this header x branch pair (a branch-table authoring gap).
+
+**`NO_SNAPSHOT` is nearly unreachable, and that is worth knowing.**
+`PmsLineEligibility::snapshotId()` refuses to create a line whose class has no
+approved revision, and the database guard `LINE_PMS_PIN_IMMUTABLE` refuses to
+un-pin one that has. The state therefore exists only for rows written outside
+the service — importers, data repair, lines predating the PMS feature. Both
+facts are asserted by tests rather than assumed.
+
+**`UNMATCHED` is a gap in the vocabulary, not a defect in the weld.** A CROSS
+branch is a branch connection, but `BranchConnectionType` is closed at
+TEE/WELDOLET/SOCKOLET/P2P and has no CROSS, so no declared value can ever agree
+with it. Calling that a deviation would be wrong; the gap is in the PMS
+vocabulary and opening it is a separate decision.
+
+**Deliberately not built.** The verdict is recorded but nothing acts on it: no
+screen shows `branch_ungoverned`, no gate refuses a branch that contradicts its
+class, and the P2P verdict still cannot be realised as a joint (§9.4).
