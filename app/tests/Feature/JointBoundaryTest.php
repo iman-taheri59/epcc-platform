@@ -16,6 +16,7 @@ use App\Services\JointService;
 use App\Services\PipingLineService;
 use App\Support\Piping\Pcf\PcfAdmission;
 use App\Support\Piping\Pcf\PcfParser;
+use App\Support\Piping\PortCompatibility;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
@@ -23,6 +24,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Tests\Support\ApprovedPmsClassFixture;
 use Tests\TestCase;
 
 /**
@@ -34,11 +36,13 @@ use Tests\TestCase;
  *
  *   1. two components on ONE line            -> a joint is created
  *   2. a pipe on line A to a pipe on line B  -> refused (tie-in)
- *   3. a branch onto a HEADER WALL           -> not representable at all
+ *   3. a P2P branch onto a HEADER WALL        -> explicit one-port wall joint
  *   4. a pipe onto an EQUIPMENT NOZZLE       -> a joint is created
  *
- * Only (4) changed recently. (2) and (3) are still refused, and are the two
- * people most often mean when they ask whether the system can join two pipes.
+ * A wall joint keeps the header at two end ports and stores a frozen header
+ * reference instead. This boundary test pins that shape and the read-only PCF
+ * warning; the PCF-to-model writer/UI is still absent. The cross-line tie-in in
+ * (2) remains refused.
  */
 final class JointBoundaryTest extends TestCase
 {
@@ -83,7 +87,7 @@ final class JointBoundaryTest extends TestCase
                 ['company_id' => $owner->company_id, 'description_en' => 'CS 150#'],
             );
 
-            \Tests\Support\ApprovedPmsClassFixture::ensure($project, $owner, $class);
+            ApprovedPmsClassFixture::ensure($project, $owner, $class);
 
             return $lines->create(
                 Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail(),
@@ -99,7 +103,7 @@ final class JointBoundaryTest extends TestCase
         $project = $this->project();
         $owner = $this->owner();
 
-        return $this->tenant->runAs($owner->company_id, function () use ($project, $owner, $line): string {
+        return $this->tenant->runAs($owner->company_id, function () use ($owner, $line): string {
             DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
 
             return (string) app(ComponentService::class)->place($line, $owner, 'PIPE')->ports->first()->id;
@@ -125,7 +129,7 @@ final class JointBoundaryTest extends TestCase
 
         $joints = $this->tenant->runAs(
             $owner->company_id,
-            function () use ($project, $owner, $line): int {
+            function () use ($owner, $line): int {
                 DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
                 $components = app(ComponentService::class);
 
@@ -151,20 +155,15 @@ final class JointBoundaryTest extends TestCase
     }
 
     /**
-     * An OLET cannot be connected to its header, and the reason is the reason
-     * case 3 exists.
+     * The P2P wall path deliberately is not an OLET-header fitting path.
      *
-     * An olet is not a fitting you put between two pipe ends. It is the fitting
-     * you weld ONTO a header wall, and its header-side port says so: it carries
-     * end type FA (fabricated). BW-to-FA is refused on purpose — different
-     * preparations, no transition piece modelled — so the olet cannot join a
-     * pipe end. And it cannot sit on the wall either, because a pipe has two
-     * ends and no port on its wall.
-     *
-     * So an olet can be placed, and a branch can be welded to its BRANCH end,
-     * but its header side connects to nothing. That is not a bug in the olet;
-     * it is the same missing piece as the stub-in, wearing a purchased part
-     * number. ADR-006 §13 (R-2/P-22), still open.
+     * An OLET carries a fabricated (FA) run port and a branch port. The normal
+     * two-port `join()` refuses BW-to-FA, correctly avoiding a fake transition
+     * fitting. `joinToWall()` currently represents fitting-less STUB_IN/ON
+     * joints only; it does not yet place the OLET's own header-side weld. So an
+     * OLET can be placed and a branch pipe can be joined to its BRANCH port,
+     * but the OLET-to-header weld is still not modelled. This is separate from
+     * the P2P wall joint delivered in ADR-006 §14.
      */
     public function test_case_0b_an_olets_header_side_connects_to_nothing(): void
     {
@@ -185,13 +184,13 @@ final class JointBoundaryTest extends TestCase
         $this->assertSame('BW', $branchPort->end_type);
 
         // A branch CAN be welded to the branch end...
-        $this->tenant->runAs($owner->company_id, function () use ($project, $owner, $branchPort): void {
+        $this->tenant->runAs($owner->company_id, function () use ($owner, $branchPort): void {
             DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
             app(ComponentService::class)->attach($branchPort, $owner, 'PIPE', ['length_mm' => 1500]);
         }, $project->id);
 
         // ...but the header side cannot be welded to a pipe end at all.
-        $verdict = app(\App\Support\Piping\PortCompatibility::class)->evaluate(
+        $verdict = app(PortCompatibility::class)->evaluate(
             $runPort,
             $this->tenant->runAs(
                 $owner->company_id,
@@ -211,7 +210,7 @@ final class JointBoundaryTest extends TestCase
         $owner = $this->owner();
         $project = $this->project();
 
-        $joint = $this->tenant->runAs($owner->company_id, function () use ($project, $owner, $line) {
+        $joint = $this->tenant->runAs($owner->company_id, function () use ($owner, $line) {
             DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
 
             $tee = app(ComponentService::class)->place($line, $owner, 'TEE');
@@ -239,7 +238,7 @@ final class JointBoundaryTest extends TestCase
         $owner = $this->owner();
 
         try {
-            $this->tenant->runAs($owner->company_id, function () use ($project, $owner, $portA, $portB): void {
+            $this->tenant->runAs($owner->company_id, function () use ($owner, $portA, $portB): void {
                 DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
                 app(JointService::class)->join(
                     Port::query()->findOrFail($portA),
@@ -309,9 +308,9 @@ final class JointBoundaryTest extends TestCase
             $this->project()->id,
         );
 
-        // A pipe has exactly two ends. There is no third port on its wall, and
-        // a joint connects two ports — so there is nothing to attach a branch
-        // to, however much the design wants one there.
+        // A pipe still has exactly two end ports. The wall joint references
+        // the header component instead of adding a synthetic third port; this
+        // is what keeps openPorts() correct after any number of branches.
         $this->assertSame(2, $headerPorts, 'A pipe offers its two ends, and nothing else.');
         $this->assertNotNull($header);
     }
@@ -320,7 +319,9 @@ final class JointBoundaryTest extends TestCase
     {
         $pcf = "UNITS-BORE INCH\nUNITS-CO-ORDS MM\nPIPELINE-REFERENCE L-1\n"
             ."PIPE\n    END-POINT 0 0 0 6 BW\n    END-POINT 3000 0 0 6 BW\n"
-            ."PIPE\n    END-POINT 1500 0 0 3 PL\n    TAP-POINT 1500 152 0 6\n";
+            ."    UNIQUE-COMPONENT-IDENTIFIER HEADER-1\n"
+            ."TAP-CONNECTION\n    CO-ORDS 1500 0 0 3 BW\n"
+            ."    UNIQUE-COMPONENT-IDENTIFIER HEADER-1\n";
 
         $file = (new PcfAdmission(new PcfParser))->parse($pcf);
 
@@ -384,7 +385,7 @@ final class JointBoundaryTest extends TestCase
 
         $this->expectException(QueryException::class);
 
-        $this->tenant->runAs($owner->company_id, function () use ($project, $owner, $line, $nozzlePort): void {
+        $this->tenant->runAs($owner->company_id, function () use ($owner, $line, $nozzlePort): void {
             DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
             $pipePort = $this->pipePortOn($line);
 
@@ -428,7 +429,7 @@ final class JointBoundaryTest extends TestCase
 
         $line = $this->line();
 
-        $joint = $this->tenant->runAs($owner->company_id, function () use ($project, $owner, $line, $nozzlePort) {
+        $joint = $this->tenant->runAs($owner->company_id, function () use ($owner, $line, $nozzlePort) {
             DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
             $pipePort = $this->pipePortOn($line);
 

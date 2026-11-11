@@ -18,7 +18,7 @@
 -- nozzle-to-nozzle one is not, because then nothing owns the number.
 --
 -- A BRANCH JOINT is the one shape this guard deliberately lets through with a
--- NULL second port (ADR-006 §13, P-22). A fitting-less branch — a stub-in or
+-- NULL second port (ADR-006 §14, P-22). A fitting-less branch — a stub-in or
 -- stub-on — welds the branch pipe's end to a point on the header's WALL, and a
 -- pipe has two ends and no port on its side. The joint therefore carries a
 -- frozen header reference instead of a second port: the header component, a

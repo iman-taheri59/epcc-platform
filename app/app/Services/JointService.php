@@ -9,12 +9,11 @@ use App\Models\Joint;
 use App\Models\PipingLine;
 use App\Models\Port;
 use App\Models\Project;
-use App\Services\PmsPinnedClassSpecification;
 use App\Models\User;
 use App\Support\LineReleaseState;
 use App\Support\Piping\Exceptions\UnknownBranchTemplate;
-use App\Support\Piping\JointBranchRuleState;
 use App\Support\Piping\JointBranchKind;
+use App\Support\Piping\JointBranchRuleState;
 use App\Support\Piping\PortCompatibility;
 use App\Support\Piping\Verdict;
 use App\Support\Reference\Exceptions\UnknownSizeException;
@@ -66,14 +65,16 @@ final class JointService
      *     one piping_line_id and takes its number from that line, and the
      *     number is what binds the weld to a hydrotest pack and an ITR. Until
      *     someone decides which line owns it, the joint cannot be numbered and
-     *     so cannot exist. (ADR-006 §13, R-2/P-22 — open design.)
-     *   - a BRANCH ON A HEADER WALL. PCF resolves that by projecting the tap
-     *     onto the header centreline: there is no port on the header side to
-     *     join to. A stub-in modelled as an olet would corrupt the MTO, so it
-     *     is not faked that way either.
+     *     so cannot exist. A branch is different: the branch line owns it
+     *     (ADR-006 §14).
+     *   - a BRANCH ON A HEADER WALL. This two-port method does not make one;
+     *     `joinToWall()` represents it with a frozen header reference. ISOGEN
+     *     resolves a PCF tap by projection onto the header centreline; this
+     *     service does not project PCF geometry. A stub-in modelled as an olet
+     *     would corrupt the MTO, so it is not faked that way either.
      *
-     * Both are reported at intake rather than swallowed — see
-     * PcfAdmission::withUnrepresentable.
+     * PCF wall taps are currently reported at read-only intake; no model-writing
+     * importer calls the wall-joint path — see PcfAdmission::withUnrepresentable.
      *
      * @param  array<string, mixed>  $attributes
      */
@@ -175,7 +176,7 @@ final class JointService
     /**
      * Weld a branch pipe onto the wall of a header — the fitting-less branch.
      *
-     * ADR-006 §13 / P-22. There is no second port: a pipe has two ends and no
+     * ADR-006 §14 / P-22. There is no second port: a pipe has two ends and no
      * port on its side, so the joint records a FROZEN REFERENCE instead — the
      * header component, a station along it, and an offset from its centreline.
      * The alternative, inventing a port on the header wall, would put a fake
@@ -355,7 +356,6 @@ final class JointService
         );
     }
 
-    /** @param  string|null  $nps */
     private function dnOfSize(?string $nps): ?int
     {
         if ($nps === null) {
@@ -677,10 +677,9 @@ final class JointService
             'branch_ungoverned' => $ungoverned,
             'branch_padded' => $padded,
 
-            // Only kinds that actually occur. Zero rows are not written for
-            // kinds that do not: a report that says "0 stub-in" invites the
-            // reader to believe stub-ins were looked for and ruled out, and
-            // today they cannot be represented at all.
+            // Only kinds that actually occur are emitted. Absence means no
+            // joint of that kind is recorded; it does not certify that the
+            // source design was searched or imported completely.
             'branch_by_kind' => $byKind,
         ];
     }
@@ -697,12 +696,11 @@ final class JointService
      * refer to it by role", in the ports migration) — it just was never read by
      * the joint layer until now.
      *
-     * Deliberately narrow about what it claims. This reports the branch welds
-     * the model can SEE: a branch made through a purchased fitting. The two
-     * branch shapes that carry the real cost premium — an olet's fabricated end
-     * welded onto the header, and a stub-in on the header wall — are not
-     * representable yet and therefore report null here rather than being
-     * guessed (ADR-006 §13, P-22). See JointBranchKind.
+     * Deliberately narrow about what it claims. This classifies two-port
+     * branch joints by the role of either port. A fitting-less P2P wall weld
+     * has only the branch port and a frozen header reference; it is classified
+     * on the separate `joinToWall()` path, not by this helper (ADR-006 §14).
+     * See JointBranchKind.
      *
      * @return string|null null for a weld in the run, which is the ordinary case
      */

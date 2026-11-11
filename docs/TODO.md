@@ -217,9 +217,9 @@
 | ⏳ | **Bulk import سیستم/زیرسیستم** | الان شکست سیستم/زیرسیستم عمدتاً seeded است؛ منبع ادمین عمداً create ندارد چون داده باید از مهندسی بیاید، نه تایپ دستی | متوسط |
 | ⏳ | **عکس نقص روی `DocumentFileStore`** | زیرساخت فایل وجود دارد ولی punch photos هنوز به همان store و ACL وصل نیست | کوچک |
 | ⏳ | **RFQ/مناقصه و تکمیل Procurement** | زنجیرهٔ پایه ساخته شده، اما RFQ/tendering، مقایسه پیشنهادها و بعضی خروجی‌های خرید باقی است | متوسط |
-| ⏳ | **قواعد PMS و جدول انشعاب** | ADR-008 طراحی شده اما ساخته نشده؛ برای جلوگیری از spec-break در مدل پایپینگ ضروری است | متوسط تا بالا؛ PostgreSQL-heavy |
+| ⏳ | **تکمیل UI و اجرای قواعد PMS/جدول انشعاب** | مدل کلاس/قواعد، snapshot صادرشده، اتصال verdict به joint و P2P wall joint ساخته شده‌اند؛ هنوز UI/seeder برای قواعد، hard-gate برای deviation، و مسیر PCF→model وجود ندارد. معیار پذیرش: مدیریت و انتشار قواعد، اعمال نسخهٔ صادرشده با گزارش kind/size/pad و deviation، و تست‌های پذیرش برای TEE/WELDOLET/SOCKOLET/P2P. عمداً ساخته نشده: wall-joint UI، importer/commit، OLET-to-header weld، نرخ‌نامهٔ تجاری و workflow جوشکاری/NDT | متوسط تا بالا؛ PostgreSQL-heavy |
 | ⏳ | **Equipment / nozzles** | ADR-010 طراحی کرده که nozzle مالک port است و joints تغییر نمی‌کند؛ برای گرفتن mismatch ریتینگ/فلنج قبل از bolt-up مهم است | متوسط؛ بعد از تثبیت PMS بهتر است |
-| ⏳ | **درون‌ریزی مهندسی Excel/PCF/property export** | ADR-005 آماده است؛ بیشترین ارزش وقتی دارد که نمونه فایل واقعی مشتری موجود باشد. NWD/NWF/NWC نباید به‌عنوان مسیر ingest وعده داده شود | بالا؛ نیازمند نمونه فایل |
+| ⏳ | **درون‌ریزی مهندسی Excel/PCF/property export** | parser و admissionِ PCF فقط read-only هستند و `TAP-CONNECTION` استاندارد را با UCI میزبان می‌شناسند؛ upload/preview/commit، اعمال joint و reconciliation هنوز ساخته نشده‌اند. ADR-005؛ نمونه فایل واقعی مشتری هم لازم است. NWD/NWF/NWC مسیر ingest نیست | بالا؛ نیازمند نمونه فایل |
 | ⚠️ | **محیط اجرای کامل تست** | در این sandbox فعلی PHP/Composer/PostgreSQL نصب نیست؛ بدون آن تغییرات migration/RLS پرریسک‌اند | پیش‌نیاز توسعه سنگین |
 | ⏳ | **زیرساخت planning و فروش نرم‌افزار** | برای بازار ایران باید demo seed، sales deck، offline license، installer، support diagnostics، pilot checklist و اسناد تحویل ساخته شود؛ مسیر international هم باز بماند | تجاری/محصولی؛ موازی با توسعه فنی |
 

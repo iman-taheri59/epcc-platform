@@ -20,7 +20,7 @@ final readonly class PcfComponent
 
     public function attribute(string $key): ?string
     {
-        $value = $this->attributes[$key] ?? null;
+        $value = $this->attributes[strtoupper(trim($key))] ?? null;
 
         if (is_array($value)) {
             $value = $value[0] ?? null;
@@ -31,10 +31,29 @@ final readonly class PcfComponent
         return ($value === null || $value === '') ? null : $value;
     }
 
+    public function hasAttribute(string $key): bool
+    {
+        return array_key_exists(strtoupper(trim($key)), $this->attributes);
+    }
+
     /** @return list<PcfKeypoint> */
     public function connectingKeypoints(): array
     {
-        return array_values(array_filter($this->keypoints, fn (PcfKeypoint $k): bool => $k->connecting));
+        return array_values(array_filter($this->keypoints, fn (PcfKeypoint $keypoint): bool => $keypoint->connecting));
+    }
+
+    public function isTapConnectionEntry(): bool
+    {
+        return strtoupper($this->type) === 'TAP-CONNECTION';
+    }
+
+    /** @return list<PcfKeypoint> */
+    public function tapConnectionKeypoints(): array
+    {
+        return array_values(array_filter(
+            $this->keypoints,
+            static fn (PcfKeypoint $point): bool => $point->kind === 'TAP-CONNECTION',
+        ));
     }
 
     /**
@@ -47,7 +66,7 @@ final readonly class PcfComponent
      */
     public function isWeld(): bool
     {
-        return $this->type === 'WELD';
+        return strtoupper($this->type) === 'WELD';
     }
 
     /** SHOP or FIELD, from the weld's CATEGORY; null when not a weld or not stated. */

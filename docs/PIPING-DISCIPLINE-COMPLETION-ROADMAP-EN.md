@@ -157,10 +157,11 @@ Outputs:
 
 ### Phase P1 — PMS and branch table
 
-> **Status 2026-10-11: IMPLEMENTED — awaiting runtime verification.** All six
-> outputs below landed in migration `2026_10_11_120000_create_piping_classes_and_rules`,
-> `PipingClassService`, and `PipingClassTest` (ADR-008 §9). Wiring into
-> component attach / joint compatibility is ADR-008 build phase 3, still open.
+> **Status: BACKEND/RULE RESOLUTION IMPLEMENTED; P1 is not declared complete.**
+> The class/rule model, publish gate, specificity resolver and branch-table
+> snapshot on fitted/P2P joints are implemented (ADR-008 §§9.1, 9.4–9.5; ADR-006
+> §14). There is no branch-rule authoring UI/seeder, and an ungoverned or
+> mismatching branch is reported rather than hard-blocked.
 
 Based on ADR-008:
 
@@ -169,12 +170,24 @@ Based on ADR-008:
 - `EXCLUDE USING gist`
 - Gap detection in the publish gate
 - Branch table with specificity-wins resolution
-- Integration with component attach and joint compatibility
+- Branch verdict snapshot from the issued class on fitted and P2P wall joints
 - **Addendum (owner 2026-10-11, ADR-008 §9.1):** the branch outcome
   vocabulary is closed — `TEE / WELDOLET / SOCKOLET / P2P`; `P2P`
   (pipe-to-pipe) is a first-class outcome meaning *no component*, with
   kinds **stub-in / stub-on** and a reinforcement pad whose thickness (mm)
   is mandatory when the pad is required.
+
+**Acceptance criteria for P1:** create/publish a class and its closed rule
+vocabulary; resolve a branch rule by header × branch DN using the issued
+revision; persist the declared result/pad with a branch joint; preserve observed
+kind separately and expose a deviation; pass the targeted rule/joint tests.
+**Current result:** the data/service criteria are implemented; the authoring and
+reporting interface is not.
+
+**Deliberately not built:** a PipingClass/branch-rule Filament UI or seeder,
+CDE/PMS document/revision lifecycle, hard refusal on a branch deviation,
+PCF-to-model application, or a general-purpose component importer. P1 remains
+open until its full operational acceptance is met.
 
 Value: stops incorrect data before it reaches the field.
 
@@ -217,19 +230,38 @@ Value: first real field data attached to the Piping model.
 
 ### Phase P5 — Welding / NDT / repair loop
 
-Needs detailed design, but the MVP minimum is:
+> **Status: OPEN.** The branch-weld joint data/model sub-slice is implemented
+> (P-21 partial; ADR-006 §14 and ADR-008 §§9.4–9.5). It does not complete P5.
+
+Needs detailed design; the full MVP must cover:
 
 - Weld log for joints where it is required
-- Welder code and WPS reference
+- Welder code, qualification and WPS/PQR reference
 - NDT request/result
-- Repair cycle
-- Repair rate KPI
+- Repair cycle and repair-rate KPI
 - Heat/material traceability to weld where feasible
-- **Branch-weld joint types (owner requirement, 2026-10-12, proposal P-21):**
-  stub-in/stub-on P2P connections are welds, not components — the joint
-  register must carry `BRANCH_STUB_IN` / `BRANCH_STUB_ON` as first-class
-  joint types so branch welds are counted and reported separately from butt
-  welds, and pad requirements stay traceable from the ADR-008 class rules.
+- Branch weld reporting separately from ordinary welds, with kind, branch size
+  and PAD thickness linked to the issued class rule
+
+**Acceptance criteria for the delivered branch-joint sub-slice:** P2P wall weld
+has a first-class type and frozen header reference; header remains exactly two
+ports; branch weld counts/by-kind and physical dia-inch are correct; issued class
+kind/pad is preserved separately from observation; mismatches are observable;
+targeted joint tests pass.
+
+**Current result:** the model/service acceptance above is implemented. The
+user-facing weld log/report, hard deviation gate, WPS/PQR/qualification,
+NDT/repair, repair KPI, and material/heat traceability are not.
+
+**Deliberately not built in the branch-joint slice:** weld UI/log, WPS/PQR,
+welder qualification, NDT/repair workflow, contract rate schedule,
+OLET-to-header wall weld, PCF-to-model writer, and multi-leg CROSS application.
+
+**Acceptance criteria for closing full P5:** each required joint has an
+attributed weld record; only qualified welders/WPS/PQR are accepted; NDT and
+repairs preserve a traceable cycle and feed the repair KPI; branch metrics and
+pad linkage are reportable; heat/material traceability follows the approved
+QA/QC policy.
 
 This phase must align with QA/QC and may deserve its own ADR.
 
@@ -251,6 +283,23 @@ Based on ADR-005/006:
 - Mapping to components/ports/joints
 - Deviation report
 - Rollback/reject before commit
+
+> **Status: OPEN; parser/admission are read-only preparation only.** The bounded
+> PCF parser now recognizes standard associated and separate `TAP-CONNECTION`
+> forms, resolves a unique host UCI and reports ambiguity/unresolved branch
+> types. It does not apply a PCF file to the model.
+
+**Acceptance criteria for P7:** authenticated bounded upload/quarantine;
+preview with component/tap mapping and explicit warnings; immutable batch and
+repeatable identity mapping; commit only after validation and confirmation;
+reject/rollback before commit; preserve unnumbered source joints; reconcile
+against accepted baseline without silently overwriting manual/fitted joints.
+Verify against a real project PCF sample before declaring acceptance.
+
+**Deliberately not built in the parser slice:** upload route/storage, preview or
+commit workflow, model writes/joint creation, geometry projection, PMS lookup,
+reconciliation, OLET template selection, and PCF-to-MTO acceptance. P7 remains
+open.
 
 ### Phase P8 — Roll-ups and turnover
 

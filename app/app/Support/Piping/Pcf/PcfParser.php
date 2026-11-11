@@ -55,7 +55,7 @@ final class PcfParser
     ];
 
     /**
-     * Keypoint keywords, i.e. the lines that define a component's ports.
+     * Position keypoints: only the explicit connecting subset defines ports.
      *
      * A TEE-SET-ON really does emit END-POINT, END-POINT and BRANCH1-POINT -
      * three keypoints for a three-way fitting. This is why PCF beats a flat
@@ -66,7 +66,7 @@ final class PcfParser
      */
     private const KEYPOINTS = [
         'END-POINT', 'BRANCH1-POINT', 'BRANCH2-POINT', 'BRANCH3-POINT',
-        'CENTRE-POINT', 'CO-ORDS', 'PORT-POINT', 'TAP-POINT',
+        'CENTRE-POINT', 'CO-ORDS', 'PORT-POINT', 'TAP-CONNECTION',
     ];
 
     /** Keypoints that are a real connection rather than geometry. */
@@ -144,6 +144,16 @@ final class PcfParser
                     'attributes' => [],
                 ];
 
+                // A standalone TAP-CONNECTION entry normally has its CO-ORDS
+                // on the next indented line, but retain exporters that put the
+                // coordinate tuple on the entry line itself as well.
+                if ($keyword === 'TAP-CONNECTION' && $tokens !== []) {
+                    if (strtoupper((string) ($tokens[0] ?? '')) === 'CO-ORDS') {
+                        array_shift($tokens);
+                    }
+                    $current['keypoints'][] = $this->parseKeypoint('TAP-CONNECTION', $tokens, $lineNo);
+                }
+
                 continue;
             }
 
@@ -203,6 +213,13 @@ final class PcfParser
      */
     private function parseKeypoint(string $keyword, array $tokens, int $lineNo): PcfKeypoint
     {
+        // PCF uses both "TAP-CONNECTION <coordinates>" and
+        // "TAP-CONNECTION CO-ORDS <coordinates>" for the associated form.
+        // CO-ORDS is a marker here, not an end type or a coordinate value.
+        if ($keyword === 'TAP-CONNECTION' && strtoupper((string) ($tokens[0] ?? '')) === 'CO-ORDS') {
+            array_shift($tokens);
+        }
+
         $numeric = [];
         $endType = null;
 

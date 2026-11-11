@@ -11,7 +11,9 @@ use InvalidArgumentException;
 final class PcfAdmission
 {
     public const MAX_BYTES = 5_000_000;
+
     public const MAX_LINES = 100_000;
+
     public const MAX_COMPONENTS = 20_000;
 
     public function __construct(private readonly PcfParser $parser) {}
@@ -28,7 +30,7 @@ final class PcfAdmission
         // The source parser uses last-header-wins. Conflicting unit declarations
         // must not silently reinterpret coordinates or bore.
         foreach (['UNITS-BORE', 'UNITS-CO-ORDS'] as $keyword) {
-            if (preg_match_all('/^\\s*'.preg_quote($keyword, '/').'\\s+/mi', $text) > 1) {
+            if (preg_match_all('/^\s*'.preg_quote($keyword, '/').'\s+/mi', $text) > 1) {
                 throw new InvalidArgumentException('Duplicate PCF unit declaration.');
             }
         }
@@ -63,26 +65,27 @@ final class PcfAdmission
     }
 
     /**
-     * Report what the file says that the joint model cannot hold.
+     * Report PCF connections that this read-only boundary cannot apply to the
+     * model. It must never silently reshape a branch into an ordinary run.
      *
-     * This layer writes nothing, so it can never break the model. What it can
-     * do — and what it did before this existed — is say nothing while the
-     * design quietly becomes something it is not. A PCF that ties into another
-     * line, or lands a branch on a header wall, used to import with zero
-     * warnings and be treated as an ordinary run of the file's own line. That
-     * is worse than a refusal: a refused file sends someone to look, a
-     * silently reshaped one does not.
-     *
-     * Both shapes of pipe-to-pipe branch are caught, because PCF writes them
-     * two different ways: a fitting-less branch carries a TAP-POINT, while the
-     * set-on and set-in variants are whole components whose centre sits on the
-     * header. The classification already knows which types those are, so it is
-     * reused rather than a second list of type names that would drift from it.
+     * Standard TAP-CONNECTIONs are normalized by PcfFile in both forms: an
+     * attribute within the host component, or a separate entry whose
+     * UNIQUE-COMPONENT-IDENTIFIER names the host. Legacy TAP-POINT is not a
+     * PCF keyword and is reported as unsupported rather than treated as a tap.
      */
     private function withUnrepresentable(PcfFile $file): PcfFile
     {
         $extra = [];
         $line = $file->lineNumber();
+        $hostsByUci = [];
+
+        foreach ($file->materialComponents() as $component) {
+            $uci = $component->attribute('UNIQUE-COMPONENT-IDENTIFIER');
+
+            if ($uci !== null) {
+                $hostsByUci[strtolower($uci)][] = $component;
+            }
+        }
 
         foreach ($file->components as $component) {
             $own = $component->attribute('PIPELINE-REFERENCE');
@@ -95,24 +98,69 @@ final class PcfAdmission
                 );
             }
 
-            $branch = PcfBranchClassification::fromType($component->type);
+            $branch = PcfBranchClassification::fromComponent($component);
 
             if (($branch['connection_type'] ?? null) === BranchConnectionType::P2P) {
+                $skey = $component->attribute('SKEY');
                 $extra[] = new PcfWarning(
                     $component->sourceLine,
                     'branch_on_header_wall',
-                    $component->type,
+                    $component->type.($skey === null ? '' : ' '.$skey),
+                );
+            } elseif (PcfBranchClassification::isBranchLikeType($component->type)) {
+                // Generic OLET, multi-leg CROSS-* and a TEE type without a
+                // discriminating SKEY must not pass as ordinary components.
+                $skey = $component->attribute('SKEY');
+                $extra[] = new PcfWarning(
+                    $component->sourceLine,
+                    'branch_type_unresolved',
+                    $component->type.($skey === null ? '' : ' '.$skey),
                 );
             }
 
-            foreach ($component->keypoints as $point) {
-                if ($point->kind === 'TAP-POINT') {
-                    $extra[] = new PcfWarning(
-                        $point->sourceLine,
-                        'tap_connection',
-                        $component->type,
-                    );
-                }
+            if (strtoupper($component->type) === 'TAP-POINT' || $component->hasAttribute('TAP-POINT')) {
+                $extra[] = new PcfWarning(
+                    $component->sourceLine,
+                    'unsupported_tap_point',
+                    'TAP-POINT is not a PCF keyword; use TAP-CONNECTION.',
+                );
+            }
+        }
+
+        foreach ($file->tapConnections() as $tap) {
+            $hostUci = $tap->hostUniqueComponentIdentifier;
+            $detail = $hostUci ?? $tap->hostComponent?->type ?? '';
+
+            $extra[] = new PcfWarning($tap->sourceLine, 'tap_connection', $detail);
+
+            if (! $tap->hasLocation()) {
+                $extra[] = new PcfWarning(
+                    $tap->sourceLine,
+                    'tap_connection_missing_coordinates',
+                    $detail,
+                );
+            }
+
+            if (! $tap->separateEntry) {
+                continue; // association with the containing component is explicit
+            }
+
+            if ($hostUci === null) {
+                $extra[] = new PcfWarning(
+                    $tap->sourceLine,
+                    'tap_host_reference_missing',
+                    'A separate TAP-CONNECTION requires the host UCI.',
+                );
+
+                continue;
+            }
+
+            $matches = $hostsByUci[strtolower($hostUci)] ?? [];
+
+            if ($matches === []) {
+                $extra[] = new PcfWarning($tap->sourceLine, 'tap_host_not_found', $hostUci);
+            } elseif (count($matches) > 1) {
+                $extra[] = new PcfWarning($tap->sourceLine, 'tap_host_ambiguous', $hostUci);
             }
         }
 

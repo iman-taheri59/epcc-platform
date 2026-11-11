@@ -25,16 +25,17 @@ use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Tests\Support\ApprovedPmsClassFixture;
 use Tests\TestCase;
 
 /**
- * A joint on a header wall — ADR-006 §13, proposal P-22.
+ * A joint on a header wall — ADR-006 §14, P-22 delivered.
  *
  * The fitting-less branch: a stub-in or stub-on, P2P in the branch table, a tap
- * connection in PCF, a tap weld in Plant 3D. The weld that carries the real
- * cost premium, and the one the model has never been able to represent.
+ * connection in PCF, a tap weld in Plant 3D. It is stored as one branch-side
+ * port plus a frozen header reference; no fake port is added to the header.
  *
  * The reason it is modelled as a frozen header reference rather than a
  * synthesised wall port is stated in JointBoundaryTest; this file proves the
@@ -267,12 +268,12 @@ final class BranchWallJointTest extends TestCase
 
         $this->expectException(QueryException::class);
 
-        $this->asOwner(function () use ($branch, $headerPipe): void {
+        $this->asOwner(function () use ($branch): void {
             $pipe = app(ComponentService::class)->place($branch, $this->owner(), 'PIPE');
             $port = $pipe->ports->first();
 
             DB::table('joints')->insert([
-                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'id' => (string) Str::uuid(),
                 'project_id' => $branch->project_id,
                 'company_id' => $this->owner()->company_id,
                 'piping_line_id' => $branch->id,

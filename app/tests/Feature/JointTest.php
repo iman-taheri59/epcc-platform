@@ -22,10 +22,12 @@ use App\Support\Piping\Verdict;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Tests\TestCase;
 use Tests\Support\ApprovedPmsClassFixture;
+use Tests\TestCase;
 
 /**
  * ADR-006 phase 3 - joints, compatibility and dia-inch.
@@ -187,7 +189,7 @@ final class JointTest extends TestCase
     {
         $line = $this->line();
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
 
         $this->asOwner(function () use ($line) {
             $tee = $this->components()->place($line, $this->owner(), 'TEE');
@@ -202,7 +204,7 @@ final class JointTest extends TestCase
             [$hi, $lo] = strcmp($a->id, $b->id) > 0 ? [$a->id, $b->id] : [$b->id, $a->id];
 
             DB::table('joints')->insert([
-                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'id' => (string) Str::uuid(),
                 'project_id' => $line->project_id,
                 'company_id' => $this->project()->owner_company_id,
                 'piping_line_id' => $line->id,
@@ -305,7 +307,7 @@ final class JointTest extends TestCase
         // on reports.
         $line = $this->line();
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
 
         $this->asOwner(function () use ($line) {
             $tee = $this->components()->place($line, $this->owner(), 'TEE');
@@ -731,14 +733,11 @@ final class JointTest extends TestCase
         $this->assertSame(JointBranchKind::OLET, $kind);
     }
 
-    public function test_the_wall_side_kinds_are_reserved_but_nothing_produces_them_yet(): void
+    public function test_wall_side_kinds_are_explicit_not_port_derived(): void
     {
-        // The honest line on what this does NOT yet do. STUB_IN and STUB_ON are
-        // in the CHECK so a future writer cannot invent a spelling, but no code
-        // path derives them: a stub-in has no port on the header at all, so
-        // there is nothing for branchKindFor() to read (ADR-006 §13, P-22).
-        // The welds that carry the real premium - an olet's fabricated end onto
-        // the header, and a stub-in - are still unrepresentable.
+        // A wall joint has no second port, so branchKindFor() cannot infer its
+        // type. joinToWall() writes STUB_IN/STUB_ON explicitly; these kinds must
+        // therefore stay outside the fitting-template DERIVABLE set (ADR-006 §14).
         $this->assertNotContains(JointBranchKind::STUB_IN, JointBranchKind::DERIVABLE);
         $this->assertNotContains(JointBranchKind::STUB_ON, JointBranchKind::DERIVABLE);
 
@@ -750,7 +749,7 @@ final class JointTest extends TestCase
     {
         $line = $this->line('6');
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
 
         $this->asOwner(function () use ($line) {
             $tee = $this->components()->place($line, $this->owner(), 'TEE');
@@ -787,7 +786,7 @@ final class JointTest extends TestCase
         // person. A state recording who but not when is not auditable.
         $line = $this->line();
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
 
         $this->asOwner(function () use ($line) {
             $tee = $this->components()->place($line, $this->owner(), 'TEE');

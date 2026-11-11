@@ -8,7 +8,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Let a joint land on a header wall — ADR-006 §13, proposal P-22.
+ * Let a joint land on a header wall — ADR-006 §14, P-22 implementation.
  *
  * The joint model has always assumed two ports. A fitting-less branch (a
  * stub-in / stub-on, P2P in the branch table) breaks that: the branch pipe's

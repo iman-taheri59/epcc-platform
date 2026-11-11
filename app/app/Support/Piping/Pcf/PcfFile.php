@@ -68,12 +68,77 @@ final readonly class PcfFile
     /** @return list<PcfComponent> */
     public function materialComponents(): array
     {
-        return array_values(array_filter($this->components, fn (PcfComponent $c): bool => ! $c->isWeld()));
+        return array_values(array_filter(
+            $this->components,
+            fn (PcfComponent $component): bool => ! $component->isWeld() && ! $component->isTapConnectionEntry(),
+        ));
     }
 
     /** @return list<PcfComponent> */
     public function welds(): array
     {
-        return array_values(array_filter($this->components, fn (PcfComponent $c): bool => $c->isWeld()));
+        return array_values(array_filter($this->components, fn (PcfComponent $component): bool => $component->isWeld()));
+    }
+
+    /**
+     * Normalize both PCF tap forms without turning a tap into a component port.
+     *
+     * A TAP-CONNECTION inside a component block is implicitly associated with
+     * that component. A standalone TAP-CONNECTION block instead names its host
+     * via UNIQUE-COMPONENT-IDENTIFIER. A missing point is retained so admission
+     * can report it rather than silently dropping the tap.
+     *
+     * @return list<PcfTapConnection>
+     */
+    public function tapConnections(): array
+    {
+        $taps = [];
+        $hostsByUci = [];
+
+        foreach ($this->materialComponents() as $candidate) {
+            $uci = $candidate->attribute('UNIQUE-COMPONENT-IDENTIFIER');
+
+            if ($uci !== null) {
+                $hostsByUci[strtolower($uci)][] = $candidate;
+            }
+        }
+
+        foreach ($this->components as $component) {
+            if ($component->isTapConnectionEntry()) {
+                $location = null;
+
+                foreach ($component->keypoints as $point) {
+                    if (in_array($point->kind, ['CO-ORDS', 'TAP-CONNECTION'], true)) {
+                        $location = $point;
+                        break;
+                    }
+                }
+
+                $hostUci = $component->attribute('UNIQUE-COMPONENT-IDENTIFIER');
+                $hostMatches = $hostUci === null ? [] : ($hostsByUci[strtolower($hostUci)] ?? []);
+
+                $taps[] = new PcfTapConnection(
+                    location: $location,
+                    hostUniqueComponentIdentifier: $hostUci,
+                    hostComponent: count($hostMatches) === 1 ? $hostMatches[0] : null,
+                    sourceLine: $component->sourceLine,
+                    separateEntry: true,
+                );
+
+                continue;
+            }
+
+            foreach ($component->tapConnectionKeypoints() as $point) {
+                $taps[] = new PcfTapConnection(
+                    location: $point,
+                    hostUniqueComponentIdentifier: $component->attribute('UNIQUE-COMPONENT-IDENTIFIER'),
+                    hostComponent: $component,
+                    sourceLine: $point->sourceLine,
+                    separateEntry: false,
+                );
+            }
+        }
+
+        return $taps;
     }
 }

@@ -157,10 +157,10 @@
 
 ### فاز P1 — PMS و branch table
 
-> **وضعیت ۲۰۲۶-۱۰-۱۱: پیاده‌سازی شده — در انتظار تأیید اجرایی.** هر شش
-> خروجی زیر در مایگریشن `2026_10_11_120000_create_piping_classes_and_rules`،
-> `PipingClassService` و `PipingClassTest` پیاده شد (ADR-008 §9). اتصال به
-> component attach و سازگاری جوش‌ها فاز ۳ ساختِ ADR-008 است و هنوز باز است.
+> **وضعیت: مدل backend و resolution قواعد پیاده شده؛ P1 هنوز کامل اعلام نمی‌شود.**
+> مدل کلاس/قاعده، publish gate، resolver و snapshot جدول انشعاب روی jointهای
+> fitted و P2P پیاده شده‌اند (ADR-008 §§9.1، 9.4–9.5؛ ADR-006 §14). هنوز UI/seeder
+> برای تعریف قواعد وجود ندارد؛ deviation ثبت می‌شود اما hard-block نمی‌شود.
 
 بر اساس ADR-008:
 
@@ -169,11 +169,21 @@
 - `EXCLUDE USING gist`
 - gap detection در publish gate
 - branch table با specificity-wins
-- integration با component attach و joint compatibility
+- snapshot کردن verdict انشعاب از کلاس صادرشده روی jointهای fitted و P2P wall
 - **الحاقیه (کارفرما ۲۰۲۶-۱۰-۱۱، ‏ADR-008 §9.1):** واژگان نتیجهٔ جدول انشعاب
   بسته شد — `TEE / WELDOLET / SOCKOLET / P2P`؛ ‏`P2P` (لوله‌به‌لوله) نتیجهٔ
   درجه‌یک به معنای *بدون کامپوننت* است، با دو نوع **stub-in / stub-on** و پد
   تقویتی که در صورت نیاز، ضخامت آن (میلی‌متر) اجباری است.
+
+**معیار پذیرش P1:** ایجاد و انتشار کلاس با واژگان بستهٔ قواعد؛ resolve کردن
+جدول انشعاب بر اساس DN هدر × انشعاب از revision صادرشده؛ ثبت verdict/pad در joint؛
+حفظ branch_kind مشاهده‌شده جدا از verdict و قابل‌مشاهده بودن deviation؛ قبولی تست‌های
+هدفمند قواعد/joint. **نتیجهٔ فعلی:** معیارهای data/service پیاده‌اند؛ رابط تعریف و
+گزارش‌گیری هنوز پیاده نشده است.
+
+**عمداً ساخته نشده:** Filament UI یا seeder برای PipingClass/قواعد، چرخهٔ سند و
+revision در CDE/PMS، hard-block برای deviation، اعمال PCF به مدل یا importer عمومی.
+تا تکمیل معیارهای عملیاتی، P1 باز می‌ماند.
 
 ارزش: جلوگیری از ورود دادهٔ غلط قبل از field.
 
@@ -216,19 +226,35 @@
 
 ### فاز P5 — Welding / NDT / repair loop
 
-نیازمند طراحی دقیق، ولی حداقل MVP:
+> **وضعیت: باز است.** زیرمرحلهٔ مدل joint جوش انشعاب پیاده شده (P-21 به‌صورت
+> جزئی؛ ADR-006 §14 و ADR-008 §§9.4–9.5)؛ این به‌معنی تکمیل P5 نیست.
 
-- weld log برای joints با policy لازم
-- welder code و WPS reference
+حداقل MVP فاز کامل:
+
+- weld log برای jointهای مشمول policy
+- welder code، qualification و ارجاع WPS/PQR
 - NDT request/result
-- repair cycle
-- repair rate KPI
-- heat/material traceability به weld در حد feasible
-- **انواع مفصلِ جوش انشعاب (نیازمندی کارفرما، ۲۰۲۶-۱۰-۱۲، پیشنهاد P-21):**
-  اتصالات لوله‌به‌لوله (stub-in/stub-on) کامپوننت ندارند — اتصال، جوش است.
-  رجیستر جوش‌ها باید `BRANCH_STUB_IN` / `BRANCH_STUB_ON` را به‌عنوان نوعِ
-  مفصل درجه‌یک داشته باشد تا جوش‌های انشعاب جدا از جوش‌های لب‌به‌لب شمارش و
-  گزارش شوند و الزام پد از قواعد کلاسِ ADR-008 قابل ردیابی بماند.
+- چرخهٔ repair و KPI نرخ repair
+- traceability حرارت/ماده به weld طبق policy مصوب QA/QC
+- گزارش جداگانهٔ جوش انشعاب با kind، اندازهٔ شاخه و ضخامت PAD متصل به قاعدهٔ کلاس صادرشده
+
+**معیار پذیرش زیرمرحلهٔ branch-joint تحویل‌شده:** جوش P2P روی دیواره نوع و
+header reference ثابت داشته باشد؛ هدر دقیقاً دو port نگه دارد؛ شمارش/by-kind و
+dia-inch فیزیکی درست باشد؛ kind/pad قاعدهٔ صادرشده جدا از observation ذخیره شود؛
+deviation قابل مشاهده باشد؛ تست‌های هدفمند joint بگذرند.
+
+**نتیجهٔ فعلی:** پذیرش مدل/service بالا پیاده شده است؛ weld log/report و UI،
+hard-gate برای deviation، WPS/PQR/qualification، NDT/repair، KPI و traceability
+ماده/حرارت هنوز ساخته نشده‌اند.
+
+**عمداً در این زیرمرحله ساخته نشده:** UI/log جوش، WPS/PQR، qualification جوشکار،
+workflow آزمون/تعمیر، نرخ‌نامهٔ تجاری، جوش OLET به هدر، writer اعمال PCF به مدل و
+اعمال CROSS چندشاخه.
+
+**معیار پذیرش تکمیل P5:** برای هر joint لازم، weld record منتسب ثبت شود؛ فقط
+جوشکار و WPS/PQR واجد شرایط پذیرفته شوند؛ NDT/repair چرخهٔ قابل‌ردیابی بسازد و در
+KPI نرخ تعمیر اثر بگذارد؛ گزارش شاخص انشعاب و لینک پد آماده باشد؛ traceability
+ماده/heat طبق policy QA/QC برقرار شود.
 
 این فاز باید با QA/QC هماهنگ شود و ممکن است ADR جدا لازم داشته باشد.
 
@@ -249,7 +275,22 @@
 - no auto-numbering برای imported unnumbered welds
 - mapping به components/ports/joints
 - deviation report
-- rollback/reject before commit
+- rollback/reject پیش از commit
+
+> **وضعیت: باز؛ parser/admission فقط پیش‌نیاز read-only هستند.** parser محدودشدهٔ
+> PCF هر دو شکل استانداردِ `TAP-CONNECTION` (متصل به کامپوننت و ورودی جدا) را
+> می‌خواند، UCI میزبان را در صورت یکتا resolve می‌کند و ابهام/نوع انشعاب حل‌نشده
+> را گزارش می‌دهد؛ فایل را به مدل اعمال نمی‌کند.
+
+**معیار پذیرش P7:** upload احرازشده و محدود با quarantine؛ preview شامل mapping
+کامپوننت/tap و warningهای صریح؛ batch تغییرناپذیر و mapping هویت تکرارپذیر؛ commit
+فقط پس از validation و تأیید؛ reject/rollback پیش از commit؛ حفظ jointهای بدون‌شمارهٔ
+منبع؛ reconciliation با baseline پذیرفته‌شده بدون overwrite خاموش jointهای
+manual/fitted. پیش از اعلام پذیرش، روی نمونهٔ واقعی PCF پروژه تأیید شود.
+
+**عمداً در زیرمرحلهٔ parser ساخته نشده:** route/storage آپلود، workflow preview یا
+commit، نوشتن مدل/ساخت joint، projection هندسی، lookup قواعد PMS، reconciliation،
+انتخاب template برای OLET و پذیرش PCF در MTO. P7 همچنان باز است.
 
 ### فاز P8 — Roll-ups و turnover
 

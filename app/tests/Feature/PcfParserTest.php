@@ -154,4 +154,46 @@ final class PcfParserTest extends TestCase
 
         $this->assertSame(['A', 'B'], $file->materialComponents()[0]->attributes['BOLT']);
     }
+
+    public function test_a_separate_standard_tap_entry_resolves_its_host_uci(): void
+    {
+        $file = $this->parse(
+            "UNITS-BORE INCH\nUNITS-CO-ORDS MM\nPIPELINE-REFERENCE L-1\n"
+            ."PIPE\n    END-POINT 0 0 0 6 BW\n    END-POINT 3000 0 0 6 BW\n"
+            ."    UNIQUE-COMPONENT-IDENTIFIER HEADER-1\n"
+            ."TAP-CONNECTION\n    CO-ORDS 1500 0 0 3 BW\n"
+            ."    UNIQUE-COMPONENT-IDENTIFIER HEADER-1\n"
+        );
+
+        $taps = $file->tapConnections();
+
+        $this->assertCount(1, $taps);
+        $this->assertTrue($taps[0]->separateEntry);
+        $this->assertSame('HEADER-1', $taps[0]->hostUniqueComponentIdentifier);
+        $this->assertSame('PIPE', $taps[0]->hostComponent?->type);
+        $this->assertSame(1500.0, $taps[0]->location?->x);
+        $this->assertSame(3.0, $taps[0]->location?->bore);
+        $this->assertFalse($taps[0]->location?->connecting);
+        $this->assertCount(1, $file->materialComponents(), 'A tap record is not material.');
+    }
+
+    public function test_a_component_associated_tap_does_not_become_a_host_port(): void
+    {
+        $file = $this->parse(
+            "UNITS-BORE INCH\nUNITS-CO-ORDS MM\nPIPELINE-REFERENCE L-1\n"
+            ."PIPE\n    END-POINT 0 0 0 6 BW\n    END-POINT 3000 0 0 6 BW\n"
+            ."    UNIQUE-COMPONENT-IDENTIFIER HEADER-1\n"
+            ."    TAP-CONNECTION CO-ORDS 1500 152 0 3 BW\n"
+        );
+
+        $taps = $file->tapConnections();
+        $host = $file->materialComponents()[0];
+
+        $this->assertCount(1, $taps);
+        $this->assertFalse($taps[0]->separateEntry);
+        $this->assertSame('HEADER-1', $taps[0]->hostUniqueComponentIdentifier);
+        $this->assertSame($host, $taps[0]->hostComponent);
+        $this->assertSame(1500.0, $taps[0]->location?->x);
+        $this->assertCount(2, $host->connectingKeypoints(), 'TAP-CONNECTION is not an extra header end.');
+    }
 }

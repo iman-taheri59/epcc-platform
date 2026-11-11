@@ -10,10 +10,13 @@ the user decides. Each entry is short on purpose; the load-bearing detail lives
 in the linked doc or code.
 
 Statuses: `OPEN` (awaiting decision) · `ACCEPTED` (decided, not yet built) ·
-`BUILT` (done) · `REJECTED` (considered and refused — kept so it is not raised
-again).
+`PARTIAL` (some acceptance criteria delivered; do not mark complete) ·
+`DECIDED + MODELLED` (the design choice and core model path are delivered, but
+operational workflow may remain open) · `BUILT` (all stated acceptance met) ·
+`REJECTED` (considered and refused — kept so it is not raised again).
 
-Last updated: **2026-10-12** (targeted MTO/PCF/Order Gap status reconciliation; no new runtime test claim).
+Last updated: **2026-10-26** (P-21/P-22 status reconciliation; targeted PCF/joint
+regression passed 132 tests / 267 assertions; full-suite run is separate).
 
 ---
 
@@ -41,8 +44,8 @@ Last updated: **2026-10-12** (targeted MTO/PCF/Order Gap status reconciliation; 
 | P-18 | Docs drift | `Prototype-Coverage-Map.md` recount after procurement + piping + MTO (audit §3 item 4) | OPEN |
 | P-19 | Runtime | In-sandbox PostgreSQL provisioned (PG tier BUILT); PHP tier network-blocked — Laravel work stays on the Docker/Laragon tier | PARTIAL |
 | P-20 | Code / portability | `PdfRenderer` is POSIX-only (`command -v`) — PDF export silently unavailable on Windows/Laragon | OPEN |
-| P-21 | Requirement / piping | Branch welds (stub-in/stub-on P2P) must be first-class joint types before weld counts and dia-inch are built | OPEN — queued for the P5 design ADR |
-| P-22 | Requirement / piping | P2P branch welds land on the header *wall*, but the joint model only connects two ports — wall-attach representation must be decided | OPEN — decision needed |
+| P-21 | Requirement / piping | Branch welds (stub-in/stub-on P2P) must be first-class joint types, separately countable with physical dia-inch and traceable pad/class | PARTIAL — schema, wall-joint representation, snapshot verdict and `lineMetrics()` delivered; weld report, rates, WPS/PQR, welder qualification, NDT/repair and UI remain open |
+| P-22 | Requirement / piping | P2P branch welds land on the header *wall*, but the joint model originally connected two ports — select and implement a safe wall-reference shape | DECIDED + MODELLED for P2P in ADR-006 §14; PCF reader remains read-only, wall-joint UI/model writer and OLET-to-header path remain open |
 | P-23 | Requirement / MTO | MTO has no coverage of branch-connection material: reinforcement pads (plate) and coped stub ends | OPEN — scope decision |
 | P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator + B31.3-2024 materials pack + class design basis + publish-gate validation built; **flange step built 2026-10-12**: ASME B16.5-2025 P-T ratings pack (45 SI tables, cross-checked against the Customary twin) + `FlangeRatingReference` + publish gate rating every FLANGE_TYPE cell against the class design basis; B16.47 large-diameter + Section II Part D extensions remain follow-ups; runtime verification on owner's Laragon pending | PARTIAL — Step B + flange gate built |
 | P-25 | Standards / data | Parallel-session engineering reference library discovered on the owner-published `workspace` branch and ported (commit `bf15816`): full B31.3-2024 Table A-1 stresses (798 rows/138 specs), materials library v1.8, B16.5+B16.47 flange P-T curves, bolting, B16.9 fitting dimensions, valve packs, per-pack schemas and the 2,835-line validator; both flange provenances cross-checked cell-by-cell (4,725/4,725 exact). **Steps 1-4 ported; step 5 catalogue/adoption-only adaptation implemented (awaiting Laragon verification)**: ADR-019 documents ITP-only citation host/migration and mutable-edition conflict; owner chose option A; citation/ITP still deferred. Compatibility assessment (`3bdff9b`) + engineering screening & fitting-review module + MR entry module ported (awaiting Laragon test runs). Next: Laragon verification; group A fluid-service classification implemented pending tests (ADR-020); step 7 baseline/model-import assessed as no-go for wholesale port, owner approved parser-only; pure PCF parser ported (ADR-021), branch-vocabulary conflict handled by a read-only P2P classifier (ADR-022); model importer/baseline deferred | PARTIAL — porting in progress |
@@ -308,9 +311,9 @@ straight onto/into the header. The connection therefore lives in the joint
 register as a WELD — but it is not an ordinary butt weld, and welding
 metrics must never treat it as one.
 
-**Requirement.** When the welding/joints phase is designed (piping roadmap
-phase P5), the joint register must carry formal branch-weld joint types —
-at minimum `BRANCH_STUB_IN` and `BRANCH_STUB_ON` — such that:
+**Requirement.** The joint register must carry formal branch-weld kinds — at
+minimum `BRANCH_STUB_IN` and `BRANCH_STUB_ON` — and preserve the following
+behavior through welding/reporting:
 
 1. Branch welds are **counted and reported separately** from butt welds in
    the weld log and weld-count KPIs.
@@ -325,10 +328,22 @@ at minimum `BRANCH_STUB_IN` and `BRANCH_STUB_ON` — such that:
    weld where the class says `TEE`) surfaces as a **deviation** — the same
    audit the class-validation phase delivers for components.
 
-**Acceptance:** joint-type vocabulary + migration + tests; weld counts by
-type; a weld report showing branch welds separately; pad linkage from the
-class rule. **Depends on:** the P5 design ADR (not written yet) and ADR-010
-§6 open questions. Cross-references: ADR-008 §9.2 (forward link).
+**Current status (2026-10-26): PARTIAL — do not mark P-21 complete.** The
+joint schema/service now stores fitted branch kinds and explicit P2P wall kinds;
+`lineMetrics()` counts branch welds/by kind and preserves physical dia-inch;
+the issued PMS verdict and pad thickness travel with the joint, and
+`branchDeviation()` makes mismatch observable. See ADR-006 §14 and ADR-008
+§§9.4–9.5. Targeted joint coverage has passed, but this is the model/register
+slice, not the full welding phase.
+
+**Acceptance for the whole proposal:** schema and tests; branch-weld count and
+breakdown by kind/branch size/pad; a user-facing weld report; class deviation
+visibility; and demonstrated traceability from a PAD rule to the weld record.
+**Deliberately not built:** weld-log/report UI, hard refusal on class mismatch,
+contract rate schedule, welder qualification, WPS/PQR, NDT/repair workflow,
+PCF-to-model application, or the separate OLET fabricated RUN-end-to-header
+weld. **Depends on:** P5 welding/NDT design and ADR-010 §6 decisions.
+Cross-references: ADR-008 §9.2 (requirement), §§9.4–9.5 (delivered slice).
 
 ## Standing process — requirements review (owner directive, 2026-10-12)
 
@@ -340,16 +355,16 @@ numbered proposals. The first pass (piping) lives in
 `docs/REQUIREMENTS-REVIEW-PIPING-EN.md` and produced findings R-1…R-8,
 including proposals P-22 and P-23.
 
-## P-22 — P2P branch welds connect to the header wall, not a port (decision needed)
+## P-22 — P2P branch welds connect to the header wall, not a port (decision implemented)
 
 Found in the 2026-10-12 requirements review (finding R-2). ADR-006 §5.3
-models a joint as `port_a_id < port_b_id` — two component ports. A
-stub-in/stub-on branch weld has only **one** port (the branch pipe's end);
-the other side is a point on the header pipe's wall, which has no port. So
-the built joint schema cannot yet represent the very connection the class
-table now defines.
+originally modeled a joint as `port_a_id < port_b_id` — two component ports.
+A stub-in/stub-on branch weld has only **one** port (the branch pipe's end);
+the other side is a point on the header pipe's wall, which has no port. That
+was the gap found by the review; it has since been closed for P2P joints by the
+ADR-006 §14 representation below.
 
-**Decision options** (recorded, not chosen):
+**Options considered in the original review (historical):**
 
 - **(a) Synthesised wall port** — create a virtual port on the header at
   the branch point, mirroring how Plant 3D models `TEE-SET-ON` with a
@@ -360,18 +375,27 @@ table now defines.
   port_b_id` invariant and every port-based query need a nullable second
   side — the COALESCE-smell ADR-010 §3.2 rejected elsewhere.
 
-**Recommendation (updated 2026-10-12 by research):** **(c) tap semantics** —
-the joint carries the branch-side port plus a *frozen* reference to the
-header component and the connection point (ADR-006 §5.3 "derived
-attributes are frozen"). This is the PCF-native idiom: ISOGEN resolves a tap
-connection by projecting the branch end-point onto the header centreline,
-and the header has no port (see `docs/RESEARCH-PLANT3D-PCF-P2P-BRANCHES-EN.md`;
-Plant 3D calls the result a "tap weld"). Rejected: (a) synthesised wall
-port — nothing in the exchange formats requires it, and it would invent a
-state no importer/exporter carries; (b) raw line+station — weaker than a
-frozen component reference. **Decides:** ADR-006 follow-up, ADR-008 build
-phase 3 wiring, and the P5 joint design. Cross-references: ADR-006 §13,
-ADR-009 P2P addendum, proposal P-21.
+**Decision (selected in ADR-006 §14):** **(c) tap semantics** — the joint
+carries the branch-side port plus a *frozen* reference to the header component
+and connection point. This is the PCF-native idiom: ISOGEN resolves a tap
+connection by projecting the branch endpoint onto the header centreline, and
+the header has no port (see `docs/RESEARCH-PLANT3D-PCF-P2P-BRANCHES-EN.md`;
+Plant 3D calls the result a "tap weld"). Option (a), a synthesised wall port,
+was rejected; the implementation keeps `port_b_id` NULL only for a wall joint
+and restates the affected invariants. Option (b), raw line+station, was rejected
+in favor of a frozen component reference plus station/offset.
+
+**Current status:** P2P wall-joint schema/service and issued-class snapshot are
+implemented and tested. The read-only PCF parser now recognizes both standard
+tap forms and resolves a unique host UCI, but no writer applies a tap to the
+model.
+
+**Acceptance for the P2P representation:** branch port + frozen header,
+station/offset bounds, unchanged two-port header/open-port behavior, branch-line
+ownership, physical branch-size dia-inch, and class/pad snapshot with deviation
+observable. **Deliberately not built:** PCF upload/preview/commit, projection or
+geometry validation, wall-joint UI, OLET-to-header weld, multi-leg CROSS application, or cross-line tie-in. A representation/reader slice does not make
+P-21, P5 welding/NDT, or PCF import complete.
 
 ## P-23 — MTO has no coverage of branch-connection material
 

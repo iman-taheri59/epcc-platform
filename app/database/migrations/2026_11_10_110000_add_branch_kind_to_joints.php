@@ -26,12 +26,11 @@ use Illuminate\Support\Facades\Schema;
  * afterwards. Deriving it on every read would also make it unindexable, and
  * the whole point is to count these things across a line.
  *
- * Why the CHECK lists STUB_IN and STUB_ON when nothing writes them: they are
- * the P-21 names and the column will take them once the header-wall reference
- * (P-22) lands. Declaring them now means a future writer cannot invent a
- * spelling the rest of the codebase does not recognise. It is NOT a claim that
- * P2P branch welds work — no code path produces them today, and the docblock on
- * JointBranchKind says so in as many words.
+ * The CHECK includes STUB_IN and STUB_ON as the P-21 names. They are written
+ * explicitly by the P2P wall-joint path (`JointService::joinToWall`), not
+ * inferred from a two-port fitting or its template; ADR-006 §14 records the
+ * frozen header-reference shape. The migration originally reserved these
+ * values before that path existed.
  *
  * Nullable, and that is the point: NULL means "a weld in the run", which is
  * the ordinary case. Only a joint sitting on a BRANCH-role port carries a kind.

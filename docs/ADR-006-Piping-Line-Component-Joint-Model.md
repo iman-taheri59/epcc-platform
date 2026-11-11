@@ -724,9 +724,9 @@ exactly how the most expensive welds on a line go unpaid; it now returns the
 branch size. `isWeld()` accepts `BRANCH_STUB_IN` and `BRANCH_STUB_ON`
 (ADR-008 §9.2 / P-21).
 
-**Deliberately not built.** No UI creates a wall joint, and no importer populates
-one from a PCF `TAP-CONNECTION` — the parser still looks for a `TAP-POINT`
-keyword that does not exist in the standard (research §5.2), so the input side
-is the next piece. The pad thickness is recorded but nothing verifies it against
-ASME B31.3 §304.3.3 at joint level; the calculator exists and the class gate
-runs at publication only.
+**Deliberately not built.** No UI creates a wall joint, and no model-writing
+importer populates one from PCF. The read-only parser/admission now recognizes
+standard `TAP-CONNECTION` records in both association forms and retains the
+host UCI; it warns instead of applying that data. The pad thickness is recorded
+but nothing verifies it against ASME B31.3 §304.3.3 at joint level; the
+calculator exists and the class gate runs at publication only.

@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Support\Piping\Pcf;
 
 /**
- * One keypoint of a PCF component - which is to say, one port.
+ * One positional keypoint from PCF.
+ *
+ * Only keypoints marked `connecting` are component ports. Centre points,
+ * general CO-ORDS and TAP-CONNECTION locations carry geometry/reference data
+ * without adding a port to the host component.
  *
  * Coordinates are kept in the file's own units and NOT converted here. The
  * conversion needs UNITS-CO-ORDS from the header, and a value silently

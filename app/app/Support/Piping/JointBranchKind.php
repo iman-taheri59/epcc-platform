@@ -14,32 +14,20 @@ namespace App\Support\Piping;
  *   - `BranchConnectionType` is what the CLASS DECLARES for a header x branch
  *     size pair: TEE, WELDOLET, SOCKOLET, or P2P.
  *   - `JointBranchKind` is what the MODEL OBSERVES: this joint sits on the
- *     branch port of a multi-way fitting.
+ *     branch port of a multi-way fitting, or is an explicit wall weld.
  *
  * ADR-008 §9.2 anticipates the comparison: "a joint contradicting its class is
- * a deviation". That check is only possible if the register keeps its own
- * observation rather than overwriting it with the class verdict.
+ * a deviation". The register keeps its own observation rather than overwriting
+ * it with the class verdict.
  *
- * Careful about what this does and does not mean commercially. The owner's
- * requirement (2026-11-10) is that a branch connection costs more to execute
- * than an ordinary weld, so the system must be able to separate the two. It
- * can now. But the premium is not uniform, and the register does not decide
- * it:
+ * Classification and valuation stay separate. The owner's requirement is that
+ * branch connections can be priced separately from ordinary welds; the rate
+ * table, not this enum or dia-inch, assigns value.
  *
- *   - a branch through a TEE is an ordinary circumferential butt weld; what
- *     costs extra there is the fitting and the two extra welds in the run,
- *     plus fit-up on a three-way joint;
- *   - the genuinely expensive welds are the ones ON THE HEADER WALL - an
- *     olet's fabricated end welded onto the header, and a stub-in / stub-on.
- *     Both are contour welds: the header is cut, the branch end is coped to
- *     match, and the weld follows a saddle rather than a flat girth.
- *
- * The wall-side welds are NOT representable yet - an olet's RUN port carries
- * end type FA and connects to nothing, and a stub-in has no port on the header
- * at all (ADR-006 §13, P-22). So `STUB_IN` and `STUB_ON` are reserved here and
- * are not produced by any code path today. Declaring them now keeps the CHECK
- * honest about the shape the column will eventually take, and stops a future
- * writer from inventing a spelling; it is not a claim that P2P works.
+ * Fitting branch kinds (TEE, CROSS, OLET) are derived from the branch port and
+ * its template. `STUB_IN` and `STUB_ON` are supplied by the explicit wall-joint
+ * path (`JointService::joinToWall`) and carry a frozen header reference; they
+ * cannot be inferred from ports alone (ADR-006 §14).
  */
 final class JointBranchKind
 {
@@ -52,13 +40,10 @@ final class JointBranchKind
     /** Branch port of an olet. Note: this is the olet-to-BRANCH-PIPE weld. */
     public const OLET = 'OLET';
 
-    /**
-     * Reserved for P-22 / ADR-008 §9.2. A stub-in sits inside the header bore.
-     * NOT PRODUCED BY ANY CODE PATH - see the class docblock.
-     */
+    /** Fitting-less branch inserted into a header bore; explicit wall-joint kind. */
     public const STUB_IN = 'STUB_IN';
 
-    /** Reserved for P-22. A stub-on saddles the header surface. Not produced. */
+    /** Fitting-less branch saddled onto a header surface; explicit wall-joint kind. */
     public const STUB_ON = 'STUB_ON';
 
     /** @var list<string> */
@@ -71,9 +56,8 @@ final class JointBranchKind
     ];
 
     /**
-     * What the model can actually derive today, from a port's role. Anything
-     * outside this set needs the header-wall reference (P-22) and cannot be
-     * inferred from the ports alone.
+     * Kinds that can be inferred from a port role and fitting template alone.
+     * Wall-joint kinds are explicit and use a separate construction path.
      *
      * @var list<string>
      */

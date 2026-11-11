@@ -104,18 +104,113 @@ final class PcfAdmissionTest extends TestCase
         $this->assertSame([], $this->codes("PIPE\n    PIPELINE-REFERENCE l-1\n    END-POINT 0 0 0 6 BW\n"));
     }
 
-    public function test_a_tap_on_a_header_wall_is_reported(): void
+    public function test_a_standard_separate_tap_on_a_header_is_reported(): void
     {
-        $codes = $this->codes("PIPE\n    END-POINT 1500 0 0 3 PL\n    TAP-POINT 1500 152 0 6\n");
+        $codes = $this->codes(
+            "PIPE\n    END-POINT 0 0 0 6 BW\n    END-POINT 3000 0 0 6 BW\n"
+            ."    UNIQUE-COMPONENT-IDENTIFIER HEADER-1\n"
+            ."TAP-CONNECTION\n    CO-ORDS 1500 0 0 3 BW\n"
+            ."    UNIQUE-COMPONENT-IDENTIFIER HEADER-1\n"
+        );
 
         $this->assertContains('tap_connection', $codes);
+        $this->assertNotContains('tap_host_not_found', $codes);
+        $this->assertNotContains('tap_host_reference_missing', $codes);
     }
 
-    public function test_a_set_on_branch_component_is_reported(): void
+    public function test_a_component_associated_tap_is_recognized_without_a_host_uci(): void
+    {
+        $codes = $this->codes(
+            "PIPE\n    END-POINT 0 0 0 6 BW\n    END-POINT 3000 0 0 6 BW\n"
+            ."    TAP-CONNECTION CO-ORDS 1500 152 0 3 BW\n"
+        );
+
+        $this->assertContains('tap_connection', $codes);
+        $this->assertNotContains('tap_host_reference_missing', $codes);
+    }
+
+    public function test_a_separate_tap_without_its_host_uci_is_reported_as_unresolved(): void
+    {
+        $codes = $this->codes("TAP-CONNECTION\n    CO-ORDS 1500 0 0 3 BW\n");
+
+        $this->assertContains('tap_connection', $codes);
+        $this->assertContains('tap_host_reference_missing', $codes);
+    }
+
+    public function test_a_separate_tap_with_a_dangling_host_uci_is_reported(): void
+    {
+        $codes = $this->codes(
+            "TAP-CONNECTION\n    CO-ORDS 1500 0 0 3 BW\n"
+            ."    UNIQUE-COMPONENT-IDENTIFIER NO-SUCH-HOST\n"
+        );
+
+        $this->assertContains('tap_host_not_found', $codes);
+    }
+
+    public function test_a_tap_host_uci_that_matches_two_components_is_ambiguous(): void
+    {
+        $codes = $this->codes(
+            "PIPE\n    END-POINT 0 0 0 6 BW\n    END-POINT 3000 0 0 6 BW\n"
+            ."    UNIQUE-COMPONENT-IDENTIFIER DUPLICATE-HOST\n"
+            ."PIPE\n    END-POINT 3000 0 0 6 BW\n    END-POINT 6000 0 0 6 BW\n"
+            ."    UNIQUE-COMPONENT-IDENTIFIER DUPLICATE-HOST\n"
+            ."TAP-CONNECTION\n    CO-ORDS 1500 0 0 3 BW\n"
+            ."    UNIQUE-COMPONENT-IDENTIFIER DUPLICATE-HOST\n"
+        );
+
+        $this->assertContains('tap_host_ambiguous', $codes);
+    }
+
+    public function test_a_tap_without_coordinates_is_not_silently_accepted(): void
+    {
+        $codes = $this->codes(
+            "PIPE\n    END-POINT 0 0 0 6 BW\n    UNIQUE-COMPONENT-IDENTIFIER HEADER-1\n"
+            ."TAP-CONNECTION\n    UNIQUE-COMPONENT-IDENTIFIER HEADER-1\n"
+        );
+
+        $this->assertContains('tap_connection_missing_coordinates', $codes);
+    }
+
+    public function test_cross_branch_types_and_generic_olet_are_not_silently_admitted(): void
+    {
+        foreach (['CROSS-SET-ON', 'CROSS-STUB', 'OLET'] as $type) {
+            $this->assertContains(
+                'branch_type_unresolved',
+                $this->codes($type."\n    CENTRE-POINT 1500 0 0 6\n"),
+                $type.' must remain visible until a safe mapping exists.',
+            );
+        }
+    }
+
+    public function test_the_invented_tap_point_spelling_is_not_admitted_as_a_tap(): void
+    {
+        foreach ([
+            "PIPE\n    END-POINT 1500 0 0 3 PL\n    TAP-POINT 1500 152 0 6\n",
+            "TAP-POINT\n    CO-ORDS 1500 152 0 6\n",
+        ] as $body) {
+            $codes = $this->codes($body);
+
+            $this->assertContains('unsupported_tap_point', $codes);
+            $this->assertNotContains('tap_connection', $codes);
+        }
+    }
+
+    public function test_a_set_on_branch_component_is_reported_from_its_skey(): void
     {
         $this->assertContains(
             'branch_on_header_wall',
-            $this->codes("TEE-SET-ON\n    END-POINT 0 0 0 6 BW\n    CENTRE-POINT 1500 0 0 6\n"),
+            $this->codes(
+                "TEE-SET-ON\n    END-POINT 0 0 0 6 BW\n"
+                ."    CENTRE-POINT 1500 0 0 6\n    SKEY TESO\n"
+            ),
+        );
+    }
+
+    public function test_a_tee_stub_without_its_disambiguating_skey_is_not_guessed(): void
+    {
+        $this->assertContains(
+            'branch_type_unresolved',
+            $this->codes("TEE-STUB\n    CENTRE-POINT 1500 0 0 6\n"),
         );
     }
 
@@ -133,10 +228,19 @@ final class PcfAdmissionTest extends TestCase
     public function test_warnings_from_the_parser_itself_survive(): void
     {
         // The intake adds to the parser's list, it does not replace it.
-        $withTap = $this->intake()
-            ->parse($this->file("PIPE\n    PIPELINE-REFERENCE L-2\n    END-POINT 0 0 0 6 BW\n    TAP-POINT 0 152 0 6\n"))
-            ->warnings;
+        $warnings = $this->intake()->parse(
+            "    ITEM-CODE ORPHAN\n"
+            .$this->file(
+                "PIPE\n    PIPELINE-REFERENCE L-2\n    END-POINT 0 0 0 6 BW\n"
+                ."TAP-CONNECTION\n    CO-ORDS 0 152 0 3 BW\n"
+                ."    UNIQUE-COMPONENT-IDENTIFIER MISSING-HOST\n"
+            ),
+        )->warnings;
 
-        $this->assertGreaterThanOrEqual(2, count($withTap));
+        $codes = array_map(static fn ($warning): string => $warning->code, $warnings);
+
+        $this->assertContains('orphan_attribute', $codes);
+        $this->assertContains('cross_line_component', $codes);
+        $this->assertContains('tap_connection', $codes);
     }
 }

@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Models\Component;
+use App\Models\Concerns\HasUuid;
 use App\Support\Piping\BranchConnectionType;
 use App\Support\Piping\JointBranchKind;
 use App\Support\Piping\JointBranchRuleState;
-
-use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -177,8 +175,7 @@ final class Joint extends Model
             // stub-on saddles the outside; they are different welds and take
             // different preparation.
             [BranchConnectionType::P2P, JointBranchKind::STUB_IN],
-            [BranchConnectionType::P2P, JointBranchKind::STUB_ON] =>
-                $this->branch_class_p2p_kind === $this->branch_kind ? 'AGREES' : 'MISMATCH',
+            [BranchConnectionType::P2P, JointBranchKind::STUB_ON] => $this->branch_class_p2p_kind === $this->branch_kind ? 'AGREES' : 'MISMATCH',
 
             [BranchConnectionType::TEE, JointBranchKind::TEE] => 'AGREES',
 
@@ -200,7 +197,7 @@ final class Joint extends Model
      *
      * Null for every ordinary joint. A pipe has two ends and no port on its
      * side, so the header contributes no port — the joint points at the
-     * component and at a location on it instead (ADR-006 §13, P-22).
+     * component and at a location on it instead (ADR-006 §14, P-22).
      */
     public function branchHeaderComponent(): BelongsTo
     {
