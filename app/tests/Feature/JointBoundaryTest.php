@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Joint;
 use App\Models\PipingClass;
 use App\Models\PipingLine;
 use App\Models\Port;
@@ -14,9 +15,9 @@ use App\Services\ComponentService;
 use App\Services\EquipmentService;
 use App\Services\JointService;
 use App\Services\PipingLineService;
+use App\Support\Piping\JointBranchKind;
 use App\Support\Piping\Pcf\PcfAdmission;
 use App\Support\Piping\Pcf\PcfParser;
-use App\Support\Piping\PortCompatibility;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
@@ -31,18 +32,19 @@ use Tests\TestCase;
  * What a joint can connect, and what it cannot — written down as tests so the
  * answer cannot drift away from the truth again.
  *
- * There are four cases a piping engineer might mean by "connect two pipes".
+ * There are five cases a piping engineer might mean by "connect two pipes".
  * They are not the same case, and they do not have the same answer:
  *
  *   1. two components on ONE line            -> a joint is created
  *   2. a pipe on line A to a pipe on line B  -> refused (tie-in)
- *   3. a P2P branch onto a HEADER WALL        -> explicit one-port wall joint
- *   4. a pipe onto an EQUIPMENT NOZZLE       -> a joint is created
+ *   3. a P2P branch onto a HEADER WALL        -> explicit STUB_IN/STUB_ON wall joint
+ *   4. an OLET onto a HEADER WALL             -> explicit OLET weld plus branch-port weld
+ *   5. a pipe onto an EQUIPMENT NOZZLE       -> a joint is created
  *
- * A wall joint keeps the header at two end ports and stores a frozen header
- * reference instead. This boundary test pins that shape and the read-only PCF
- * warning; the PCF-to-model writer/UI is still absent. The cross-line tie-in in
- * (2) remains refused.
+ * Wall joints keep the header at two end ports and store a frozen header
+ * reference instead. This boundary test pins both branch shapes and the
+ * read-only PCF warning; the PCF-to-model writer/UI is still absent. The
+ * ordinary cross-line tie-in in (2) remains refused.
  */
 final class JointBoundaryTest extends TestCase
 {
@@ -155,51 +157,81 @@ final class JointBoundaryTest extends TestCase
     }
 
     /**
-     * The P2P wall path deliberately is not an OLET-header fitting path.
-     *
-     * An OLET carries a fabricated (FA) run port and a branch port. The normal
-     * two-port `join()` refuses BW-to-FA, correctly avoiding a fake transition
-     * fitting. `joinToWall()` currently represents fitting-less STUB_IN/ON
-     * joints only; it does not yet place the OLET's own header-side weld. So an
-     * OLET can be placed and a branch pipe can be joined to its BRANCH port,
-     * but the OLET-to-header weld is still not modelled. This is separate from
-     * the P2P wall joint delivered in ADR-006 §14.
+     * An OLET is a purchased fitting with two distinct interfaces: its
+     * fabricated RUN/FA side lands on the header wall, and its BRANCH port
+     * joins the branch-line pipe. Both welds belong to and are numbered on the
+     * branch line, while the branch connection and issued-class verdict are
+     * counted once on the header-side OLET weld.
      */
-    public function test_case_0b_an_olets_header_side_connects_to_nothing(): void
+    public function test_case_0b_an_olet_models_both_interfaces_without_a_fake_header_port(): void
     {
-        $line = $this->line();
+        $headerLine = $this->line('6');
+        $branchLine = $this->line('2');
         $project = $this->project();
         $owner = $this->owner();
 
-        $olet = $this->tenant->runAs(
-            $owner->company_id,
-            fn () => app(ComponentService::class)->place($line, $owner, 'OLET'),
-            $project->id,
-        );
-
-        $runPort = $olet->ports->firstWhere('role', 'RUN');
-        $branchPort = $olet->ports->firstWhere('role', 'BRANCH');
-
-        $this->assertSame('FA', $runPort->end_type, 'The header side of an olet is a fabricated weld onto a wall.');
-        $this->assertSame('BW', $branchPort->end_type);
-
-        // A branch CAN be welded to the branch end...
-        $this->tenant->runAs($owner->company_id, function () use ($owner, $branchPort): void {
+        $assembly = $this->tenant->runAs($owner->company_id, function () use ($owner, $headerLine, $branchLine): array {
             DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
-            app(ComponentService::class)->attach($branchPort, $owner, 'PIPE', ['length_mm' => 1500]);
+
+            $components = app(ComponentService::class);
+            $headerPipe = $components->place($headerLine, $owner, 'PIPE', ['length_mm' => 6000]);
+            $olet = $components->place($branchLine, $owner, 'OLET', [
+                'nominal_size' => '6',
+                'port_sizes' => [2 => '2'],
+            ]);
+            $runPort = $olet->ports->firstWhere('role', 'RUN');
+            $branchPort = $olet->ports->firstWhere('role', 'BRANCH');
+
+            $this->assertSame('FA', $runPort->end_type);
+            $this->assertSame('BW', $branchPort->end_type);
+
+            $headerJoint = app(JointService::class)->joinOletToWall(
+                $olet, $headerPipe, 3000.0, 0.0, $owner,
+            );
+            $branchAssembly = $components->attach($branchPort, $owner, 'PIPE', ['length_mm' => 1500]);
+
+            return [
+                'olet' => $olet->fresh(['ports']),
+                'headerPipe' => $headerPipe,
+                'headerJoint' => $headerJoint,
+                'branchJoint' => $branchAssembly['joint'],
+                'headerOpenCount' => $components->openPorts($headerLine->fresh())->count(),
+                'metrics' => app(JointService::class)->lineMetrics($branchLine->fresh()),
+            ];
         }, $project->id);
 
-        // ...but the header side cannot be welded to a pipe end at all.
-        $verdict = app(PortCompatibility::class)->evaluate(
-            $runPort,
-            $this->tenant->runAs(
-                $owner->company_id,
-                fn () => app(ComponentService::class)->place($line, $owner, 'PIPE')->ports->first(),
-                $project->id,
-            ),
-        );
+        $olet = $assembly['olet'];
+        $runPort = $olet->ports->firstWhere('role', 'RUN');
+        $branchPort = $olet->ports->firstWhere('role', 'BRANCH');
+        $headerJoint = $assembly['headerJoint'];
+        $branchJoint = $assembly['branchJoint'];
 
-        $this->assertTrue($verdict->isInvalid(), 'FA against BW must be refused, not warned about.');
+        $this->assertSame('OLET', $olet->template_code, 'The purchased fitting remains an MTO component.');
+        $this->assertSame($runPort->id, $headerJoint->port_a_id);
+        $this->assertNull($headerJoint->port_b_id, 'The header has no synthetic wall port.');
+        $this->assertSame($assembly['headerPipe']->id, $headerJoint->branch_header_component_id);
+        $this->assertSame(3000.0, $headerJoint->branch_station_mm);
+        $this->assertSame(0.0, $headerJoint->branch_offset_mm);
+        $this->assertSame(Joint::TYPE_OLET_HEADER_WELD, $headerJoint->joint_type);
+        $this->assertSame(JointBranchKind::OLET, $headerJoint->branch_kind);
+
+        $this->assertSame('BUTT_WELD', $branchJoint->joint_type);
+        $this->assertNull($branchJoint->branch_kind, 'The outlet butt weld is not counted as a second branch connection.');
+        $this->assertNull($branchJoint->branch_class_type);
+        $this->assertTrue($runPort->is_connected);
+        $this->assertTrue($branchPort->is_connected);
+        $this->assertTrue($headerJoint->isWeld());
+        $this->assertNotNull($headerJoint->joint_seq);
+        $this->assertNotNull($branchJoint->joint_seq);
+        $this->assertSame($branchLine->id, $headerJoint->piping_line_id);
+        $this->assertSame($branchLine->id, $branchJoint->piping_line_id);
+        $this->assertNotSame($headerLine->id, $headerJoint->piping_line_id);
+
+        $this->assertSame(2, $assembly['headerOpenCount'], 'The header pipe still has only its two real ends.');
+        $this->assertSame(2, $assembly['metrics']['welds'], 'Both physical OLET welds are counted.');
+        $this->assertSame(4.0, $assembly['metrics']['dia_inch'], 'Both welds use the 2-inch branch diameter.');
+        $this->assertSame(1, $assembly['metrics']['branch_welds'], 'The OLET branch connection is counted exactly once.');
+        $this->assertSame(2.0, $assembly['metrics']['branch_dia_inch']);
     }
 
     // ── Case 1 ────────────────────────────────────────────────────────────

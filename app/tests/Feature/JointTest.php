@@ -716,30 +716,42 @@ final class JointTest extends TestCase
         $this->assertNull($kind);
     }
 
-    public function test_an_olet_branch_weld_is_classified_from_the_port_role(): void
+    public function test_an_olet_wall_weld_is_the_branch_connection_not_its_outlet_butt_weld(): void
     {
         $line = $this->line('6');
 
-        $kind = $this->asOwner(function () use ($line) {
+        [$headerJoint, $outletJoint, $metrics] = $this->asOwner(function () use ($line): array {
+            $header = $this->components()->place($line, $this->owner(), 'PIPE', ['length_mm' => 6000]);
             $olet = $this->components()->place($line, $this->owner(), 'OLET', [
                 'port_sizes' => [2 => '2'],
             ]);
+            $outletJoint = $this->components()->attach(
+                $olet->ports->firstWhere('role', 'BRANCH'), $this->owner(), 'PIPE',
+            )['joint'];
+            $headerJoint = $this->joints()->joinOletToWall(
+                $olet, $header, 3000.0, 0.0, $this->owner(),
+            );
 
-            $r = $this->components()->attach($olet->ports->firstWhere('role', 'BRANCH'), $this->owner(), 'PIPE');
-
-            return $r['joint']->branch_kind;
+            return [$headerJoint, $outletJoint, $this->joints()->lineMetrics($line->fresh())];
         });
 
-        $this->assertSame(JointBranchKind::OLET, $kind);
+        $this->assertSame(Joint::TYPE_OLET_HEADER_WELD, $headerJoint->joint_type);
+        $this->assertSame(JointBranchKind::OLET, $headerJoint->branch_kind);
+        $this->assertNull($outletJoint->branch_kind);
+        $this->assertNull($outletJoint->branch_rule_state);
+        $this->assertSame(2, $metrics['welds']);
+        $this->assertSame(1, $metrics['branch_welds'], 'A single OLET connection must not count twice.');
+        $this->assertSame(2.0, $metrics['branch_dia_inch']);
     }
 
     public function test_wall_side_kinds_are_explicit_not_port_derived(): void
     {
-        // A wall joint has no second port, so branchKindFor() cannot infer its
-        // type. joinToWall() writes STUB_IN/STUB_ON explicitly; these kinds must
-        // therefore stay outside the fitting-template DERIVABLE set (ADR-006 §14).
+        // Wall-joint kinds are explicit: joinToWall() writes STUB_IN/STUB_ON,
+        // while joinOletToWall() writes OLET. They must not be inferred from a
+        // two-port branch outlet weld.
         $this->assertNotContains(JointBranchKind::STUB_IN, JointBranchKind::DERIVABLE);
         $this->assertNotContains(JointBranchKind::STUB_ON, JointBranchKind::DERIVABLE);
+        $this->assertNotContains(JointBranchKind::OLET, JointBranchKind::DERIVABLE);
 
         $this->assertContains(JointBranchKind::STUB_IN, JointBranchKind::ALL);
         $this->assertContains(JointBranchKind::STUB_ON, JointBranchKind::ALL);

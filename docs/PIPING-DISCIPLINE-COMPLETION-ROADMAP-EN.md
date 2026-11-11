@@ -244,18 +244,21 @@ Needs detailed design; the full MVP must cover:
   and PAD thickness linked to the issued class rule
 
 **Acceptance criteria for the delivered branch-joint sub-slice:** P2P wall weld
-has a first-class type and frozen header reference; header remains exactly two
-ports; branch weld counts/by-kind and physical dia-inch are correct; issued class
-kind/pad is preserved separately from observation; mismatches are observable;
-targeted joint tests pass.
+has a first-class type and frozen header reference; a purchased OLET records its
+RUN/FA-to-header wall weld and separate BRANCH-to-pipe weld; the header remains
+exactly two ports; branch weld counts/by-kind and physical dia-inch are correct;
+issued class kind/pad is preserved separately from observation; mismatches are
+observable; targeted joint tests pass.
 
-**Current result:** the model/service acceptance above is implemented. The
-user-facing weld log/report, hard deviation gate, WPS/PQR/qualification,
-NDT/repair, repair KPI, and material/heat traceability are not.
+**Current result:** the model/service acceptance above is implemented. The OLET
+root weld carries the branch class verdict and branch metrics once; both
+physical OLET welds are numbered on the branch line. The user-facing weld
+log/report, hard deviation gate, WPS/PQR/qualification, NDT/repair, repair KPI,
+and material/heat traceability are not.
 
 **Deliberately not built in the branch-joint slice:** weld UI/log, WPS/PQR,
 welder qualification, NDT/repair workflow, contract rate schedule,
-OLET-to-header wall weld, PCF-to-model writer, and multi-leg CROSS application.
+PCF-to-model writer, and multi-leg CROSS application.
 
 **Acceptance criteria for closing full P5:** each required joint has an
 attributed weld record; only qualified welders/WPS/PQR are accepted; NDT and

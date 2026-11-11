@@ -130,10 +130,12 @@ should emit the same tap idiom we expect to read.
    pad requirement/thickness; the joint snapshot retains that thickness. Pad
    MTO rows, weld/NDT workflow and a commercial rate table are separate work.
 
-**Deliberately not built in this slice:** PCF upload, model-writing apply,
-projection/geometry validation, UI for wall-joint creation, OLET-to-header wall
-welds, multi-leg CROSS-* application, and MTO/costing workflows. Read-only tap
-recognition is not an accepted model import.
+**Deliberately not built in this PCF slice:** PCF upload, model-writing apply,
+projection/geometry validation, UI for wall-joint creation, multi-leg CROSS-*
+application, and MTO/costing workflows. The separate OLET wall-weld model path
+is now documented in ADR-006 §15; this PCF research/parser remains read-only and
+does not populate it. Read-only tap recognition is not an accepted model
+import.
 
 ## 4. What Plant 3D's own model does (added 2026-11-10)
 
@@ -537,22 +539,23 @@ now has its own explicit model path.
 | branch shape | modelled now? | recorded distinction |
 |---|---|---|
 | branch through a TEE/CROSS | yes | branch-port role and `branch_kind`; ordinary physical dia-inch stays unchanged |
-| branch pipe to an OLET's BRANCH port | yes | `branch_kind=OLET` on that branch-side weld; this is not the OLET-to-header weld |
-| OLET's fabricated RUN end onto its header | no | separate fitting-to-wall operation; the P2P-only `joinToWall()` path is not an OLET shortcut |
+| complete OLET assembly | yes | OLET RUN/FA wall weld plus ordinary BRANCH-to-pipe weld; `branch_kind=OLET` and the issued verdict sit on the root weld exactly once |
 | stub-in / stub-on (P2P) | yes, via `joinToWall()` | one branch port + frozen header reference; `BRANCH_STUB_IN` / `BRANCH_STUB_ON` |
 
-`lineMetrics()` now counts branch welds separately; wall-joint `diaInch()`
-returns the branch size rather than NULL. The UI and PCF-to-model apply path are
-still absent, so this is model/service capability, not an operational import
-workflow. This increment does **not** make the OLET-to-header weld connectable.
+`lineMetrics()` counts both physical OLET welds, but classifies the branch
+connection once; the wall-weld dia-inch uses the branch size. The UI and
+PCF-to-model apply path are still absent, so this is model/service capability,
+not an operational import workflow. This does not change the read-only boundary
+for PCF `TAP-CONNECTION` data.
 
 ### 7.3 The classification is implemented
 
 `ports.role` includes `BRANCH` (`TEE` = [RUN, RUN, BRANCH], `CROSS` = [RUN,
-RUN, BRANCH, BRANCH], `OLET` = [RUN, BRANCH]) and the two-port joint path reads
-that role to classify fitted branch welds. Wall joints are explicit: their
-stored `branch_kind` is `STUB_IN` or `STUB_ON`, with `isOnWall()` and the frozen
-header reference identifying the second side without inventing a port.
+RUN, BRANCH, BRANCH], `OLET` = [RUN, BRANCH]). TEE/CROSS two-port joints read
+that role to classify branch welds. OLET is explicit: its RUN wall joint gets
+`branch_kind=OLET` and the branch-port-to-pipe weld remains ordinary. P2P wall
+joints are also explicit, with `STUB_IN` or `STUB_ON`, `isOnWall()` and the
+frozen header reference identifying the other side without inventing a port.
 
 The class verdict is carried separately from observation; `branchDeviation()`
 can report agreement, mismatch or an ungoverned case. This is now modeled and

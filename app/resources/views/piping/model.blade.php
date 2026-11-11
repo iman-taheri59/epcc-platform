@@ -66,6 +66,8 @@
         'jnum'     => ['fa' => 'شماره', 'en' => 'No.'],
         'jtype'    => ['fa' => 'نوع', 'en' => 'Type'],
         'jbetween' => ['fa' => 'بین', 'en' => 'Between'],
+        'wall'     => ['fa' => 'دیواره', 'en' => 'wall'],
+        'station'  => ['fa' => 'ایستگاه', 'en' => 'station'],
         'jstate'   => ['fa' => 'وضعیت', 'en' => 'State'],
         'jdia'     => ['fa' => 'قطر-اینچ', 'en' => 'Dia-inch'],
         'junnum'   => ['fa' => 'بدون شماره', 'en' => 'not numbered'],
@@ -407,6 +409,10 @@
         $dia = $diaInch($j);
         $cA = $j->portA?->component;
         $cB = $j->portB?->component;
+        $wallHeader = $j->branchHeaderComponent;
+        $station = $j->branch_station_mm === null
+            ? null
+            : rtrim(rtrim(number_format((float) $j->branch_station_mm, 3, '.', ''), '0'), '.');
       @endphp
       <tr>
         <td class="mono">
@@ -431,7 +437,14 @@
         <td style="font-size:12px;">
           <bdi>{{ $cA ? $num($cA->sequence).' '.$cA->template_code : '?' }}</bdi>
           <span style="color:var(--muted);">↔</span>
-          <bdi>{{ $cB ? $num($cB->sequence).' '.$cB->template_code : '?' }}</bdi>
+          @if($cB)
+            <bdi>{{ $num($cB->sequence).' '.$cB->template_code }}</bdi>
+          @elseif($wallHeader)
+            <bdi>{{ $num($wallHeader->sequence).' '.$wallHeader->template_code }}</bdi>
+            <span style="color:var(--muted);">({{ $L('wall') }}@if($station !== null) · <bdi>{{ $L('station') }} {{ $num($station) }} mm</bdi>@endif)</span>
+          @else
+            <bdi>?</bdi>
+          @endif
         </td>
         <td style="font-size:12px;">
           <span style="display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;

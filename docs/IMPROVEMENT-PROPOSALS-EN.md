@@ -15,8 +15,9 @@ Statuses: `OPEN` (awaiting decision) · `ACCEPTED` (decided, not yet built) ·
 operational workflow may remain open) · `BUILT` (all stated acceptance met) ·
 `REJECTED` (considered and refused — kept so it is not raised again).
 
-Last updated: **2026-10-26** (P-21/P-22 status reconciliation; targeted PCF/joint
-regression passed 132 tests / 267 assertions; full-suite run is separate).
+Last updated: **2026-10-26** (P-21/P-22 OLET-path reconciliation; targeted
+OLET/joint regressions passed 84 tests / 218 assertions; full-suite run is
+separate).
 
 ---
 
@@ -44,8 +45,8 @@ regression passed 132 tests / 267 assertions; full-suite run is separate).
 | P-18 | Docs drift | `Prototype-Coverage-Map.md` recount after procurement + piping + MTO (audit §3 item 4) | OPEN |
 | P-19 | Runtime | In-sandbox PostgreSQL provisioned (PG tier BUILT); PHP tier network-blocked — Laravel work stays on the Docker/Laragon tier | PARTIAL |
 | P-20 | Code / portability | `PdfRenderer` is POSIX-only (`command -v`) — PDF export silently unavailable on Windows/Laragon | OPEN |
-| P-21 | Requirement / piping | Branch welds (stub-in/stub-on P2P) must be first-class joint types, separately countable with physical dia-inch and traceable pad/class | PARTIAL — schema, wall-joint representation, snapshot verdict and `lineMetrics()` delivered; weld report, rates, WPS/PQR, welder qualification, NDT/repair and UI remain open |
-| P-22 | Requirement / piping | P2P branch welds land on the header *wall*, but the joint model originally connected two ports — select and implement a safe wall-reference shape | DECIDED + MODELLED for P2P in ADR-006 §14; PCF reader remains read-only, wall-joint UI/model writer and OLET-to-header path remain open |
+| P-21 | Requirement / piping | Branch welds (P2P stubs and OLETs) must be first-class, separately countable with physical dia-inch and traceable pad/class | PARTIAL — P2P and OLET wall weld models, issued-snapshot verdicts and `lineMetrics()` delivered; weld report, rates, WPS/PQR, welder qualification, NDT/repair and UI remain open |
+| P-22 | Requirement / piping | Branch welds land on the header *wall*, but the joint model originally connected two ports — select and implement a safe wall-reference shape | DECIDED + MODELLED for P2P and OLET in ADR-006 §§14–15; PCF reader remains read-only, wall-joint UI/model writer remains open |
 | P-23 | Requirement / MTO | MTO has no coverage of branch-connection material: reinforcement pads (plate) and coped stub ends | OPEN — scope decision |
 | P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator + B31.3-2024 materials pack + class design basis + publish-gate validation built; **flange step built 2026-10-12**: ASME B16.5-2025 P-T ratings pack (45 SI tables, cross-checked against the Customary twin) + `FlangeRatingReference` + publish gate rating every FLANGE_TYPE cell against the class design basis; B16.47 large-diameter + Section II Part D extensions remain follow-ups; runtime verification on owner's Laragon pending | PARTIAL — Step B + flange gate built |
 | P-25 | Standards / data | Parallel-session engineering reference library discovered on the owner-published `workspace` branch and ported (commit `bf15816`): full B31.3-2024 Table A-1 stresses (798 rows/138 specs), materials library v1.8, B16.5+B16.47 flange P-T curves, bolting, B16.9 fitting dimensions, valve packs, per-pack schemas and the 2,835-line validator; both flange provenances cross-checked cell-by-cell (4,725/4,725 exact). **Steps 1-4 ported; step 5 catalogue/adoption-only adaptation implemented (awaiting Laragon verification)**: ADR-019 documents ITP-only citation host/migration and mutable-edition conflict; owner chose option A; citation/ITP still deferred. Compatibility assessment (`3bdff9b`) + engineering screening & fitting-review module + MR entry module ported (awaiting Laragon test runs). Next: Laragon verification; group A fluid-service classification implemented pending tests (ADR-020); step 7 baseline/model-import assessed as no-go for wholesale port, owner approved parser-only; pure PCF parser ported (ADR-021), branch-vocabulary conflict handled by a read-only P2P classifier (ADR-022); model importer/baseline deferred | PARTIAL — porting in progress |
@@ -303,17 +304,19 @@ Vazirmatn + poppler on Windows. **Cost:** small. **Test gate:** needs the
 Laragon/Docker runtime — queue behind P-17 once the suite runs. Recorded by
 the 2026-10-11 Laragon setup doc (`docs/LARAGON-DEVELOPMENT-ENVIRONMENT.md` §7).
 
-## P-21 — Branch weld joint types: stub-in/stub-on welds must be first-class joint types (recorded requirement)
+## P-21 — Branch weld joint types: P2P and OLET branch welds must be first-class (recorded requirement)
 
 **Recorded as an owner requirement, 2026-10-12.** A P2P branch connection
 (ADR-008, built) has NO component: the branch pipe is contoured and welded
 straight onto/into the header. The connection therefore lives in the joint
 register as a WELD — but it is not an ordinary butt weld, and welding
-metrics must never treat it as one.
+metrics must never treat it as one. A purchased OLET is different: its
+RUN/FA-to-header wall weld is the branch connection, while its BRANCH-to-pipe
+butt weld is a separate ordinary weld; the fitting itself remains in the MTO.
 
 **Requirement.** The joint register must carry formal branch-weld kinds — at
-minimum `BRANCH_STUB_IN` and `BRANCH_STUB_ON` — and preserve the following
-behavior through welding/reporting:
+minimum `BRANCH_STUB_IN`, `BRANCH_STUB_ON` and `OLET` — and preserve the
+following behavior through welding/reporting:
 
 1. Branch welds are **counted and reported separately** from butt welds in
    the weld log and weld-count KPIs.
@@ -329,10 +332,11 @@ behavior through welding/reporting:
    audit the class-validation phase delivers for components.
 
 **Current status (2026-10-26): PARTIAL — do not mark P-21 complete.** The
-joint schema/service now stores fitted branch kinds and explicit P2P wall kinds;
-`lineMetrics()` counts branch welds/by kind and preserves physical dia-inch;
-the issued PMS verdict and pad thickness travel with the joint, and
-`branchDeviation()` makes mismatch observable. See ADR-006 §14 and ADR-008
+joint schema/service stores P2P stub kinds and the OLET root-wall weld as
+separate branch kinds; `lineMetrics()` counts the OLET connection once while
+including both physical OLET welds in total weld/dia-inch figures. The issued
+PMS verdict and pad thickness travel with the branch weld, and
+`branchDeviation()` makes mismatch observable. See ADR-006 §§14–15 and ADR-008
 §§9.4–9.5. Targeted joint coverage has passed, but this is the model/register
 slice, not the full welding phase.
 
@@ -340,9 +344,9 @@ slice, not the full welding phase.
 breakdown by kind/branch size/pad; a user-facing weld report; class deviation
 visibility; and demonstrated traceability from a PAD rule to the weld record.
 **Deliberately not built:** weld-log/report UI, hard refusal on class mismatch,
-contract rate schedule, welder qualification, WPS/PQR, NDT/repair workflow,
-PCF-to-model application, or the separate OLET fabricated RUN-end-to-header
-weld. **Depends on:** P5 welding/NDT design and ADR-010 §6 decisions.
+contract rate schedule, welder qualification, WPS/PQR, NDT/repair workflow, or
+PCF-to-model application. **Depends on:** P5 welding/NDT design and ADR-010 §6
+decisions.
 Cross-references: ADR-008 §9.2 (requirement), §§9.4–9.5 (delivered slice).
 
 ## Standing process — requirements review (owner directive, 2026-10-12)
@@ -386,16 +390,18 @@ and restates the affected invariants. Option (b), raw line+station, was rejected
 in favor of a frozen component reference plus station/offset.
 
 **Current status:** P2P wall-joint schema/service and issued-class snapshot are
-implemented and tested. The read-only PCF parser now recognizes both standard
-tap forms and resolves a unique host UCI, but no writer applies a tap to the
-model.
+implemented and tested. The separate OLET path now records its RUN/FA-to-header
+wall weld and its ordinary branch-port weld, with one OLET branch verdict on
+the branch line. The read-only PCF parser recognizes both standard tap forms
+and resolves a unique host UCI, but no writer applies a tap to the model.
 
 **Acceptance for the P2P representation:** branch port + frozen header,
 station/offset bounds, unchanged two-port header/open-port behavior, branch-line
 ownership, physical branch-size dia-inch, and class/pad snapshot with deviation
-observable. **Deliberately not built:** PCF upload/preview/commit, projection or
-geometry validation, wall-joint UI, OLET-to-header weld, multi-leg CROSS application, or cross-line tie-in. A representation/reader slice does not make
-P-21, P5 welding/NDT, or PCF import complete.
+observable. The distinct OLET representation is in ADR-006 §15. **Deliberately
+not built:** PCF upload/preview/commit, geometry projection, wall-joint UI,
+multi-leg CROSS application, or cross-line tie-in. A representation/reader
+slice does not make P-21, P5 welding/NDT, or PCF import complete.
 
 ## P-23 — MTO has no coverage of branch-connection material
 

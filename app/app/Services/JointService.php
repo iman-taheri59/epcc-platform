@@ -68,10 +68,12 @@ final class JointService
      *     so cannot exist. A branch is different: the branch line owns it
      *     (ADR-006 §14).
      *   - a BRANCH ON A HEADER WALL. This two-port method does not make one;
-     *     `joinToWall()` represents it with a frozen header reference. ISOGEN
-     *     resolves a PCF tap by projection onto the header centreline; this
-     *     service does not project PCF geometry. A stub-in modelled as an olet
-     *     would corrupt the MTO, so it is not faked that way either.
+     *     `joinToWall()` represents a fitting-less P2P stub and
+     *     `joinOletToWall()` represents an OLET's fabricated RUN-side weld,
+     *     each with a frozen header reference. ISOGEN resolves a PCF tap by
+     *     projection onto the header centreline; this service does not project
+     *     PCF geometry. An OLET remains a purchased component; it is never
+     *     faked as a fitting-less stub.
      *
      * PCF wall taps are currently reported at read-only intake; no model-writing
      * importer calls the wall-joint path — see PcfAdmission::withUnrepresentable.
@@ -214,7 +216,13 @@ final class JointService
 
         if (! in_array($kind, [JointBranchKind::STUB_IN, JointBranchKind::STUB_ON], true)) {
             throw ValidationException::withMessages([
-                'branch_kind' => 'A wall joint is a stub-in or a stub-on, not a fitting.',
+                'branch_kind' => 'A P2P wall joint is a stub-in or a stub-on, not a fitting.',
+            ]);
+        }
+
+        if ($branchPort->component?->template_code === 'OLET') {
+            throw ValidationException::withMessages([
+                'branch_kind' => 'An OLET must use joinOletToWall() so its purchased fitting and RUN-side weld remain explicit.',
             ]);
         }
 
@@ -292,6 +300,215 @@ final class JointService
             Port::query()->whereKey($fresh->id)->update(['is_connected' => true]);
 
             return $joint->fresh(['portA', 'branchHeaderComponent']);
+        });
+    }
+
+    /**
+     * Weld an OLET's fabricated RUN/FA port onto a specified header wall point.
+     *
+     * Unlike `joinToWall()`, this is a fitting connection, not a fitting-less
+     * P2P stub. The OLET remains a purchased component; its RUN port is the one
+     * real port in the joint and the header remains a frozen component
+     * reference, never a synthetic wall port. The OLET is placed on the branch
+     * line, which owns and numbers both this wall weld and the ordinary
+     * OLET-BRANCH-to-pipe weld.
+     *
+     * The class verdict and `branch_kind=OLET` belong to this header-side branch
+     * weld. The separate OLET BRANCH-to-pipe butt weld is an ordinary weld, so
+     * the branch metrics count the branch connection once, not twice.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function joinOletToWall(
+        Component $olet,
+        Component $header,
+        float $stationMm,
+        float $offsetMm,
+        User $actor,
+        array $attributes = [],
+    ): Joint {
+        if ($olet->template_code !== 'OLET') {
+            throw ValidationException::withMessages([
+                'component_id' => 'The wall-fitting path requires an OLET component.',
+            ]);
+        }
+
+        if ($header->template_code !== 'PIPE') {
+            throw ValidationException::withMessages([
+                'header_component_id' => 'An OLET wall connection must reference a pipe component.',
+            ]);
+        }
+
+        $branchLine = PipingLine::query()->findOrFail($olet->piping_line_id);
+        $headerLine = PipingLine::query()->findOrFail($header->piping_line_id);
+        $project = Project::query()->findOrFail($branchLine->project_id);
+
+        $this->archives->assertWritable($project);
+        $this->assertLineIsModellable($branchLine);
+        $this->assertLineIsModellable($headerLine);
+
+        if ($header->project_id !== $project->id) {
+            throw ValidationException::withMessages([
+                'header_component_id' => 'The OLET and header must belong to the same project.',
+            ]);
+        }
+
+        return DB::transaction(function () use (
+            $olet, $header, $branchLine, $headerLine, $project, $stationMm, $offsetMm, $actor, $attributes,
+        ): Joint {
+            // The OLET's branch line owns the number. Lock all affected line
+            // rows in stable order, then allocate on the branch line below.
+            $lineIds = array_values(array_unique([$branchLine->id, $headerLine->id]));
+            sort($lineIds, SORT_STRING);
+
+            foreach ($lineIds as $lineId) {
+                PipingLine::query()->whereKey($lineId)->lockForUpdate()->firstOrFail();
+            }
+
+            $freshOlet = Component::query()->whereKey($olet->id)->lockForUpdate()->firstOrFail();
+            $freshHeader = Component::query()->whereKey($header->id)->lockForUpdate()->firstOrFail();
+            $line = PipingLine::query()->findOrFail($freshOlet->piping_line_id);
+            $headerLine = PipingLine::query()->findOrFail($freshHeader->piping_line_id);
+
+            $this->archives->assertWritable($project);
+            $this->assertLineIsModellable($line);
+            $this->assertLineIsModellable($headerLine);
+
+            if ($freshOlet->template_code !== 'OLET' || $freshHeader->template_code !== 'PIPE'
+                || $freshOlet->project_id !== $project->id || $freshHeader->project_id !== $project->id) {
+                throw ValidationException::withMessages([
+                    'component_id' => 'The OLET and its header must be valid components in the same project.',
+                ]);
+            }
+
+            $oletPorts = Port::query()
+                ->where('component_id', $freshOlet->id)
+                ->whereIn('role', ['RUN', 'BRANCH'])
+                ->orderBy('seq')
+                ->lockForUpdate()
+                ->get();
+            $runPort = $oletPorts->firstWhere('role', 'RUN');
+            $branchPort = $oletPorts->firstWhere('role', 'BRANCH');
+
+            if ($oletPorts->count() !== 2 || $runPort === null || $branchPort === null) {
+                throw ValidationException::withMessages([
+                    'component_id' => 'The OLET must have exactly one RUN port and one BRANCH port.',
+                ]);
+            }
+
+            if ($runPort->end_type !== 'FA') {
+                throw ValidationException::withMessages([
+                    'port_id' => 'The OLET RUN side must be the fabricated FA end for a header-wall weld.',
+                ]);
+            }
+
+            if ($runPort->is_connected) {
+                throw ValidationException::withMessages([
+                    'port_id' => __('epcc.component.port_already_connected', ['port' => $runPort->label()]),
+                ]);
+            }
+
+            if ($runPort->nominal_size_decimal === null || $freshHeader->nominal_size_decimal === null
+                || abs($runPort->nominal_size_decimal - $freshHeader->nominal_size_decimal) > 0.0001) {
+                throw ValidationException::withMessages([
+                    'header_component_id' => 'The OLET RUN size must match the header pipe size.',
+                ]);
+            }
+
+            if ($branchPort->nominal_size === null || $branchPort->nominal_size_decimal === null) {
+                throw ValidationException::withMessages([
+                    'port_id' => 'The OLET BRANCH port must have a known size for class resolution and weld metrics.',
+                ]);
+            }
+
+            $this->assertWallGeometry($freshHeader, $stationMm, $offsetMm);
+
+            $headerPort = Port::query()
+                ->where('component_id', $freshHeader->id)
+                ->orderBy('seq')
+                ->lockForUpdate()
+                ->first();
+
+            if ($headerPort === null) {
+                throw ValidationException::withMessages([
+                    'header_component_id' => 'The header pipe has no ports.',
+                ]);
+            }
+
+            $verdict = $this->wallVerdictFor($line, $freshHeader, $branchPort);
+            $numbered = $runPort->end_type !== null
+                && (bool) ($this->reference->endType((string) $runPort->end_type)['weldable'] ?? false);
+
+            // Rows created before the OLET wall path classified the OLET's
+            // branch-outlet butt weld as the branch connection. Move that
+            // observation and its issue-time verdict to this root weld
+            // atomically. A fitted legacy joint is immutable and must be
+            // corrected through a revision workflow, never rewritten here.
+            $legacyOutletJoint = Joint::query()
+                ->where(function ($query) use ($branchPort): void {
+                    $query->where('port_a_id', $branchPort->id)
+                        ->orWhere('port_b_id', $branchPort->id);
+                })
+                ->lockForUpdate()
+                ->first();
+
+            if ($legacyOutletJoint?->branch_kind === JointBranchKind::OLET) {
+                if ($legacyOutletJoint->isFitted()) {
+                    throw ValidationException::withMessages([
+                        'state' => 'A fitted legacy OLET outlet weld cannot be reclassified; use the revision workflow.',
+                    ]);
+                }
+
+                $legacyOutletJoint->update([
+                    'branch_kind' => null,
+                    'branch_class_type' => null,
+                    'branch_class_p2p_kind' => null,
+                    'branch_pad_thickness_mm' => null,
+                    'branch_rule_state' => null,
+                ]);
+            }
+
+            $joint = Joint::create([
+                'project_id' => $project->id,
+                'company_id' => $actor->company_id,
+                'piping_line_id' => $line->id,
+                'port_a_id' => $runPort->id,
+                'port_b_id' => null,
+                'branch_header_component_id' => $freshHeader->id,
+                'branch_station_mm' => $stationMm,
+                'branch_offset_mm' => $offsetMm,
+
+                'joint_seq' => $numbered ? $this->nextSeq($line) : null,
+                'numbering_policy' => $numbered
+                    ? Joint::NUMBERING_REQUIRED
+                    : Joint::NUMBERING_NOT_APPLICABLE,
+                'joint_type' => Joint::TYPE_OLET_HEADER_WELD,
+                'branch_kind' => JointBranchKind::OLET,
+                ...$verdict,
+                'state' => Joint::STATE_MODELLED,
+
+                // The wall weld's measurable size follows the OLET branch
+                // diameter, as it does for the fitting-less wall-joint path.
+                'nominal_size' => $branchPort->nominal_size,
+                'nominal_size_decimal' => $branchPort->nominal_size_decimal,
+                'schedule' => $branchPort->schedule,
+                'thickness_mm' => $this->wallFor($branchPort),
+
+                'shop_field' => $this->resolveShopField($runPort, $headerPort, $attributes),
+                'spool_id' => $attributes['spool_id'] ?? null,
+                'isometric_sheet_no' => $attributes['isometric_sheet_no'] ?? null,
+
+                'compatibility_state' => Verdict::VALID,
+                'compatibility_notes' => null,
+
+                'source' => $this->resolveSource($attributes),
+                'external_ref' => $attributes['external_ref'] ?? null,
+                'created_by' => $actor->id,
+            ]);
+
+            Port::query()->whereKey($runPort->id)->update(['is_connected' => true]);
+
+            return $joint->fresh(['portA.component', 'branchHeaderComponent']);
         });
     }
 
@@ -567,10 +784,17 @@ final class JointService
         $b = $joint->portB;
 
         if ($b === null) {
-            // A joint on a header wall has one port by construction. The weld
-            // is charged on the branch size, which is the size of that one
-            // port - and dia-inch is money, so this must not quietly return
-            // null and disappear from the roll-up.
+            if ($joint->joint_type === Joint::TYPE_OLET_HEADER_WELD) {
+                // The one stored port is the OLET RUN (header) side, while the
+                // frozen joint size is deliberately the OLET BRANCH diameter.
+                // Using portA would charge a 6x2 OLET as 6 dia-inch instead of
+                // 2, and would disagree with the P2P wall-weld convention.
+                return $joint->nominal_size_decimal;
+            }
+
+            // A fitting-less joint on a header wall has one port by
+            // construction. That port is the branch pipe end and therefore
+            // already carries the branch size.
             return $a?->nominal_size_decimal;
         }
 
@@ -687,20 +911,16 @@ final class JointService
     // ------------------------------------------------------------ helpers --
 
     /**
-     * Whether this joint is a branch connection, and of what kind.
+     * Whether this two-port joint is a branch connection, and of what kind.
      *
-     * Decided by the ROLE of the ports, not by their sizes and not by the end
-     * types: a tee's two RUN ports take ordinary welds along the line, and only
-     * its BRANCH port makes the joint a branch connection. That distinction is
-     * the whole reason the role exists ("the branch is always seq 3 and rules
-     * refer to it by role", in the ports migration) — it just was never read by
-     * the joint layer until now.
+     * TEE and CROSS branch welds are decided by port ROLE, not by size or end
+     * type. OLET is deliberately excluded: its class-level branch connection
+     * is the fabricated RUN-to-header-wall weld, classified explicitly by
+     * `joinOletToWall()`. The OLET BRANCH-to-pipe weld is an ordinary weld, not
+     * a second branch connection.
      *
-     * Deliberately narrow about what it claims. This classifies two-port
-     * branch joints by the role of either port. A fitting-less P2P wall weld
-     * has only the branch port and a frozen header reference; it is classified
-     * on the separate `joinToWall()` path, not by this helper (ADR-006 §14).
-     * See JointBranchKind.
+     * Fitting-less P2P wall welds are also explicit and are classified on the
+     * separate `joinToWall()` path (ADR-006 §14). See JointBranchKind.
      *
      * @return string|null null for a weld in the run, which is the ordinary case
      */
@@ -722,16 +942,18 @@ final class JointService
     }
 
     /**
-     * The port that makes this joint a branch connection, or null.
+     * The TEE/CROSS port that makes this two-port joint a branch connection.
      *
      * Deterministic order: a joint with a branch port on BOTH sides is not a
      * shape the templates produce, but if one ever appears the answer must not
-     * depend on which way round the caller passed the ports.
+     * depend on which way round the caller passed the ports. An OLET BRANCH
+     * port is intentionally skipped; its branch classification belongs to the
+     * OLET RUN-to-header wall weld, not this outlet butt weld.
      */
     private function branchPortOf(Port $a, Port $b): ?Port
     {
         foreach ([$a, $b] as $port) {
-            if ($port->role === 'BRANCH') {
+            if ($port->role === 'BRANCH' && $port->component?->template_code !== 'OLET') {
                 return $port;
             }
         }

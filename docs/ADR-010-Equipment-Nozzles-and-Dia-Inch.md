@@ -405,11 +405,11 @@ sends someone to look.
 
 ### Not built, and not faked
 
-Cross-line tie-ins still remain refused: neither line owns a two-ended tie-in
-joint. P2P branch welds on a header wall are no longer refused by the model;
-ADR-006 §14 represents them with a branch-side port plus a frozen header
-reference, without inventing a third header port. That is a model/service path,
-not an end-to-end import workflow: no UI creates it and `PcfAdmission` only
-reports standard PCF taps read-only. The OLET's own fabricated RUN-end weld to
-the header is a separate fitting-to-wall operation and remains unmodelled; do
-not turn it into a purchased fitting in the MTO by faking a stub-in as an OLET.
+Cross-line two-port tie-ins still remain refused: neither line owns a two-ended
+tie-in joint. P2P branch welds on a header wall use the frozen-header path in
+ADR-006 §14; an OLET uses the separate path in §15, with its real RUN port
+referencing the header wall and its BRANCH port joining the branch line. Neither
+path invents a third header port, and the purchased OLET remains a component in
+the model/MTO. These are model/service paths, not end-to-end import workflows:
+no wall-joint UI creates them and `PcfAdmission` only reports standard PCF taps
+read-only. Do not fake a P2P stub as an OLET or an OLET as a fitting-less stub.

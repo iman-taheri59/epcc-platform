@@ -171,6 +171,50 @@ final class BranchWallJointTest extends TestCase
         $this->assertNotSame($header->id, $joint->piping_line_id);
     }
 
+    public function test_the_p2p_wall_method_still_refuses_a_fitting_kind(): void
+    {
+        ['branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+        ]]);
+
+        $this->expectException(ValidationException::class);
+
+        $this->asOwner(function () use ($branch, $headerPipe): void {
+            $pipe = app(ComponentService::class)->place($branch, $this->owner(), 'PIPE');
+
+            app(JointService::class)->joinToWall(
+                $pipe->ports->first(), $headerPipe, JointBranchKind::OLET, 3000.0, 0.0, $this->owner(),
+            );
+        });
+    }
+
+    public function test_an_olet_run_port_cannot_be_faked_into_a_p2p_stub(): void
+    {
+        ['branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::WELDOLET,
+        ]]);
+
+        $this->expectException(ValidationException::class);
+
+        $this->asOwner(function () use ($branch, $headerPipe): void {
+            $olet = app(ComponentService::class)->place($branch, $this->owner(), 'OLET', [
+                'nominal_size' => '6',
+                'port_sizes' => [2 => '2'],
+            ]);
+
+            app(JointService::class)->joinToWall(
+                $olet->ports->firstWhere('role', 'RUN'),
+                $headerPipe,
+                JointBranchKind::STUB_IN,
+                3000.0,
+                0.0,
+                $this->owner(),
+            );
+        });
+    }
+
     public function test_the_header_keeps_its_two_ends(): void
     {
         // THE reason this is a frozen reference and not a synthesised wall port.

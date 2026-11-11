@@ -18,11 +18,11 @@
 -- nozzle-to-nozzle one is not, because then nothing owns the number.
 --
 -- A BRANCH JOINT is the one shape this guard deliberately lets through with a
--- NULL second port (ADR-006 §14, P-22). A fitting-less branch — a stub-in or
--- stub-on — welds the branch pipe's end to a point on the header's WALL, and a
--- pipe has two ends and no port on its side. The joint therefore carries a
--- frozen header reference instead of a second port: the header component, a
--- station along it, and an offset from its centreline.
+-- NULL second port (ADR-006 §§14–15, P-22). P2P stubs weld the branch pipe's end
+-- to a point on the header's WALL; an OLET wall weld stores the fitting's real
+-- RUN port there instead. Neither shape invents a port on the header. The joint
+-- therefore carries a frozen header reference instead of a second port: the
+-- header component, a station along it, and an offset from its centreline.
 --
 -- That makes a branch joint CROSS-LINE BY NATURE, which is the case this guard
 -- was written to refuse. It is not the same thing as a tie-in, though, and

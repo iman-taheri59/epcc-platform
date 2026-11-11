@@ -505,14 +505,16 @@ for the same thing in specification language. The model/service portion is
 implemented; the welding report and commercial rate schedule are not.
 
 **Built.** `joints.branch_kind`, nullable, CHECK-constrained and indexed
-(`WHERE branch_kind IS NOT NULL`). For two-port fittings it is derived from the
-**BRANCH port role**, not sizes or end types, and frozen like `joint_type`:
-TEE/CROSS/OLET branch-port welds are distinguished from run welds.
-`STUB_IN` and `STUB_ON` are not port-derived; the explicit
-`JointService::joinToWall()` path writes them for P2P wall joints and freezes
-the header reference. `lineMetrics()` returns `branch_welds`,
-`branch_dia_inch` and `branch_by_kind` alongside totals, while physical
-`dia_inch` stays unchanged (a wall joint uses the branch size).
+(`WHERE branch_kind IS NOT NULL`). TEE/CROSS are derived from the **BRANCH port
+role**, not sizes or end types, and frozen like `joint_type`. OLET is explicit:
+`JointService::joinOletToWall()` writes `branch_kind=OLET` on the OLET
+RUN/FA-to-header-wall weld, while its separate BRANCH-to-pipe butt weld remains
+an ordinary joint. That makes the purchased fitting and both physical welds
+visible without counting the class-level branch connection twice. `STUB_IN`
+and `STUB_ON` remain explicit P2P kinds written only by
+`JointService::joinToWall()`. `lineMetrics()` returns `branch_welds`,
+`branch_dia_inch` and `branch_by_kind` alongside totals; the OLET root weld's
+physical `dia_inch` uses its branch size, not its larger RUN size.
 
 **Why the totals still include branch welds.** They are welds, and a dia-inch is
 a dia-inch. What was wrong was that nothing could see them separately — not that
@@ -528,10 +530,9 @@ observation with the verdict.
 **Deliberately not built.** This slice does not create a complete branch
 welding workflow. There is no wall-joint UI or PCF-to-model writer, no weld log,
 NDT/repair loop, welder qualification or WPS/PQR linkage, and no contract rate
-schedule. The physical weld from an OLET's fabricated RUN end onto its header
-is also still unmodelled; `branch_kind=OLET` describes the separate
-OLET-to-branch-pipe weld. Do not mistake the P2P `joinToWall()` path for an
-OLET shortcut. Generic OLET classification/import remains unresolved.
+schedule. Generic OLET subtypes are not a PCF import classification: the
+read-only PCF parser does not make an OLET model-connectable or write either
+interface. Do not mistake the P2P `joinToWall()` path for an OLET shortcut.
 
 **Valuation is not decided here.** No multiplier is folded into dia-inch. The
 factor is a property of the contract and fabricator, not of the weld; baking it
@@ -542,13 +543,15 @@ rate schedule may price them. No rate schedule is implemented here.
 ### 9.5 The class verdict travels with the branch weld (built 2026-11-10)
 
 Step 2 of the §9.2 work. §9.4 gave the register its own OBSERVATION
-(`branch_kind`, from the port role). This gives it the class's DECLARATION, and
-the space between the two.
+(`branch_kind`): port-role-derived for TEE/CROSS and explicit wall-joint
+construction for OLET/STUB_IN/STUB_ON. This gives it the class's DECLARATION,
+and the space between the two.
 
 **Built.** `joints` gains `branch_class_type`, `branch_class_p2p_kind`,
 `branch_pad_thickness_mm` and `branch_rule_state`, all CHECK-constrained and all
-nullable. `JointService::branchVerdictFor()` fills them for fitted two-port
-branches and `wallVerdictFor()` fills them on the P2P wall-joint path;
+nullable. `JointService::branchVerdictFor()` fills them for TEE/CROSS branch
+welds; `wallVerdictFor()` fills them on the P2P path, and
+`joinOletToWall()` records the OLET verdict/pad on the root wall weld.
 `Joint::branchDeviation()` compares observation with the declared outcome.
 
 **Read from the issued snapshot, never from the live rules.** Same convention
@@ -560,10 +563,11 @@ built to. `branch_pad_thickness_mm` is frozen rather than referenced for the sam
 reason — the pad was bought, cut and welded at that thickness.
 
 **Two vocabularies, deliberately.** `branch_kind` (`JointBranchKind`) is what the
-model saw; `branch_class_type` (`BranchConnectionType`) is what the class
-declared. They cannot be derived from one another, and keeping both is what
-makes the deviation check possible — overwriting the observation with the
-verdict would destroy the only evidence that they differ. `branchDeviation()`
+model saw, whether derived from a TEE/CROSS port or written by an explicit wall
+path; `branch_class_type` (`BranchConnectionType`) is what the class declared.
+They cannot be derived from one another, and keeping both is what makes the
+deviation check possible — overwriting the observation with the verdict would
+destroy the only evidence that they differ. `branchDeviation()`
 returns `AGREES`, `MISMATCH`, `FITTING_WHERE_CLASS_SAYS_NONE`, `UNMATCHED` or
 `UNGOVERNED`.
 
@@ -595,6 +599,7 @@ vocabulary and opening it is a separate decision.
 **Deliberately not built.** The verdict is recorded and deviation is
 observable, but mismatch does not hard-block the physical joint. There is no
 screen showing `branch_ungoverned`, no wall-joint UI or PCF-to-model writer,
-and no WPS/PQR, welder qualification, NDT/repair or contract-rate workflow. P2P
-wall joints are now representable; these remaining items are separate acceptance
-criteria, not implied by §§9.4–9.5.
+and no WPS/PQR, welder qualification, NDT/repair or contract-rate workflow.
+P2P and OLET wall joints are now representable through distinct service paths;
+these remaining items are separate acceptance criteria, not implied by
+§§9.4–9.5.

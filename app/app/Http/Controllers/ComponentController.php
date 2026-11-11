@@ -5,15 +5,24 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Component;
+use App\Models\Joint;
 use App\Models\PipingLine;
 use App\Models\Port;
 use App\Models\Project;
 use App\Services\ComponentService;
+use App\Services\JointService;
+use App\Services\PipeScheduleExceptionRequestService;
+use App\Services\PipeScheduleReportService;
+use App\Services\PmsPinnedClassSpecification;
+use App\Services\ProjectArchiveService;
+use App\Support\AuthorizationPipeline;
+use App\Support\LineReleaseState;
 use App\Support\Reference\PipeReference;
 use App\Support\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -35,12 +44,12 @@ final class ComponentController extends Controller
         private readonly ComponentService $components,
         private readonly TenantContext $tenant,
         private readonly PipeReference $reference,
-        private readonly \App\Services\PmsPinnedClassSpecification $issuedPms,
-        private readonly \App\Services\PipeScheduleExceptionRequestService $scheduleRequests,
-        private readonly \App\Services\PipeScheduleReportService $reports,
-        private readonly \App\Services\ProjectArchiveService $archives,
-        private readonly \App\Support\AuthorizationPipeline $authz,
-        private readonly \App\Services\JointService $joints,
+        private readonly PmsPinnedClassSpecification $issuedPms,
+        private readonly PipeScheduleExceptionRequestService $scheduleRequests,
+        private readonly PipeScheduleReportService $reports,
+        private readonly ProjectArchiveService $archives,
+        private readonly AuthorizationPipeline $authz,
+        private readonly JointService $joints,
     ) {}
 
     public function index(Request $request, string $projectCode, string $lineId): View
@@ -59,10 +68,13 @@ final class ComponentController extends Controller
                     ->orderBy('sequence')
                     ->get();
 
-                // Eager-loaded through the ports to their components: the
-                // joint register names the two components, and without this
-                // the table issues four queries per row.
-                $joints = \App\Models\Joint::with(['portA.component', 'portB.component'])
+                // Eager-load both real port components and a wall-joint's
+                // frozen header component. The joint register can therefore
+                // describe P2P/OLET wall welds instead of rendering their
+                // other side as an unknown `?`.
+                $joints = Joint::with([
+                    'portA.component', 'portB.component', 'branchHeaderComponent',
+                ])
                     ->where('piping_line_id', $line->id)
                     ->orderByRaw('joint_seq NULLS LAST')
                     ->get();
@@ -132,8 +144,7 @@ final class ComponentController extends Controller
         // A still-open request for a FORMER schedule cannot mask a new one.
         $pendingScheduleRequests = [];
         foreach ($rows as $component) {
-            $pending = $requestHistory->first(fn ($r): bool =>
-                $r->component_id === $component->id && $r->decision_id === null
+            $pending = $requestHistory->first(fn ($r): bool => $r->component_id === $component->id && $r->decision_id === null
                 && $r->pms_class_snapshot_id === $line->pms_class_snapshot_id
                 && $r->nps_at_request !== null
                 && $r->nps_at_request === $component->nominal_size
@@ -167,13 +178,13 @@ final class ComponentController extends Controller
             'open' => $open,
             'joints' => $joints,
             'metrics' => $metrics,
-            'diaInch' => fn (\App\Models\Joint $j): ?float => $this->joints->diaInch($j),
+            'diaInch' => fn (Joint $j): ?float => $this->joints->diaInch($j),
             'templates' => $this->components->placeableTemplates(),
             'sizes' => array_map(
                 static fn ($s): string => $s->nps,
                 $this->reference->sizes(),
             ),
-            'editable' => $line->release_state !== \App\Support\LineReleaseState::RELEASED,
+            'editable' => $line->release_state !== LineReleaseState::RELEASED,
         ]);
     }
 
@@ -244,7 +255,7 @@ final class ComponentController extends Controller
         $user = $request->user();
         $project = $this->resolveProject($user, $projectCode);
         abort_unless(in_array($mode, ['draft', 'external'], true)
-            && \Illuminate\Support\Str::isUuid($requestId), 404);
+            && Str::isUuid($requestId), 404);
         $data = $request->validate(['kind' => ['required', 'in:TQ,NCR']]);
 
         try {

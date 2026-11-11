@@ -7,20 +7,23 @@ namespace Tests\Feature;
 use App\Models\Document;
 use App\Models\DocumentRevision;
 use App\Models\LineDocument;
-use App\Support\CdeState;
 use App\Models\PipingClass;
 use App\Models\PipingLine;
 use App\Models\PipingTestPack;
 use App\Models\Project;
 use App\Models\Subsystem;
 use App\Models\User;
+use App\Services\ComponentService;
+use App\Services\JointService;
 use App\Services\PipingLineService;
+use App\Support\CdeState;
 use App\Support\LineReleaseState;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
-use Tests\TestCase;
+use Illuminate\Support\Facades\DB;
 use Tests\Support\ApprovedPmsClassFixture;
+use Tests\TestCase;
 
 /**
  * ADR-006 phase 1 over HTTP - the register screen and its two doors.
@@ -310,6 +313,51 @@ final class PipingLineHttpTest extends TestCase
             fn () => PipingLine::firstOrFail(),
             $this->project()->id,
         );
+    }
+
+    public function test_the_line_model_names_the_header_and_station_for_a_wall_joint(): void
+    {
+        $headerLine = $this->aLine();
+        $owner = $this->owner();
+        $project = $this->project();
+        $tenant = app(TenantContext::class);
+
+        $branchLine = $tenant->runAs($owner->company_id, function () use ($owner, $headerLine): PipingLine {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+
+            return app(PipingLineService::class)->create(
+                Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail(),
+                $owner,
+                [
+                    'nominal_size' => '2',
+                    'service_code' => 'P',
+                    'piping_class_id' => $headerLine->piping_class_id,
+                ],
+            );
+        }, $project->id);
+
+        $tenant->runAs($owner->company_id, function () use ($owner, $headerLine, $branchLine): void {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+            $components = app(ComponentService::class);
+            $header = $components->place($headerLine, $owner, 'PIPE', ['length_mm' => 6000]);
+            $olet = $components->place($branchLine, $owner, 'OLET', [
+                'nominal_size' => '8',
+                'port_sizes' => [2 => '2'],
+            ]);
+
+            app(JointService::class)->joinOletToWall($olet, $header, 3000.0, 0.0, $owner);
+            $components->attach($olet->ports->firstWhere('role', 'BRANCH'), $owner, 'PIPE');
+        }, $project->id);
+
+        $this->actingAs($owner)
+            ->get("/projects/PH-14/piping/{$branchLine->id}/model?lang=en")
+            ->assertOk()
+            ->assertSee('OLET_HEADER_WELD')
+            ->assertSee('PIPE')
+            ->assertSee('wall')
+            ->assertSee('station')
+            ->assertSee('3000')
+            ->assertSee('mm');
     }
 
     public function test_the_workspace_puts_blocked_lines_on_the_worklist(): void

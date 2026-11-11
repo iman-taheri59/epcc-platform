@@ -678,9 +678,10 @@ a fitting-less branch is `TAP-CONNECTION` with an optional
 projection onto the header centreline. No port on the header, ever.
 
 **Schema.** `joints.port_b_id` becomes nullable and the joint instead carries
-`branch_header_component_id`, `branch_station_mm` and `branch_offset_mm`. The
-branch port always occupies `port_a_id`, so it stays NOT NULL and a branch port
-still cannot be welded twice.
+`branch_header_component_id`, `branch_station_mm` and `branch_offset_mm`. For
+P2P, the branch-pipe port occupies `port_a_id`, so it stays NOT NULL and a
+branch port still cannot be welded twice. OLET wall welds use that same frozen
+header-reference shape but put the OLET's real RUN port in `port_a_id`.
 
 **Four invariants had to be restated, and every one of them fails SILENTLY on a
 NULL** — which is the whole reason this needed care rather than a column and a
@@ -730,3 +731,42 @@ standard `TAP-CONNECTION` records in both association forms and retains the
 host UCI; it warns instead of applying that data. The pad thickness is recorded
 but nothing verifies it against ASME B31.3 §304.3.3 at joint level; the
 calculator exists and the class gate runs at publication only.
+
+## 15. OLET branch assemblies on a header wall
+
+A purchased OLET is not the P2P stub-in/stub-on case in §14. It has two real
+interfaces: the template's `RUN`/`FA` port welds onto a specified point on the
+header wall, and its `BRANCH` port joins to the branch-line component. Both are
+now represented without replacing the fitting or adding a fake port to the
+header.
+
+**Representation and ownership.** `JointService::joinOletToWall()` creates a
+wall-reference joint with the OLET's actual RUN port in `port_a_id` and the
+header component plus station/offset as the other side. The ordinary
+`ComponentService::attach()` path creates the separate BRANCH-to-pipe joint.
+The OLET remains a normal `OLET` component (and therefore remains available to
+the component/MTO model); the header continues to expose only its two end
+ports. The OLET is placed on the branch line, which owns and numbers both
+physical welds even when the header belongs to a different line. Ordinary
+cross-line two-port tie-ins remain refused by `JointService::join()` and the
+line guard.
+
+**Branch classification, verdict and metrics.** The OLET-to-header wall weld
+uses `joint_type=OLET_HEADER_WELD`, `branch_kind=OLET` and the branch line's
+issued PMS snapshot for the header-size × branch-size verdict and any pad
+thickness. Its dia-inch uses the OLET BRANCH size, not the larger RUN size. The
+OLET BRANCH-to-pipe butt weld is still counted as a physical weld and is
+numbered on that line, but is an ordinary joint with no second `branch_kind` or
+second class verdict. Consequently a complete 6×2 OLET assembly contributes
+two welds to physical totals but exactly one OLET branch weld to
+`branch_welds`/`branch_by_kind`.
+
+The explicit OLET path does not broaden `joinToWall()`: that method still
+accepts only `STUB_IN` and `STUB_ON`. When an older, unfitted outlet joint was
+classified as OLET before the root weld could be represented, creating the
+root joint transfers the classification/verdict to the root weld atomically;
+a fitted historical joint is not rewritten and requires the revision workflow.
+
+**Still separate.** No wall-joint UI or PCF-to-model writer is added here. The
+PCF parser/admission remains read-only for `TAP-CONNECTION`; recognizing that
+text does not create either OLET interface or authorize model writes.

@@ -13,8 +13,9 @@ namespace App\Support\Piping;
  *
  *   - `BranchConnectionType` is what the CLASS DECLARES for a header x branch
  *     size pair: TEE, WELDOLET, SOCKOLET, or P2P.
- *   - `JointBranchKind` is what the MODEL OBSERVES: this joint sits on the
- *     branch port of a multi-way fitting, or is an explicit wall weld.
+ *   - `JointBranchKind` is what the MODEL OBSERVES: this joint sits on a
+ *     TEE/CROSS branch port, or is an explicitly constructed wall weld (OLET,
+ *     STUB_IN or STUB_ON).
  *
  * ADR-008 §9.2 anticipates the comparison: "a joint contradicting its class is
  * a deviation". The register keeps its own observation rather than overwriting
@@ -24,10 +25,12 @@ namespace App\Support\Piping;
  * branch connections can be priced separately from ordinary welds; the rate
  * table, not this enum or dia-inch, assigns value.
  *
- * Fitting branch kinds (TEE, CROSS, OLET) are derived from the branch port and
- * its template. `STUB_IN` and `STUB_ON` are supplied by the explicit wall-joint
- * path (`JointService::joinToWall`) and carry a frozen header reference; they
- * cannot be inferred from ports alone (ADR-006 §14).
+ * TEE and CROSS branch kinds are derived from a BRANCH port and its template.
+ * OLET is different: its class-level branch weld is the OLET RUN/FA-to-header
+ * wall weld, recorded explicitly by `JointService::joinOletToWall()`. The
+ * separate OLET BRANCH-to-pipe weld is an ordinary two-port weld and must not
+ * be counted as a second branch connection. `STUB_IN` and `STUB_ON` remain the
+ * fitting-less wall kinds supplied by `joinToWall()` (ADR-006 §14).
  */
 final class JointBranchKind
 {
@@ -37,7 +40,7 @@ final class JointBranchKind
     /** Branch port of a cross - two opposed branches off one run. */
     public const CROSS = 'CROSS';
 
-    /** Branch port of an olet. Note: this is the olet-to-BRANCH-PIPE weld. */
+    /** OLET RUN/FA-to-header-wall branch weld; not the outlet butt weld. */
     public const OLET = 'OLET';
 
     /** Fitting-less branch inserted into a header bore; explicit wall-joint kind. */
@@ -57,14 +60,13 @@ final class JointBranchKind
 
     /**
      * Kinds that can be inferred from a port role and fitting template alone.
-     * Wall-joint kinds are explicit and use a separate construction path.
+     * OLET, STUB_IN and STUB_ON are explicit wall-joint kinds.
      *
      * @var list<string>
      */
     public const DERIVABLE = [
         self::TEE,
         self::CROSS,
-        self::OLET,
     ];
 
     /** @return array<string, array{en: string, fa: string}> */
@@ -80,19 +82,19 @@ final class JointBranchKind
     }
 
     /**
-     * The kind a component's BRANCH-role port implies, by template code.
+     * The kind a two-port BRANCH-role weld implies, by template code.
      *
-     * Only TEE, CROSS and OLET have branch ports in the reference pack. A
-     * template with a branch port that is not listed here is a reference-pack
-     * change, and returning null would let it become an invisible branch - so
-     * it is a hard failure instead.
+     * TEE and CROSS are observable at their branch-port weld. OLET is
+     * deliberately omitted: its class-level branch weld is the separate
+     * RUN-to-header-wall joint and is written explicitly by joinOletToWall().
+     * A newly introduced branch-port template must be named here or
+     * branchKindFor() fails loudly rather than making it an invisible branch.
      */
     public static function fromTemplate(string $templateCode): ?string
     {
         return match ($templateCode) {
             'TEE', 'TEE-SKEWED' => self::TEE,
             'CROSS' => self::CROSS,
-            'OLET' => self::OLET,
             default => null,
         };
     }

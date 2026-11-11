@@ -54,9 +54,14 @@ ports. The final combined targeted run for PCF parsing/admission/classification,
 branch verdicts, wall joints, boundary cases and pinned PMS resolution passed
 132 tests / 267 assertions.
 
-The branch-kind/class-verdict slice is also present in the joint/service path.
-This does **not** complete P-21 or the P5 welding roadmap: no weld-log/report
-UI, contract rates, welder qualification, WPS/PQR, NDT/repair workflow, OLET
-fabricated RUN-end-to-header weld, or PCF-to-model writer was added. The PCF
-parser/admission remains read-only and warns about taps instead of creating a
-joint. The 2026-10-12 findings table is retained as a historical snapshot.
+The branch-kind/class-verdict slice is present in the joint/service path. The
+OLET fabricated RUN/FA-to-header-wall weld has since been implemented as a
+separate wall-reference joint; the BRANCH-to-pipe weld remains distinct, both
+are owned/numbered on the branch line, and the class verdict is recorded once
+on the root weld. The focused OLET/joint suites plus the joint-register HTTP
+regression passed **84 tests / 218 assertions**. This does **not** complete
+P-21 or the P5 welding roadmap: weld-log/report UI, contract rates, welder
+qualification, WPS/PQR, NDT/repair workflow, wall-joint creation UI, and a
+PCF-to-model writer remain open. The PCF parser/admission remains read-only and
+warns about taps instead of creating a joint. The 2026-10-12 findings table is
+retained as a historical snapshot.

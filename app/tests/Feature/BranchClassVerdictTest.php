@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Component;
 use App\Models\Joint;
 use App\Models\PipingClass;
 use App\Models\PipingLine;
@@ -140,6 +141,64 @@ final class BranchClassVerdictTest extends TestCase
         });
     }
 
+    /**
+     * Place a 6x2 OLET on a separate 2-inch branch line and connect both
+     * interfaces. The root weld carries the branch classification; the outlet
+     * butt weld does not count it a second time.
+     *
+     * @return array{branchLine: PipingLine, olet: Component, headerJoint: Joint, outletJoint: Joint}
+     */
+    private function oletBranchAssembly(
+        PipingLine $headerLine,
+        string $branchSize = '2',
+        bool $legacyOutletClassification = false,
+    ): array {
+        return $this->asOwner(function () use ($headerLine, $branchSize, $legacyOutletClassification): array {
+            $branchLine = app(PipingLineService::class)->create(
+                Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail(),
+                $this->owner(),
+                [
+                    'nominal_size' => $branchSize,
+                    'service_code' => 'P',
+                    'piping_class_id' => $headerLine->piping_class_id,
+                ],
+            );
+
+            $components = app(ComponentService::class);
+            $header = $components->place($headerLine, $this->owner(), 'PIPE', ['length_mm' => 6000]);
+            $olet = $components->place($branchLine, $this->owner(), 'OLET', [
+                'nominal_size' => $headerLine->nominal_size,
+                'port_sizes' => [2 => $branchSize],
+            ]);
+            $outletJoint = $components->attach(
+                $olet->ports->firstWhere('role', 'BRANCH'), $this->owner(), 'PIPE',
+            )['joint'];
+
+            if ($legacyOutletClassification) {
+                // Pre-OLET-wall data classified this outlet weld as the branch
+                // connection. Exercise the atomic transfer to the root weld.
+                DB::table('joints')->where('id', $outletJoint->id)->update([
+                    'branch_kind' => JointBranchKind::OLET,
+                    'branch_class_type' => BranchConnectionType::WELDOLET,
+                    'branch_pad_thickness_mm' => 6.0,
+                    'branch_rule_state' => JointBranchRuleState::RULE,
+                ]);
+            }
+
+            $headerJoint = app(JointService::class)->joinOletToWall(
+                $olet, $header, 3000.0, 0.0, $this->owner(),
+            );
+            $outletJoint = $outletJoint->fresh();
+
+            return [
+                'branchLine' => $branchLine,
+                'olet' => $olet,
+                'headerJoint' => $headerJoint,
+                'outletJoint' => $outletJoint,
+            ];
+        });
+    }
+
     // ----------------------------------------------------------- the verdict --
 
     public function test_a_branch_weld_carries_what_its_class_declared(): void
@@ -194,24 +253,60 @@ final class BranchClassVerdictTest extends TestCase
         $this->assertSame('FITTING_WHERE_CLASS_SAYS_NONE', $joint->branchDeviation());
     }
 
-    public function test_a_weldolet_cell_agrees_with_an_olet_branch(): void
+    public function test_a_weldolet_cell_is_recorded_on_the_olet_header_weld_not_twice(): void
     {
-        $line = $this->lineWithBranchCells('6', [[
-            'header' => [100, 300], 'branch' => [15, 100], 'type' => BranchConnectionType::WELDOLET,
+        $headerLine = $this->lineWithBranchCells('6', [[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::WELDOLET,
+            'reinforcement' => 'PAD', 'pad_thickness' => 6.0,
         ]]);
 
-        $joint = $this->asOwner(function () use ($line): Joint {
-            $olet = app(ComponentService::class)->place($line, $this->owner(), 'OLET', [
-                'port_sizes' => [2 => '2'],
-            ]);
+        $assembly = $this->oletBranchAssembly($headerLine);
+        $headerJoint = $assembly['headerJoint'];
+        $outletJoint = $assembly['outletJoint'];
 
-            return app(ComponentService::class)
-                ->attach($olet->ports->firstWhere('role', 'BRANCH'), $this->owner(), 'PIPE')['joint'];
-        });
+        $this->assertSame(Joint::TYPE_OLET_HEADER_WELD, $headerJoint->joint_type);
+        $this->assertSame(JointBranchKind::OLET, $headerJoint->branch_kind, 'the model observed an OLET at the header');
+        $this->assertSame(BranchConnectionType::WELDOLET, $headerJoint->branch_class_type, 'the issued class declared WELDOLET');
+        $this->assertSame(JointBranchRuleState::RULE, $headerJoint->branch_rule_state);
+        $this->assertSame(6.0, $headerJoint->branch_pad_thickness_mm, 'the pad follows the root branch weld');
+        $this->assertSame('AGREES', $headerJoint->branchDeviation());
 
-        $this->assertSame(JointBranchKind::OLET, $joint->branch_kind);
-        $this->assertSame(BranchConnectionType::WELDOLET, $joint->branch_class_type);
-        $this->assertSame('AGREES', $joint->branchDeviation());
+        $this->assertSame('BUTT_WELD', $outletJoint->joint_type);
+        $this->assertNull($outletJoint->branch_kind, 'the OLET outlet butt weld is not a second branch connection');
+        $this->assertNull($outletJoint->branch_class_type);
+        $this->assertNull($outletJoint->branch_rule_state);
+        $this->assertNull($outletJoint->branchDeviation());
+
+        $metrics = $this->asOwner(fn () => app(JointService::class)->lineMetrics($assembly['branchLine']->fresh()));
+        $this->assertSame(2, $metrics['welds'], 'both physical welds remain in the total');
+        $this->assertSame(4.0, $metrics['dia_inch'], 'both physical welds are measured on the 2-inch branch');
+        $this->assertSame(1, $metrics['branch_welds'], 'the branch connection is counted once');
+        $this->assertSame(2.0, $metrics['branch_dia_inch']);
+        $this->assertSame(1, $metrics['branch_padded']);
+        $this->assertSame(['OLET' => ['welds' => 1, 'dia_inch' => 2.0]], $metrics['branch_by_kind']);
+    }
+
+    public function test_an_unfitted_legacy_olet_outlet_verdict_moves_to_the_root_weld(): void
+    {
+        $headerLine = $this->lineWithBranchCells('6', [[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::WELDOLET,
+            'reinforcement' => 'PAD', 'pad_thickness' => 6.0,
+        ]]);
+
+        $assembly = $this->oletBranchAssembly($headerLine, '2', true);
+
+        $this->assertSame(JointBranchKind::OLET, $assembly['headerJoint']->branch_kind);
+        $this->assertSame(BranchConnectionType::WELDOLET, $assembly['headerJoint']->branch_class_type);
+        $this->assertSame(6.0, $assembly['headerJoint']->branch_pad_thickness_mm);
+        $this->assertNull($assembly['outletJoint']->branch_kind);
+        $this->assertNull($assembly['outletJoint']->branch_class_type);
+        $this->assertNull($assembly['outletJoint']->branch_pad_thickness_mm);
+
+        $metrics = $this->asOwner(fn () => app(JointService::class)->lineMetrics($assembly['branchLine']->fresh()));
+        $this->assertSame(1, $metrics['branch_welds'], 'legacy data is not double-counted after completion');
+        $this->assertSame(1, $metrics['branch_padded']);
     }
 
     // --------------------------------------------------------- when there is nothing to ask --

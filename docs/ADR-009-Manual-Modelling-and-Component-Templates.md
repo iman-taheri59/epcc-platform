@@ -163,13 +163,12 @@ The refusals are all *structural* (the UI cannot express the bad state); the war
 *engineering judgement* (the engineer may be right). That split is the same one already used for
 advisory inspection in the procurement module.
 
-> **P2P addendum (2026-10-12, findings R-3/P-22):** since ADR-008 §9.1 the
-> class outcome at a branch can be **P2P — expect NO component**. This flow
-> is port-based, so it can express the *check* (the two deviation rows
-> above) but not yet the *geometry* of a stub welded to the header wall —
-> that representation is decision P-22 and lands with ADR-008 build phase 3
-> wiring. Templates are untouched: P2P is the absence of a template, not a
-> new one.
+> **P2P/OLET addendum:** since ADR-008 §9.1 the class outcome at a branch can
+> be **P2P — expect NO component**. The P2P wall geometry is now represented by
+> the frozen-header path in ADR-006 §14; it still is not a new component
+> template. A purchased OLET is a separate case: ADR-006 §15 records its real
+> RUN/FA wall weld and BRANCH-to-pipe weld while preserving the OLET component.
+> No PCF import or wall-joint UI is implied by either service path.
 
 ---
 

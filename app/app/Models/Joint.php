@@ -57,6 +57,9 @@ final class Joint extends Model
 
     public const TYPE_BRANCH_STUB_ON = 'BRANCH_STUB_ON';
 
+    /** OLET RUN/FA end welded to a point on the header wall. */
+    public const TYPE_OLET_HEADER_WELD = 'OLET_HEADER_WELD';
+
     public const STATE_MODELLED = 'MODELLED';
 
     public const STATE_FITTED = 'FITTED';
@@ -123,6 +126,10 @@ final class Joint extends Model
             // expensive welds on the line out of every dia-inch roll-up, which
             // is the opposite of what ADR-008 §9.2 asked for.
             self::TYPE_BRANCH_STUB_IN, self::TYPE_BRANCH_STUB_ON,
+            // The OLET's fabricated RUN end is a second physical weld. Its
+            // separate OLET-to-branch-pipe weld carries branch_kind=OLET, so
+            // this type must not also be tagged as a second branch connection.
+            self::TYPE_OLET_HEADER_WELD,
         ], true);
     }
 

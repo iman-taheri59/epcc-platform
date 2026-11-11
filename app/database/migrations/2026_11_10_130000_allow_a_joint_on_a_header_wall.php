@@ -42,8 +42,9 @@ use Illuminate\Support\Facades\DB;
  *     is RESTRICT: ComponentService::remove() must separate these joints first,
  *     which it already does for port-side joints via jointsTouching().
  *
- * The branch port always goes in `port_a_id`, so `port_a_id` stays NOT NULL and
- * its unique index is untouched — a branch port still cannot be welded twice.
+ * For P2P, the branch-pipe port goes in `port_a_id`; OLET later reuses this
+ * shape with its actual RUN port there. `port_a_id` therefore stays NOT NULL
+ * and its unique index is untouched — neither real port can be welded twice.
  *
  * No backfill: no project has ever been run on this software.
  */
