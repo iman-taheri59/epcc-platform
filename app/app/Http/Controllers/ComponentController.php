@@ -58,7 +58,7 @@ final class ComponentController extends Controller
         $user = $request->user();
         $project = $this->resolveProject($user, $projectCode);
 
-        [$line, $rows, $open, $joints, $metrics] = $this->tenant->runAs(
+        [$line, $rows, $open, $joints, $metrics, $branchRoots, $wallBranchPorts, $wallOlets, $wallHeaders] = $this->tenant->runAs(
             $user->company_id,
             function () use ($lineId): array {
                 $line = PipingLine::with(['subsystem', 'pipingClass', 'pmsSnapshot.documentRevision.document'])->findOrFail($lineId);
@@ -73,18 +73,57 @@ final class ComponentController extends Controller
                 // describe P2P/OLET wall welds instead of rendering their
                 // other side as an unknown `?`.
                 $joints = Joint::with([
-                    'portA.component', 'portB.component', 'branchHeaderComponent',
+                    'portA.component', 'portB.component', 'branchHeaderComponent', 'branchRootJoint',
                 ])
                     ->where('piping_line_id', $line->id)
                     ->orderByRaw('joint_seq NULLS LAST')
                     ->get();
 
+                // A branch-line operator may file an individual two-port joint
+                // under one of its explicit P2P/OLET wall roots' header line.
+                // Discover roots by the physical line of port A, not by the
+                // root's selected numbering owner.
+                $branchRoots = Joint::query()
+                    ->with(['portA.component', 'branchHeaderComponent.line'])
+                    ->whereNull('port_b_id')
+                    ->whereNotNull('branch_header_component_id')
+                    ->whereIn('joint_type', [
+                        Joint::TYPE_BRANCH_STUB_IN,
+                        Joint::TYPE_BRANCH_STUB_ON,
+                        Joint::TYPE_OLET_HEADER_WELD,
+                    ])
+                    ->whereHas('portA.component', fn ($query) => $query->where('piping_line_id', $line->id))
+                    ->orderBy('created_at')
+                    ->get();
+
+                $open = $this->components->openPorts($line);
+                $wallBranchPorts = $open
+                    ->filter(fn (Port $port): bool => $port->component?->template_code === 'PIPE')
+                    ->values();
+                $wallOlets = $rows
+                    ->filter(fn (Component $component): bool => $component->template_code === 'OLET'
+                        && $component->ports->firstWhere('role', 'RUN')?->is_connected === false)
+                    ->values();
+                $wallHeaders = Component::query()
+                    ->with('line')
+                    ->where('project_id', $line->project_id)
+                    ->where('template_code', 'PIPE')
+                    ->whereNotNull('length_mm')
+                    ->whereNotNull('nominal_size')
+                    ->orderBy('piping_line_id')
+                    ->orderBy('sequence')
+                    ->get();
+
                 return [
                     $line,
                     $rows,
-                    $this->components->openPorts($line),
+                    $open,
                     $joints,
                     $this->joints->lineMetrics($line),
+                    $branchRoots,
+                    $wallBranchPorts,
+                    $wallOlets,
+                    $wallHeaders,
                 ];
             },
             $project->id,
@@ -177,6 +216,10 @@ final class ComponentController extends Controller
             'rows' => $rows,
             'open' => $open,
             'joints' => $joints,
+            'branchRoots' => $branchRoots,
+            'wallBranchPorts' => $wallBranchPorts,
+            'wallOlets' => $wallOlets,
+            'wallHeaders' => $wallHeaders,
             'metrics' => $metrics,
             'diaInch' => fn (Joint $j): ?float => $this->joints->diaInch($j),
             'templates' => $this->components->placeableTemplates(),
@@ -304,12 +347,87 @@ final class ComponentController extends Controller
             'small_size' => ['nullable', 'string', 'max:16'],
             'length_mm' => ['nullable', 'numeric', 'min:0'],
             'schedule' => ['nullable', 'string', 'max:16'],
+            'line_owner' => ['nullable', 'in:BRANCH,HEADER'],
+            'branch_root_joint_id' => ['nullable', 'uuid'],
         ]);
 
         try {
             $this->tenant->runAs($user->company_id, function () use ($data, $user): void {
                 $port = Port::findOrFail($data['port_id']);
                 $this->components->attach($port, $user, (string) $data['template_code'], $this->attributes($data));
+            }, $project->id);
+        } catch (ValidationException $e) {
+            return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+                ->withInput()
+                ->withErrors($e->errors());
+        }
+
+        return redirect($this->backTo($projectCode, $lineId, $lang, $request));
+    }
+
+    /** Create a branch wall root against a real pipe header. */
+    public function attachToWall(Request $request, string $projectCode, string $lineId): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+        $data = $request->validate([
+            'wall_kind' => ['required', 'in:P2P,OLET'],
+            'branch_port_id' => ['nullable', 'required_if:wall_kind,P2P', 'uuid'],
+            'olet_component_id' => ['nullable', 'required_if:wall_kind,OLET', 'uuid'],
+            'header_component_id' => ['required', 'uuid'],
+            'branch_kind' => ['nullable', 'required_if:wall_kind,P2P', 'in:STUB_IN,STUB_ON'],
+            'station_mm' => ['required', 'numeric', 'min:0'],
+            'offset_mm' => ['nullable', 'numeric'],
+            'line_owner' => ['nullable', 'in:BRANCH,HEADER'],
+        ]);
+
+        try {
+            $this->tenant->runAs($user->company_id, function () use ($data, $user, $lineId): void {
+                $line = PipingLine::query()->findOrFail($lineId);
+                $header = Component::query()->findOrFail($data['header_component_id']);
+                $attributes = ['line_owner' => $data['line_owner'] ?? 'BRANCH'];
+                $stationMm = (float) $data['station_mm'];
+                $offsetMm = (float) ($data['offset_mm'] ?? 0);
+
+                if ($data['wall_kind'] === 'P2P') {
+                    $branchPort = Port::query()->with('component')->findOrFail($data['branch_port_id']);
+
+                    if ($branchPort->component?->piping_line_id !== $line->id) {
+                        throw ValidationException::withMessages([
+                            'branch_port_id' => 'The P2P branch end must belong to the line in this page.',
+                        ]);
+                    }
+
+                    $this->joints->joinToWall(
+                        $branchPort,
+                        $header,
+                        (string) $data['branch_kind'],
+                        $stationMm,
+                        $offsetMm,
+                        $user,
+                        $attributes,
+                    );
+
+                    return;
+                }
+
+                $olet = Component::query()->findOrFail($data['olet_component_id']);
+
+                if ($olet->piping_line_id !== $line->id) {
+                    throw ValidationException::withMessages([
+                        'olet_component_id' => 'The OLET must belong to the line in this page.',
+                    ]);
+                }
+
+                $this->joints->joinOletToWall(
+                    $olet,
+                    $header,
+                    $stationMm,
+                    $offsetMm,
+                    $user,
+                    $attributes,
+                );
             }, $project->id);
         } catch (ValidationException $e) {
             return redirect($this->backTo($projectCode, $lineId, $lang, $request))

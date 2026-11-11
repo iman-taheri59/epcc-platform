@@ -128,9 +128,13 @@ final class BranchWallJointTest extends TestCase
     }
 
     /** @return array{joint: Joint, branchPipe: Component} */
-    private function weldOnWall(PipingLine $branch, Component $headerPipe, float $station = 3000.0): array
-    {
-        return $this->asOwner(function () use ($branch, $headerPipe, $station): array {
+    private function weldOnWall(
+        PipingLine $branch,
+        Component $headerPipe,
+        float $station = 3000.0,
+        array $attributes = [],
+    ): array {
+        return $this->asOwner(function () use ($branch, $headerPipe, $station, $attributes): array {
             $branchPipe = app(ComponentService::class)->place($branch, $this->owner(), 'PIPE');
 
             $joint = app(JointService::class)->joinToWall(
@@ -140,6 +144,7 @@ final class BranchWallJointTest extends TestCase
                 $station,
                 0.0,
                 $this->owner(),
+                $attributes,
             );
 
             return ['joint' => $joint, 'branchPipe' => $branchPipe];
@@ -163,12 +168,206 @@ final class BranchWallJointTest extends TestCase
         $this->assertSame(3000.0, $joint->branch_station_mm);
         $this->assertSame(0.0, $joint->branch_offset_mm);
 
-        // It is a weld, and it is numbered on the branch line.
+        // No owner override was supplied, so it uses the BRANCH default.
         $this->assertTrue($joint->isWeld());
         $this->assertSame(Joint::TYPE_BRANCH_STUB_IN, $joint->joint_type);
         $this->assertNotNull($joint->joint_seq);
         $this->assertSame($branch->id, $joint->piping_line_id);
         $this->assertNotSame($header->id, $joint->piping_line_id);
+    }
+
+    public function test_a_p2p_wall_root_can_be_numbered_on_the_header_line(): void
+    {
+        ['header' => $header, 'branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+        ]]);
+
+        $headerEndJoint = $this->asOwner(fn () => app(ComponentService::class)->attach(
+            $headerPipe->ports->first(), $this->owner(), 'PIPE',
+        )['joint']);
+        ['joint' => $root, 'branchPipe' => $branchPipe] = $this->weldOnWall($branch, $headerPipe, 3000.0, [
+            'line_owner' => 'HEADER',
+        ]);
+
+        $this->assertSame($header->id, $root->piping_line_id);
+        $this->assertSame($headerEndJoint->joint_seq + 1, $root->joint_seq);
+        $this->assertSame(BranchConnectionType::P2P, $root->branch_class_type);
+        $this->assertSame(P2pKind::STUB_IN, $root->branch_class_p2p_kind);
+        $this->assertSame('AGREES', $root->branchDeviation());
+        $this->assertSame($branch->id, $branchPipe->piping_line_id);
+        $this->assertSame(2, $this->asOwner(fn () => app(JointService::class)->lineMetrics($header->fresh())['welds']));
+        $this->assertSame(0, $this->asOwner(fn () => app(JointService::class)->lineMetrics($branch->fresh())['welds']));
+    }
+
+    public function test_a_branch_segment_joint_can_be_manually_owned_by_its_roots_header_line(): void
+    {
+        ['header' => $header, 'branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+        ]]);
+
+        $headerEndJoint = $this->asOwner(fn () => app(ComponentService::class)->attach(
+            $headerPipe->ports->first(), $this->owner(), 'PIPE',
+        )['joint']);
+        ['joint' => $root, 'branchPipe' => $branchPipe] = $this->weldOnWall($branch, $headerPipe);
+        $openPort = $branchPipe->ports->first(fn (Port $port): bool => $port->id !== $root->port_a_id);
+        $downstreamJoint = $this->asOwner(fn () => app(ComponentService::class)->attach(
+            $openPort,
+            $this->owner(),
+            'PIPE',
+            [
+                'line_owner' => 'HEADER',
+                'branch_root_joint_id' => $root->id,
+            ],
+        )['joint']);
+
+        $this->assertSame($header->id, $downstreamJoint->piping_line_id);
+        $this->assertSame($root->id, $downstreamJoint->branch_root_joint_id);
+        $this->assertSame($headerEndJoint->joint_seq + 1, $downstreamJoint->joint_seq);
+        $this->assertSame($branch->id, $branchPipe->piping_line_id);
+        $this->assertSame(2, $this->asOwner(fn () => app(JointService::class)->lineMetrics($header->fresh())['welds']));
+        $this->assertSame(1, $this->asOwner(fn () => app(JointService::class)->lineMetrics($branch->fresh())['welds']));
+    }
+
+    public function test_a_branch_root_does_not_authorize_a_cross_line_two_port_joint_in_the_database(): void
+    {
+        ['header' => $header, 'branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+        ]]);
+        ['joint' => $root, 'branchPipe' => $branchPipe] = $this->weldOnWall($branch, $headerPipe);
+        $branchPort = $branchPipe->ports->first(fn (Port $port): bool => $port->id !== $root->port_a_id);
+        $headerPort = $headerPipe->ports->first();
+        $a = $branchPort->id;
+        $b = $headerPort->id;
+        if (strcmp($a, $b) > 0) {
+            [$a, $b] = [$b, $a];
+        }
+        $project = $this->project();
+        $owner = $this->owner();
+
+        $this->expectException(QueryException::class);
+        $this->expectExceptionMessageMatches('/JT_LINE_MISMATCH/');
+
+        $this->asOwner(function () use ($project, $owner, $header, $a, $b, $root): void {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+            DB::table('joints')->insert([
+                'id' => (string) Str::uuid(),
+                'project_id' => $project->id,
+                'company_id' => $owner->company_id,
+                'piping_line_id' => $header->id,
+                'port_a_id' => $a,
+                'port_b_id' => $b,
+                'branch_root_joint_id' => $root->id,
+                'numbering_policy' => Joint::NUMBERING_NOT_APPLICABLE,
+                'joint_type' => 'FLANGED',
+                'state' => Joint::STATE_MODELLED,
+                'compatibility_state' => 'VALID',
+                'source' => 'MANUAL',
+                'created_by' => $owner->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+    }
+
+    public function test_separating_a_wall_root_rehomes_header_owned_joints_to_the_branch_line(): void
+    {
+        ['header' => $header, 'branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+        ]]);
+
+        ['joint' => $root, 'branchPipe' => $branchPipe] = $this->weldOnWall($branch, $headerPipe, 3000.0, [
+            'line_owner' => 'HEADER',
+        ]);
+        $openPort = $branchPipe->ports->first(fn (Port $port): bool => $port->id !== $root->port_a_id);
+        $dependent = $this->asOwner(fn () => app(ComponentService::class)->attach(
+            $openPort,
+            $this->owner(),
+            'PIPE',
+            [
+                'line_owner' => 'HEADER',
+                'branch_root_joint_id' => $root->id,
+            ],
+        )['joint']);
+
+        $this->asOwner(fn () => app(JointService::class)->separate($root, $this->owner()));
+        [$remainingRoot, $reassigned] = $this->asOwner(fn () => [
+            Joint::query()->find($root->id),
+            Joint::query()->findOrFail($dependent->id),
+        ]);
+
+        $this->assertNull($remainingRoot);
+        $this->assertSame($branch->id, $reassigned->piping_line_id);
+        $this->assertSame(1, $reassigned->joint_seq);
+        $this->assertNull($reassigned->branch_root_joint_id);
+        $this->assertSame(1, $this->asOwner(fn () => app(JointService::class)->lineMetrics($branch->fresh())['welds']));
+        $this->assertSame(0, $this->asOwner(fn () => app(JointService::class)->lineMetrics($header->fresh())['welds']));
+    }
+
+    public function test_a_fitted_header_owned_branch_joint_prevents_separating_its_root(): void
+    {
+        ['header' => $header, 'branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+        ]]);
+
+        ['joint' => $root, 'branchPipe' => $branchPipe] = $this->weldOnWall($branch, $headerPipe, 3000.0, [
+            'line_owner' => 'HEADER',
+        ]);
+        $openPort = $branchPipe->ports->first(fn (Port $port): bool => $port->id !== $root->port_a_id);
+        $dependent = $this->asOwner(fn () => app(ComponentService::class)->attach(
+            $openPort,
+            $this->owner(),
+            'PIPE',
+            [
+                'line_owner' => 'HEADER',
+                'branch_root_joint_id' => $root->id,
+            ],
+        )['joint']);
+        $this->asOwner(fn () => app(JointService::class)->markFitted($dependent, $this->owner(), 'FIT-ROOT'));
+
+        try {
+            $this->asOwner(fn () => app(JointService::class)->separate($root, $this->owner()));
+            $this->fail('A fitted dependent joint must keep its explicit header-root ownership.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('branch_root_joint_id', $exception->errors());
+        }
+
+        [$remainingRoot, $remainingDependent] = $this->asOwner(fn () => [
+            Joint::query()->findOrFail($root->id),
+            Joint::query()->findOrFail($dependent->id),
+        ]);
+
+        $this->assertSame($root->id, $remainingDependent->branch_root_joint_id);
+        $this->assertSame($header->id, $remainingDependent->piping_line_id);
+        $this->assertTrue($remainingDependent->isFitted());
+        $this->assertSame($header->id, $remainingRoot->piping_line_id);
+    }
+
+    public function test_a_p2p_wall_root_requires_a_branch_pipe_end(): void
+    {
+        ['branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+        ]]);
+
+        $this->expectException(ValidationException::class);
+
+        $this->asOwner(function () use ($branch, $headerPipe): void {
+            $tee = app(ComponentService::class)->place($branch, $this->owner(), 'TEE');
+
+            app(JointService::class)->joinToWall(
+                $tee->ports->firstWhere('role', 'BRANCH'),
+                $headerPipe,
+                JointBranchKind::STUB_IN,
+                3000.0,
+                0.0,
+                $this->owner(),
+            );
+        });
     }
 
     public function test_the_p2p_wall_method_still_refuses_a_fitting_kind(): void
@@ -185,6 +384,29 @@ final class BranchWallJointTest extends TestCase
 
             app(JointService::class)->joinToWall(
                 $pipe->ports->first(), $headerPipe, JointBranchKind::OLET, 3000.0, 0.0, $this->owner(),
+            );
+        });
+    }
+
+    public function test_header_line_ownership_for_a_two_port_joint_requires_a_wall_root(): void
+    {
+        ['branch' => $branch] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+        ]]);
+
+        $this->expectException(ValidationException::class);
+
+        $this->asOwner(function () use ($branch): void {
+            $components = app(ComponentService::class);
+            $first = $components->place($branch, $this->owner(), 'PIPE');
+            $second = $components->place($branch, $this->owner(), 'PIPE');
+
+            app(JointService::class)->join(
+                $first->ports->first(),
+                $second->ports->first(),
+                $this->owner(),
+                ['line_owner' => 'HEADER'],
             );
         });
     }
@@ -337,7 +559,7 @@ final class BranchWallJointTest extends TestCase
         // The guard was rewritten for this. A branch is cross-line BY NATURE —
         // one line welds onto another — and that is not the same thing as a
         // tie-in, where two line ends meet and neither side owns the number.
-        // Here the branch line owns it, unambiguously.
+        // This exercises the BRANCH default; header ownership is covered above.
         ['header' => $header, 'branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
             'header' => [100, 300], 'branch' => [15, 100],
             'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,

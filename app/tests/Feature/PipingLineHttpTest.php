@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\Document;
 use App\Models\DocumentRevision;
+use App\Models\Joint;
 use App\Models\LineDocument;
 use App\Models\PipingClass;
 use App\Models\PipingLine;
@@ -357,7 +358,117 @@ final class PipingLineHttpTest extends TestCase
             ->assertSee('wall')
             ->assertSee('station')
             ->assertSee('3000')
-            ->assertSee('mm');
+            ->assertSee('mm')
+            ->assertSee('Joint owner line')
+            ->assertSee('Branch root')
+            ->assertSee('Create a branch-to-header-wall joint')
+            ->assertSee($headerLine->line_number);
+    }
+
+    public function test_a_wall_root_can_be_created_over_http_with_header_line_ownership(): void
+    {
+        $headerLine = $this->aLine();
+        $owner = $this->owner();
+        $project = $this->project();
+        $tenant = app(TenantContext::class);
+        $branchLine = $tenant->runAs($owner->company_id, function () use ($owner, $headerLine): PipingLine {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+
+            return app(PipingLineService::class)->create(
+                Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail(),
+                $owner,
+                [
+                    'nominal_size' => '2',
+                    'service_code' => 'P',
+                    'piping_class_id' => $headerLine->piping_class_id,
+                ],
+            );
+        }, $project->id);
+
+        $components = $tenant->runAs($owner->company_id, function () use ($owner, $headerLine, $branchLine): array {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+            $service = app(ComponentService::class);
+            $header = $service->place($headerLine, $owner, 'PIPE', ['length_mm' => 6000]);
+            $olet = $service->place($branchLine, $owner, 'OLET', [
+                'nominal_size' => $headerLine->nominal_size,
+                'port_sizes' => [2 => '2'],
+            ]);
+
+            return ['header' => $header, 'olet' => $olet];
+        }, $project->id);
+
+        $this->actingAs($owner)
+            ->post("/projects/PH-14/piping/{$branchLine->id}/model/wall?lang=en", [
+                'wall_kind' => 'OLET',
+                'olet_component_id' => $components['olet']->id,
+                'header_component_id' => $components['header']->id,
+                'station_mm' => 3000,
+                'offset_mm' => 0,
+                'line_owner' => 'HEADER',
+            ])
+            ->assertRedirect();
+
+        $root = $tenant->runAs($owner->company_id, fn (): Joint => Joint::query()
+            ->where('branch_header_component_id', $components['header']->id)
+            ->firstOrFail(), $project->id);
+
+        $this->assertSame($headerLine->id, $root->piping_line_id);
+        $this->assertSame(Joint::TYPE_OLET_HEADER_WELD, $root->joint_type);
+
+        $this->actingAs($owner)
+            ->get("/projects/PH-14/piping/{$branchLine->id}/model?lang=en")
+            ->assertOk()
+            ->assertSee('Branch root')
+            ->assertSee($headerLine->line_number);
+    }
+
+    public function test_a_p2p_wall_root_can_be_created_over_http_with_header_line_ownership(): void
+    {
+        $headerLine = $this->aLine();
+        $owner = $this->owner();
+        $project = $this->project();
+        $tenant = app(TenantContext::class);
+        $branchLine = $tenant->runAs($owner->company_id, function () use ($owner, $headerLine): PipingLine {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+
+            return app(PipingLineService::class)->create(
+                Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail(),
+                $owner,
+                [
+                    'nominal_size' => '2',
+                    'service_code' => 'P',
+                    'piping_class_id' => $headerLine->piping_class_id,
+                ],
+            );
+        }, $project->id);
+        $components = $tenant->runAs($owner->company_id, function () use ($owner, $headerLine, $branchLine): array {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+            $service = app(ComponentService::class);
+
+            return [
+                'header' => $service->place($headerLine, $owner, 'PIPE', ['length_mm' => 6000]),
+                'branch' => $service->place($branchLine, $owner, 'PIPE'),
+            ];
+        }, $project->id);
+
+        $this->actingAs($owner)
+            ->post("/projects/PH-14/piping/{$branchLine->id}/model/wall?lang=en", [
+                'wall_kind' => 'P2P',
+                'branch_port_id' => $components['branch']->ports->first()->id,
+                'header_component_id' => $components['header']->id,
+                'branch_kind' => 'STUB_ON',
+                'station_mm' => 3000,
+                'offset_mm' => 0,
+                'line_owner' => 'HEADER',
+            ])
+            ->assertRedirect();
+
+        $root = $tenant->runAs($owner->company_id, fn (): Joint => Joint::query()
+            ->where('branch_header_component_id', $components['header']->id)
+            ->firstOrFail(), $project->id);
+
+        $this->assertSame($headerLine->id, $root->piping_line_id);
+        $this->assertSame(Joint::TYPE_BRANCH_STUB_ON, $root->joint_type);
     }
 
     public function test_the_workspace_puts_blocked_lines_on_the_worklist(): void

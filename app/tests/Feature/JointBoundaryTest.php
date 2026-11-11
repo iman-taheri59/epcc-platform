@@ -276,6 +276,7 @@ final class JointBoundaryTest extends TestCase
                     Port::query()->findOrFail($portA),
                     Port::query()->findOrFail($portB),
                     $owner,
+                    ['line_owner' => 'HEADER'],
                 );
             }, $project->id);
 

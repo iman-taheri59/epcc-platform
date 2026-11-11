@@ -1,67 +1,51 @@
--- Guard for the one line a joint is allowed to belong to.
+-- Guard for the line that owns a joint's register entry and sequence.
 --
--- A joint carries a single piping_line_id, and the joint number is allocated
--- per line (joints_line_seq_unique, nextSeq under a lock). That number is not
--- cosmetic: it is what ties the weld to a hydrotest pack, a test pack and an
--- ITR. Whoever owns the number owns the weld's destiny in the turnover
--- dossier. So a joint whose two ends sit on different lines is not merely odd,
--- it is unanswerable — which line's dossier does this weld belong to?
+-- The physical ports of an ordinary joint must still be on the same line. A
+-- branch wall root is an explicit cross-line shape: P2P and OLET roots name
+-- their header component, and may be owned by either the branch line or that
+-- header line. A later joint on the same physical branch line may use the
+-- header's register only when it points back to that branch's P2P/OLET root.
+-- This is reporting/number ownership, not permission to tie two piping lines
+-- together through ordinary ports.
 --
--- JointService refuses that in PHP. This guard makes it true in the database
--- too, because the PHP rule is one direct INSERT away from being irrelevant,
--- and the test suite has been known to write joints by hand.
---
--- Nozzles are the reason this guard cannot simply compare two component rows.
--- A NOZZLE port belongs to equipment, not to a line, so it contributes no line
--- at all: the joint takes its number from whichever side does have one
--- (ADR-010 §3.1). A nozzle-to-component joint is therefore legal, and a
--- nozzle-to-nozzle one is not, because then nothing owns the number.
---
--- A BRANCH JOINT is the one shape this guard deliberately lets through with a
--- NULL second port (ADR-006 §§14–15, P-22). P2P stubs weld the branch pipe's end
--- to a point on the header's WALL; an OLET wall weld stores the fitting's real
--- RUN port there instead. Neither shape invents a port on the header. The joint
--- therefore carries a frozen header reference instead of a second port: the
--- header component, a station along it, and an offset from its centreline.
---
--- That makes a branch joint CROSS-LINE BY NATURE, which is the case this guard
--- was written to refuse. It is not the same thing as a tie-in, though, and
--- conflating them would be wrong:
---
---   - a TIE-IN joins two line ENDS. Neither side owns the weld, which is why
---     the number has nowhere to live and why the refusal stands;
---   - a BRANCH is a weld made by one line ONTO another. The branch pipe's
---     component is on the branch line, that line numbers the weld, and that
---     line's dossier owns it. The header merely gets landed on.
---
--- So when port_b_id is NULL the guard checks only port_a's side, and the line
--- the joint is recorded against must be that side's line. The header may sit
--- on any other line in the project: it is a thing being welded to, not a
--- co-owner of the number.
+-- Nozzles own no line. A normal nozzle-to-component joint therefore remains
+-- owned by the pipe side (ADR-010 §3.1).
 CREATE OR REPLACE FUNCTION epcc_guard_joint_line() RETURNS trigger
 LANGUAGE plpgsql SET search_path = public, pg_catalog AS $$
 DECLARE
     v_line_a uuid;
     v_line_b uuid;
+    v_project_a uuid;
+    v_project_b uuid;
     v_owner_a text;
     v_owner_b text;
+    v_header_line uuid;
+    v_header_project uuid;
+    v_header_template text;
+    v_branch_root uuid;
+    v_root_branch_line uuid;
+    v_root_header_line uuid;
+    v_root_project uuid;
+    v_root_branch_project uuid;
+    v_root_header_project uuid;
+    v_root_port_b uuid;
+    v_root_header_component uuid;
+    v_root_type text;
 BEGIN
-    -- The line each side claims, and what kind of thing that side is. A nozzle
-    -- port has no component, so its line is NULL by design rather than by
-    -- accident — which is exactly why "both NULL" cannot be told apart from
-    -- "one side is a nozzle" by looking at the lines alone.
-    SELECT c.piping_line_id, p.owner_kind
-      INTO v_line_a, v_owner_a
+    -- Read the optional column through JSON so this same function definition
+    -- remains runnable during rollback after branch_root_joint_id is removed.
+    v_branch_root := NULLIF(to_jsonb(NEW)->>'branch_root_joint_id', '')::uuid;
+
+    SELECT c.piping_line_id, c.project_id, p.owner_kind
+      INTO v_line_a, v_project_a, v_owner_a
       FROM ports p
       LEFT JOIN components c ON c.id = p.component_id
      WHERE p.id = NEW.port_a_id;
 
-    -- A wall joint has no second port. joints_other_side already insists that
-    -- a NULL port_b_id is accompanied by a header reference, so reaching this
-    -- branch without one cannot happen - but the tests write rows by hand, so
-    -- assert it rather than trust it.
     IF NEW.port_b_id IS NULL THEN
-        IF NEW.branch_header_component_id IS NULL THEN
+        -- A wall root has no second port, but it must name the real header and
+        -- be one of the explicitly modelled P2P/OLET wall-weld shapes.
+        IF NEW.branch_header_component_id IS NULL OR v_line_a IS NULL THEN
             RAISE EXCEPTION 'JT_NO_LINE_SIDE' USING ERRCODE = '23514';
         END IF;
 
@@ -69,20 +53,32 @@ BEGIN
             RAISE EXCEPTION 'JT_PORT_NOT_FOUND' USING ERRCODE = '23503';
         END IF;
 
-        -- The branch pipe's own line owns the weld and its number.
-        IF v_line_a IS NULL THEN
-            RAISE EXCEPTION 'JT_NO_LINE_SIDE' USING ERRCODE = '23514';
+        SELECT c.piping_line_id, c.project_id, c.template_code
+          INTO v_header_line, v_header_project, v_header_template
+          FROM components c
+         WHERE c.id = NEW.branch_header_component_id;
+
+        IF v_header_line IS NULL OR v_header_template <> 'PIPE'
+            OR v_project_a IS DISTINCT FROM NEW.project_id
+            OR v_header_project IS DISTINCT FROM NEW.project_id THEN
+            RAISE EXCEPTION 'JT_HEADER_LINE_INVALID' USING ERRCODE = '23514';
         END IF;
 
-        IF v_line_a <> NEW.piping_line_id THEN
+        IF NEW.joint_type NOT IN ('BRANCH_STUB_IN', 'BRANCH_STUB_ON', 'OLET_HEADER_WELD') THEN
+            RAISE EXCEPTION 'JT_WALL_TYPE_INVALID' USING ERRCODE = '23514';
+        END IF;
+
+        -- Explicit owner choice: either the physical branch line or the line
+        -- of the real header component. No third line is a valid owner.
+        IF NEW.piping_line_id <> v_line_a AND NEW.piping_line_id <> v_header_line THEN
             RAISE EXCEPTION 'JT_LINE_MISMATCH' USING ERRCODE = '23514';
         END IF;
 
         RETURN NEW;
     END IF;
 
-    SELECT c.piping_line_id, p.owner_kind
-      INTO v_line_b, v_owner_b
+    SELECT c.piping_line_id, c.project_id, p.owner_kind
+      INTO v_line_b, v_project_b, v_owner_b
       FROM ports p
       LEFT JOIN components c ON c.id = p.component_id
      WHERE p.id = NEW.port_b_id;
@@ -91,14 +87,65 @@ BEGIN
         RAISE EXCEPTION 'JT_PORT_NOT_FOUND' USING ERRCODE = '23503';
     END IF;
 
-    -- At least one end must be a pipe. Two equipment nozzles bolted together
-    -- have no line to be numbered against, and piping_line_id is NOT NULL.
     IF v_line_a IS NULL AND v_line_b IS NULL THEN
         RAISE EXCEPTION 'JT_NO_LINE_SIDE' USING ERRCODE = '23514';
     END IF;
 
-    -- A component side must be on the very line this joint is recorded
-    -- against. A nozzle side asserts nothing.
+    IF v_branch_root IS NOT NULL THEN
+        -- The explicit root proves which header may own this ordinary-looking
+        -- joint. The two real port sides must remain on that root's branch
+        -- line; only piping_line_id (the register/number owner) may differ.
+        SELECT r.port_b_id,
+               r.branch_header_component_id,
+               r.joint_type,
+               r.project_id,
+               branch_component.piping_line_id,
+               branch_component.project_id,
+               header_component.piping_line_id,
+               header_component.project_id
+          INTO v_root_port_b,
+               v_root_header_component,
+               v_root_type,
+               v_root_project,
+               v_root_branch_line,
+               v_root_branch_project,
+               v_root_header_line,
+               v_root_header_project
+          FROM joints r
+          JOIN ports root_port ON root_port.id = r.port_a_id
+          JOIN components branch_component ON branch_component.id = root_port.component_id
+          JOIN components header_component ON header_component.id = r.branch_header_component_id
+         WHERE r.id = v_branch_root;
+
+        IF NOT FOUND OR v_root_port_b IS NOT NULL OR v_root_header_component IS NULL
+            OR v_root_type NOT IN ('BRANCH_STUB_IN', 'BRANCH_STUB_ON', 'OLET_HEADER_WELD')
+            OR v_root_branch_line IS NULL OR v_root_header_line IS NULL THEN
+            RAISE EXCEPTION 'JT_BRANCH_ROOT_INVALID' USING ERRCODE = '23514';
+        END IF;
+
+        IF v_root_project IS DISTINCT FROM NEW.project_id
+            OR v_root_branch_project IS DISTINCT FROM v_root_project
+            OR v_root_header_project IS DISTINCT FROM v_root_project
+            OR v_project_a IS DISTINCT FROM v_root_project
+            OR (v_project_b IS NOT NULL AND v_project_b IS DISTINCT FROM v_root_project) THEN
+            RAISE EXCEPTION 'JT_BRANCH_ROOT_INVALID' USING ERRCODE = '23514';
+        END IF;
+
+        IF (v_line_a IS NOT NULL AND v_line_a <> v_root_branch_line)
+            OR (v_line_b IS NOT NULL AND v_line_b <> v_root_branch_line) THEN
+            RAISE EXCEPTION 'JT_LINE_MISMATCH' USING ERRCODE = '23514';
+        END IF;
+
+        IF NEW.piping_line_id <> v_root_branch_line
+            AND NEW.piping_line_id <> v_root_header_line THEN
+            RAISE EXCEPTION 'JT_LINE_MISMATCH' USING ERRCODE = '23514';
+        END IF;
+
+        RETURN NEW;
+    END IF;
+
+    -- Without an explicit branch root, a component-side line must be the line
+    -- recorded on the joint. This preserves the ordinary tie-in boundary.
     IF v_line_a IS NOT NULL AND v_line_a <> NEW.piping_line_id THEN
         RAISE EXCEPTION 'JT_LINE_MISMATCH' USING ERRCODE = '23514';
     END IF;

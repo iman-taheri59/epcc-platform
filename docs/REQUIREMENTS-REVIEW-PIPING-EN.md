@@ -55,13 +55,18 @@ branch verdicts, wall joints, boundary cases and pinned PMS resolution passed
 132 tests / 267 assertions.
 
 The branch-kind/class-verdict slice is present in the joint/service path. The
-OLET fabricated RUN/FA-to-header-wall weld has since been implemented as a
-separate wall-reference joint; the BRANCH-to-pipe weld remains distinct, both
-are owned/numbered on the branch line, and the class verdict is recorded once
-on the root weld. The focused OLET/joint suites plus the joint-register HTTP
-regression passed **84 tests / 218 assertions**. This does **not** complete
-P-21 or the P5 welding roadmap: weld-log/report UI, contract rates, welder
-qualification, WPS/PQR, NDT/repair workflow, wall-joint creation UI, and a
-PCF-to-model writer remain open. The PCF parser/admission remains read-only and
-warns about taps instead of creating a joint. The 2026-10-12 findings table is
-retained as a historical snapshot.
+OLET fabricated RUN/FA-to-header-wall weld is a separate wall-reference joint;
+the BRANCH-to-pipe weld remains distinct, and the class verdict is recorded
+once on the root weld. The earlier 84-test OLET run used branch ownership for
+both welds. The current behavior instead lets the operator choose `BRANCH`
+(default) or `HEADER` per joint; later header-owned branch joints must point to
+an explicit P2P/OLET wall root. No boundary is inferred at a flange or valve.
+The verdict still uses the physical branch line's issued class, and the branch
+classification remains on the root weld only. Wall-root creation and owner
+selection are now available from the line-model page. The focused ownership,
+numbering, separation, boundary, HTTP and regression suites passed **113 tests /
+352 assertions**. This does **not** complete P-21 or the P5 welding roadmap:
+full weld-log/report UI, contract rates, welder qualification, WPS/PQR,
+NDT/repair workflow, and a PCF-to-model writer remain open. The PCF
+parser/admission remains read-only and warns about taps instead of creating a
+joint. The 2026-10-12 findings table is retained as a historical snapshot.

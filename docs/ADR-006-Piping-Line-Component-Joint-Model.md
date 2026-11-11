@@ -704,12 +704,18 @@ synthesised wall port would have made a header with three branches look like a
 pipe with five ends — corrupting the query ADR-009 §2.3 calls the most useful in
 the system.
 
-**The line guard had to learn the difference between a branch and a tie-in.** A
+**Physical branch vs. register owner (manual; no inferred cutover).** A
 branch is cross-line *by nature* — one line welds onto another — whereas a
-tie-in joins two line ends and neither side owns the number. A branch joint is
-owned by the BRANCH line: that crew makes the weld, their isometric carries it,
-and their line numbers it. The header is a thing being welded to. `JT_LINE_
-MISMATCH` therefore checks only the branch side when `port_b_id` is NULL.
+tie-in joins two line ends. The operator chooses `line_owner` independently for
+each joint: `BRANCH` is the default; `HEADER` is also valid. No boundary is
+inferred at the first flange, valve, or other component. For a wall root the
+header is explicit in `branch_header_component_id`; for a later two-port joint
+on the branch, `branch_root_joint_id` must identify that P2P/OLET root before
+`HEADER` may own its number. The database guard still requires the physical
+ports of that ordinary joint to remain on the root's branch line, so this does
+not admit a cross-line tie-in. `JointService::separate()` clears those root
+links and moves unfitted header-owned dependents back to the branch register;
+a fitted dependent blocks the operation for revision handling.
 
 **Two axes, because we have no geometry.** Plant 3D stores the circumferential
 offset and derives the station from 3D coordinates; we cannot derive anything,
@@ -719,18 +725,23 @@ bounds-checked at creation — the station within the header's length, the offse
 within its outer radius — because a location that cannot be checked is a note,
 not a design.
 
-**Numbering and dia-inch.** A wall weld is numbered on the branch line like any
-other weld. `diaInch()` used to return null for a joint with one port, which is
-exactly how the most expensive welds on a line go unpaid; it now returns the
-branch size. `isWeld()` accepts `BRANCH_STUB_IN` and `BRANCH_STUB_ON`
-(ADR-008 §9.2 / P-21).
+**Numbering, verdict and dia-inch.** The joint sequence is allocated under the
+selected owner's line lock. The branch class verdict is still resolved from the
+physical branch line's issued PMS snapshot and remains on the one P2P/OLET wall
+root, regardless of which register owns its number. `diaInch()` used to return
+null for a joint with one port; it now returns the branch size. `isWeld()`
+accepts `BRANCH_STUB_IN` and `BRANCH_STUB_ON` (ADR-008 §9.2 / P-21). Only the
+root carries the branch classification, so a separate OLET outlet weld does
+not create a second branch count.
 
-**Deliberately not built.** No UI creates a wall joint, and no model-writing
-importer populates one from PCF. The read-only parser/admission now recognizes
-standard `TAP-CONNECTION` records in both association forms and retains the
-host UCI; it warns instead of applying that data. The pad thickness is recorded
-but nothing verifies it against ASME B31.3 §304.3.3 at joint level; the
-calculator exists and the class gate runs at publication only.
+**What remains out of scope.** The line-model UI now creates P2P/OLET wall
+roots and exposes the per-joint owner choice; it does not infer the boundary.
+No model-writing importer populates wall joints from PCF. The read-only
+parser/admission recognizes standard `TAP-CONNECTION` records in both
+association forms and retains the host UCI; it warns instead of applying that
+data. Pad thickness is recorded but nothing verifies it against ASME B31.3
+§304.3.3 at joint level; the calculator exists and the class gate runs at
+publication only.
 
 ## 15. OLET branch assemblies on a header wall
 
@@ -746,20 +757,22 @@ header component plus station/offset as the other side. The ordinary
 `ComponentService::attach()` path creates the separate BRANCH-to-pipe joint.
 The OLET remains a normal `OLET` component (and therefore remains available to
 the component/MTO model); the header continues to expose only its two end
-ports. The OLET is placed on the branch line, which owns and numbers both
-physical welds even when the header belongs to a different line. Ordinary
+ports. The OLET is placed on the branch line, but the two physical welds each
+have their own `line_owner` choice. `BRANCH` is the default; a header-owned
+OLET outlet-to-pipe joint must link to the explicit wall root. Ordinary
 cross-line two-port tie-ins remain refused by `JointService::join()` and the
 line guard.
 
 **Branch classification, verdict and metrics.** The OLET-to-header wall weld
-uses `joint_type=OLET_HEADER_WELD`, `branch_kind=OLET` and the branch line's
-issued PMS snapshot for the header-size × branch-size verdict and any pad
-thickness. Its dia-inch uses the OLET BRANCH size, not the larger RUN size. The
-OLET BRANCH-to-pipe butt weld is still counted as a physical weld and is
-numbered on that line, but is an ordinary joint with no second `branch_kind` or
-second class verdict. Consequently a complete 6×2 OLET assembly contributes
-two welds to physical totals but exactly one OLET branch weld to
-`branch_welds`/`branch_by_kind`.
+uses `joint_type=OLET_HEADER_WELD`, `branch_kind=OLET` and the physical branch
+line's issued PMS snapshot for the header-size × branch-size verdict and any
+pad thickness, irrespective of register owner. Its dia-inch uses the OLET
+BRANCH size, not the larger RUN size. The OLET BRANCH-to-pipe butt weld is
+still counted as a physical weld, but is an ordinary joint with no second
+`branch_kind` or class verdict. Per-line register metrics follow each joint's
+selected owner; because only the wall root carries the branch classification,
+a complete 6×2 OLET assembly contributes two physical welds but exactly one
+OLET branch weld to `branch_welds`/`branch_by_kind`.
 
 The explicit OLET path does not broaden `joinToWall()`: that method still
 accepts only `STUB_IN` and `STUB_ON`. When an older, unfitted outlet joint was
@@ -767,6 +780,8 @@ classified as OLET before the root weld could be represented, creating the
 root joint transfers the classification/verdict to the root weld atomically;
 a fitted historical joint is not rewritten and requires the revision workflow.
 
-**Still separate.** No wall-joint UI or PCF-to-model writer is added here. The
-PCF parser/admission remains read-only for `TAP-CONNECTION`; recognizing that
-text does not create either OLET interface or authorize model writes.
+**Still separate.** The model page creates explicit wall roots, but the PCF
+parser/admission remains read-only for `TAP-CONNECTION`; recognizing that text
+does not create either OLET interface or authorize model writes. A full weld
+log/report and the wider WPS/PQR, qualification, NDT/repair and traceability
+workflow remain outside this modelling change.

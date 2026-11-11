@@ -19,6 +19,28 @@
                        'en' => 'No open ends — this line is structurally complete.'],
         'attach'   => ['fa' => 'اتصال قطعه به این سر', 'en' => 'Attach a component to this end'],
         'attachbtn'=> ['fa' => 'اتصال', 'en' => 'Attach'],
+        'lineowner'=> ['fa' => 'خط مالک شمارهٔ جوینت', 'en' => 'Joint owner line'],
+        'ownerBranch' => ['fa' => 'خط شاخه', 'en' => 'Branch line'],
+        'ownerHeader' => ['fa' => 'خط هدر', 'en' => 'Header line'],
+        'branchroot'=> ['fa' => 'ریشهٔ انشعاب', 'en' => 'Branch root'],
+        'ownerHelp'=> ['fa' => 'برای ثبت این جوینت روی خط هدر، ریشهٔ P2P/OLET انشعاب را انتخاب کنید.', 'en' => 'To file this joint on the header line, select the branch P2P/OLET wall root.'],
+        'ownerScopeHelp' => ['fa' => 'این انتخاب فقط رجیستر و شمارهٔ همین جوینت را تغییر می‌دهد؛ قطعات و رأی کلاس روی شاخه می‌مانند و مرزی در فلنج یا شیر حدس زده نمی‌شود.', 'en' => 'This changes only this joint’s register/number owner; components and class verdict stay with the branch, with no automatic cutover at a flange or valve.'],
+        'wallFormTitle' => ['fa' => 'ایجاد جوینت انشعاب روی دیوارهٔ هدر', 'en' => 'Create a branch-to-header-wall joint'],
+        'wallKind' => ['fa' => 'نوع اتصال دیواره‌ای', 'en' => 'Wall connection type'],
+        'wallP2p' => ['fa' => 'انشعاب P2P', 'en' => 'P2P branch'],
+        'wallOlet' => ['fa' => 'OLET', 'en' => 'OLET fitting'],
+        'wallBranchPort' => ['fa' => 'سر باز لولهٔ انشعاب', 'en' => 'Open branch-pipe end'],
+        'wallOletComponent' => ['fa' => 'قطعهٔ OLET روی خط انشعاب', 'en' => 'OLET component on this branch line'],
+        'wallHeader' => ['fa' => 'لولهٔ هدر', 'en' => 'Header pipe'],
+        'wallBranchKind' => ['fa' => 'روش اتصال P2P', 'en' => 'P2P branch form'],
+        'wallStubIn' => ['fa' => 'استاب‌این', 'en' => 'Stub-in'],
+        'wallStubOn' => ['fa' => 'استاب‌آن', 'en' => 'Stub-on'],
+        'wallStation' => ['fa' => 'ایستگاه روی هدر (میلی‌متر)', 'en' => 'Station along header (mm)'],
+        'wallOffset' => ['fa' => 'آفست از محور هدر (میلی‌متر)', 'en' => 'Offset from header centreline (mm)'],
+        'wallCreate' => ['fa' => 'ثبت جوینت دیواره‌ای', 'en' => 'Create wall joint'],
+        'wallSelect' => ['fa' => '— انتخاب کنید —', 'en' => '— Select —'],
+        'wallNoCandidates' => ['fa' => 'ابتدا یک سر باز لولهٔ انشعاب یا OLET با پورت RUN باز روی این خط مدل کنید.', 'en' => 'Place an open branch-pipe end or an OLET with an open RUN port on this line first.'],
+        'wallNoHeader' => ['fa' => 'ابتدا لولهٔ هدر با سایز و طول مشخص مدل کنید.', 'en' => 'Place a header pipe with a known size and length first.'],
         'add'      => ['fa' => 'افزودن قطعهٔ مستقل', 'en' => 'Add a standalone component'],
         'addbtn'   => ['fa' => 'افزودن', 'en' => 'Add'],
         'branch'   => ['fa' => 'سایز انشعاب', 'en' => 'Branch size'],
@@ -180,6 +202,29 @@
                 <option value="{{ $tpl['code'] }}">{{ $tpl['name'][$lang] ?? $tpl['name']['en'] }} ({{ $num($tpl['ports']) }})</option>
               @endforeach
             </select>
+            @if($branchRoots->isNotEmpty())
+              <label style="flex:1 1 45%;min-width:140px;color:var(--muted);font-size:11px;">
+                {{ $L('lineowner') }}
+                <select name="line_owner"
+                        style="width:100%;margin-top:3px;padding:5px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+                  <option value="BRANCH" @selected(old('line_owner', 'BRANCH') === 'BRANCH')>{{ $L('ownerBranch') }}</option>
+                  <option value="HEADER" @selected(old('line_owner') === 'HEADER')>{{ $L('ownerHeader') }}</option>
+                </select>
+              </label>
+              <label style="flex:1 1 45%;min-width:140px;color:var(--muted);font-size:11px;">
+                {{ $L('branchroot') }}
+                <select name="branch_root_joint_id"
+                        style="width:100%;margin-top:3px;padding:5px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+                  <option value="">—</option>
+                  @foreach($branchRoots as $root)
+                    <option value="{{ $root->id }}" @selected(old('branch_root_joint_id') === $root->id)>
+                      {{ $root->branchHeaderComponent?->line?->line_number ?? '?' }} · {{ $root->joint_type }} · {{ $num($root->displayNumber() ?? '—') }}
+                    </option>
+                  @endforeach
+                </select>
+              </label>
+              <small style="flex:1 1 100%;color:var(--muted);font-size:10px;">{{ $L('ownerHelp') }} {{ $L('ownerScopeHelp') }}</small>
+            @endif
             <button type="submit"
                     style="padding:5px 12px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;cursor:pointer;">
               {{ $L('attachbtn') }}
@@ -190,6 +235,77 @@
       @endforeach
     </div>
     <p style="color:var(--muted);font-size:11px;margin-top:8px;">{{ $L('inherit') }}</p>
+  @endif
+
+  @if($editable)
+    <h2 style="margin-top:28px;font-size:16px;">{{ $L('wallFormTitle') }}</h2>
+    @if($wallHeaders->isEmpty())
+      <p style="color:var(--muted);font-size:12px;margin-top:8px;">{{ $L('wallNoHeader') }}</p>
+    @elseif($wallBranchPorts->isEmpty() && $wallOlets->isEmpty())
+      <p style="color:var(--muted);font-size:12px;margin-top:8px;">{{ $L('wallNoCandidates') }}</p>
+    @else
+      @php $defaultWallKind = $wallBranchPorts->isNotEmpty() ? 'P2P' : 'OLET'; @endphp
+      <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/model/wall?{{ http_build_query($q) }}"
+            style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--card);display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px;">
+        @csrf
+        <label style="color:var(--muted);font-size:11px;">{{ $L('wallKind') }}
+          <select name="wall_kind" required style="width:100%;margin-top:3px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+            <option value="P2P" @selected(old('wall_kind', $defaultWallKind) === 'P2P') @disabled($wallBranchPorts->isEmpty())>{{ $L('wallP2p') }}</option>
+            <option value="OLET" @selected(old('wall_kind', $defaultWallKind) === 'OLET') @disabled($wallOlets->isEmpty())>{{ $L('wallOlet') }}</option>
+          </select>
+        </label>
+        <label style="color:var(--muted);font-size:11px;">{{ $L('wallBranchPort') }}
+          <select name="branch_port_id" style="width:100%;margin-top:3px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+            <option value="">{{ $L('wallSelect') }}</option>
+            @foreach($wallBranchPorts as $port)
+              <option value="{{ $port->id }}" @selected(old('branch_port_id') === $port->id)>
+                {{ $port->component?->label() }} · {{ $port->label() }}
+              </option>
+            @endforeach
+          </select>
+        </label>
+        <label style="color:var(--muted);font-size:11px;">{{ $L('wallOletComponent') }}
+          <select name="olet_component_id" style="width:100%;margin-top:3px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+            <option value="">{{ $L('wallSelect') }}</option>
+            @foreach($wallOlets as $olet)
+              <option value="{{ $olet->id }}" @selected(old('olet_component_id') === $olet->id)>{{ $olet->label() }}</option>
+            @endforeach
+          </select>
+        </label>
+        <label style="color:var(--muted);font-size:11px;">{{ $L('wallHeader') }}
+          <select name="header_component_id" required style="width:100%;margin-top:3px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+            <option value="">{{ $L('wallSelect') }}</option>
+            @foreach($wallHeaders as $header)
+              <option value="{{ $header->id }}" @selected(old('header_component_id') === $header->id)>
+                {{ $header->line?->line_number ?? '?' }} · {{ $header->label() }} ({{ $num($header->length_mm) }} mm)
+              </option>
+            @endforeach
+          </select>
+        </label>
+        <label style="color:var(--muted);font-size:11px;">{{ $L('wallBranchKind') }}
+          <select name="branch_kind" style="width:100%;margin-top:3px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+            <option value="STUB_IN" @selected(old('branch_kind', 'STUB_IN') === 'STUB_IN')>{{ $L('wallStubIn') }}</option>
+            <option value="STUB_ON" @selected(old('branch_kind') === 'STUB_ON')>{{ $L('wallStubOn') }}</option>
+          </select>
+        </label>
+        <label style="color:var(--muted);font-size:11px;">{{ $L('lineowner') }}
+          <select name="line_owner" required style="width:100%;margin-top:3px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+            <option value="BRANCH" @selected(old('line_owner', 'BRANCH') === 'BRANCH')>{{ $L('ownerBranch') }}</option>
+            <option value="HEADER" @selected(old('line_owner') === 'HEADER')>{{ $L('ownerHeader') }}</option>
+          </select>
+        </label>
+        <label style="color:var(--muted);font-size:11px;">{{ $L('wallStation') }}
+          <input type="number" name="station_mm" min="0" step="any" value="{{ old('station_mm') }}" required style="width:100%;box-sizing:border-box;margin-top:3px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+        </label>
+        <label style="color:var(--muted);font-size:11px;">{{ $L('wallOffset') }}
+          <input type="number" name="offset_mm" step="any" value="{{ old('offset_mm', '0') }}" style="width:100%;box-sizing:border-box;margin-top:3px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+        </label>
+        <button type="submit" style="align-self:end;padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;cursor:pointer;">
+          {{ $L('wallCreate') }}
+        </button>
+        <small style="grid-column:1/-1;color:var(--muted);font-size:10px;">{{ $L('ownerScopeHelp') }}</small>
+      </form>
+    @endif
   @endif
 
   {{-- ------------------------------------------------ components -------- --}}

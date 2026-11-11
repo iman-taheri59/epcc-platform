@@ -14,12 +14,14 @@ use App\Support\LineReleaseState;
 use App\Support\Piping\Exceptions\UnknownBranchTemplate;
 use App\Support\Piping\JointBranchKind;
 use App\Support\Piping\JointBranchRuleState;
+use App\Support\Piping\JointLineOwner;
 use App\Support\Piping\PortCompatibility;
 use App\Support\Piping\Verdict;
 use App\Support\Reference\Exceptions\UnknownSizeException;
 use App\Support\Reference\PipeReference;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -61,12 +63,10 @@ final class JointService
      * Two connections this does NOT make, both refused on purpose rather than
      * unfinished by accident:
      *
-     *   - a TIE-IN, where the two ends sit on different lines. A joint carries
-     *     one piping_line_id and takes its number from that line, and the
-     *     number is what binds the weld to a hydrotest pack and an ITR. Until
-     *     someone decides which line owns it, the joint cannot be numbered and
-     *     so cannot exist. A branch is different: the branch line owns it
-     *     (ADR-006 §14).
+     *   - a TIE-IN, where the two physical ends sit on different lines. A
+     *     branch-root reference may choose a reporting/number owner for joints
+     *     on one physical branch line, but it never authorizes a two-line
+     *     port-to-port tie-in (ADR-006 §§14–15).
      *   - a BRANCH ON A HEADER WALL. This two-port method does not make one;
      *     `joinToWall()` represents a fitting-less P2P stub and
      *     `joinOletToWall()` represents an OLET's fabricated RUN-side weld,
@@ -84,11 +84,34 @@ final class JointService
     {
         [$a, $b] = $this->orderedPair($first, $second);
 
-        $line = $this->lineFor($a, $b);
-        $project = Project::query()->findOrFail($line->project_id);
+        // lineFor() validates physical topology: ordinary two-port tie-ins
+        // between different piping lines remain refused even when a caller
+        // asks to file a branch joint under its header's line number.
+        $branchLine = $this->lineFor($a, $b);
+        $project = Project::query()->findOrFail($branchLine->project_id);
+        $lineOwner = $this->lineOwnerFrom($attributes);
+        $branchRootId = $this->branchRootIdFrom($attributes);
+        $branchRoot = $this->branchRootForLine($branchRootId, $branchLine);
+
+        if ($lineOwner === JointLineOwner::HEADER && $branchRoot === null) {
+            throw ValidationException::withMessages([
+                'branch_root_joint_id' => 'Header-line ownership requires the explicit P2P/OLET wall root for this branch line.',
+            ]);
+        }
+
+        $ownerLine = $lineOwner === JointLineOwner::HEADER
+            ? $this->headerLineForRoot($branchRoot)
+            : $branchLine;
+
+        if ($ownerLine->project_id !== $project->id) {
+            throw ValidationException::withMessages([
+                'line_owner' => 'A branch joint can only be owned by a line in the same project.',
+            ]);
+        }
 
         $this->archives->assertWritable($project);
-        $this->assertLineIsModellable($line);
+        $this->assertLineIsModellable($branchLine);
+        $this->assertLineIsModellable($ownerLine);
 
         // Evaluated BEFORE the transaction and before any write: an INVALID
         // pair must not leave a half-connected port behind.
@@ -106,11 +129,17 @@ final class JointService
             ]);
         }
 
-        return DB::transaction(function () use ($a, $b, $line, $actor, $attributes, $verdict): Joint {
-            // Lock the line: the joint counter is scoped to it, and two
-            // concurrent attachments on the same line would otherwise both
-            // read the same max().
-            PipingLine::query()->whereKey($line->id)->lockForUpdate()->first();
+        return DB::transaction(function () use (
+            $a, $b, $branchLine, $ownerLine, $branchRootId, $actor, $attributes, $verdict,
+        ): Joint {
+            $this->lockLines($branchLine, $ownerLine);
+
+            if ($branchRootId !== null) {
+                // Serialize against detaching/deleting the root while this
+                // joint is being assigned to its header's register.
+                Joint::query()->whereKey($branchRootId)->lockForUpdate()->firstOrFail();
+                $this->branchRootForLine($branchRootId, $branchLine);
+            }
 
             // Re-read inside the lock. The ports may have been connected by
             // the other tab between the check above and this point, and the
@@ -136,18 +165,19 @@ final class JointService
             $numbered = $this->compatibility->isNumbered($freshA, $freshB);
 
             $joint = Joint::create([
-                'project_id' => $line->project_id,
+                'project_id' => $branchLine->project_id,
                 'company_id' => $actor->company_id,
-                'piping_line_id' => $line->id,
+                'piping_line_id' => $ownerLine->id,
                 'port_a_id' => $freshA->id,
                 'port_b_id' => $freshB->id,
-                'joint_seq' => $numbered ? $this->nextSeq($line) : null,
+                'branch_root_joint_id' => $branchRootId,
+                'joint_seq' => $numbered ? $this->nextSeq($ownerLine) : null,
                 'numbering_policy' => $numbered
                     ? Joint::NUMBERING_REQUIRED
                     : Joint::NUMBERING_NOT_APPLICABLE,
                 'joint_type' => $this->compatibility->jointType($freshA, $freshB),
                 'branch_kind' => $this->branchKindFor($freshA, $freshB),
-                ...$this->branchVerdictFor($line, $freshA, $freshB),
+                ...$this->branchVerdictFor($branchLine, $freshA, $freshB),
                 'state' => Joint::STATE_MODELLED,
 
                 // Frozen from the ports at creation. A joint accepted at
@@ -171,7 +201,7 @@ final class JointService
 
             Port::query()->whereIn('id', [$freshA->id, $freshB->id])->update(['is_connected' => true]);
 
-            return $joint->fresh(['portA', 'portB']);
+            return $joint->fresh(['portA', 'portB', 'branchRootJoint']);
         });
     }
 
@@ -191,9 +221,9 @@ final class JointService
      * coped to match it, and the weld follows a saddle rather than a flat
      * girth.
      *
-     * The joint belongs to the BRANCH line, not the header's. The branch pipe's
-     * crew makes this weld, their isometric carries it, and their line numbers
-     * it. The header is a thing being welded to.
+     * The physical branch side and issued-class verdict always come from the
+     * branch line. The joint's register/number owner is explicitly selectable:
+     * either that branch line or the header line. The default is BRANCH.
      *
      * @param  string  $kind  JointBranchKind::STUB_IN or ::STUB_ON
      * @param  array<string, mixed>  $attributes
@@ -209,10 +239,23 @@ final class JointService
         User $actor,
         array $attributes = [],
     ): Joint {
-        $line = $this->lineFor($branchPort, null);
+        $branchLine = $this->lineFor($branchPort, null);
+        $headerLine = PipingLine::query()->findOrFail($header->piping_line_id);
+        $project = Project::query()->findOrFail($branchLine->project_id);
 
-        $project = Project::query()->findOrFail($line->project_id);
+        if ($header->template_code !== 'PIPE' || $header->project_id !== $project->id
+            || $headerLine->project_id !== $project->id) {
+            throw ValidationException::withMessages([
+                'header_component_id' => 'A P2P wall joint must reference a pipe header in the same project.',
+            ]);
+        }
+
+        $lineOwner = $this->lineOwnerFrom($attributes);
+        $ownerLine = $lineOwner === JointLineOwner::HEADER ? $headerLine : $branchLine;
+
         $this->archives->assertWritable($project);
+        $this->assertLineIsModellable($branchLine);
+        $this->assertLineIsModellable($headerLine);
 
         if (! in_array($kind, [JointBranchKind::STUB_IN, JointBranchKind::STUB_ON], true)) {
             throw ValidationException::withMessages([
@@ -220,20 +263,38 @@ final class JointService
             ]);
         }
 
-        if ($branchPort->component?->template_code === 'OLET') {
+        $branchComponent = $branchPort->component;
+
+        if ($branchComponent?->template_code === 'OLET') {
             throw ValidationException::withMessages([
                 'branch_kind' => 'An OLET must use joinOletToWall() so its purchased fitting and RUN-side weld remain explicit.',
             ]);
         }
 
+        if ($branchComponent?->template_code !== 'PIPE') {
+            throw ValidationException::withMessages([
+                'port_id' => 'A P2P wall joint must use an end port on a branch pipe.',
+            ]);
+        }
+
         $this->assertWallGeometry($header, $stationMm, $offsetMm);
 
-        $verdict = $this->wallVerdictFor($line, $header, $branchPort);
+        $verdict = $this->wallVerdictFor($branchLine, $header, $branchPort);
 
         return DB::transaction(function () use (
-            $branchPort, $header, $kind, $stationMm, $offsetMm, $line, $actor, $attributes, $verdict,
+            $branchPort, $header, $kind, $stationMm, $offsetMm, $branchLine, $headerLine, $ownerLine, $actor, $attributes, $verdict,
         ): Joint {
-            PipingLine::query()->whereKey($line->id)->lockForUpdate()->first();
+            $this->lockLines($branchLine, $headerLine);
+            $freshHeader = Component::query()->whereKey($header->id)->lockForUpdate()->firstOrFail();
+
+            if ($freshHeader->template_code !== 'PIPE' || $freshHeader->project_id !== $branchLine->project_id
+                || $freshHeader->piping_line_id !== $headerLine->id) {
+                throw ValidationException::withMessages([
+                    'header_component_id' => 'The P2P header changed while the joint was being created.',
+                ]);
+            }
+
+            $this->assertWallGeometry($freshHeader, $stationMm, $offsetMm);
 
             $fresh = Port::query()->whereKey($branchPort->id)->first();
 
@@ -249,25 +310,25 @@ final class JointService
                 ]);
             }
 
-            // Numbered when the branch end is weldable. PL takes its numbering
-            // from whatever it is welded to - welded to a header wall that is a
-            // stub-in weld, and a stub-in weld is a weld.
+            // Numbered when the branch end is weldable; its sequence is
+            // allocated on the explicitly selected owner line.
             $numbered = $fresh->end_type !== null
                 && (bool) ($this->reference->endType((string) $fresh->end_type)['weldable'] ?? false);
 
             $joint = Joint::create([
-                'project_id' => $line->project_id,
+                'project_id' => $branchLine->project_id,
                 'company_id' => $actor->company_id,
-                'piping_line_id' => $line->id,
+                'piping_line_id' => $ownerLine->id,
                 'port_a_id' => $fresh->id,
 
                 // The other side is a point on a wall, not a port.
                 'port_b_id' => null,
-                'branch_header_component_id' => $header->id,
+                'branch_header_component_id' => $freshHeader->id,
+                'branch_root_joint_id' => null,
                 'branch_station_mm' => $stationMm,
                 'branch_offset_mm' => $offsetMm,
 
-                'joint_seq' => $numbered ? $this->nextSeq($line) : null,
+                'joint_seq' => $numbered ? $this->nextSeq($ownerLine) : null,
                 'numbering_policy' => $numbered
                     ? Joint::NUMBERING_REQUIRED
                     : Joint::NUMBERING_NOT_APPLICABLE,
@@ -309,9 +370,8 @@ final class JointService
      * Unlike `joinToWall()`, this is a fitting connection, not a fitting-less
      * P2P stub. The OLET remains a purchased component; its RUN port is the one
      * real port in the joint and the header remains a frozen component
-     * reference, never a synthetic wall port. The OLET is placed on the branch
-     * line, which owns and numbers both this wall weld and the ordinary
-     * OLET-BRANCH-to-pipe weld.
+     * reference, never a synthetic wall port. The OLET remains placed on the
+     * branch line; each weld's joint-register owner can be selected separately.
      *
      * The class verdict and `branch_kind=OLET` belong to this header-side branch
      * weld. The separate OLET BRANCH-to-pipe butt weld is an ordinary weld, so
@@ -342,6 +402,7 @@ final class JointService
         $branchLine = PipingLine::query()->findOrFail($olet->piping_line_id);
         $headerLine = PipingLine::query()->findOrFail($header->piping_line_id);
         $project = Project::query()->findOrFail($branchLine->project_id);
+        $lineOwner = $this->lineOwnerFrom($attributes);
 
         $this->archives->assertWritable($project);
         $this->assertLineIsModellable($branchLine);
@@ -354,10 +415,10 @@ final class JointService
         }
 
         return DB::transaction(function () use (
-            $olet, $header, $branchLine, $headerLine, $project, $stationMm, $offsetMm, $actor, $attributes,
+            $olet, $header, $branchLine, $headerLine, $project, $lineOwner, $stationMm, $offsetMm, $actor, $attributes,
         ): Joint {
-            // The OLET's branch line owns the number. Lock all affected line
-            // rows in stable order, then allocate on the branch line below.
+            // The selected owner line supplies the sequence. Lock both the
+            // physical branch and header lines in stable order first.
             $lineIds = array_values(array_unique([$branchLine->id, $headerLine->id]));
             sort($lineIds, SORT_STRING);
 
@@ -373,9 +434,12 @@ final class JointService
             $this->archives->assertWritable($project);
             $this->assertLineIsModellable($line);
             $this->assertLineIsModellable($headerLine);
+            $ownerLine = $lineOwner === JointLineOwner::HEADER ? $headerLine : $line;
 
             if ($freshOlet->template_code !== 'OLET' || $freshHeader->template_code !== 'PIPE'
-                || $freshOlet->project_id !== $project->id || $freshHeader->project_id !== $project->id) {
+                || $freshOlet->project_id !== $project->id || $freshHeader->project_id !== $project->id
+                || $freshOlet->piping_line_id !== $line->id || $freshHeader->piping_line_id !== $headerLine->id
+                || $headerLine->project_id !== $project->id) {
                 throw ValidationException::withMessages([
                     'component_id' => 'The OLET and its header must be valid components in the same project.',
                 ]);
@@ -471,14 +535,15 @@ final class JointService
             $joint = Joint::create([
                 'project_id' => $project->id,
                 'company_id' => $actor->company_id,
-                'piping_line_id' => $line->id,
+                'piping_line_id' => $ownerLine->id,
                 'port_a_id' => $runPort->id,
                 'port_b_id' => null,
                 'branch_header_component_id' => $freshHeader->id,
+                'branch_root_joint_id' => null,
                 'branch_station_mm' => $stationMm,
                 'branch_offset_mm' => $offsetMm,
 
-                'joint_seq' => $numbered ? $this->nextSeq($line) : null,
+                'joint_seq' => $numbered ? $this->nextSeq($ownerLine) : null,
                 'numbering_policy' => $numbered
                     ? Joint::NUMBERING_REQUIRED
                     : Joint::NUMBERING_NOT_APPLICABLE,
@@ -597,11 +662,25 @@ final class JointService
      */
     public function separate(Joint $joint, User $actor): void
     {
+        $joint = $joint->fresh(['portA.component']);
         $line = PipingLine::query()->findOrFail($joint->piping_line_id);
         $project = Project::query()->findOrFail($line->project_id);
+        $branchLineId = $joint->isOnWall() ? $joint->portA?->component?->piping_line_id : null;
+
+        if ($joint->isOnWall() && $branchLineId === null) {
+            throw ValidationException::withMessages([
+                'port_id' => __('epcc.joint.port_missing'),
+            ]);
+        }
+
+        $branchLine = $branchLineId === null ? null : PipingLine::query()->findOrFail($branchLineId);
 
         $this->archives->assertWritable($project);
         $this->assertLineIsModellable($line);
+
+        if ($branchLine !== null) {
+            $this->assertLineIsModellable($branchLine);
+        }
 
         if ($joint->isFitted()) {
             // Fit-up is a witnessed event. Deleting the joint would delete the
@@ -614,11 +693,41 @@ final class JointService
             ]);
         }
 
-        DB::transaction(function () use ($joint): void {
-            // A branch joint has no second port; array_filter drops the null.
-            $portIds = array_values(array_filter([$joint->port_a_id, $joint->port_b_id]));
+        DB::transaction(function () use ($joint, $line, $branchLine): void {
+            $this->lockLines(...array_values(array_filter([$line, $branchLine])));
+            $freshJoint = Joint::query()->whereKey($joint->id)->lockForUpdate()->firstOrFail();
 
-            $joint->delete();
+            if ($freshJoint->isOnWall()) {
+                $dependents = Joint::query()
+                    ->where('branch_root_joint_id', $freshJoint->id)
+                    ->lockForUpdate()
+                    ->get();
+
+                foreach ($dependents as $dependent) {
+                    if ($dependent->isFitted()) {
+                        throw ValidationException::withMessages([
+                            'branch_root_joint_id' => 'A fitted branch joint cannot be moved to another line register; use the revision workflow first.',
+                        ]);
+                    }
+
+                    // Removing the root ends the header association. Keep the
+                    // physical branch welds, but move any header-owned numbers
+                    // back to their branch line; old header numbers remain gaps.
+                    $reassignLine = $dependent->piping_line_id !== $branchLine->id;
+                    $dependent->update([
+                        'piping_line_id' => $branchLine->id,
+                        'joint_seq' => $reassignLine && $dependent->joint_seq !== null
+                            ? $this->nextSeq($branchLine)
+                            : $dependent->joint_seq,
+                        'branch_root_joint_id' => null,
+                    ]);
+                }
+            }
+
+            // A branch joint has no second port; array_filter drops the null.
+            $portIds = array_values(array_filter([$freshJoint->port_a_id, $freshJoint->port_b_id]));
+
+            $freshJoint->delete();
 
             // Reopen only ports that still exist and are not held by ANOTHER
             // joint. The second condition cannot arise today - a unique index
@@ -909,6 +1018,108 @@ final class JointService
     }
 
     // ------------------------------------------------------------ helpers --
+
+    /** Resolve an explicit owner selection; legacy callers keep branch ownership. */
+    private function lineOwnerFrom(array $attributes): JointLineOwner
+    {
+        $value = strtoupper(trim((string) ($attributes['line_owner'] ?? JointLineOwner::BRANCH->value)));
+        $owner = JointLineOwner::tryFrom($value);
+
+        if ($owner === null) {
+            throw ValidationException::withMessages([
+                'line_owner' => 'The joint line owner must be BRANCH or HEADER.',
+            ]);
+        }
+
+        return $owner;
+    }
+
+    private function branchRootIdFrom(array $attributes): ?string
+    {
+        $value = trim((string) ($attributes['branch_root_joint_id'] ?? ''));
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (! Str::isUuid($value)) {
+            throw ValidationException::withMessages([
+                'branch_root_joint_id' => 'The branch root must be a valid joint identifier.',
+            ]);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Find a P2P/OLET wall root that proves which header may own a joint from
+     * this physical branch line.
+     */
+    private function branchRootForLine(?string $rootId, PipingLine $branchLine): ?Joint
+    {
+        if ($rootId === null) {
+            return null;
+        }
+
+        $root = Joint::query()
+            ->with(['portA.component', 'branchHeaderComponent'])
+            ->whereKey($rootId)
+            ->first();
+        $branchComponent = $root?->portA?->component;
+        $header = $root?->branchHeaderComponent;
+
+        if ($root === null || $root->port_b_id !== null
+            || ! in_array($root->joint_type, [
+                Joint::TYPE_BRANCH_STUB_IN,
+                Joint::TYPE_BRANCH_STUB_ON,
+                Joint::TYPE_OLET_HEADER_WELD,
+            ], true)
+            || $branchComponent === null || $branchComponent->piping_line_id !== $branchLine->id
+            || $root->project_id !== $branchLine->project_id
+            || $header === null || $header->template_code !== 'PIPE'
+            || $header->project_id !== $branchLine->project_id) {
+            throw ValidationException::withMessages([
+                'branch_root_joint_id' => 'The selected root must be a P2P/OLET wall joint for this branch line.',
+            ]);
+        }
+
+        $headerLine = PipingLine::query()->find($header->piping_line_id);
+
+        if ($headerLine === null || $headerLine->project_id !== $branchLine->project_id) {
+            throw ValidationException::withMessages([
+                'branch_root_joint_id' => 'The selected branch root does not reference a header line in this project.',
+            ]);
+        }
+
+        return $root;
+    }
+
+    private function headerLineForRoot(Joint $root): PipingLine
+    {
+        $header = $root->branchHeaderComponent;
+
+        if ($header === null) {
+            throw ValidationException::withMessages([
+                'branch_root_joint_id' => 'The branch root has no header component.',
+            ]);
+        }
+
+        return PipingLine::query()->findOrFail($header->piping_line_id);
+    }
+
+    /** Lock all sequence-owner/physical lines once, in a stable order. */
+    private function lockLines(PipingLine ...$lines): void
+    {
+        $ids = array_values(array_unique(array_map(
+            static fn (PipingLine $line): string => $line->id,
+            $lines,
+        )));
+        sort($ids, SORT_STRING);
+
+        foreach ($ids as $id) {
+            PipingLine::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+        }
+    }
 
     /**
      * Whether this two-port joint is a branch connection, and of what kind.
