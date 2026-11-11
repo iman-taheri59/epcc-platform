@@ -272,6 +272,51 @@ final class BranchWallJointTest extends TestCase
         });
     }
 
+    public function test_the_database_rejects_a_direct_header_owner_on_an_ordinary_two_port_joint(): void
+    {
+        ['header' => $header, 'branch' => $branch] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+        ]]);
+        $ports = $this->asOwner(function () use ($branch): array {
+            $components = app(ComponentService::class);
+            $first = $components->place($branch, $this->owner(), 'PIPE')->ports->first();
+            $second = $components->place($branch, $this->owner(), 'PIPE')->ports->first();
+
+            return [$first->id, $second->id];
+        });
+        [$a, $b] = $ports;
+        if (strcmp($a, $b) > 0) {
+            [$a, $b] = [$b, $a];
+        }
+        $project = $this->project();
+        $owner = $this->owner();
+
+        $this->expectException(QueryException::class);
+        $this->expectExceptionMessageMatches('/JT_BRANCH_OWNER_INVALID/');
+
+        $this->asOwner(function () use ($project, $owner, $header, $a, $b): void {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+            DB::table('joints')->insert([
+                'id' => (string) Str::uuid(),
+                'project_id' => $project->id,
+                'company_id' => $owner->company_id,
+                'piping_line_id' => $header->id,
+                'port_a_id' => $a,
+                'port_b_id' => $b,
+                'branch_header_line_id' => $header->id,
+                'numbering_policy' => Joint::NUMBERING_NOT_APPLICABLE,
+                'joint_type' => 'BUTT_WELD',
+                'state' => Joint::STATE_MODELLED,
+                'compatibility_state' => 'VALID',
+                'source' => 'MANUAL',
+                'created_by' => $owner->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+    }
+
     public function test_separating_a_wall_root_rehomes_header_owned_joints_to_the_branch_line(): void
     {
         ['header' => $header, 'branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[

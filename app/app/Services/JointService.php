@@ -64,9 +64,10 @@ final class JointService
      * unfinished by accident:
      *
      *   - a TIE-IN, where the two physical ends sit on different lines. A
-     *     branch-root reference may choose a reporting/number owner for joints
-     *     on one physical branch line, but it never authorizes a two-line
-     *     port-to-port tie-in (ADR-006 §§14–15).
+     *     P2P/OLET wall-root link, or an explicit header-line selection for a
+     *     TEE/CROSS BRANCH-port weld, may choose a reporting/number owner for a
+     *     joint on one physical line. Neither authorizes a two-line port-to-port
+     *     tie-in (ADR-006 §§14–15).
      *   - a BRANCH ON A HEADER WALL. This two-port method does not make one;
      *     `joinToWall()` represents a fitting-less P2P stub and
      *     `joinOletToWall()` represents an OLET's fabricated RUN-side weld,
@@ -92,16 +93,54 @@ final class JointService
         $lineOwner = $this->lineOwnerFrom($attributes);
         $branchRootId = $this->branchRootIdFrom($attributes);
         $branchRoot = $this->branchRootForLine($branchRootId, $branchLine);
+        $requestedHeaderLineId = $this->headerLineIdFrom($attributes);
+        $branchKind = $this->branchKindFor($a, $b);
 
-        if ($lineOwner === JointLineOwner::HEADER && $branchRoot === null) {
+        if ($requestedHeaderLineId !== null && $lineOwner !== JointLineOwner::HEADER) {
             throw ValidationException::withMessages([
-                'branch_root_joint_id' => 'Header-line ownership requires the explicit P2P/OLET wall root for this branch line.',
+                'header_line_id' => 'Choose HEADER ownership before selecting a header line.',
             ]);
         }
 
-        $ownerLine = $lineOwner === JointLineOwner::HEADER
-            ? $this->headerLineForRoot($branchRoot)
-            : $branchLine;
+        if ($branchRoot !== null && $requestedHeaderLineId !== null) {
+            $rootHeaderLine = $this->headerLineForRoot($branchRoot);
+
+            if ($rootHeaderLine->id !== $requestedHeaderLineId) {
+                throw ValidationException::withMessages([
+                    'header_line_id' => 'The selected header line must match the selected P2P/OLET wall root.',
+                ]);
+            }
+        }
+
+        if ($lineOwner === JointLineOwner::HEADER) {
+            if ($branchRoot !== null) {
+                $ownerLine = $this->headerLineForRoot($branchRoot);
+            } elseif (in_array($branchKind, [JointBranchKind::TEE, JointBranchKind::CROSS], true)) {
+                if ($requestedHeaderLineId === null) {
+                    throw ValidationException::withMessages([
+                        'header_line_id' => 'Select a header line for this TEE/CROSS BRANCH-port weld.',
+                    ]);
+                }
+
+                $ownerLine = $this->headerLineById($requestedHeaderLineId, $branchLine);
+
+                if ($ownerLine->id === $branchLine->id) {
+                    throw ValidationException::withMessages([
+                        'header_line_id' => 'Choose a different line; the current physical line is already the branch-line owner.',
+                    ]);
+                }
+            } else {
+                throw ValidationException::withMessages([
+                    'branch_root_joint_id' => 'Header ownership requires a P2P/OLET wall root, or a manually selected header line for a TEE/CROSS BRANCH-port weld.',
+                ]);
+            }
+        } else {
+            $ownerLine = $branchLine;
+        }
+
+        $directHeaderLineId = $lineOwner === JointLineOwner::HEADER && $branchRoot === null
+            ? $ownerLine->id
+            : null;
 
         if ($ownerLine->project_id !== $project->id) {
             throw ValidationException::withMessages([
@@ -130,7 +169,7 @@ final class JointService
         }
 
         return DB::transaction(function () use (
-            $a, $b, $branchLine, $ownerLine, $branchRootId, $actor, $attributes, $verdict,
+            $a, $b, $branchLine, $ownerLine, $branchRootId, $directHeaderLineId, $actor, $attributes, $verdict,
         ): Joint {
             $this->lockLines($branchLine, $ownerLine);
 
@@ -171,6 +210,7 @@ final class JointService
                 'port_a_id' => $freshA->id,
                 'port_b_id' => $freshB->id,
                 'branch_root_joint_id' => $branchRootId,
+                'branch_header_line_id' => $directHeaderLineId,
                 'joint_seq' => $numbered ? $this->nextSeq($ownerLine) : null,
                 'numbering_policy' => $numbered
                     ? Joint::NUMBERING_REQUIRED
@@ -662,25 +702,38 @@ final class JointService
      */
     public function separate(Joint $joint, User $actor): void
     {
-        $joint = $joint->fresh(['portA.component']);
+        $joint = $joint->fresh(['portA.component', 'portB.component']);
         $line = PipingLine::query()->findOrFail($joint->piping_line_id);
         $project = Project::query()->findOrFail($line->project_id);
-        $branchLineId = $joint->isOnWall() ? $joint->portA?->component?->piping_line_id : null;
+        $physicalLineIdA = $joint->portA?->component?->piping_line_id;
+        $physicalLineIdB = $joint->portB?->component?->piping_line_id;
 
-        if ($joint->isOnWall() && $branchLineId === null) {
+        if ($physicalLineIdA !== null && $physicalLineIdB !== null && $physicalLineIdA !== $physicalLineIdB) {
+            throw ValidationException::withMessages([
+                'port_id' => __('epcc.joint.cross_line_not_supported'),
+            ]);
+        }
+
+        $physicalLineId = $physicalLineIdA ?? $physicalLineIdB;
+
+        if ($physicalLineId === null) {
             throw ValidationException::withMessages([
                 'port_id' => __('epcc.joint.port_missing'),
             ]);
         }
 
-        $branchLine = $branchLineId === null ? null : PipingLine::query()->findOrFail($branchLineId);
+        $physicalLine = PipingLine::query()->findOrFail($physicalLineId);
+        $branchLine = $joint->isOnWall() ? $physicalLine : null;
+
+        if ($physicalLine->project_id !== $project->id) {
+            throw ValidationException::withMessages([
+                'port_id' => __('epcc.joint.port_missing'),
+            ]);
+        }
 
         $this->archives->assertWritable($project);
         $this->assertLineIsModellable($line);
-
-        if ($branchLine !== null) {
-            $this->assertLineIsModellable($branchLine);
-        }
+        $this->assertLineIsModellable($physicalLine);
 
         if ($joint->isFitted()) {
             // Fit-up is a witnessed event. Deleting the joint would delete the
@@ -693,8 +746,8 @@ final class JointService
             ]);
         }
 
-        DB::transaction(function () use ($joint, $line, $branchLine): void {
-            $this->lockLines(...array_values(array_filter([$line, $branchLine])));
+        DB::transaction(function () use ($joint, $line, $physicalLine, $branchLine): void {
+            $this->lockLines($line, $physicalLine);
             $freshJoint = Joint::query()->whereKey($joint->id)->lockForUpdate()->firstOrFail();
 
             if ($freshJoint->isOnWall()) {
@@ -1049,6 +1102,45 @@ final class JointService
         }
 
         return $value;
+    }
+
+    /** A directly selected project-line owner for a TEE/CROSS branch-port weld. */
+    private function headerLineIdFrom(array $attributes): ?string
+    {
+        $value = $attributes['header_line_id'] ?? null;
+
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (! is_string($value) || ! Str::isUuid($value)) {
+            throw ValidationException::withMessages([
+                'header_line_id' => 'The selected header line must be a valid line identifier.',
+            ]);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Resolve a directly selected header line without using a wall-root link.
+     * Cross-project or missing line IDs are deliberately indistinguishable to
+     * the caller and never disclose another project's line.
+     */
+    private function headerLineById(string $lineId, PipingLine $branchLine): PipingLine
+    {
+        $line = PipingLine::query()
+            ->where('project_id', $branchLine->project_id)
+            ->whereKey($lineId)
+            ->first();
+
+        if ($line === null) {
+            throw ValidationException::withMessages([
+                'header_line_id' => 'The selected header line must belong to the same project.',
+            ]);
+        }
+
+        return $line;
     }
 
     /**

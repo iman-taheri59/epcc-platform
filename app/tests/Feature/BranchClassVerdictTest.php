@@ -124,9 +124,9 @@ final class BranchClassVerdictTest extends TestCase
      *
      * @return array{joint: Joint, line: PipingLine}
      */
-    private function teeBranchJoint(PipingLine $line, string $branchSize = '2'): array
+    private function teeBranchJoint(PipingLine $line, string $branchSize = '2', array $jointAttributes = []): array
     {
-        return $this->asOwner(function () use ($line, $branchSize): array {
+        return $this->asOwner(function () use ($line, $branchSize, $jointAttributes): array {
             $tee = app(ComponentService::class)->place($line, $this->owner(), 'TEE', [
                 'port_sizes' => [3 => $branchSize],
             ]);
@@ -135,6 +135,7 @@ final class BranchClassVerdictTest extends TestCase
                 $tee->ports->firstWhere('role', 'BRANCH'),
                 $this->owner(),
                 'PIPE',
+                $jointAttributes,
             );
 
             return ['joint' => $attached['joint'], 'line' => $line];
@@ -220,6 +221,78 @@ final class BranchClassVerdictTest extends TestCase
         $this->assertSame(BranchConnectionType::TEE, $joint->branch_class_type, 'what the class declared');
         $this->assertSame(JointBranchRuleState::RULE, $joint->branch_rule_state);
         $this->assertSame('AGREES', $joint->branchDeviation());
+    }
+
+    public function test_a_tee_branch_port_weld_can_manually_use_a_selected_header_register(): void
+    {
+        $branchLine = $this->lineWithBranchCells('6', [[
+            'header' => [100, 300], 'branch' => [15, 100], 'type' => BranchConnectionType::TEE,
+        ]]);
+        $headerLine = $this->lineWithBranchCells('6', [[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_ON,
+        ]]);
+
+        ['joint' => $created] = $this->teeBranchJoint($branchLine, '2', [
+            'line_owner' => 'HEADER',
+            'header_line_id' => $headerLine->id,
+        ]);
+        $joint = $this->asOwner(fn () => $created->fresh(['portA.component.line', 'portB.component.line']));
+        $headerMetrics = $this->asOwner(fn () => app(JointService::class)->lineMetrics($headerLine->fresh()));
+        $branchMetrics = $this->asOwner(fn () => app(JointService::class)->lineMetrics($branchLine->fresh()));
+
+        $this->assertSame($headerLine->id, $joint->piping_line_id, 'the selected header line owns the register number');
+        $this->assertSame($headerLine->id, $joint->branch_header_line_id, 'the manual header choice is explicit on the joint');
+        $this->assertNull($joint->branch_root_joint_id, 'a TEE branch weld needs no synthetic wall root');
+        $this->assertSame($branchLine->id, $joint->portA->component->piping_line_id);
+        $this->assertSame($branchLine->id, $joint->portB->component->piping_line_id);
+        $this->assertSame(JointBranchKind::TEE, $joint->branch_kind);
+        $this->assertSame(BranchConnectionType::TEE, $joint->branch_class_type, 'the verdict comes from the physical branch line, not the selected header register');
+        $this->assertSame(JointBranchRuleState::RULE, $joint->branch_rule_state);
+        $this->assertSame('AGREES', $joint->branchDeviation());
+        $this->assertSame(1, $headerMetrics['branch_welds']);
+        $this->assertSame(0, $branchMetrics['branch_welds']);
+
+        $this->asOwner(fn () => app(JointService::class)->separate($joint, $this->owner()));
+        $this->assertNull($this->asOwner(fn () => Joint::query()->find($joint->id)), 'separation must work using both the register owner and physical branch line');
+    }
+
+    public function test_cross_branch_ports_can_choose_register_ownership_independently(): void
+    {
+        $branchLine = $this->lineWithBranchCells('6', [[
+            'header' => [100, 300], 'branch' => [15, 100], 'type' => BranchConnectionType::TEE,
+        ]]);
+        $headerLine = $this->lineWithBranchCells('6', [[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_ON,
+        ]]);
+
+        [$headerOwned, $branchOwned] = $this->asOwner(function () use ($branchLine, $headerLine): array {
+            $components = app(ComponentService::class);
+            $cross = $components->place($branchLine, $this->owner(), 'CROSS', [
+                'port_sizes' => [3 => '2', 4 => '2'],
+            ]);
+            $ports = $cross->ports->where('role', 'BRANCH')->values();
+            $headerOwned = $components->attach($ports[0], $this->owner(), 'PIPE', [
+                'line_owner' => 'HEADER',
+                'header_line_id' => $headerLine->id,
+            ])['joint'];
+            $branchOwned = $components->attach($ports[1], $this->owner(), 'PIPE')['joint'];
+
+            return [$headerOwned, $branchOwned];
+        });
+        $headerMetrics = $this->asOwner(fn () => app(JointService::class)->lineMetrics($headerLine->fresh()));
+        $branchMetrics = $this->asOwner(fn () => app(JointService::class)->lineMetrics($branchLine->fresh()));
+
+        $this->assertSame(JointBranchKind::CROSS, $headerOwned->branch_kind);
+        $this->assertSame(JointBranchKind::CROSS, $branchOwned->branch_kind);
+        $this->assertSame($headerLine->id, $headerOwned->piping_line_id);
+        $this->assertSame($headerLine->id, $headerOwned->branch_header_line_id);
+        $this->assertSame($branchLine->id, $branchOwned->piping_line_id);
+        $this->assertNull($branchOwned->branch_header_line_id);
+        $this->assertSame(1, $headerMetrics['branch_welds']);
+        $this->assertSame(1, $branchMetrics['branch_welds']);
+        $this->assertSame(2, $headerMetrics['branch_welds'] + $branchMetrics['branch_welds'], 'the two real CROSS branch-port welds are each counted once');
     }
 
     public function test_the_pad_thickness_travels_to_the_weld(): void

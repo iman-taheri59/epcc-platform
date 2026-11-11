@@ -58,7 +58,7 @@ final class ComponentController extends Controller
         $user = $request->user();
         $project = $this->resolveProject($user, $projectCode);
 
-        [$line, $rows, $open, $joints, $metrics, $branchRoots, $wallBranchPorts, $wallOlets, $wallHeaders] = $this->tenant->runAs(
+        [$line, $rows, $open, $joints, $metrics, $branchRoots, $wallBranchPorts, $wallOlets, $wallHeaders, $ownerLines] = $this->tenant->runAs(
             $user->company_id,
             function () use ($lineId): array {
                 $line = PipingLine::with(['subsystem', 'pipingClass', 'pmsSnapshot.documentRevision.document'])->findOrFail($lineId);
@@ -73,16 +73,18 @@ final class ComponentController extends Controller
                 // describe P2P/OLET wall welds instead of rendering their
                 // other side as an unknown `?`.
                 $joints = Joint::with([
-                    'portA.component', 'portB.component', 'branchHeaderComponent', 'branchRootJoint',
+                    'portA.component.line', 'portB.component.line',
+                    'branchHeaderComponent.line', 'branchHeaderLine', 'branchRootJoint',
                 ])
                     ->where('piping_line_id', $line->id)
                     ->orderByRaw('joint_seq NULLS LAST')
                     ->get();
 
-                // A branch-line operator may file an individual two-port joint
-                // under one of its explicit P2P/OLET wall roots' header line.
-                // Discover roots by the physical line of port A, not by the
-                // root's selected numbering owner.
+                // A branch-line operator may file ordinary two-port joints
+                // under an explicit P2P/OLET wall root. Discover those roots
+                // by the physical line of port A, not by the root's selected
+                // numbering owner. TEE/CROSS branch ports can choose a header
+                // line directly from ownerLines below.
                 $branchRoots = Joint::query()
                     ->with(['portA.component', 'branchHeaderComponent.line'])
                     ->whereNull('port_b_id')
@@ -113,6 +115,13 @@ final class ComponentController extends Controller
                     ->orderBy('piping_line_id')
                     ->orderBy('sequence')
                     ->get();
+                $ownerLines = PipingLine::query()
+                    ->with('subsystem')
+                    ->where('project_id', $line->project_id)
+                    ->where('id', '<>', $line->id)
+                    ->where('release_state', '<>', LineReleaseState::RELEASED)
+                    ->orderBy('line_number')
+                    ->get();
 
                 return [
                     $line,
@@ -124,6 +133,7 @@ final class ComponentController extends Controller
                     $wallBranchPorts,
                     $wallOlets,
                     $wallHeaders,
+                    $ownerLines,
                 ];
             },
             $project->id,
@@ -220,6 +230,7 @@ final class ComponentController extends Controller
             'wallBranchPorts' => $wallBranchPorts,
             'wallOlets' => $wallOlets,
             'wallHeaders' => $wallHeaders,
+            'ownerLines' => $ownerLines,
             'metrics' => $metrics,
             'diaInch' => fn (Joint $j): ?float => $this->joints->diaInch($j),
             'templates' => $this->components->placeableTemplates(),
@@ -349,6 +360,7 @@ final class ComponentController extends Controller
             'schedule' => ['nullable', 'string', 'max:16'],
             'line_owner' => ['nullable', 'in:BRANCH,HEADER'],
             'branch_root_joint_id' => ['nullable', 'uuid'],
+            'header_line_id' => ['nullable', 'uuid'],
         ]);
 
         try {

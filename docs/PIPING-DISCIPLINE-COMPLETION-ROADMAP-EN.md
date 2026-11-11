@@ -253,17 +253,19 @@ observable; targeted joint tests pass.
 **Current result:** the model/service acceptance above is implemented. The OLET
 root weld carries the issued branch-class verdict and the one branch
 classification. Each joint can be registered/numbered on `BRANCH` (default) or
-`HEADER`; a later header-owned joint must explicitly link to its P2P/OLET wall
-root. The line-model page exposes wall-root creation and per-joint ownership.
-No boundary is inferred at the first flange or valve. Physical topology and the
-root verdict remain tied to the branch line; line-register metrics follow the
-selected joint owner and the branch weld is counted once. The comprehensive
-weld log/report, hard deviation gate, WPS/PQR/qualification, NDT/repair, repair
-KPI, and material/heat traceability are not.
+`HEADER`; an ordinary later header-owned joint must link to its P2P/OLET wall
+root, while a TEE/CROSS `BRANCH`-port weld may directly select a same-project
+header line. The line-model page exposes those manual choices independently for
+each branch port. No boundary is inferred at the first flange or valve.
+Physical topology and the issued-class verdict remain tied to the branch line;
+line-register metrics follow the selected joint owner and each physical branch
+weld is counted once. The comprehensive weld log/report, hard deviation gate,
+WPS/PQR/qualification, NDT/repair, repair KPI, and material/heat traceability
+are not.
 
 **Deliberately not built in the branch-joint slice:** comprehensive weld
 log/report, WPS/PQR, welder qualification, NDT/repair workflow, contract rate
-schedule, PCF-to-model writer, and multi-leg CROSS application.
+schedule, PCF-to-model writer, and PCF multi-leg CROSS mapping.
 
 **Acceptance criteria for closing full P5:** each required joint has an
 attributed weld record; only qualified welders/WPS/PQR are accepted; NDT and

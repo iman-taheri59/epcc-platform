@@ -422,6 +422,65 @@ final class PipingLineHttpTest extends TestCase
             ->assertSee($headerLine->line_number);
     }
 
+    public function test_a_tee_branch_port_can_be_registered_on_a_selected_header_line_over_http(): void
+    {
+        $headerLine = $this->aLine();
+        $owner = $this->owner();
+        $project = $this->project();
+        $tenant = app(TenantContext::class);
+
+        $branchLine = $tenant->runAs($owner->company_id, function () use ($owner, $headerLine): PipingLine {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+
+            return app(PipingLineService::class)->create(
+                Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail(),
+                $owner,
+                [
+                    'nominal_size' => '8',
+                    'service_code' => 'P',
+                    'piping_class_id' => $headerLine->piping_class_id,
+                ],
+            );
+        }, $project->id);
+
+        $branchPortId = $tenant->runAs($owner->company_id, function () use ($owner, $branchLine): string {
+            DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
+            $tee = app(ComponentService::class)->place($branchLine, $owner, 'TEE', [
+                'port_sizes' => [3 => '4'],
+            ]);
+
+            return (string) $tee->ports->firstWhere('role', 'BRANCH')->id;
+        }, $project->id);
+
+        $this->actingAs($owner)
+            ->get("/projects/PH-14/piping/{$branchLine->id}/model?lang=en")
+            ->assertOk()
+            ->assertSee('Header line for TEE/CROSS branch-port weld')
+            ->assertSee($headerLine->line_number);
+
+        $this->actingAs($owner)
+            ->post("/projects/PH-14/piping/{$branchLine->id}/model/attach?lang=en", [
+                'port_id' => $branchPortId,
+                'template_code' => 'PIPE',
+                'line_owner' => 'HEADER',
+                'header_line_id' => $headerLine->id,
+            ])
+            ->assertRedirect();
+
+        $joint = $tenant->runAs($owner->company_id, fn (): Joint => Joint::query()
+            ->where('branch_header_line_id', $headerLine->id)
+            ->firstOrFail(), $project->id);
+
+        $this->assertSame($headerLine->id, $joint->piping_line_id);
+        $this->assertSame('TEE', $joint->branch_kind);
+
+        $this->actingAs($owner)
+            ->get("/projects/PH-14/piping/{$headerLine->id}/model?lang=en")
+            ->assertOk()
+            ->assertSee('Physical branch line')
+            ->assertSee($branchLine->line_number);
+    }
+
     public function test_a_p2p_wall_root_can_be_created_over_http_with_header_line_ownership(): void
     {
         $headerLine = $this->aLine();

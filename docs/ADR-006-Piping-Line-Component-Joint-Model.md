@@ -709,13 +709,19 @@ branch is cross-line *by nature* — one line welds onto another — whereas a
 tie-in joins two line ends. The operator chooses `line_owner` independently for
 each joint: `BRANCH` is the default; `HEADER` is also valid. No boundary is
 inferred at the first flange, valve, or other component. For a wall root the
-header is explicit in `branch_header_component_id`; for a later two-port joint
-on the branch, `branch_root_joint_id` must identify that P2P/OLET root before
-`HEADER` may own its number. The database guard still requires the physical
-ports of that ordinary joint to remain on the root's branch line, so this does
-not admit a cross-line tie-in. `JointService::separate()` clears those root
-links and moves unfitted header-owned dependents back to the branch register;
-a fitted dependent blocks the operation for revision handling.
+header is explicit in `branch_header_component_id`; for a later ordinary
+two-port joint on the branch, `branch_root_joint_id` must identify that
+P2P/OLET root before `HEADER` may own its number. A weld on the actual BRANCH
+port of a TEE or CROSS is the other supported case: the operator may select a
+same-project header line directly, without creating a synthetic wall root.
+That choice is recorded in `branch_header_line_id` and must match the joint's
+register-owner `piping_line_id`. The database verifies the real TEE/CROSS
+BRANCH port and keeps all physical port sides on their one physical line; this
+never admits an ordinary cross-line tie-in. In either branch-root or direct
+TEE/CROSS ownership, the port/component topology and issued-class verdict stay
+with the physical branch line. `JointService::separate()` clears wall-root
+links and moves unfitted root dependents back to the branch register; a fitted
+dependent blocks that operation for revision handling.
 
 **Two axes, because we have no geometry.** Plant 3D stores the circumferential
 offset and derives the station from 3D coordinates; we cannot derive anything,
@@ -727,15 +733,16 @@ not a design.
 
 **Numbering, verdict and dia-inch.** The joint sequence is allocated under the
 selected owner's line lock. The branch class verdict is still resolved from the
-physical branch line's issued PMS snapshot and remains on the one P2P/OLET wall
-root, regardless of which register owns its number. `diaInch()` used to return
-null for a joint with one port; it now returns the branch size. `isWeld()`
-accepts `BRANCH_STUB_IN` and `BRANCH_STUB_ON` (ADR-008 §9.2 / P-21). Only the
-root carries the branch classification, so a separate OLET outlet weld does
-not create a second branch count.
+physical branch line's issued PMS snapshot, regardless of which register owns
+the number. A TEE/CROSS BRANCH-port weld keeps its classification on that one
+weld; an OLET's class verdict remains on its wall root, so the separate outlet
+weld does not create a second branch count. `diaInch()` used to return null for
+a joint with one port; it now returns the branch size. `isWeld()` accepts
+`BRANCH_STUB_IN` and `BRANCH_STUB_ON` (ADR-008 §9.2 / P-21).
 
-**What remains out of scope.** The line-model UI now creates P2P/OLET wall
-roots and exposes the per-joint owner choice; it does not infer the boundary.
+**What remains out of scope.** The line-model UI creates P2P/OLET wall roots,
+exposes per-joint BRANCH/HEADER ownership, and lets an open TEE/CROSS BRANCH
+port select a project header line directly; it does not infer the boundary.
 No model-writing importer populates wall joints from PCF. The read-only
 parser/admission recognizes standard `TAP-CONNECTION` records in both
 association forms and retains the host UCI; it warns instead of applying that

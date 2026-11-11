@@ -58,14 +58,18 @@ The branch-kind/class-verdict slice is present in the joint/service path. The
 OLET fabricated RUN/FA-to-header-wall weld is a separate wall-reference joint;
 the BRANCH-to-pipe weld remains distinct, and the class verdict is recorded
 once on the root weld. The earlier 84-test OLET run used branch ownership for
-both welds. The current behavior instead lets the operator choose `BRANCH`
-(default) or `HEADER` per joint; later header-owned branch joints must point to
-an explicit P2P/OLET wall root. No boundary is inferred at a flange or valve.
-The verdict still uses the physical branch line's issued class, and the branch
-classification remains on the root weld only. Wall-root creation and owner
-selection are now available from the line-model page. The focused ownership,
-numbering, separation, boundary, HTTP and regression suites passed **113 tests /
-352 assertions**. This does **not** complete P-21 or the P5 welding roadmap:
+both welds. The current behavior lets the operator choose `BRANCH` (default) or `HEADER`
+per joint. A later ordinary header-owned branch-line joint must link to an
+explicit P2P/OLET wall root; a weld on a TEE/CROSS `BRANCH` port can instead
+select a same-project header line directly, without inventing a wall root. No
+boundary is inferred at a flange or valve. Physical ports and the issued PMS
+verdict remain tied to the branch line; register metrics follow each selected
+owner, and each physical branch weld is counted once. The line-model page
+exposes wall-root creation and per-joint ownership, including independent
+header-line selection for TEE/CROSS branch ports. The final combined targeted
+ownership, numbering, separation, boundary, HTTP and regression command passed
+**117 tests / 384 assertions**; the full suite was not run. This does **not**
+complete P-21 or the P5 welding roadmap:
 full weld-log/report UI, contract rates, welder qualification, WPS/PQR,
 NDT/repair workflow, and a PCF-to-model writer remain open. The PCF
 parser/admission remains read-only and warns about taps instead of creating a

@@ -30,7 +30,7 @@ final class Joint extends Model
         'joint_seq', 'numbering_policy',
         'joint_type', 'branch_kind', 'state',
         'branch_class_type', 'branch_class_p2p_kind',
-        'branch_header_component_id', 'branch_station_mm', 'branch_offset_mm', 'branch_root_joint_id',
+        'branch_header_component_id', 'branch_header_line_id', 'branch_station_mm', 'branch_offset_mm', 'branch_root_joint_id',
         'branch_pad_thickness_mm', 'branch_rule_state',
         'fitted_by_code', 'fitted_at',
         'nominal_size', 'nominal_size_decimal', 'schedule', 'thickness_mm',
@@ -215,6 +215,12 @@ final class Joint extends Model
     public function isOnWall(): bool
     {
         return $this->branch_header_component_id !== null;
+    }
+
+    /** The header line explicitly selected for a TEE/CROSS branch-port weld. */
+    public function branchHeaderLine(): BelongsTo
+    {
+        return $this->belongsTo(PipingLine::class, 'branch_header_line_id');
     }
 
     /** The wall-root branch joint whose header line may own this joint number. */

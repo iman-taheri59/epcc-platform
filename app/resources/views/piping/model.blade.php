@@ -23,8 +23,11 @@
         'ownerBranch' => ['fa' => 'خط شاخه', 'en' => 'Branch line'],
         'ownerHeader' => ['fa' => 'خط هدر', 'en' => 'Header line'],
         'branchroot'=> ['fa' => 'ریشهٔ انشعاب', 'en' => 'Branch root'],
-        'ownerHelp'=> ['fa' => 'برای ثبت این جوینت روی خط هدر، ریشهٔ P2P/OLET انشعاب را انتخاب کنید.', 'en' => 'To file this joint on the header line, select the branch P2P/OLET wall root.'],
-        'ownerScopeHelp' => ['fa' => 'این انتخاب فقط رجیستر و شمارهٔ همین جوینت را تغییر می‌دهد؛ قطعات و رأی کلاس روی شاخه می‌مانند و مرزی در فلنج یا شیر حدس زده نمی‌شود.', 'en' => 'This changes only this joint’s register/number owner; components and class verdict stay with the branch, with no automatic cutover at a flange or valve.'],
+        'ownerHeaderLine' => ['fa' => 'خط هدر برای مالکیت جوینت انشعابی سه‌راهی/چهارراهی', 'en' => 'Header line for TEE/CROSS branch-port weld'],
+        'ownerHelp'=> ['fa' => 'برای جوینت‌های دیگرِ روی شاخه، جهت ثبت شماره روی هدر ریشهٔ دیواره‌ای P2P/OLET را انتخاب کنید.', 'en' => 'For other joints along a branch, select its P2P/OLET wall root to use the header register.'],
+        'ownerTeeCrossHelp' => ['fa' => 'برای جوینت پورت BRANCH سه‌راهی/چهارراهی، اگر HEADER را انتخاب می‌کنید خط هدر را مستقیم برگزینید. در صورت انتخاب ریشهٔ P2P/OLET، خط انتخابی باید با هدر ریشه یکی باشد؛ با مالکیت BRANCH این فیلد را خالی بگذارید. پورت‌های فیزیکی و رأی PMS روی خط شاخه می‌مانند.', 'en' => 'For a TEE/CROSS BRANCH-port weld, select a header line when HEADER owns it. If you also select a P2P/OLET root, the selected line must match its header; leave this field blank when BRANCH owns the joint. Physical ports and the PMS verdict remain on the branch line.'],
+        'ownerScopeHelp' => ['fa' => 'هیچ مرزی در فلنج یا شیر حدس زده نمی‌شود؛ مالکیت هر جوینت دستی است.', 'en' => 'No boundary is inferred at a flange or valve; ownership is selected per joint.'],
+        'jointPhysicalLine' => ['fa' => 'خط فیزیکی شاخه', 'en' => 'Physical branch line'],
         'wallFormTitle' => ['fa' => 'ایجاد جوینت انشعاب روی دیوارهٔ هدر', 'en' => 'Create a branch-to-header-wall joint'],
         'wallKind' => ['fa' => 'نوع اتصال دیواره‌ای', 'en' => 'Wall connection type'],
         'wallP2p' => ['fa' => 'انشعاب P2P', 'en' => 'P2P branch'],
@@ -185,6 +188,10 @@
   @else
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:10px;">
       @foreach($open as $port)
+        @php
+          $isTeeCrossBranchPort = $port->role === 'BRANCH'
+              && in_array($port->component?->template_code, ['TEE', 'TEE-SKEWED', 'CROSS'], true);
+        @endphp
         <div style="border:1px solid var(--line);border-radius:10px;background:var(--card);padding:10px 12px;">
           <div class="mono" style="font-size:13px;"><bdi>{{ $port->component->label() }}</bdi></div>
           <div style="color:var(--muted);font-size:12px;margin-top:2px;"><bdi>{{ $port->label() }}</bdi>
@@ -202,7 +209,7 @@
                 <option value="{{ $tpl['code'] }}">{{ $tpl['name'][$lang] ?? $tpl['name']['en'] }} ({{ $num($tpl['ports']) }})</option>
               @endforeach
             </select>
-            @if($branchRoots->isNotEmpty())
+            @if($branchRoots->isNotEmpty() || $isTeeCrossBranchPort)
               <label style="flex:1 1 45%;min-width:140px;color:var(--muted);font-size:11px;">
                 {{ $L('lineowner') }}
                 <select name="line_owner"
@@ -211,19 +218,41 @@
                   <option value="HEADER" @selected(old('line_owner') === 'HEADER')>{{ $L('ownerHeader') }}</option>
                 </select>
               </label>
-              <label style="flex:1 1 45%;min-width:140px;color:var(--muted);font-size:11px;">
-                {{ $L('branchroot') }}
-                <select name="branch_root_joint_id"
-                        style="width:100%;margin-top:3px;padding:5px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
-                  <option value="">—</option>
-                  @foreach($branchRoots as $root)
-                    <option value="{{ $root->id }}" @selected(old('branch_root_joint_id') === $root->id)>
-                      {{ $root->branchHeaderComponent?->line?->line_number ?? '?' }} · {{ $root->joint_type }} · {{ $num($root->displayNumber() ?? '—') }}
-                    </option>
-                  @endforeach
-                </select>
-              </label>
-              <small style="flex:1 1 100%;color:var(--muted);font-size:10px;">{{ $L('ownerHelp') }} {{ $L('ownerScopeHelp') }}</small>
+              @if($branchRoots->isNotEmpty())
+                <label style="flex:1 1 45%;min-width:140px;color:var(--muted);font-size:11px;">
+                  {{ $L('branchroot') }}
+                  <select name="branch_root_joint_id"
+                          style="width:100%;margin-top:3px;padding:5px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+                    <option value="">—</option>
+                    @foreach($branchRoots as $root)
+                      <option value="{{ $root->id }}" @selected(old('branch_root_joint_id') === $root->id)>
+                        {{ $root->branchHeaderComponent?->line?->line_number ?? '?' }} · {{ $root->joint_type }} · {{ $num($root->displayNumber() ?? '—') }}
+                      </option>
+                    @endforeach
+                  </select>
+                </label>
+              @endif
+              @if($isTeeCrossBranchPort)
+                <label style="flex:1 1 100%;min-width:140px;color:var(--muted);font-size:11px;">
+                  {{ $L('ownerHeaderLine') }}
+                  <select name="header_line_id"
+                          style="width:100%;margin-top:3px;padding:5px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+                    <option value="">—</option>
+                    @foreach($ownerLines as $candidateLine)
+                      <option value="{{ $candidateLine->id }}" @selected(old('header_line_id') === $candidateLine->id)>
+                        {{ $candidateLine->line_number }}{{ $candidateLine->subsystem?->code ? ' · '.$candidateLine->subsystem->code : '' }}
+                      </option>
+                    @endforeach
+                  </select>
+                </label>
+              @endif
+              @if($branchRoots->isNotEmpty())
+                <small style="flex:1 1 100%;color:var(--muted);font-size:10px;">{{ $L('ownerHelp') }}</small>
+              @endif
+              @if($isTeeCrossBranchPort)
+                <small style="flex:1 1 100%;color:var(--muted);font-size:10px;">{{ $L('ownerTeeCrossHelp') }}</small>
+              @endif
+              <small style="flex:1 1 100%;color:var(--muted);font-size:10px;">{{ $L('ownerScopeHelp') }}</small>
             @endif
             <button type="submit"
                     style="padding:5px 12px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;cursor:pointer;">
@@ -525,6 +554,7 @@
         $dia = $diaInch($j);
         $cA = $j->portA?->component;
         $cB = $j->portB?->component;
+        $physicalLine = $cA?->line ?? $cB?->line;
         $wallHeader = $j->branchHeaderComponent;
         $station = $j->branch_station_mm === null
             ? null
@@ -560,6 +590,9 @@
             <span style="color:var(--muted);">({{ $L('wall') }}@if($station !== null) · <bdi>{{ $L('station') }} {{ $num($station) }} mm</bdi>@endif)</span>
           @else
             <bdi>?</bdi>
+          @endif
+          @if($physicalLine && $physicalLine->id !== $line->id)
+            <small style="display:block;color:var(--muted);font-size:10px;">{{ $L('jointPhysicalLine') }}: <bdi>{{ $physicalLine->line_number }}</bdi></small>
           @endif
         </td>
         <td style="font-size:12px;">

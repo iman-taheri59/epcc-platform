@@ -270,13 +270,13 @@ final class JointBoundaryTest extends TestCase
         $owner = $this->owner();
 
         try {
-            $this->tenant->runAs($owner->company_id, function () use ($owner, $portA, $portB): void {
+            $this->tenant->runAs($owner->company_id, function () use ($owner, $portA, $portB, $first): void {
                 DB::select("SELECT set_config('epcc.result_actor_id', ?, true)", [$owner->id]);
                 app(JointService::class)->join(
                     Port::query()->findOrFail($portA),
                     Port::query()->findOrFail($portB),
                     $owner,
-                    ['line_owner' => 'HEADER'],
+                    ['line_owner' => 'HEADER', 'header_line_id' => $first->id],
                 );
             }, $project->id);
 
