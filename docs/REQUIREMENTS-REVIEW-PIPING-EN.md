@@ -62,13 +62,15 @@ both welds. The current behavior lets the operator choose `BRANCH` (default) or 
 per joint. A later ordinary header-owned branch-line joint must link to an
 explicit P2P/OLET wall root; a weld on a TEE/CROSS `BRANCH` port can instead
 select a same-project header line directly, without inventing a wall root. No
-boundary is inferred at a flange or valve. Physical ports and the issued PMS
-verdict remain tied to the branch line; register metrics follow each selected
-owner, and each physical branch weld is counted once. The line-model page
-exposes wall-root creation and per-joint ownership, including independent
-header-line selection for TEE/CROSS branch ports. The final combined targeted
-ownership, numbering, separation, boundary, HTTP and regression command passed
-**117 tests / 384 assertions**; the full suite was not run. This does **not**
+boundary is inferred at a flange or valve. Physical ports/components remain on
+their physical lines, while the issued PMS branch-rule verdict follows the
+selected owner line: `BRANCH` uses the branch class and `HEADER` uses the header
+class. Register metrics follow that owner, and each physical branch weld is
+counted once. The line-model page exposes wall-root creation and per-joint
+ownership, including independent header-line selection for TEE/CROSS branch
+ports. The final combined targeted ownership, numbering, separation, boundary,
+HTTP and regression command passed **120 tests / 404 assertions** after the
+owner-class rule update; the full suite was not run. This does **not**
 complete P-21 or the P5 welding roadmap:
 full weld-log/report UI, contract rates, welder qualification, WPS/PQR,
 NDT/repair workflow, and a PCF-to-model writer remain open. The PCF

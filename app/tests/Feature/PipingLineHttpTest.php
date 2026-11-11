@@ -359,7 +359,7 @@ final class PipingLineHttpTest extends TestCase
             ->assertSee('station')
             ->assertSee('3000')
             ->assertSee('mm')
-            ->assertSee('Joint owner line')
+            ->assertSee('Joint register and PMS owner line')
             ->assertSee('Branch root')
             ->assertSee('Create a branch-to-header-wall joint')
             ->assertSee($headerLine->line_number);
@@ -455,7 +455,7 @@ final class PipingLineHttpTest extends TestCase
         $this->actingAs($owner)
             ->get("/projects/PH-14/piping/{$branchLine->id}/model?lang=en")
             ->assertOk()
-            ->assertSee('Header line for TEE/CROSS branch-port weld')
+            ->assertSee('Header line as register/PMS owner for TEE/CROSS branch-port weld')
             ->assertSee($headerLine->line_number);
 
         $this->actingAs($owner)

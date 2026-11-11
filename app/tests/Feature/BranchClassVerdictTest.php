@@ -155,15 +155,16 @@ final class BranchClassVerdictTest extends TestCase
         bool $legacyOutletClassification = false,
         string $lineOwner = 'BRANCH',
         bool $headerHasWeld = false,
+        ?PipingLine $branchPmsLine = null,
     ): array {
-        return $this->asOwner(function () use ($headerLine, $branchSize, $legacyOutletClassification, $lineOwner, $headerHasWeld): array {
+        return $this->asOwner(function () use ($headerLine, $branchSize, $legacyOutletClassification, $lineOwner, $headerHasWeld, $branchPmsLine): array {
             $branchLine = app(PipingLineService::class)->create(
                 Subsystem::where('code', 'PH-14-SS-2201')->firstOrFail(),
                 $this->owner(),
                 [
                     'nominal_size' => $branchSize,
                     'service_code' => 'P',
-                    'piping_class_id' => $headerLine->piping_class_id,
+                    'piping_class_id' => $branchPmsLine?->piping_class_id ?? $headerLine->piping_class_id,
                 ],
             );
 
@@ -247,9 +248,10 @@ final class BranchClassVerdictTest extends TestCase
         $this->assertSame($branchLine->id, $joint->portA->component->piping_line_id);
         $this->assertSame($branchLine->id, $joint->portB->component->piping_line_id);
         $this->assertSame(JointBranchKind::TEE, $joint->branch_kind);
-        $this->assertSame(BranchConnectionType::TEE, $joint->branch_class_type, 'the verdict comes from the physical branch line, not the selected header register');
+        $this->assertSame(BranchConnectionType::P2P, $joint->branch_class_type, 'the selected header register supplies the governing issued PMS class');
+        $this->assertSame(P2pKind::STUB_ON, $joint->branch_class_p2p_kind);
         $this->assertSame(JointBranchRuleState::RULE, $joint->branch_rule_state);
-        $this->assertSame('AGREES', $joint->branchDeviation());
+        $this->assertSame('FITTING_WHERE_CLASS_SAYS_NONE', $joint->branchDeviation());
         $this->assertSame(1, $headerMetrics['branch_welds']);
         $this->assertSame(0, $branchMetrics['branch_welds']);
 
@@ -286,6 +288,8 @@ final class BranchClassVerdictTest extends TestCase
 
         $this->assertSame(JointBranchKind::CROSS, $headerOwned->branch_kind);
         $this->assertSame(JointBranchKind::CROSS, $branchOwned->branch_kind);
+        $this->assertSame(BranchConnectionType::P2P, $headerOwned->branch_class_type, 'the header-owned CROSS port uses the header line PMS');
+        $this->assertSame(BranchConnectionType::TEE, $branchOwned->branch_class_type, 'the branch-owned CROSS port uses the branch line PMS');
         $this->assertSame($headerLine->id, $headerOwned->piping_line_id);
         $this->assertSame($headerLine->id, $headerOwned->branch_header_line_id);
         $this->assertSame($branchLine->id, $branchOwned->piping_line_id);
@@ -389,6 +393,30 @@ final class BranchClassVerdictTest extends TestCase
         $this->assertSame(2.0, $headerMetrics['branch_dia_inch']);
         $this->assertSame(1, $branchMetrics['welds'], 'The ordinary outlet weld remains on the branch line.');
         $this->assertSame(0, $branchMetrics['branch_welds']);
+    }
+
+    public function test_olet_wall_verdict_follows_the_selected_owner_lines_issued_pms_class(): void
+    {
+        $headerLine = $this->lineWithBranchCells('6', [[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::WELDOLET,
+            'reinforcement' => 'PAD', 'pad_thickness' => 6.0,
+        ]]);
+        $branchPmsLine = $this->lineWithBranchCells('2', [[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::TEE,
+        ]]);
+
+        $headerAssembly = $this->oletBranchAssembly($headerLine, '2', false, 'HEADER', false, $branchPmsLine);
+        $branchAssembly = $this->oletBranchAssembly($headerLine, '2', false, 'BRANCH', false, $branchPmsLine);
+        $headerOwned = $headerAssembly['headerJoint'];
+        $branchOwned = $branchAssembly['headerJoint'];
+
+        $this->assertSame($headerLine->id, $headerOwned->piping_line_id);
+        $this->assertSame(BranchConnectionType::WELDOLET, $headerOwned->branch_class_type);
+        $this->assertSame(6.0, $headerOwned->branch_pad_thickness_mm);
+        $this->assertSame($branchAssembly['branchLine']->id, $branchOwned->piping_line_id);
+        $this->assertSame(BranchConnectionType::TEE, $branchOwned->branch_class_type);
     }
 
     public function test_a_later_branch_joint_can_use_its_olet_roots_header_line(): void

@@ -119,9 +119,10 @@ should emit the same tap idiom we expect to read.
    now parsed read-only in both standard association forms (§5.2).
 2. **Stub-in and stub-on remain class-governed kinds.** A PCF tap record by
    itself is not permission to infer `STUB_IN` versus `STUB_ON` from geometry.
-   The issued PMS snapshot supplies the declared P2P kind; the joint stores that
-   verdict beside its observed kind. Broad tee aliases are classified only
-   when SKEY is sufficient (§5.3).
+   The selected owner's issued PMS snapshot supplies the declared P2P kind
+   (`BRANCH` by default, or `HEADER` when explicitly selected); the joint stores
+   that verdict beside its observed kind. Broad tee aliases are classified
+   only when SKEY is sufficient (§5.3).
 3. **Plant 3D's end-treatment and weld labels are source facts, not our class
    verdict.** A WELD entity/SKEY alone is ambiguous with an ordinary butt weld;
    a future importer must combine source evidence with the issued class rule,
@@ -486,8 +487,9 @@ class is not consulted”; those are different facts.
 The implemented chain is:
 
 1. A branch of DN_branch lands on a header of DN_header.
-2. The line's issued PMS snapshot supplies the branch-table verdict and any
-   reinforcement pad thickness.
+2. The selected owner line's issued PMS snapshot supplies the branch-table
+   verdict and any reinforcement pad thickness (`BRANCH` by default; `HEADER`
+   when explicitly selected).
 3. A fitting verdict uses the two-port path and checks the observed component
    against the declared class result.
 4. A P2P verdict uses `joinToWall()`: branch-side port + frozen header
@@ -573,9 +575,10 @@ contract's rate table still assigns monetary value.
 ### 7.5 Design conclusion — separate classification from valuation
 
 - **Classification** (is it a branch, and of what kind): port role where a
-  fitting is present; the line's issued PMS snapshot supplies `P2P` +
-  `STUB_IN`/`STUB_ON` where it is not. Both the observed kind and class verdict
-  are retained; a disagreement is the deviation §9.2 anticipates.
+  fitting is present; the selected owner's issued PMS snapshot supplies `P2P`
+  + `STUB_IN`/`STUB_ON` where it is not (`BRANCH` by default, or `HEADER` when
+  explicitly selected). Both the observed kind and class verdict are retained;
+  a disagreement is the deviation §9.2 anticipates.
 - **Valuation** (what it is worth): **do not fold a multiplier into dia-inch.**
   The factor is not a property of the weld; it is a property of the contract and
   the fabricator. A baked-in multiplier yields a number that looks physical but

@@ -81,9 +81,9 @@ final class BranchWallJointTest extends TestCase
      * @param  list<array<string, mixed>>  $cells
      * @return array{header: PipingLine, branch: PipingLine, headerPipe: Component}
      */
-    private function twoLines(array $cells): array
+    private function twoLines(array $cells, ?array $branchCells = null): array
     {
-        return $this->asOwner(function () use ($cells): array {
+        return $this->asOwner(function () use ($cells, $branchCells): array {
             $project = $this->project();
             $owner = $this->owner();
             $lines = app(PipingLineService::class);
@@ -111,11 +111,33 @@ final class BranchWallJointTest extends TestCase
 
             ApprovedPmsClassFixture::ensure($project, $owner, $class);
 
+            $branchClass = $class;
+            if ($branchCells !== null) {
+                $branchClass = PipingClass::firstOrCreate(
+                    ['project_id' => $project->id, 'code' => 'WALL-ALT-'.substr(md5((string) json_encode($branchCells)), 0, 8)],
+                    ['company_id' => $project->owner_company_id, 'description_en' => 'Alternate branch line class'],
+                );
+
+                foreach ($branchCells as $cell) {
+                    $authoring->addBranchRule(
+                        $project, $owner, $branchClass,
+                        $cell['header'][0], $cell['header'][1],
+                        $cell['branch'][0], $cell['branch'][1],
+                        $cell['type'], 'fa',
+                        $cell['p2p_kind'] ?? null,
+                        $cell['reinforcement'] ?? 'NONE',
+                        $cell['pad_thickness'] ?? null,
+                    );
+                }
+
+                ApprovedPmsClassFixture::ensure($project, $owner, $branchClass);
+            }
+
             $header = $lines->create($subsystem, $owner, [
                 'nominal_size' => '6', 'service_code' => 'P', 'piping_class_id' => $class->id,
             ]);
             $branch = $lines->create($subsystem, $owner, [
-                'nominal_size' => '2', 'service_code' => 'P', 'piping_class_id' => $class->id,
+                'nominal_size' => '2', 'service_code' => 'P', 'piping_class_id' => $branchClass->id,
             ]);
 
             // A header needs a length for a station to mean anything.
@@ -198,6 +220,80 @@ final class BranchWallJointTest extends TestCase
         $this->assertSame($branch->id, $branchPipe->piping_line_id);
         $this->assertSame(2, $this->asOwner(fn () => app(JointService::class)->lineMetrics($header->fresh())['welds']));
         $this->assertSame(0, $this->asOwner(fn () => app(JointService::class)->lineMetrics($branch->fresh())['welds']));
+    }
+
+    public function test_a_wall_branch_uses_the_selected_register_owners_issued_pms_class(): void
+    {
+        ['header' => $header, 'branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines(
+            [[
+                'header' => [100, 300], 'branch' => [15, 100],
+                'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+            ]],
+            [[
+                'header' => [100, 300], 'branch' => [15, 100],
+                'type' => BranchConnectionType::TEE,
+            ]],
+        );
+
+        ['joint' => $headerOwned] = $this->weldOnWall($branch, $headerPipe, 3000.0, [
+            'line_owner' => 'HEADER',
+        ]);
+        ['joint' => $branchOwned] = $this->weldOnWall($branch, $headerPipe, 4500.0);
+
+        $this->assertSame($header->id, $headerOwned->piping_line_id);
+        $this->assertSame(BranchConnectionType::P2P, $headerOwned->branch_class_type, 'HEADER ownership uses the header line issued class');
+        $this->assertSame($branch->id, $branchOwned->piping_line_id);
+        $this->assertSame(BranchConnectionType::TEE, $branchOwned->branch_class_type, 'BRANCH ownership uses the branch line issued class');
+    }
+
+    public function test_separating_a_wall_root_reassigns_dependent_branch_verdict_to_the_branch_class(): void
+    {
+        ['header' => $header, 'branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines(
+            [
+                [
+                    'header' => [101, 300], 'branch' => [15, 100],
+                    'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+                ],
+                [
+                    'header' => [15, 100], 'branch' => [15, 100],
+                    'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+                ],
+            ],
+            [[
+                'header' => [15, 100], 'branch' => [15, 100],
+                'type' => BranchConnectionType::TEE,
+            ]],
+        );
+
+        $root = $this->weldOnWall($branch, $headerPipe, 3000.0, ['line_owner' => 'HEADER'])['joint'];
+        $dependent = $this->asOwner(function () use ($branch, $root): Joint {
+            $tee = app(ComponentService::class)->place($branch, $this->owner(), 'TEE', [
+                'port_sizes' => [3 => '2'],
+            ]);
+
+            return app(ComponentService::class)->attach(
+                $tee->ports->firstWhere('role', 'BRANCH'),
+                $this->owner(),
+                'PIPE',
+                [
+                    'line_owner' => 'HEADER',
+                    'branch_root_joint_id' => $root->id,
+                ],
+            )['joint'];
+        });
+
+        $this->assertSame($header->id, $dependent->piping_line_id);
+        $this->assertSame(BranchConnectionType::P2P, $dependent->branch_class_type);
+        $this->assertSame('FITTING_WHERE_CLASS_SAYS_NONE', $dependent->branchDeviation());
+
+        $this->asOwner(fn () => app(JointService::class)->separate($root, $this->owner()));
+        $reassigned = $this->asOwner(fn () => Joint::query()->findOrFail($dependent->id));
+
+        $this->assertSame($branch->id, $reassigned->piping_line_id);
+        $this->assertNull($reassigned->branch_root_joint_id);
+        $this->assertSame(BranchConnectionType::TEE, $reassigned->branch_class_type);
+        $this->assertSame(JointBranchRuleState::RULE, $reassigned->branch_rule_state);
+        $this->assertSame('AGREES', $reassigned->branchDeviation());
     }
 
     public function test_a_branch_segment_joint_can_be_manually_owned_by_its_roots_header_line(): void

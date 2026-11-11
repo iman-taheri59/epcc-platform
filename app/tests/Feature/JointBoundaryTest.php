@@ -159,8 +159,8 @@ final class JointBoundaryTest extends TestCase
     /**
      * An OLET is a purchased fitting with two distinct interfaces: its
      * fabricated RUN/FA side lands on the header wall, and its BRANCH port
-     * joins the branch-line pipe. Both welds belong to and are numbered on the
-     * branch line, while the branch connection and issued-class verdict are
+     * joins the branch-line pipe. Both welds use the default BRANCH owner in
+     * this fixture, while the branch connection and issued-class verdict are
      * counted once on the header-side OLET weld.
      */
     public function test_case_0b_an_olet_models_both_interfaces_without_a_fake_header_port(): void

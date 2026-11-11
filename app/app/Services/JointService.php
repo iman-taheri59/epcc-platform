@@ -217,7 +217,7 @@ final class JointService
                     : Joint::NUMBERING_NOT_APPLICABLE,
                 'joint_type' => $this->compatibility->jointType($freshA, $freshB),
                 'branch_kind' => $this->branchKindFor($freshA, $freshB),
-                ...$this->branchVerdictFor($branchLine, $freshA, $freshB),
+                ...$this->branchVerdictFor($ownerLine, $freshA, $freshB),
                 'state' => Joint::STATE_MODELLED,
 
                 // Frozen from the ports at creation. A joint accepted at
@@ -261,9 +261,10 @@ final class JointService
      * coped to match it, and the weld follows a saddle rather than a flat
      * girth.
      *
-     * The physical branch side and issued-class verdict always come from the
-     * branch line. The joint's register/number owner is explicitly selectable:
-     * either that branch line or the header line. The default is BRANCH.
+     * Physical topology stays on the branch line. The joint's register/number
+     * owner is explicitly selectable: either that branch line or the header
+     * line. The issued-class verdict follows that selected owner line; the
+     * default is BRANCH.
      *
      * @param  string  $kind  JointBranchKind::STUB_IN or ::STUB_ON
      * @param  array<string, mixed>  $attributes
@@ -319,7 +320,7 @@ final class JointService
 
         $this->assertWallGeometry($header, $stationMm, $offsetMm);
 
-        $verdict = $this->wallVerdictFor($branchLine, $header, $branchPort);
+        $verdict = $this->wallVerdictFor($ownerLine, $header, $branchPort);
 
         return DB::transaction(function () use (
             $branchPort, $header, $kind, $stationMm, $offsetMm, $branchLine, $headerLine, $ownerLine, $actor, $attributes, $verdict,
@@ -539,7 +540,7 @@ final class JointService
                 ]);
             }
 
-            $verdict = $this->wallVerdictFor($line, $freshHeader, $branchPort);
+            $verdict = $this->wallVerdictFor($ownerLine, $freshHeader, $branchPort);
             $numbered = $runPort->end_type !== null
                 && (bool) ($this->reference->endType((string) $runPort->end_type)['weldable'] ?? false);
 
@@ -752,6 +753,7 @@ final class JointService
 
             if ($freshJoint->isOnWall()) {
                 $dependents = Joint::query()
+                    ->with(['portA.component.ports', 'portB.component.ports'])
                     ->where('branch_root_joint_id', $freshJoint->id)
                     ->lockForUpdate()
                     ->get();
@@ -765,14 +767,31 @@ final class JointService
 
                     // Removing the root ends the header association. Keep the
                     // physical branch welds, but move any header-owned numbers
-                    // back to their branch line; old header numbers remain gaps.
+                    // and PMS verdicts back to the branch line; old header
+                    // numbers remain gaps.
                     $reassignLine = $dependent->piping_line_id !== $branchLine->id;
+                    $ownerVerdict = [];
+
+                    if ($reassignLine) {
+                        $portA = $dependent->portA;
+                        $portB = $dependent->portB;
+
+                        if ($portA === null || $portB === null) {
+                            throw ValidationException::withMessages([
+                                'branch_root_joint_id' => 'A dependent joint with an incomplete physical connection cannot be reassigned; use the revision workflow.',
+                            ]);
+                        }
+
+                        $ownerVerdict = $this->branchVerdictFor($branchLine, $portA, $portB);
+                    }
+
                     $dependent->update([
                         'piping_line_id' => $branchLine->id,
                         'joint_seq' => $reassignLine && $dependent->joint_seq !== null
                             ? $this->nextSeq($branchLine)
                             : $dependent->joint_seq,
                         'branch_root_joint_id' => null,
+                        ...$ownerVerdict,
                     ]);
                 }
             }

@@ -257,9 +257,10 @@ classification. Each joint can be registered/numbered on `BRANCH` (default) or
 root, while a TEE/CROSS `BRANCH`-port weld may directly select a same-project
 header line. The line-model page exposes those manual choices independently for
 each branch port. No boundary is inferred at the first flange or valve.
-Physical topology and the issued-class verdict remain tied to the branch line;
-line-register metrics follow the selected joint owner and each physical branch
-weld is counted once. The comprehensive weld log/report, hard deviation gate,
+Physical topology remains on the branch line; the issued-class verdict follows
+the selected owner line (BRANCH or HEADER), and line-register metrics follow
+that owner. Each physical branch weld is counted once. The comprehensive
+weld log/report, hard deviation gate,
 WPS/PQR/qualification, NDT/repair, repair KPI, and material/heat traceability
 are not.
 
