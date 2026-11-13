@@ -64,7 +64,6 @@ final class PipingClassTest extends TestCase
         return $this->userByEmail('rezaei@pars.example');
     }
 
-    /** @return mixed */
     private function asPars(callable $fn, ?string $projectId = null): mixed
     {
         $pars = $this->company('EPC-PARS');
@@ -331,6 +330,64 @@ final class PipingClassTest extends TestCase
             // Outside both exception bands the general rule still resolves.
             $this->assertSame(BranchConnectionType::TEE, $this->classes->branchFor($class, 300, 150)->component_type);
         });
+    }
+
+    public function test_pad_material_is_optional_but_must_be_valid_and_attached_only_to_pad_rules(): void
+    {
+        $class = $this->makeClass('PADMAT-CLS');
+        $rule = $this->asPars(fn () => $this->classes->addBranchRule(
+            $this->project(), $this->user(), $class, 200, 600, 15, 50,
+            BranchConnectionType::P2P, 'en',
+            p2pKind: P2pKind::STUB_IN,
+            reinforcement: BranchReinforcement::PAD,
+            padThickness: 6.35,
+            value: ['pad_material' => ['spec' => 'A106', 'grade' => 'A']],
+        ));
+        $this->assertSame('A106', $rule->value['pad_material']['spec']);
+        $this->assertSame('A', $rule->value['pad_material']['grade']);
+
+        $noPadClass = $this->makeClass('NOPADMAT-CLS');
+        try {
+            $this->asPars(fn () => $this->classes->addBranchRule(
+                $this->project(), $this->user(), $noPadClass, 200, 600, 15, 50,
+                BranchConnectionType::P2P, 'en',
+                p2pKind: P2pKind::STUB_IN,
+                value: ['pad_material' => ['spec' => 'A106', 'grade' => 'A']],
+            ));
+            $this->fail('A NONE rule cannot declare a pad material.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('value', $exception->errors());
+        }
+
+        $badMaterialClass = $this->makeClass('BADPADMAT-CLS');
+        try {
+            $this->asPars(fn () => $this->classes->addBranchRule(
+                $this->project(), $this->user(), $badMaterialClass, 200, 600, 15, 50,
+                BranchConnectionType::P2P, 'en',
+                p2pKind: P2pKind::STUB_IN,
+                reinforcement: BranchReinforcement::PAD,
+                padThickness: 6.35,
+                value: ['pad_material' => ['spec' => 'A106', 'grade' => 'UNKNOWN']],
+            ));
+            $this->fail('An unknown PAD material grade must be refused at entry.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('value', $exception->errors());
+        }
+
+        $badShapeClass = $this->makeClass('BADPADSHAPE-CLS');
+        try {
+            $this->asPars(fn () => $this->classes->addBranchRule(
+                $this->project(), $this->user(), $badShapeClass, 200, 600, 15, 50,
+                BranchConnectionType::P2P, 'en',
+                p2pKind: P2pKind::STUB_IN,
+                reinforcement: BranchReinforcement::PAD,
+                padThickness: 6.35,
+                value: ['pad_material' => 'A106 B'],
+            ));
+            $this->fail('A PAD material must be an object, not a label string.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('value', $exception->errors());
+        }
     }
 
     public function test_a_reinforcement_pad_without_thickness_is_refused(): void

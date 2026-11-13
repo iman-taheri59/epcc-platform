@@ -265,6 +265,14 @@
                 @endif
               </a>
             </div>
+            @if($doc->doc_type === 'PMS')
+              <div style="margin-bottom:7px;">
+                <a href="{{ route('documents.pms.pad-materials', ['projectCode' => $project->code, 'documentId' => $doc->id, 'lang' => $lang]) }}"
+                   style="font-size:12px;color:var(--muted);text-decoration:none;border-bottom:1px dotted currentColor;">
+                  {{ $lang === 'fa' ? 'جنس پد در PMS' : 'PMS PAD materials' }}
+                </a>
+              </div>
+            @endif
             @php $next = $rev?->nextStates() ?? []; @endphp
             @if($rev && count($next) > 0)
               {{-- Only transitions the state machine actually permits are

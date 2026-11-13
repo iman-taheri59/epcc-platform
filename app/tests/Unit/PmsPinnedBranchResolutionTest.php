@@ -26,15 +26,18 @@ final class PmsPinnedBranchResolutionTest extends TestCase
         $narrow = $this->cell('narrow', '[100,300)', '[15,100)', 0, '2026-10-01T12:00:00+00:00');
         $priority = $this->cell('priority', '[100,300)', '[15,100)', 2, '2026-10-02T12:00:00+00:00');
         $early = $this->cell('early', '[100,300)', '[15,100)', 2, '2026-10-01T12:00:00+00:00');
-        $resolver = new PmsPinnedClassSpecification();
+        $early['value'] = ['pad_material' => ['spec' => 'A106', 'grade' => 'A']];
+        $resolver = new PmsPinnedClassSpecification;
         $spec = ['branch_rules' => [$base, $narrow, $priority, $early]];
-        $this->assertSame('early', $resolver->branchRuleFromSpecification($spec, 150, 25)['id']);
+        $selected = $resolver->branchRuleFromSpecification($spec, 150, 25);
+        $this->assertSame('early', $selected['id']);
+        $this->assertSame(['spec' => 'A106', 'grade' => 'A'], $selected['value']['pad_material']);
         $this->assertSame('general', $resolver->branchRuleFromSpecification($spec, 500, 150)['id']);
     }
 
     public function test_issued_pipe_schedule_rules_are_resolved_without_live_class_rows(): void
     {
-        $resolver = new PmsPinnedClassSpecification();
+        $resolver = new PmsPinnedClassSpecification;
         $spec = ['rules' => [
             ['rule_kind' => 'PIPE_SCHEDULE', 'dn_range' => '[15,100)', 'value' => ['schedule' => '80']],
             ['rule_kind' => 'PIPE_SCHEDULE', 'dn_range' => '[100,300)', 'value' => ['schedule' => 'STD']],
@@ -63,7 +66,7 @@ final class PmsPinnedBranchResolutionTest extends TestCase
     {
         $cell = $this->cell('first', '[100,300)', '[15,100)', 0, '2026-10-01T12:00:00+00:00');
         $other = array_replace($cell, ['id' => 'second']);
-        $resolver = new PmsPinnedClassSpecification();
+        $resolver = new PmsPinnedClassSpecification;
         foreach ([
             [['branch_rules' => [$cell, $other]], 150, 25],
             [['branch_rules' => [$cell]], 400, 25],

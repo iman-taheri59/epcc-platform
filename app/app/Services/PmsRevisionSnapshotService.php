@@ -62,7 +62,7 @@ final class PmsRevisionSnapshotService
                 'piping_class_id' => $class->id,
                 // Review checked this exact copy before PUBLISHED. The SQL
                 // snapshot trigger also checks draft identity, previous issue
-                // and the strict schedule-only delta, then freezes the row.
+                // and the narrow schedule/PAD-material delta, then freezes the row.
                 'specification' => $drafts->get($class->id)?->specification ?? $spec->specification,
                 'created_at' => now(),
             ]);

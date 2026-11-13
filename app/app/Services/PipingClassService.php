@@ -10,12 +10,12 @@ use App\Models\PipingClassRule;
 use App\Models\Project;
 use App\Models\User;
 use App\Support\Piping\BranchConnectionType;
-use App\Support\Piping\FluidServiceCategory;
 use App\Support\Piping\BranchReinforcement;
 use App\Support\Piping\Exceptions\BranchLargerThanHeaderException;
-use App\Support\Piping\P2pKind;
 use App\Support\Piping\Exceptions\NoRuleForSizeException;
 use App\Support\Piping\Exceptions\PadGateRefusal;
+use App\Support\Piping\FluidServiceCategory;
+use App\Support\Piping\P2pKind;
 use App\Support\Piping\PipingClassState;
 use App\Support\Piping\PipingRuleKind;
 use App\Support\Reference\Exceptions\FlangeRatingOutOfRangeException;
@@ -47,8 +47,7 @@ final class PipingClassService
         private readonly FlangeRatingReference $flangeRatings,
         private readonly PipeReference $sizes,
         private readonly BranchConnectionPadGate $padGate,
-    ) {
-    }
+    ) {}
 
     // ------------------------------------------------------------------
     // Drafting
@@ -148,6 +147,7 @@ final class PipingClassService
 
     /**
      * @param  array<string,mixed>  $value
+     *
      * @throws ValidationException
      */
     public function addRule(
@@ -219,8 +219,9 @@ final class PipingClassService
     }
 
     /**
-     * @param  array<string,mixed>|null  $value
+     * @param  array<string,mixed>|null  $value  optional branch-rule data; PAD material, when declared, is value.pad_material
      * @param  float|null  $padThickness  millimetres; MANDATORY when $reinforcement is PAD
+     *
      * @throws ValidationException
      */
     public function addBranchRule(
@@ -293,6 +294,24 @@ final class PipingClassService
                 'A pad thickness without a reinforcement pad is contradictory.');
         }
 
+        // A PAD may declare a distinct Table A-1 material in its branch-rule
+        // JSON. When absent, the publish gate defaults it to the header DN's
+        // PIPE_MATERIAL rule, which is frozen with the class at issuance; physical
+        // installation resolves that same rule from the header line's pin.
+        if (is_array($value) && array_key_exists('pad_material', $value) && $value['pad_material'] !== null) {
+            if ($reinforcement !== BranchReinforcement::PAD) {
+                $this->fail($lang, 'value',
+                    'جنس پد فقط برای قاعدهٔ دارای PAD معنا دارد.',
+                    'A pad_material is only valid on a branch rule with reinforcement PAD.');
+            }
+            if (! is_array($value['pad_material'])) {
+                $this->fail($lang, 'value',
+                    'جنس پد باید به شکل مشخصه و گرید مادهٔ PMS باشد.',
+                    'The PAD material must be a PMS material object with a spec and grade.');
+            }
+            $this->assertPipeMaterialValue($value['pad_material'], $lang);
+        }
+
         $id = (string) Str::uuid();
 
         try {
@@ -334,7 +353,7 @@ final class PipingClassService
     /** @throws ValidationException */
     public function publish(Project $project, User $user, PipingClass $class, string $lang = 'fa'): PipingClass
     {
-        return DB::transaction(function () use ($project, $user, $class, $lang): PipingClass {
+        return DB::transaction(function () use ($user, $class, $lang): PipingClass {
             $locked = PipingClass::whereKey($class->id)->lockForUpdate()->firstOrFail();
 
             if ($locked->isPublished()) {
@@ -487,21 +506,33 @@ final class PipingClassService
     // ------------------------------------------------------------------
 
     /**
-     * Revalidate a schedule-only PMS revision against the size reference pack
-     * and the SAME B31.3 branch-pad gate used at first class publication.
-     * The caller must first establish that no other draft field changed.
+     * Revalidate the proposed PMS revision against the size reference pack and
+     * the SAME B31.3 branch-pad gate used at first class publication. The
+     * caller first proves that only schedule and PAD-material leaves changed.
      *
-     * @param array<string, mixed> $specification
+     * @param  array<string, mixed>  $specification
      */
-    public function assertRevisionScheduleSafe(PipingClass $class, array $specification): void
+    public function assertRevisionDraftSafe(PipingClass $class, array $specification): void
     {
-        $overrides = [];
+        if (! is_array($specification['rules'] ?? null)
+            || ! is_array($specification['branch_rules'] ?? null)) {
+            throw ValidationException::withMessages(['specification' => 'Invalid PMS revision rule structure.']);
+        }
+
+        $scheduleOverrides = [];
         foreach ($specification['rules'] as $rule) {
-            if ($rule['rule_kind'] !== PipingRuleKind::PIPE_SCHEDULE) {
+            if (! is_array($rule)) {
+                throw ValidationException::withMessages(['specification' => 'Invalid PMS revision rule.']);
+            }
+            if (($rule['rule_kind'] ?? null) !== PipingRuleKind::PIPE_SCHEDULE) {
                 continue;
             }
-            $schedule = $rule['value']['schedule'];
-            foreach ($this->dnsIn($rule['dn_range']) as $dn) {
+            $schedule = $rule['value']['schedule'] ?? null;
+            $range = $rule['dn_range'] ?? null;
+            if (! is_string($schedule) || ! is_string($range) || ! is_string($rule['id'] ?? null)) {
+                throw ValidationException::withMessages(['specification' => 'Invalid PMS pipe-schedule rule.']);
+            }
+            foreach ($this->dnsIn($range) as $dn) {
                 $nps = $this->sizes->byDn($dn)->nps;
                 if (! $this->sizes->hasSchedule($nps, $schedule)) {
                     throw ValidationException::withMessages([
@@ -509,14 +540,30 @@ final class PipingClassService
                     ]);
                 }
             }
-            $overrides[$rule['id']] = $schedule;
+            $scheduleOverrides[$rule['id']] = $schedule;
         }
-        $violations = $this->validateBranchPads($class, $overrides);
+
+        $branchValueOverrides = [];
+        foreach ($specification['branch_rules'] as $rule) {
+            if (! is_array($rule) || ! is_string($rule['id'] ?? null)
+                || array_key_exists($rule['id'], $branchValueOverrides)) {
+                throw ValidationException::withMessages(['specification' => 'Invalid or duplicate PMS branch-rule identity.']);
+            }
+            $branchValueOverrides[$rule['id']] = $rule['value'] ?? null;
+        }
+
+        $violations = $this->validateBranchPads($class, $scheduleOverrides, $branchValueOverrides);
         if ($violations !== []) {
             throw ValidationException::withMessages([
-                'specification' => 'Revised pipe schedules fail ASME B31.3 304.3.3 pad validation: '.implode('; ', $violations),
+                'specification' => 'Revised PMS schedules or PAD materials fail ASME B31.3 304.3.3 pad validation: '.implode('; ', $violations),
             ]);
         }
+    }
+
+    /** Historical method name retained for callers from the schedule-only slice. */
+    public function assertRevisionScheduleSafe(PipingClass $class, array $specification): void
+    {
+        $this->assertRevisionDraftSafe($class, $specification);
     }
 
     /**
@@ -525,7 +572,7 @@ final class PipingClassService
      *
      * @return list<string>
      */
-    private function validateBranchPads(PipingClass $class, array $scheduleOverrides = []): array
+    private function validateBranchPads(PipingClass $class, array $scheduleOverrides = [], array $branchValueOverrides = []): array
     {
         $violations = [];
 
@@ -587,6 +634,27 @@ final class PipingClassService
             ->get();
 
         foreach ($rules as $rule) {
+            $sourceValue = array_key_exists($rule->id, $branchValueOverrides)
+                ? $branchValueOverrides[$rule->id]
+                : $rule->value;
+            if ($sourceValue !== null && ! is_array($sourceValue)) {
+                $violations[] = sprintf(
+                    '[%s x %s %s] branch-rule value must be a JSON object when present.',
+                    (string) $rule->header_range,
+                    (string) $rule->branch_range,
+                    $rule->reinforcement === 'PAD' ? 'PAD '.number_format((float) $rule->pad_thickness, 3).' mm' : 'NONE',
+                );
+
+                continue;
+            }
+            $branchValue = $sourceValue ?? [];
+            $padMaterial = $branchValue['pad_material'] ?? null;
+            if ($padMaterial !== null && ! is_array($padMaterial)) {
+                // Keep the gate fail-closed for legacy rows written outside
+                // PipingClassService; the normal authoring path rejects this.
+                $padMaterial = [];
+            }
+
             $result = $this->padGate->checkCell(
                 pressureMpa: (float) $class->design_pressure_mpa,
                 temperatureC: (float) $class->design_temperature_c,
@@ -597,6 +665,7 @@ final class PipingClassService
                 materialFor: $materialFor,
                 reinforcement: $rule->reinforcement,
                 padThickness: $rule->pad_thickness === null ? null : (float) $rule->pad_thickness,
+                padMaterial: $padMaterial,
             );
 
             foreach ($result['violations'] as $violation) {
@@ -643,6 +712,7 @@ final class PipingClassService
      * materials outside the library (owner 2026-10-12).
      *
      * @param  array<string,mixed>  $value
+     *
      * @throws ValidationException
      */
     private function assertPipeMaterialValue(array $value, string $lang): void
@@ -714,6 +784,7 @@ final class PipingClassService
      * flange-ratings reference pack: no group, no rating table, no rule.
      *
      * @param  array<string,mixed>  $value
+     *
      * @throws ValidationException
      */
     private function assertFlangeTypeValue(array $value, string $lang): void
@@ -784,6 +855,7 @@ final class PipingClassService
 
             if (! is_numeric($ratingClass) || ! is_string($spec) || trim($spec) === '') {
                 $violations[] = "[{$label}] the FLANGE_TYPE rule needs a rating_class and a material spec";
+
                 continue;
             }
 
@@ -792,6 +864,7 @@ final class PipingClassService
                 $ratedBar = $this->flangeRatings->maxPressureBar($group, (int) $ratingClass, $temperatureC);
             } catch (UnknownFlangeMaterialException|FlangeRatingOutOfRangeException $e) {
                 $violations[] = "[{$label}] {$e->getMessage()}";
+
                 continue;
             }
 

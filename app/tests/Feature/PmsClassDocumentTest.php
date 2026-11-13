@@ -6,22 +6,24 @@ namespace Tests\Feature;
 
 use App\Models\PipingClass;
 use App\Models\PipingLine;
-use App\Support\CdeState;
-use Illuminate\Support\Str;
 use App\Models\Project;
 use App\Models\Subsystem;
+use App\Services\ComponentService;
 use App\Services\DocumentRegister;
+use App\Services\PipingClassService;
+use App\Services\PipingLineService;
 use App\Services\PmsAccessService;
 use App\Services\PmsClassDocumentService;
 use App\Services\PmsLineEligibility;
 use App\Services\PmsPinnedClassSpecification;
 use App\Services\PmsRevisionDraftService;
-use App\Services\PipingLineService;
+use App\Support\CdeState;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -241,9 +243,9 @@ final class PmsClassDocumentTest extends TestCase
                 ->where('id', $oldPin)->value('specification'), true, 512, JSON_THROW_ON_ERROR);
             $forged = $reviewed;
             $forged['rules'][0]['dn_range'] = '[15,800)';
-            $this->assertTrue((bool) DB::selectOne('SELECT epcc_pms_schedule_only_delta(?::jsonb, ?::jsonb) AS ok',
+            $this->assertTrue((bool) DB::selectOne('SELECT epcc_pms_allowed_revision_delta(?::jsonb, ?::jsonb) AS ok',
                 [json_encode($oldSpec), json_encode($reviewed)])->ok);
-            $this->assertFalse((bool) DB::selectOne('SELECT epcc_pms_schedule_only_delta(?::jsonb, ?::jsonb) AS ok',
+            $this->assertFalse((bool) DB::selectOne('SELECT epcc_pms_allowed_revision_delta(?::jsonb, ?::jsonb) AS ok',
                 [json_encode($oldSpec), json_encode($forged)])->ok);
             try {
                 DB::transaction(function () use ($next): void {
@@ -291,14 +293,14 @@ final class PmsClassDocumentTest extends TestCase
             $this->assertSame('80', $issued->pipeSchedule($oldLine, 100));
             $this->assertSame('STD', $issued->pipeSchedule($newLine, 100));
             $this->assertSame('STD', $issued->ruleValue($newLine, 'PIPE_SCHEDULE', 100)['schedule']);
-            $components = app(\App\Services\ComponentService::class);
+            $components = app(ComponentService::class);
             $oldPipe = $components->place($oldLine, $author, 'PIPE', ['nominal_size' => '4']);
             $newPipe = $components->place($newLine, $author, 'PIPE', ['nominal_size' => '4']);
             $this->assertSame('80', $oldPipe->schedule);
             $this->assertSame('STD', $newPipe->schedule);
             $this->assertSame('80', $oldPipe->ports->first()->schedule);
             $this->assertSame('STD', $newPipe->ports->first()->schedule);
-            $this->assertSame('80', app(\App\Services\PipingClassService::class)
+            $this->assertSame('80', app(PipingClassService::class)
                 ->ruleFor($class, 'PIPE_SCHEDULE', 100)->value['schedule'],
                 'The live published class is frozen; line rules must follow the issue-time pin.');
             $this->assertSame(2, DB::table('piping_lines')->where('pms_class_snapshot_id', $oldPin)->count());

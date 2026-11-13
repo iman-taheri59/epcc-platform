@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Document;
-use App\Models\PipingClass;
 use App\Models\DocumentRevision;
+use App\Models\PipingClass;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -42,12 +42,12 @@ final class PmsRevisionDraftReview
         }
         foreach ($snapshots as $classId => $snapshot) {
             $spec = json_decode($drafts[$classId]->specification, true, 512, JSON_THROW_ON_ERROR);
-            $this->validator->assertScheduleOnly(
+            $this->validator->assertAllowedDelta(
                 json_decode($snapshot->specification, true, 512, JSON_THROW_ON_ERROR), $spec,
             );
             $class = PipingClass::where('project_id', $document->project_id)
                 ->whereKey($classId)->firstOrFail();
-            $this->classes->assertRevisionScheduleSafe($class, $spec);
+            $this->classes->assertRevisionDraftSafe($class, $spec);
         }
     }
 }

@@ -16,6 +16,7 @@ use App\Http\Controllers\MaterialsController;
 use App\Http\Controllers\MtrBindingController;
 use App\Http\Controllers\OrderGapController;
 use App\Http\Controllers\PipingConfigController;
+use App\Http\Controllers\PmsRevisionDraftController;
 use App\Http\Controllers\PipingCustodyAmendmentController;
 use App\Http\Controllers\PipingCustodyController;
 use App\Http\Controllers\PipingGrnController;
@@ -66,6 +67,8 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::get('/projects/{projectCode}/documents', [DocumentController::class, 'index'])->name('documents');
     Route::post('/projects/{projectCode}/documents', [DocumentController::class, 'store'])->name('documents.store');
     Route::post('/projects/{projectCode}/documents/{documentId}', [DocumentController::class, 'update'])->name('documents.update');
+    Route::get('/projects/{projectCode}/documents/{documentId}/pms/pad-materials', [PmsRevisionDraftController::class, 'editPads'])->name('documents.pms.pad-materials');
+    Route::post('/projects/{projectCode}/documents/{documentId}/pms/pad-materials/{classId}/{branchRuleId}', [PmsRevisionDraftController::class, 'updatePadMaterial'])->name('documents.pms.pad-materials.update');
 
     // Attachments (FR-DOC-01/02). Downloads are streamed through the
     // controller, never from a public disk, so every byte passes the same

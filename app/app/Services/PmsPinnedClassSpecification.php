@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\PipingLine;
-use DateTimeImmutable;
-use Throwable;
 use App\Support\Piping\PipingRuleKind;
+use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 /** Read engineering rules from a line's ISSUE-TIME PMS pin, not live class rows. */
 final class PmsPinnedClassSpecification
@@ -50,7 +50,7 @@ final class PmsPinnedClassSpecification
     }
 
     /** @param array<string, mixed> $specification
-     *  @return array<string, mixed>
+     * @return array<string, mixed>
      */
     public function ruleValueFromSpecification(array $specification, string $kind, int $dn): array
     {
@@ -97,7 +97,7 @@ final class PmsPinnedClassSpecification
         return $schedule;
     }
 
-    /** @return array<string, mixed> Issue-time branch cell, including P2P kind/pad. */
+    /** @return array<string, mixed> Issue-time branch cell, including P2P kind, PAD thickness, and optional `value.pad_material`. */
     public function branchRule(PipingLine $line, int $headerDn, int $branchDn): array
     {
         return $this->branchRuleFromSpecification($this->forLine($line), $headerDn, $branchDn);
@@ -108,7 +108,7 @@ final class PmsPinnedClassSpecification
      * authoring resolver, but reads ONLY the immutable issue-time snapshot.
      * Kept separate so the resolution contract can be tested without a DB.
      *
-     * @param array<string, mixed> $specification
+     * @param  array<string, mixed>  $specification
      * @return array<string, mixed>
      */
     public function branchRuleFromSpecification(array $specification, int $headerDn, int $branchDn): array
@@ -145,8 +145,7 @@ final class PmsPinnedClassSpecification
                 'piping_class_id' => "No issued PMS branch rule covers DN{$headerDn} x DN{$branchDn}.",
             ]);
         }
-        usort($matches, static fn (array $a, array $b): int =>
-            ($a['width'] <=> $b['width']) ?: ($b['priority'] <=> $a['priority'])
+        usort($matches, static fn (array $a, array $b): int => ($a['width'] <=> $b['width']) ?: ($b['priority'] <=> $a['priority'])
                 ?: ($a['at'] <=> $b['at']));
         if (isset($matches[1]) && $matches[0]['width'] === $matches[1]['width']
             && $matches[0]['priority'] === $matches[1]['priority']
