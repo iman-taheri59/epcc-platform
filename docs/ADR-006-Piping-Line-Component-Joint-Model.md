@@ -725,13 +725,34 @@ the physical branch line. `JointService::separate()` clears wall-root links
 and moves unfitted root dependents back to the branch register; a fitted
 dependent blocks that operation for revision handling.
 
-**Two axes, because we have no geometry.** Plant 3D stores the circumferential
-offset and derives the station from 3D coordinates; we cannot derive anything,
-so both are stored: `branch_station_mm` along the header from its upstream end,
-and `branch_offset_mm` signed from the centreline (0 = concentric). Both are
-bounds-checked at creation — the station within the header's length, the offset
-within its outer radius — because a location that cannot be checked is a note,
-not a design.
+**Position and branch orientation, because we have no 3D geometry.** Plant 3D
+derives the station and circumferential position from 3D coordinates; the
+implemented location fields are explicit: `branch_station_mm` along the header
+from its upstream end, and `branch_offset_mm` signed from its centreline
+(0 = concentric). The offset is a positional value, not an orientation angle.
+
+**Implementation status:** the joint schema now persists station, offset, and
+`branch_longitudinal_angle_deg` for direct P2P roots. β is the explicitly
+entered smaller angle between branch and header axes, in degrees, limited to
+45°–90°; station, offset and joint kind never supply it. Existing P2P roots
+whose angle was not recorded remain NULL rather than being backfilled by
+assuming 90°. OLET wall roots and pad fillets do not carry this P2P-only field.
+
+`branch_circumferential_angle_deg` (θ) and component rotation remain absent.
+The current PAD perimeter method v2 requires a recorded β=90° and zero offset;
+a non-perpendicular root can be modelled but is not eligible for PAD
+installation until an approved angled-saddle perimeter method is defined. It
+does not consume θ or component rotation. This branch-specific β field does not resolve the
+broader component-orientation design below.
+
+**Scope limitation — general component orientation.** These β/θ fields are a
+branch-joint geometry contract only; they do not provide manual, component-level
+slope/rotation entry or transform general component/port geometry. The owner has
+now recorded that broader project requirement as SRS `FR-ENG-16` (2026-10-26),
+formalized in [ADR-061](ADR-061-MANUAL-COMPONENT-ORIENTATION-AND-GEOMETRY-CALCULATIONS-EN.md)
+and tracked in P-26. Coordinate frames, rotation
+conventions and the dependent calculation catalogue remain for detailed design;
+nothing in this branch-specific contract resolves them.
 
 **Numbering, verdict and dia-inch.** The joint sequence and its issued branch-
 rule verdict both follow the selected owner's line: `BRANCH` uses the branch
@@ -795,3 +816,101 @@ parser/admission remains read-only for `TAP-CONNECTION`; recognizing that text
 does not create either OLET interface or authorize model writes. A full weld
 log/report and the wider WPS/PQR, qualification, NDT/repair and traceability
 workflow remain outside this modelling change.
+
+## 16. Direct P2P reinforcement-pad assembly
+
+A PAD rule on a direct stub-in/stub-on connection now has a first-class
+physical representation. The model-page selector exposes only uncovered
+direct P2P roots whose header-issued rule resolves to a matching P2P kind and
+positive pad thickness; the service repeats this check during installation.
+The **header pipe's line-issued PMS snapshot** governs the actual header-DN ×
+branch-DN pair. The branch root's existing register owner
+does not change: the pad requirement is resolved from the header line as
+specified, even when the root itself remains branch-owned.
+
+One install transaction creates one `BRANCH_PAD` component on the physical
+branch line and exactly two separate, numbered `FILLET_WELD` joints:
+`HEADER` is pad-to-header-pipe and `BRANCH` is pad-to-branch-pipe. Both joints
+are registered on the header line, so their numbering and class provenance
+follow the header class. The pad stores the header line and immutable PMS
+snapshot, the resolved rule kind/thickness, both physical pipes, the exact
+branch-root/branch-pipe port, the frozen ideal contact curve, a separately
+constructed sampled outer perimeter, its two bounding spans, and the geometry
+inputs and assumptions used to derive them. The fillets copy that class result
+and thickness.
+
+The contact curve and PAD outer boundary are separate geometric objects; the
+B31.3 reinforcement zone is a third, independent concept. For a centred 90°
+branch, let `Rh = Dh/2` and `Rb = Db/2`. In a local mathematical frame (header
+axis `+X`, branch axis `+Z`, header circumferential coordinate `+Y`), the
+ideal outer-cylinder intersection is:
+
+```
+x(u) = Rb cos(u)
+y(u) = Rb sin(u)
+z(u) = sqrt(Rh² - y(u)²),  0 ≤ u ≤ 2π
+```
+
+It satisfies both OD-cylinder equations `x²+y²=Rb²` and `y²+z²=Rh²`. On the
+unrolled header OD its developed circumferential coordinate is
+`s(u)=Rh·atan2(y(u),z(u))`; the exact developed contact span is
+`S=Dh·asin(Db/Dh)` (asin in radians), and its header-axis span is `Db`.
+The local parameter `u` is only for this analytic profile—it is not user θ,
+clocking, or component rotation. The contact-profile points and equations are
+persisted separately from any PAD outline.
+
+The outer PAD boundary is constructed independently in the developed header
+surface. For this method, the selected uniform edge extension is
+`e = d2 - Db/2`, and the nominal perimeter is the closed-disk offset of the
+region enclosed by the developed contact curve by radius `e`. This makes the
+physical header-axis span `D_s = Db + 2e = 2d2`; its developed circumferential
+span is `S + 2e`. The perimeter is stored as a closed sampled polyline (64
+contact segments and a 64-direction offset disk); its two named dimensions are
+bounding spans of that outer perimeter, not the contact curve itself and not
+`d1`/`d2`. The separate B31.3 zone extension `d2 - d1/2` remains zone data and
+is not substituted for the physical perimeter offset.
+
+This perimeter rule is a nominal geometric construction, not an outline
+mandated by B31.3 and not a code minimum. `d1`/`d2` retain their §304.3.3
+reinforcement-zone meaning; the area-replacement calculation is unchanged.
+The record includes the analytic contact definition, sampled contact points,
+perimeter construction, edge extension, sampled perimeter, OD inputs, and
+assumptions. The local axes in the profile do not settle the project-wide
+coordinate frame deferred by ADR-061.
+
+The root now carries an explicit P2P β field, but this perimeter method is
+still limited to a recorded β=90° and a centred root
+(`branch_offset_mm = 0`). Non-zero offsets and other β values are refused for
+PAD installation; recording β alone does not define the circumferential
+clocking or authorize an angled-saddle formula. While a pad is installed, the
+database also refuses a change to the root's recorded β, preventing its frozen
+geometry snapshot from drifting; remove the pad assembly before revising that
+angle. The calculation does not use θ or component rotation. The construction
+uses no `+10 mm` shop allowance, wall-thickness compensation, fit-up clearance,
+kerf, weld preparation, or fabrication tolerance. The sampled developed-surface
+perimeter is a nominal geometric profile, not an ASME minimum dimension, a
+verified reinforcement-area verdict, a branch-wall cut path, or a fabrication
+drawing. Clearance and production tolerances must be specified separately.
+The existing area-replacement and pad-thickness calculations are unchanged.
+
+The pad's two named interfaces are real pad-component ports, but this does not
+add a port to either pipe or replace/reassign the existing P2P root. The
+header-side fillet references the root's checked station/offset; the
+branch-side fillet targets the recorded branch pipe without inventing another
+pipe-wall location. Ordinary cross-line two-port tie-ins remain prohibited.
+OLET pads are deliberately not included: this implementation does not infer
+which OLET interface a pad would reinforce or extend unverified OLET/PMS
+semantics.
+
+A deferred database completion guard requires the HEADER and BRANCH fillets,
+with distinct IDs/numbers, correct pad ports and target pipes, and header-line
+ownership before commit. Individual fillets and a root with an installed pad
+cannot be separated; removing the physical pad removes both unfitted fillets
+atomically, while either fitted fillet blocks removal for revision handling.
+The model/register reports the two pad welds separately from branch-root weld
+metrics and does not invent dia-inch from pipe diameter in the absence of a
+weld-length rule. The installed-pad card shows each fillet's header-register
+number, B31.3 minimum design throat, and theoretical equal-leg equivalent,
+while stating that actual as-welded size and inspection acceptance are not
+recorded. The pad's future MTO/material integration remains the separate P-23
+decision.

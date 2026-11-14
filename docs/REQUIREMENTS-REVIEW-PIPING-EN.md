@@ -76,3 +76,22 @@ full weld-log/report UI, contract rates, welder qualification, WPS/PQR,
 NDT/repair workflow, and a PCF-to-model writer remain open. The PCF
 parser/admission remains read-only and warns about taps instead of creating a
 joint. The 2026-10-12 findings table is retained as a historical snapshot.
+
+## Follow-up finding R-9 — 2026-10-26: general manual component orientation
+
+**Finding:** ADR-006 §14 records branch-joint-specific β/θ and header reference
+geometry. It does not require general component-level entry of slope/inclination
+and rotations, or the resulting transformations and geometry-dependent
+calculations. The branch-angle fields alone do not meet this broader project
+need.
+
+**Owner direction:** users must be able to enter component slopes and rotations
+manually, and the system must calculate the resulting geometry and dependent
+relationships/checks.
+
+**Disposition:** requirement registered in `docs/SRS-EPCC-Platform.md`
+(`FR-ENG-16`, Must), formalized in [ADR-061](ADR-061-MANUAL-COMPONENT-ORIENTATION-AND-GEOMETRY-CALCULATIONS-EN.md),
+and tracked as **P-26** in `docs/IMPROVEMENT-PROPOSALS-EN.md`. Requirement
+recording is complete; coordinate frames, conventions, calculation scope,
+detailed design and implementation remain open. No general
+component-orientation implementation is claimed here.

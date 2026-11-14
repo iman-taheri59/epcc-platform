@@ -143,7 +143,9 @@
                     "OUTLET",
                     "LARGE",
                     "SMALL",
-                    "NOZZLE"
+                    "NOZZLE",
+                    "PAD_HEADER",
+                    "PAD_BRANCH"
                   ]
                 },
                 "defaultEnd": {

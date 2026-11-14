@@ -17,7 +17,8 @@ operational workflow may remain open) · `BUILT` (all stated acceptance met) ·
 
 Last updated: **2026-10-26** (P-21/P-22 OLET-path reconciliation; targeted
 OLET/joint regressions passed 84 tests / 218 assertions; full-suite run is
-separate).
+separate; owner requirement P-26 for general manual component orientation
+recorded in SRS FR-ENG-16, with detailed design/implementation still open).
 
 ---
 
@@ -45,11 +46,12 @@ separate).
 | P-18 | Docs drift | `Prototype-Coverage-Map.md` recount after procurement + piping + MTO (audit §3 item 4) | OPEN |
 | P-19 | Runtime | In-sandbox PostgreSQL provisioned (PG tier BUILT); PHP tier network-blocked — Laravel work stays on the Docker/Laragon tier | PARTIAL |
 | P-20 | Code / portability | `PdfRenderer` is POSIX-only (`command -v`) — PDF export silently unavailable on Windows/Laragon | OPEN |
-| P-21 | Requirement / piping | Branch welds (P2P stubs and OLETs) must be first-class, separately countable with physical dia-inch and traceable pad/class | PARTIAL — P2P and OLET wall weld models, issued-snapshot verdicts and `lineMetrics()` delivered; weld report, rates, WPS/PQR, welder qualification, NDT/repair and UI remain open |
-| P-22 | Requirement / piping | Branch welds land on the header *wall*, but the joint model originally connected two ports — select and implement a safe wall-reference shape | DECIDED + MODELLED for P2P and OLET in ADR-006 §§14–15; PCF reader remains read-only, wall-joint UI/model writer remains open |
+| P-21 | Requirement / piping | Branch welds (P2P stubs and OLETs) must be first-class, separately countable with physical dia-inch and traceable pad/class | PARTIAL — P2P/OLET wall-weld models, issued-snapshot verdicts, `lineMetrics()`, and the direct-P2P pad assembly (one pad plus two separately numbered header-owned fillets) delivered; weld report, rates, WPS/PQR, welder qualification and NDT/repair remain open |
+| P-22 | Requirement / piping | Branch welds land on the header *wall*, but the joint model originally connected two ports — select and implement a safe wall-reference shape | DECIDED + MODELLED for P2P and OLET in ADR-006 §§14–15; explicit wall-root UI is present, PCF reader remains read-only and PCF-to-model writer remains open |
 | P-23 | Requirement / MTO | MTO has no coverage of branch-connection material: reinforcement pads (plate) and coped stub ends | OPEN — scope decision |
 | P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator + B31.3-2024 materials pack + class design basis + publish-gate validation built; **flange step built 2026-10-12**: ASME B16.5-2025 P-T ratings pack (45 SI tables, cross-checked against the Customary twin) + `FlangeRatingReference` + publish gate rating every FLANGE_TYPE cell against the class design basis; B16.47 large-diameter + Section II Part D extensions remain follow-ups; runtime verification on owner's Laragon pending | PARTIAL — Step B + flange gate built |
 | P-25 | Standards / data | Parallel-session engineering reference library discovered on the owner-published `workspace` branch and ported (commit `bf15816`): full B31.3-2024 Table A-1 stresses (798 rows/138 specs), materials library v1.8, B16.5+B16.47 flange P-T curves, bolting, B16.9 fitting dimensions, valve packs, per-pack schemas and the 2,835-line validator; both flange provenances cross-checked cell-by-cell (4,725/4,725 exact). **Steps 1-4 ported; step 5 catalogue/adoption-only adaptation implemented (awaiting Laragon verification)**: ADR-019 documents ITP-only citation host/migration and mutable-edition conflict; owner chose option A; citation/ITP still deferred. Compatibility assessment (`3bdff9b`) + engineering screening & fitting-review module + MR entry module ported (awaiting Laragon test runs). Next: Laragon verification; group A fluid-service classification implemented pending tests (ADR-020); step 7 baseline/model-import assessed as no-go for wholesale port, owner approved parser-only; pure PCF parser ported (ADR-021), branch-vocabulary conflict handled by a read-only P2P classifier (ADR-022); model importer/baseline deferred | PARTIAL — porting in progress |
+| P-26 | Requirement / engineering model | Manual component slope/orientation/rotation entry and calculated transformed geometry, beyond branch β/θ alone | ACCEPTED — SRS FR-ENG-16 and [ADR-061](ADR-061-MANUAL-COMPONENT-ORIENTATION-AND-GEOMETRY-CALCULATIONS-EN.md) recorded; design/implementation open |
 
 ---
 
@@ -334,11 +336,17 @@ following behavior through welding/reporting:
 **Current status (2026-10-26): PARTIAL — do not mark P-21 complete.** The
 joint schema/service stores P2P stub kinds and the OLET root-wall weld as
 separate branch kinds; `lineMetrics()` counts the OLET connection once while
-including both physical OLET welds in total weld/dia-inch figures. The issued
-PMS verdict and pad thickness travel with the branch weld, and
-`branchDeviation()` makes mismatch observable. See ADR-006 §§14–15 and ADR-008
-§§9.4–9.5. Targeted joint coverage has passed, but this is the model/register
-slice, not the full welding phase.
+including both physical OLET welds in total weld/dia-inch figures. For a direct
+P2P PAD rule, the model workflow now creates one physical pad plus two
+separately numbered `FILLET_WELD` records (pad-to-header and pad-to-branch
+pipe), both registered against the header line's issued PMS class; the existing
+branch root and pipe topology do not move. OLET pad eligibility remains
+intentionally unassumed. The issued PMS verdict and pad thickness travel with
+the records, and `branchDeviation()` makes branch-kind mismatch observable.
+See ADR-006 §§14–16 and ADR-008 §§9.4–9.6. Targeted PostgreSQL-backed feature
+suites cover the model/register slice; a weld report, rates, WPS/PQR, welder
+qualification and NDT/repair remain open, so this is not the full welding
+phase.
 
 **Acceptance for the whole proposal:** schema and tests; branch-weld count and
 breakdown by kind/branch size/pad; a user-facing weld report; class deviation
@@ -399,7 +407,7 @@ and resolves a unique host UCI, but no writer applies a tap to the model.
 station/offset bounds, unchanged two-port header/open-port behavior, branch-line
 ownership, physical branch-size dia-inch, and class/pad snapshot with deviation
 observable. The distinct OLET representation is in ADR-006 §15. **Deliberately
-not built:** PCF upload/preview/commit, geometry projection, wall-joint UI,
+not built:** PCF upload/preview/commit, geometry projection/application,
 multi-leg CROSS application, or cross-line tie-in. A representation/reader
 slice does not make P-21, P5 welding/NDT, or PCF import complete.
 
@@ -414,8 +422,12 @@ which affects cut length and offcut. Neither is on any MTO list today.
 
 **Proposal:** when the MTO↔piping integration phase is designed, add (1)
 reinforcement pads as plate material rows sourced from the class rule, and
-(2) stub/cop allowance in branch-pipe length calculation. **Status:** OPEN —
-scope/commercial decision, waits for the owner per rule 5.
+(2) stub/cop allowance in branch-pipe length calculation. For a PAD cell, the
+optional PMS field is `branch_rule.value.pad_material` (same material shape as
+`PIPE_MATERIAL`); when omitted, PAD material defaults to the header DN's issued
+`PIPE_MATERIAL` rule. Both the resolved identity and the applied
+`min(1,S_pad/S_run)` area ratio are snapshotted at installation. **Status:**
+OPEN — the MTO/commercial integration remains a separate scope decision.
 
 ## P-24 — ASME B31.3 §304.3.3 validation of pad thickness in the PMS (owner requirement)
 
@@ -451,7 +463,7 @@ PMS استفاده شود»*. The requirement text and the formulas live in ADR-
   | Allowable stress `S(T)` (B31.3 Table A-1) | **MISSING** — no material master, no stress reference pack | decision needed |
   | Joint factor `E`, weld reduction `W`, coefficient `Y` | **MISSING** | decision needed |
   | Mill-tolerance deduction convention (`T` = nominal minus tolerance) | **MISSING** — convention to record | decision needed |
-  | Pad material stress ratio | **MISSING** — pad spec not captured; calculator defaults to 1.0 | deferred |
+  | Pad material stress ratio | **BUILT** — optional branch-rule `value.pad_material`, otherwise the header's issued PIPE_MATERIAL; `min(1,S_pad/S_run)` is applied and snapshotted | implemented |
   | Branch angle β | convention 90° (laterals not modelled in PMS tables) | OK |
   | The calculation itself | **BUILT** (Step A) | `BranchReinforcementCalculator` |
 
@@ -615,6 +627,28 @@ one carries the B16.47 curves and Class 800 derivation.
    conform to the ported `standards-pack.schema.json` convention
    (refId/version/units shape) and are not registered in the validator's
    REF_PACKS; they remain guarded by their builder scripts and PHP tests.
+
+
+## P-26 — Manual component slope, rotation and calculated geometry (owner requirement)
+
+Recorded 2026-10-26 in SRS `FR-ENG-16` and formalized in
+[ADR-061](ADR-061-MANUAL-COMPONENT-ORIENTATION-AND-GEOMETRY-CALCULATIONS-EN.md).
+This is a component/model-level capability, broader than the current
+branch-joint β/θ fields. Users must be
+able to enter and update manual component slope/inclination and rotations about
+relevant axes. The system must resolve the input to a 3D pose, transform local
+component geometry—including port/connection-point locations and directions—
+into model coordinates, and recalculate/report affected connection/joint
+geometry and applicable geometry-dependent checks after a change. Manual entry
+must not depend on the availability of CAD, PCF or other model import.
+
+**Status: ACCEPTED — requirement recorded; detailed design and implementation
+OPEN.** This does not authorize native CAD authoring or decide every downstream
+engineering formula. Before implementation, define the component anchor/origin,
+coordinate frame, units and slope representation, axis/sign/zero conventions,
+rotation composition order, tolerances, imported-model conflict behavior, and
+the calculation/check catalogue. Do not infer those choices from provisional
+branch θ.
 
 
 ## How to use this file

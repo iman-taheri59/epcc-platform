@@ -357,7 +357,9 @@ Pipe-to-Pipe هم داشته باشد، به نام **P2P**، با دو نوع �
 - **`BranchReinforcement`**: `NONE` / `PAD`. Owner rule: a PAD requires its
   thickness — `pad_thickness numeric(8,3)` in **millimetres**, mandatory and
   > 0 whenever `reinforcement = 'PAD'`; a stray thickness without a pad is
-  refused too. Both invariants are CHECK-backed and service-validated.
+  refused too. Both invariants are CHECK-backed and service-validated. A PAD
+  may optionally declare `value.pad_material` in the `PIPE_MATERIAL` value
+  shape; if absent, it inherits the header DN's issued `PIPE_MATERIAL`.
 - **Live verification on sandbox PostgreSQL** caught and fixed a NULL trap:
   a CHECK of the shape `(type='P2P' AND kind IN (...)) OR (...)` PASSES when
   the first branch evaluates to NULL, so a P2P row without its kind slipped
@@ -399,19 +401,50 @@ PASS when A2 + A3 + A4 ≥ A1                      (eq 6a)
 Nomenclature: `h`=run/header, `b`=branch; `D`=OD, `T`=nominal wall (mill
 tolerance deducted), `t`=pressure-design thickness per B31.3 para 304.1.2,
 `c`=corrosion + mechanical allowances, `β`=branch angle (45°–90°),
-`Tr`=pad thickness. Weld credit follows para 328.5.4 minimum dimensions
-(throat = lesser of 0.7·Tb and 6 mm; Appendix-H convention 2·tc²). When
-branch or pad material allows less stress than the run, its area scales
-down in the same ratio (para 304.3.3(f)(3)).
+`Tr`=nominal PAD thickness in the current rule; for a PAD cut from pipe,
+`Tr,min = 0.875·Tr` is used in `L4` and pad-metal area, while the weld minima
+use nominal `Tr`. Weld credit follows para 328.5.4 and Appendix H H301/H302:
+`tc` is the lesser of 0.7 times the **nominal** branch wall and 6 mm, kept
+separate from mill-tolerance-reduced `Tb`. The root branch-to-run weld credits
+`2·tc²`; when a PAD is present, the outer-edge-to-run weld additionally
+credits `2·(0.5·Tr)²` using nominal `Tr`. The separate PAD-to-branch attachment
+is required but is not added as extra A4 credit in H302. The PAD metal slice is
+bounded by both its physical span `D_s` along the run and the reinforcement
+zone: `A4,pad = min(D_s−Db, 2·d2−Db)·min(T_{r,min}, L4)·min(1,S_pad/S_run)`.
+A PAD rule may declare an optional `value.pad_material` using the same
+validated material shape as `PIPE_MATERIAL`, including its applicable stress
+override and Section IX welding identity. If it is absent, PAD material defaults to the header DN's
+issued `PIPE_MATERIAL` rule; the installation snapshot records both source
+and resolved identity. The A4 metal contribution is multiplied by
+`min(1,S_pad/S_run)` at the class design temperature, so the default same
+material gives a ratio of 1 and a weaker explicit material is reduced.
+Figure 304.3.3-1 note (2) proportions the physical A4 width against the full
+minimum saddle thickness `T_{r,min}`; `L4` clips the credited area height, but
+does not make an over-thick PAD physically wider. The ratio must be at least
+1:1 and is preferably near 4:1 where geometry allows; only the 1:1 limit is a
+hard validation. If branch allowable stress is below run stress,
+`A3` is reduced by `S_branch/S_run` (para 304.3.3(c)(2)); higher branch or
+reinforcement stress earns no extra credit (para 304.3.3(f)(4)). Before
+balancing areas, both mill-tolerance-reduced pipe walls must satisfy
+`T ≥ t + c` (para 304.1.1(a)); an area deficit cannot be hidden by clipping
+negative `A2`/`A3` to zero. The Eq. (3a) wrapper also refuses `t ≥ D/6`
+**or** `P/(S·E) > 0.385`, either of which requires the special consideration
+of para 304.1.2(b).
 
 **Validation semantics.** A recorded `pad_thickness` is valid when the
 check passes for the **worst case** inside the rule's header×branch
 footprint — every (DN_header, DN_branch) pair sized with the schedules its
 own class rules assign and the class's design conditions. Where no pad is
 recorded (`reinforcement = NONE`), the same check must show the bare
-connection already passes, or the rule must say `PAD`. The platform must
-also be able to **compute the minimum required pad thickness** (there is no
-closed form — Tr also feeds L4 — so the implementation bisects).
+connection already passes, or the rule must say `PAD`. PMS branch cells do not contain root geometry, so publication checks the full supported β domain rather than guessing a perpendicular branch. This **is implemented** by evaluating both endpoints, 45° and 90°, plus every geometry transition where the area balance changes affine regime. Let `x = csc(β)`, `K = Db − 2(Tb − c)` and `C = (Tb − c) + (Th − c)`: then `d1=Kx`, `d2=min(Dh, max(Kx, C+Kx/2))`, and the area balance is piecewise affine in `x`. Candidate points include the `d1`/half-width crossover, active reinforcement-zone cap, any zero/finite-pad-width transitions, and the capped-zone `A2` clip. The minimum over the supported angle interval is therefore captured at a candidate; the controlling `beta_deg` is retained with the worst pair result. Required pad thickness is solved at failing candidates, and the largest requirement controls the class cell.
+
+The direct P2P wall-root model records an explicit
+`branch_longitudinal_angle_deg` from 45°–90°; existing unrecorded roots remain
+NULL rather than being assigned a guessed angle. The publication gate covers
+that whole angle domain, so it does not rely on one root angle. PAD perimeter
+method v2 separately accepts only a centred root with β=90°; recording an
+oblique β does not approve an angled-pad outline. The platform also computes the minimum
+required pad thickness by bisection because `Tr` changes `L4`.
 
 **Status.** Step A (done 2026-10-12, proposal P-24): the pure calculation
 itself — `App\Services\BranchReinforcementCalculator` with
@@ -460,6 +493,35 @@ refused with a bilingual message listing each failing cell. Covered by
 `Tests\Feature\PipingPadGateTest` on pack-computed matrices. Commits
 `55272b2`, `551b160`, `ae5351c`; runtime verification pending on the
 owner's Laragon tier.
+
+**B31.3-2024 PDF reconciliation (2026-10-26).** The attached edition's
+§304.3.3 and Figure 304.3.3-1 (printed pp. 25–28), §328.5.4 (printed pp.
+70–71), and Appendix H Examples H301/H302 (printed pp. 445–447) were extracted
+and checked against the calculators. The existing `A3` stress-ratio reduction,
+wall-thickness refusal, §304.1.2(b) limits, nominal root-weld sizing, and exact
+45°–90° β sweep remain in force. PAD A4 now uses the two-axis saddle geometry's
+span along the run, is clipped to the reinforcement-zone width, and uses the
+0.875 minimum-wall factor for pipe-saddle metal thickness. Root and PAD-edge
+weld credits are separately calculated per H301/H302; the required
+PAD-to-branch fillet throat is recorded separately but earns no extra H302
+area credit. Figure 304.3.3-1 note (2)'s 1:1 minimum ratio is a hard gate and
+installation validation; its near-4:1 preference is advisory. The H302
+regression recalculates Eq. (3a) at the published 4.347 MPa: exact
+`17.48×0.875 = 15.295 mm` gives pad area 1,425.419 mm² (vs the example's
+rounded 1,426) and credited weld area 224.775 mm² (vs 225); the balance is
++4.622 mm² at 4.347 MPa and −1.519 mm² at 4.352 MPa. The gate rejects an
+insufficient recorded thickness after applying its material ratio. Regression
+coverage includes header fallback, weaker explicit PAD stress, the stronger-
+material cap, and malformed optional PSL data. Geometry remains a centred 90°
+method; no θ or component rotation is used. A branch cell may explicitly declare
+`value.pad_material`; if absent, PAD material defaults to that header DN's
+issued `PIPE_MATERIAL` rule. The selected material identity, design-temperature
+allowable stress, source (explicit or default), and applied
+`min(1,S_pad/S_run)` ratio are frozen in the installation snapshot; the
+publish gate uses the same material rule. Actual as-welded sizes are not
+recorded or verified. PHPUnit could not be run because PHP, Composer, and application dependencies are absent; the
+changed PHP source/tests were syntax-parsed with `php-parser`, and independent
+Python numeric checks covered H302, the β-sweep, and the fallback-versus-weaker-PAD-stress gate fixture.
 
 **Flange rating step (2026-10-12, BUILT).** The owner-uploaded ASME
 B16.5-2025 extends Step B to flanged joints:
@@ -528,8 +590,9 @@ reports agreement, mismatch or an ungoverned case; it does not overwrite the
 observation with the verdict.
 
 **Deliberately not built.** This slice does not create a complete branch
-welding workflow. There is no wall-joint UI or PCF-to-model writer, no weld log,
-NDT/repair loop, welder qualification or WPS/PQR linkage, and no contract rate
+welding workflow. The line-model UI now creates explicit wall roots and the
+direct-P2P pad pair (§9.6), but there is still no PCF-to-model writer, weld
+log, NDT/repair loop, welder qualification or WPS/PQR linkage, or contract-rate
 schedule. Generic OLET subtypes are not a PCF import classification: the
 read-only PCF parser does not make an OLET model-connectable or write either
 interface. Do not mistake the P2P `joinToWall()` path for an OLET shortcut.
@@ -598,8 +661,94 @@ vocabulary and opening it is a separate decision.
 
 **Deliberately not built.** The verdict is recorded and deviation is
 observable, but mismatch does not hard-block the physical joint. There is no
-screen showing `branch_ungoverned`, no wall-joint UI or PCF-to-model writer,
-and no WPS/PQR, welder qualification, NDT/repair or contract-rate workflow.
-P2P and OLET wall joints are now representable through distinct service paths;
-these remaining items are separate acceptance criteria, not implied by
-§§9.4–9.5.
+report/dashboard for `branch_ungoverned`, no PCF-to-model writer, and no
+WPS/PQR, welder qualification, NDT/repair or contract-rate workflow. The
+model page creates explicit P2P/OLET wall roots, and direct-P2P PAD cells use
+the two-fillet assembly in §9.6; these remaining items are separate acceptance
+criteria, not implied by §§9.4–9.6.
+
+### 9.6 Direct P2P PAD rule — physical pad plus two header-governed fillets
+
+A physical `PAD` rule is supported only for `P2P` with `STUB_IN` or `STUB_ON`;
+TEE and OLET/SOCKOLET rules cannot declare a pad. Authoring validation and a
+PostgreSQL check reject new non-P2P PAD rules, and the publish gate refuses any
+legacy row that contradicts this restriction.
+
+When an issued rule declares `P2P` + the matching `STUB_IN`/`STUB_ON` kind
+with `reinforcement = PAD`, installation snapshots the resolved thickness,
+stores the analytic OD contact curve and a separate sampled outer perimeter
+with its bounding spans, and creates a physical pad plus two separate, numbered
+fillet joints: pad-to-header pipe and pad-to-branch pipe. The circumferential
+span is around the header; the header-axis span is along the run. Inputs are
+the actual header/branch ODs and component schedules, schedule walls reduced
+by the reference 12.5% mill-tolerance factor, and the greater corrosion
+allowance from the two lines' issued PMS snapshots.
+
+For a centred right-angle saddle, the existing B31.3 values `d1` and `d2`
+remain the source of the reinforcement-zone limits. The ideal outer-cylinder
+contact curve is defined separately in the local frame by
+`x=Rb·cos(u)`, `y=Rb·sin(u)`, `z=sqrt(Rh²−y²)`, where `Rh=Dh/2`, `Rb=Db/2`,
+and `0≤u≤2π`. On the unrolled header shell, `s=Rh·atan2(y,z)`; its exact
+developed contact span is `S=Dh·asin(Db/Dh)` (asin in radians), while its
+header-axis span is `Db`. This is only a local mathematical frame, not a
+project-wide orientation or θ convention.
+
+The PAD outer perimeter is a second, independent shape: the developed contact
+footprint is expanded by a closed disk of radius `e=d2−Db/2`, which must be
+non-negative. This nominal uniform shell-surface offset makes its physical
+header-axis span `D_s=Db+2e=2d2`; its developed circumferential span is `S+2e`.
+The perimeter is persisted as a closed sampled polyline separately from the
+analytic contact curve. The two stored PAD dimensions are bounding spans of
+that outer perimeter; they are not the contact curve, and `d1`/`d2` remain
+zone limits rather than a perimeter description. The B31.3 zone slack
+`d2−d1/2` is not substituted for the physical perimeter offset. This uniform
+offset is a modelling convention, not a B31.3-mandated outline or minimum
+PAD dimension. The code supplies the reinforcement-zone limits and A4 span
+checks, not a fabrication saddle-cut contour.
+
+For the current pipe-saddle rule, the physical `D_s` span is used to cap the
+credited `A4` pad width at `min(D_s−Db, 2·d2−Db)`. Nominal pad thickness is
+reduced by 0.875 for L4 and pad-metal area; the root and pad-to-run edge weld
+credits are separate per H301/H302, while the required pad-to-branch
+attachment weld is recorded without extra A4 credit. The installation
+snapshot records credited A4 width, credited area height
+`min(T_{r,min}, L4)`, and area. Figure 304.3.3-1 note (2)'s physical
+width-to-height ratio is checked separately as `A4 width / T_{r,min}` using
+the full minimum saddle thickness (not the L4-clipped area height); the 1:1
+minimum is enforced and the near-4:1 preference is advisory. The class gate
+applies the same physical span-based A4 model while retaining its full
+45°–90° β sweep. An optional PAD material is declared as
+`branch_rule.value.pad_material` with the `PIPE_MATERIAL` shape; when absent,
+it defaults to the header DN's issued `PIPE_MATERIAL` rule. A4 metal credit
+uses `min(1,S_pad/S_run)` at the class design temperature, and the selected
+material identity, source, stress and ratio are frozen in the PAD snapshot.
+
+The current joint schema stores an explicit P2P β field (45°–90°), but has
+no θ or component-rotation field. PAD installation requires the root's recorded
+β=90° and zero offset; it does not assume or infer β, and refuses other β
+values until an approved angled-saddle method exists. While a PAD is installed,
+the database locks a change to the root's β so the frozen geometry snapshot
+cannot drift; remove the assembly before revising the angle. The PAD contact
+curve and perimeter method do not use θ or component rotation. The sampled
+perimeter is a nominal geometric profile—not a code minimum, area-replacement
+pass, branch-wall cut path, or fabrication drawing. No wall compensation,
+`+10 mm` workshop allowance, fit-up clearance, weld preparation, kerf, or
+fabrication tolerance is applied; these require separate engineering and shop
+definition.
+
+The pad and both fillets resolve from and retain the header line's issued PMS
+class, regardless of the existing P2P root's register owner. To preserve that
+rule/owner coupling, both fillet joints are registered on the header line; the
+root itself is not silently reassigned.
+
+This path is intentionally limited to direct P2P roots. An OLET's purchased
+fitting introduces another physical interface, and no OLET pad geometry or PMS
+rule behavior is inferred here. The OLET remains governed by its separate
+wall-root path in ADR-006 §15.
+
+The service enforces the issued rule and exact P2P kind; PostgreSQL guards the
+pad/root/port/target relationship and commit-time completeness of the two
+fillets. Fillet welds count as numbered welds but contribute no guessed dia-inch: a
+pad outline length cannot be derived from nominal pipe size. This modelling
+slice does not close P-23's pad-material/MTO question or the broader P-21
+weld-report and welding/NDT workflow.

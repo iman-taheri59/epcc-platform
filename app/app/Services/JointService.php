@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\BranchPad;
 use App\Models\Component;
 use App\Models\Joint;
 use App\Models\PipingLine;
@@ -267,6 +268,7 @@ final class JointService
      * default is BRANCH.
      *
      * @param  string  $kind  JointBranchKind::STUB_IN or ::STUB_ON
+     * @param  float  $branchLongitudinalAngleDeg  explicit smaller angle between branch/header axes (45..90)
      * @param  array<string, mixed>  $attributes
      *
      * @throws ValidationException
@@ -277,6 +279,7 @@ final class JointService
         string $kind,
         float $stationMm,
         float $offsetMm,
+        float $branchLongitudinalAngleDeg,
         User $actor,
         array $attributes = [],
     ): Joint {
@@ -304,6 +307,8 @@ final class JointService
             ]);
         }
 
+        $this->assertP2pBranchAngle($branchLongitudinalAngleDeg);
+
         $branchComponent = $branchPort->component;
 
         if ($branchComponent?->template_code === 'OLET') {
@@ -323,7 +328,8 @@ final class JointService
         $verdict = $this->wallVerdictFor($ownerLine, $header, $branchPort);
 
         return DB::transaction(function () use (
-            $branchPort, $header, $kind, $stationMm, $offsetMm, $branchLine, $headerLine, $ownerLine, $actor, $attributes, $verdict,
+            $branchPort, $header, $kind, $stationMm, $offsetMm, $branchLongitudinalAngleDeg,
+            $branchLine, $headerLine, $ownerLine, $actor, $attributes, $verdict,
         ): Joint {
             $this->lockLines($branchLine, $headerLine);
             $freshHeader = Component::query()->whereKey($header->id)->lockForUpdate()->firstOrFail();
@@ -368,6 +374,7 @@ final class JointService
                 'branch_root_joint_id' => null,
                 'branch_station_mm' => $stationMm,
                 'branch_offset_mm' => $offsetMm,
+                'branch_longitudinal_angle_deg' => round($branchLongitudinalAngleDeg, 2),
 
                 'joint_seq' => $numbered ? $this->nextSeq($ownerLine) : null,
                 'numbering_policy' => $numbered
@@ -619,6 +626,170 @@ final class JointService
     }
 
     /**
+     * Create one of the two independently numbered reinforcement-pad fillets.
+     *
+     * The pad side is a real component port; the pipe side is an explicit wall
+     * target. Both joints are registered on the header line. The BranchPad
+     * parent and its deferred completion trigger guarantee that HEADER and
+     * BRANCH sides exist together and use the header's issued PMS rule.
+     */
+    public function joinBranchPadWall(
+        BranchPad $pad,
+        Port $padPort,
+        Component $targetPipe,
+        string $side,
+        ?float $stationMm,
+        ?float $offsetMm,
+        string $jointId,
+        User $actor,
+    ): Joint {
+        $side = strtoupper(trim($side));
+        $pad = BranchPad::query()->with(['component', 'branchRootJoint.branchHeaderComponent'])->findOrFail($pad->id);
+        $padComponent = $pad->component;
+        $root = $pad->branchRootJoint;
+
+        if (! in_array($side, ['HEADER', 'BRANCH'], true) || $padComponent === null || $root === null
+            || $padComponent->template_code !== 'BRANCH_PAD' || $targetPipe->template_code !== 'PIPE'
+            || $padPort->component_id !== $padComponent->id
+            || $padPort->role !== ($side === 'HEADER' ? 'PAD_HEADER' : 'PAD_BRANCH')
+            || $pad->branch_root_joint_id !== $root->id) {
+            throw ValidationException::withMessages([
+                'branch_root_joint_id' => 'The selected pad interface or target is not part of this reinforcement pad.',
+            ]);
+        }
+
+        $expectedTargetId = $side === 'HEADER'
+            ? $pad->header_pipe_component_id
+            : $pad->branch_pipe_component_id;
+        $expectedStation = $side === 'HEADER' ? $root->branch_station_mm : null;
+        $expectedOffset = $side === 'HEADER' ? $root->branch_offset_mm : null;
+
+        if ($targetPipe->id !== $expectedTargetId
+            || $stationMm !== $expectedStation
+            || $offsetMm !== $expectedOffset) {
+            throw ValidationException::withMessages([
+                'branch_root_joint_id' => 'The pad fillet must target its registered pipe and root location.',
+            ]);
+        }
+
+        $branchLine = PipingLine::query()->findOrFail($padComponent->piping_line_id);
+        $headerLine = PipingLine::query()->findOrFail($pad->header_line_id);
+        $targetLine = PipingLine::query()->findOrFail($targetPipe->piping_line_id);
+        $project = Project::query()->findOrFail($pad->project_id);
+
+        if ($padComponent->project_id !== $project->id || $targetPipe->project_id !== $project->id
+            || $pad->company_id !== $actor->company_id || $pad->header_line_id !== $headerLine->id
+            || ($side === 'HEADER' && $targetLine->id !== $headerLine->id)
+            || ($side === 'BRANCH' && $targetLine->id !== $branchLine->id)) {
+            throw ValidationException::withMessages([
+                'branch_root_joint_id' => 'The pad, its target pipe and the header PMS owner must be in the same branch assembly.',
+            ]);
+        }
+
+        $this->archives->assertWritable($project);
+        $this->assertLineIsModellable($branchLine);
+        $this->assertLineIsModellable($headerLine);
+        $this->assertLineIsModellable($targetLine);
+
+        return DB::transaction(function () use (
+            $pad, $padPort, $padComponent, $targetPipe, $side, $stationMm, $offsetMm,
+            $jointId, $actor, $branchLine, $headerLine, $project,
+        ): Joint {
+            $this->lockLines($branchLine, $headerLine);
+            $freshBranchLine = PipingLine::query()->whereKey($branchLine->id)->lockForUpdate()->firstOrFail();
+            $freshHeaderLine = PipingLine::query()->whereKey($headerLine->id)->lockForUpdate()->firstOrFail();
+            $this->assertLineIsModellable($freshBranchLine);
+            $this->assertLineIsModellable($freshHeaderLine);
+
+            $freshPad = BranchPad::query()->whereKey($pad->id)->lockForUpdate()->firstOrFail();
+            if ($freshPad->header_line_id !== $freshHeaderLine->id
+                || $freshPad->pms_class_snapshot_id !== $freshHeaderLine->pms_class_snapshot_id) {
+                throw ValidationException::withMessages([
+                    'branch_root_joint_id' => 'The pad and its header-line issued PMS snapshot no longer agree.',
+                ]);
+            }
+            $freshPort = Port::query()->whereKey($padPort->id)->lockForUpdate()->first();
+            $freshTarget = Component::query()->whereKey($targetPipe->id)->lockForUpdate()->firstOrFail();
+            $freshComponent = Component::query()->whereKey($padComponent->id)->firstOrFail();
+
+            if ($freshPort === null || $freshPort->is_connected
+                || $freshPort->component_id !== $freshComponent->id
+                || $freshTarget->template_code !== 'PIPE'
+                || $freshTarget->project_id !== $project->id
+                || ($side === 'HEADER' && $freshTarget->id !== $freshPad->header_pipe_component_id)
+                || ($side === 'BRANCH' && $freshTarget->id !== $freshPad->branch_pipe_component_id)) {
+                throw ValidationException::withMessages([
+                    'branch_root_joint_id' => 'The pad fillet endpoint changed or is already connected.',
+                ]);
+            }
+
+            $joint = Joint::query()->forceCreate([
+                'id' => $jointId,
+                'project_id' => $project->id,
+                'company_id' => $actor->company_id,
+                'piping_line_id' => $freshHeaderLine->id,
+                'port_a_id' => $freshPort->id,
+                'port_b_id' => null,
+                'branch_header_component_id' => null,
+                'branch_wall_component_id' => $freshTarget->id,
+                'branch_root_joint_id' => $freshPad->branch_root_joint_id,
+                'branch_pad_id' => $freshPad->id,
+                'branch_pad_side' => $side,
+
+                'joint_seq' => $this->nextSeq($freshHeaderLine),
+                'numbering_policy' => Joint::NUMBERING_REQUIRED,
+                'joint_type' => Joint::TYPE_FILLET_WELD,
+                'branch_kind' => null,
+                'branch_class_type' => $freshPad->branch_rule_component_type,
+                'branch_class_p2p_kind' => $freshPad->branch_rule_p2p_kind,
+                'branch_pad_thickness_mm' => $freshPad->pad_thickness_mm,
+                'branch_rule_state' => JointBranchRuleState::RULE,
+                'state' => Joint::STATE_MODELLED,
+
+                'branch_station_mm' => $stationMm,
+                'branch_offset_mm' => $offsetMm,
+                'nominal_size' => $freshTarget->nominal_size,
+                'nominal_size_decimal' => $freshTarget->nominal_size_decimal,
+                'schedule' => $freshTarget->schedule,
+                'thickness_mm' => $this->wallFor($freshPort),
+                'shop_field' => null,
+                'spool_id' => null,
+                'isometric_sheet_no' => null,
+                'compatibility_state' => Verdict::VALID,
+                'compatibility_notes' => null,
+                'source' => 'MANUAL',
+                'external_ref' => null,
+                'created_by' => $actor->id,
+            ]);
+
+            Port::query()->whereKey($freshPort->id)->update(['is_connected' => true]);
+
+            return $joint->fresh(['portA.component', 'branchWallComponent', 'branchPad']);
+        });
+    }
+
+    /**
+     * P2P beta is the measured smaller angle between branch and header axes.
+     * It is an explicit input; station and offset never supply an angle.
+     */
+    private function assertP2pBranchAngle(float $betaDeg): void
+    {
+        $scaled = $betaDeg * 100.0;
+        if (! is_finite($betaDeg)
+            || $betaDeg < Joint::P2P_BETA_MIN_DEG
+            || $betaDeg > Joint::P2P_BETA_MAX_DEG
+            || abs($scaled - round($scaled)) > 1e-8) {
+            throw ValidationException::withMessages([
+                'branch_longitudinal_angle_deg' => sprintf(
+                    'Enter an explicit P2P branch angle from %.2f to %.2f degrees, with at most two decimal places.',
+                    Joint::P2P_BETA_MIN_DEG,
+                    Joint::P2P_BETA_MAX_DEG,
+                ),
+            ]);
+        }
+    }
+
+    /**
      * A station and an offset that could actually describe a point on this pipe.
      *
      * Refuses rather than guesses, because a location that cannot be checked is
@@ -704,6 +875,19 @@ final class JointService
     public function separate(Joint $joint, User $actor): void
     {
         $joint = $joint->fresh(['portA.component', 'portB.component']);
+
+        if ($joint->isBranchPadFillet()) {
+            throw ValidationException::withMessages([
+                'branch_pad_id' => 'Remove the complete reinforcement pad so its two separately numbered fillet joints are removed together.',
+            ]);
+        }
+
+        if (BranchPad::query()->where('branch_root_joint_id', $joint->id)->exists()) {
+            throw ValidationException::withMessages([
+                'branch_root_joint_id' => 'Remove the reinforcement pad and both of its fillet joints before separating the branch wall root.',
+            ]);
+        }
+
         $line = PipingLine::query()->findOrFail($joint->piping_line_id);
         $project = Project::query()->findOrFail($line->project_id);
         $physicalLineIdA = $joint->portA?->component?->piping_line_id;
@@ -814,6 +998,60 @@ final class JointService
     }
 
     /**
+     * Delete both pad fillets and their physical pad record as one unit.
+     *
+     * Individual pad welds cannot be separated: a BranchPad is required to
+     * have exactly the HEADER and BRANCH weld, and each weld is a register row
+     * with its own number. ComponentService calls this only while removing the
+     * BRANCH_PAD component, inside the surrounding component-removal transaction.
+     */
+    public function removeBranchPad(BranchPad $pad, User $actor): void
+    {
+        $initial = BranchPad::query()->whereKey($pad->id)->firstOrFail();
+        $branchComponent = Component::query()->findOrFail($initial->component_id);
+        $branchLine = PipingLine::query()->findOrFail($branchComponent->piping_line_id);
+        $headerLine = PipingLine::query()->findOrFail($initial->header_line_id);
+        $project = Project::query()->findOrFail($initial->project_id);
+
+        $this->archives->assertWritable($project);
+        $this->assertLineIsModellable($branchLine);
+        $this->assertLineIsModellable($headerLine);
+
+        DB::transaction(function () use ($initial, $branchLine, $headerLine): void {
+            $this->lockLines($branchLine, $headerLine);
+            $freshPad = BranchPad::query()->whereKey($initial->id)->lockForUpdate()->firstOrFail();
+            $joints = Joint::query()
+                ->where('branch_pad_id', $freshPad->id)
+                ->orderBy('branch_pad_side')
+                ->lockForUpdate()
+                ->get();
+
+            $headerJoint = $joints->firstWhere('branch_pad_side', 'HEADER');
+            $branchJoint = $joints->firstWhere('branch_pad_side', 'BRANCH');
+
+            if ($joints->count() !== 2 || $headerJoint === null || $branchJoint === null
+                || $headerJoint->id !== $freshPad->header_joint_id
+                || $branchJoint->id !== $freshPad->branch_joint_id) {
+                throw ValidationException::withMessages([
+                    'branch_pad_id' => 'The pad is missing one of its required fillet joints; use the revision workflow to repair the assembly.',
+                ]);
+            }
+
+            if ($headerJoint->isFitted() || $branchJoint->isFitted()) {
+                throw ValidationException::withMessages([
+                    'branch_pad_id' => 'A fitted pad fillet is a witnessed event; use the revision workflow before removing this pad.',
+                ]);
+            }
+
+            $headerJoint->delete();
+            $branchJoint->delete();
+            // BranchPad's two joint FKs are DEFERRABLE NO ACTION; removing the
+            // pad after its joints clears that cycle before transaction end.
+            $freshPad->delete();
+        });
+    }
+
+    /**
      * Every joint hanging off a component, both as A and as B.
      *
      * @return Collection<int, Joint>
@@ -834,7 +1072,8 @@ final class JointService
         // Missing these would reproduce exactly the failure the docblock above
         // describes: the branch would be left recorded as welded to something
         // that no longer exists, invisible to the open-ends worklist.
-        $query->orWhere('branch_header_component_id', $component->id);
+        $query->orWhere('branch_header_component_id', $component->id)
+            ->orWhere('branch_wall_component_id', $component->id);
 
         return $query->get();
     }
@@ -957,7 +1196,7 @@ final class JointService
      */
     public function diaInch(Joint $joint): ?float
     {
-        if (! $joint->isWeld()) {
+        if (! $joint->isWeld() || $joint->isBranchPadFillet()) {
             return null;
         }
 
@@ -998,7 +1237,9 @@ final class JointService
      *     welds: int, fitted: int, dia_inch: float, dia_inch_fitted: float,
      *     branch_welds: int, branch_dia_inch: float,
      *     branch_ungoverned: int, branch_padded: int,
-     *     branch_by_kind: array<string, array{welds: int, dia_inch: float}>
+     *     branch_by_kind: array<string, array{welds: int, dia_inch: float}>,
+     *     branch_pad_welds: int, branch_pad_by_side: array<string, int>,
+     *     branch_pad_welds_on_line_registered_elsewhere: int
      * }
      */
     public function lineMetrics(PipingLine $line): array
@@ -1023,8 +1264,24 @@ final class JointService
         $byKind = [];
         $ungoverned = 0;
         $padded = 0;
+        $branchPadWelds = 0;
+        $branchPadBySide = [];
 
         foreach ($joints as $joint) {
+            if ($joint->isBranchPadFillet()) {
+                // A circumferential/outline fillet's length is not derivable
+                // from a pipe NPS. Count the numbered weld, but do not invent
+                // a dia-inch quantity until the weld-length/rate rule exists.
+                $welds++;
+                $branchPadWelds++;
+                $branchPadBySide[$joint->branch_pad_side] = ($branchPadBySide[$joint->branch_pad_side] ?? 0) + 1;
+                if ($joint->isFitted()) {
+                    $fitted++;
+                }
+
+                continue;
+            }
+
             $value = $this->diaInch($joint);
 
             if ($value === null) {
@@ -1063,6 +1320,13 @@ final class JointService
             $byKind[$joint->branch_kind]['dia_inch'] += $value;
         }
 
+        $branchPadWeldsOnLineRegisteredElsewhere = Joint::query()
+            ->where('piping_line_id', '<>', $line->id)
+            ->where('joint_type', Joint::TYPE_FILLET_WELD)
+            ->whereNotNull('branch_pad_id')
+            ->whereHas('branchPad.component', fn ($query) => $query->where('piping_line_id', $line->id))
+            ->count();
+
         foreach ($byKind as $kind => $totals) {
             $byKind[$kind]['dia_inch'] = round($totals['dia_inch'], 4);
         }
@@ -1086,6 +1350,9 @@ final class JointService
             // joint of that kind is recorded; it does not certify that the
             // source design was searched or imported completely.
             'branch_by_kind' => $byKind,
+            'branch_pad_welds' => $branchPadWelds,
+            'branch_pad_by_side' => $branchPadBySide,
+            'branch_pad_welds_on_line_registered_elsewhere' => $branchPadWeldsOnLineRegisteredElsewhere,
         ];
     }
 

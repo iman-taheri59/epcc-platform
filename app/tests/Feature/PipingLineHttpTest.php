@@ -397,15 +397,23 @@ final class PipingLineHttpTest extends TestCase
             return ['header' => $header, 'olet' => $olet];
         }, $project->id);
 
+        $wallUrl = "/projects/PH-14/piping/{$branchLine->id}/model/wall?lang=en";
+        $oletPayload = [
+            'wall_kind' => 'OLET',
+            'olet_component_id' => $components['olet']->id,
+            'header_component_id' => $components['header']->id,
+            'station_mm' => 3000,
+            'offset_mm' => 0,
+            'line_owner' => 'HEADER',
+        ];
+
         $this->actingAs($owner)
-            ->post("/projects/PH-14/piping/{$branchLine->id}/model/wall?lang=en", [
-                'wall_kind' => 'OLET',
-                'olet_component_id' => $components['olet']->id,
-                'header_component_id' => $components['header']->id,
-                'station_mm' => 3000,
-                'offset_mm' => 0,
-                'line_owner' => 'HEADER',
-            ])
+            ->from($wallUrl)
+            ->post($wallUrl, $oletPayload + ['branch_longitudinal_angle_deg' => 90])
+            ->assertSessionHasErrors('branch_longitudinal_angle_deg');
+
+        $this->actingAs($owner)
+            ->post($wallUrl, $oletPayload)
             ->assertRedirect();
 
         $root = $tenant->runAs($owner->company_id, fn (): Joint => Joint::query()
@@ -510,16 +518,34 @@ final class PipingLineHttpTest extends TestCase
             ];
         }, $project->id);
 
+        $wallUrl = "/projects/PH-14/piping/{$branchLine->id}/model/wall?lang=en";
+        $wallPayload = [
+            'wall_kind' => 'P2P',
+            'branch_port_id' => $components['branch']->ports->first()->id,
+            'header_component_id' => $components['header']->id,
+            'branch_kind' => 'STUB_ON',
+            'station_mm' => 3000,
+            'offset_mm' => 0,
+            'branch_longitudinal_angle_deg' => 60.5,
+            'line_owner' => 'HEADER',
+        ];
+        $missingBeta = $wallPayload;
+        unset($missingBeta['branch_longitudinal_angle_deg']);
+        $overPrecisionBeta = $wallPayload;
+        $overPrecisionBeta['branch_longitudinal_angle_deg'] = 60.555;
+
         $this->actingAs($owner)
-            ->post("/projects/PH-14/piping/{$branchLine->id}/model/wall?lang=en", [
-                'wall_kind' => 'P2P',
-                'branch_port_id' => $components['branch']->ports->first()->id,
-                'header_component_id' => $components['header']->id,
-                'branch_kind' => 'STUB_ON',
-                'station_mm' => 3000,
-                'offset_mm' => 0,
-                'line_owner' => 'HEADER',
-            ])
+            ->from($wallUrl)
+            ->post($wallUrl, $missingBeta)
+            ->assertSessionHasErrors('branch_longitudinal_angle_deg');
+
+        $this->actingAs($owner)
+            ->from($wallUrl)
+            ->post($wallUrl, $overPrecisionBeta)
+            ->assertSessionHasErrors('branch_longitudinal_angle_deg');
+
+        $this->actingAs($owner)
+            ->post($wallUrl, $wallPayload)
             ->assertRedirect();
 
         $root = $tenant->runAs($owner->company_id, fn (): Joint => Joint::query()
@@ -528,6 +554,7 @@ final class PipingLineHttpTest extends TestCase
 
         $this->assertSame($headerLine->id, $root->piping_line_id);
         $this->assertSame(Joint::TYPE_BRANCH_STUB_ON, $root->joint_type);
+        $this->assertSame(60.5, $root->branch_longitudinal_angle_deg);
     }
 
     public function test_the_workspace_puts_blocked_lines_on_the_worklist(): void

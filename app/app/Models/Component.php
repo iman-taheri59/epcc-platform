@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * A physical item on a piping line - a pipe, an elbow, a valve (ADR-006 §5.2).
@@ -67,6 +68,12 @@ final class Component extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /** Branch-pad record; present only for the BRANCH_PAD template. */
+    public function branchPad(): HasOne
+    {
+        return $this->hasOne(BranchPad::class);
     }
 
     /** Ports with nothing joined to them yet - the modelling worklist. */

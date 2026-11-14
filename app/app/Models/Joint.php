@@ -11,6 +11,7 @@ use App\Support\Piping\JointBranchRuleState;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Two ports, joined (ADR-006 section 5.3).
@@ -30,7 +31,9 @@ final class Joint extends Model
         'joint_seq', 'numbering_policy',
         'joint_type', 'branch_kind', 'state',
         'branch_class_type', 'branch_class_p2p_kind',
-        'branch_header_component_id', 'branch_header_line_id', 'branch_station_mm', 'branch_offset_mm', 'branch_root_joint_id',
+        'branch_header_component_id', 'branch_header_line_id', 'branch_wall_component_id',
+        'branch_station_mm', 'branch_offset_mm', 'branch_longitudinal_angle_deg',
+        'branch_root_joint_id', 'branch_pad_id', 'branch_pad_side',
         'branch_pad_thickness_mm', 'branch_rule_state',
         'fitted_by_code', 'fitted_at',
         'nominal_size', 'nominal_size_decimal', 'schedule', 'thickness_mm',
@@ -46,6 +49,7 @@ final class Joint extends Model
         'branch_pad_thickness_mm' => 'float',
         'branch_station_mm' => 'float',
         'branch_offset_mm' => 'float',
+        'branch_longitudinal_angle_deg' => 'float',
         'compatibility_notes' => 'array',
         'fitted_at' => 'datetime',
     ];
@@ -59,6 +63,14 @@ final class Joint extends Model
 
     /** OLET RUN/FA end welded to a point on the header wall. */
     public const TYPE_OLET_HEADER_WELD = 'OLET_HEADER_WELD';
+
+    /** One of the two independently numbered reinforcement-pad fillets. */
+    public const TYPE_FILLET_WELD = 'FILLET_WELD';
+
+    /** B31.3 branch-angle domain currently supported by the area equations. */
+    public const P2P_BETA_MIN_DEG = 45.0;
+
+    public const P2P_BETA_MAX_DEG = 90.0;
 
     public const STATE_MODELLED = 'MODELLED';
 
@@ -130,6 +142,7 @@ final class Joint extends Model
             // separate OLET-to-branch-pipe weld carries branch_kind=OLET, so
             // this type must not also be tagged as a second branch connection.
             self::TYPE_OLET_HEADER_WELD,
+            self::TYPE_FILLET_WELD,
         ], true);
     }
 
@@ -211,10 +224,34 @@ final class Joint extends Model
         return $this->belongsTo(Component::class, 'branch_header_component_id');
     }
 
-    /** True when this joint lands on a header wall rather than another port. */
+    /** The pipe wall targeted by a reinforcement-pad fillet. */
+    public function branchWallComponent(): BelongsTo
+    {
+        return $this->belongsTo(Component::class, 'branch_wall_component_id');
+    }
+
+    public function branchPad(): BelongsTo
+    {
+        return $this->belongsTo(BranchPad::class, 'branch_pad_id');
+    }
+
+    /** A branch root can own at most one physical reinforcement pad. */
+    public function branchPads(): HasMany
+    {
+        return $this->hasMany(BranchPad::class, 'branch_root_joint_id');
+    }
+
+    public function isBranchPadFillet(): bool
+    {
+        return $this->branch_pad_id !== null
+            && $this->joint_type === self::TYPE_FILLET_WELD
+            && in_array($this->branch_pad_side, ['HEADER', 'BRANCH'], true);
+    }
+
+    /** True when this joint lands on a pipe wall rather than another port. */
     public function isOnWall(): bool
     {
-        return $this->branch_header_component_id !== null;
+        return $this->branch_header_component_id !== null || $this->branch_wall_component_id !== null;
     }
 
     /** The header line explicitly selected for a TEE/CROSS branch-port weld. */

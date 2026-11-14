@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\BranchPad;
 use App\Models\Component;
 use App\Models\Joint;
 use App\Models\PipingLine;
 use App\Models\Port;
 use App\Models\Project;
+use App\Services\BranchPadService;
 use App\Services\ComponentService;
 use App\Services\JointService;
 use App\Services\PipeScheduleExceptionRequestService;
@@ -50,6 +52,7 @@ final class ComponentController extends Controller
         private readonly ProjectArchiveService $archives,
         private readonly AuthorizationPipeline $authz,
         private readonly JointService $joints,
+        private readonly BranchPadService $branchPads,
     ) {}
 
     public function index(Request $request, string $projectCode, string $lineId): View
@@ -58,12 +61,12 @@ final class ComponentController extends Controller
         $user = $request->user();
         $project = $this->resolveProject($user, $projectCode);
 
-        [$line, $rows, $open, $joints, $metrics, $branchRoots, $wallBranchPorts, $wallOlets, $wallHeaders, $ownerLines] = $this->tenant->runAs(
+        [$line, $rows, $open, $joints, $metrics, $branchRoots, $branchPadRoots, $branchPads, $wallBranchPorts, $wallOlets, $wallHeaders, $ownerLines] = $this->tenant->runAs(
             $user->company_id,
             function () use ($lineId): array {
                 $line = PipingLine::with(['subsystem', 'pipingClass', 'pmsSnapshot.documentRevision.document'])->findOrFail($lineId);
 
-                $rows = Component::with('ports')
+                $rows = Component::with(['ports', 'branchPad'])
                     ->where('piping_line_id', $line->id)
                     ->orderBy('sequence')
                     ->get();
@@ -73,10 +76,18 @@ final class ComponentController extends Controller
                 // describe P2P/OLET wall welds instead of rendering their
                 // other side as an unknown `?`.
                 $joints = Joint::with([
-                    'portA.component.line', 'portB.component.line',
-                    'branchHeaderComponent.line', 'branchHeaderLine', 'branchRootJoint',
+                    'line', 'portA.component.line', 'portB.component.line',
+                    'branchHeaderComponent.line', 'branchWallComponent.line',
+                    'branchHeaderLine', 'branchRootJoint',
+                    'branchPad.component.line', 'branchPad.headerPipe.line', 'branchPad.branchPipe.line',
                 ])
-                    ->where('piping_line_id', $line->id)
+                    ->where(function ($query) use ($line): void {
+                        $query->where('piping_line_id', $line->id)
+                            // Show the physical pad's two joints on its branch
+                            // model page even though the header owns their
+                            // register numbers and PMS basis.
+                            ->orWhereHas('branchPad.component', fn ($componentQuery) => $componentQuery->where('piping_line_id', $line->id));
+                    })
                     ->orderByRaw('joint_seq NULLS LAST')
                     ->get();
 
@@ -86,7 +97,7 @@ final class ComponentController extends Controller
                 // numbering owner. TEE/CROSS branch ports can choose a header
                 // line directly from ownerLines below.
                 $branchRoots = Joint::query()
-                    ->with(['portA.component', 'branchHeaderComponent.line'])
+                    ->with(['portA.component', 'branchHeaderComponent.line', 'branchPads'])
                     ->whereNull('port_b_id')
                     ->whereNotNull('branch_header_component_id')
                     ->whereIn('joint_type', [
@@ -95,6 +106,19 @@ final class ComponentController extends Controller
                         Joint::TYPE_OLET_HEADER_WELD,
                     ])
                     ->whereHas('portA.component', fn ($query) => $query->where('piping_line_id', $line->id))
+                    ->orderBy('created_at')
+                    ->get();
+                $branchPadRoots = $branchRoots
+                    ->filter(fn (Joint $root): bool => $root->branchPads->isEmpty()
+                        && in_array($root->joint_type, [Joint::TYPE_BRANCH_STUB_IN, Joint::TYPE_BRANCH_STUB_ON], true))
+                    ->filter(fn (Joint $root): bool => $this->branchPads->isEligibleForPad($root))
+                    ->values();
+                $branchPads = BranchPad::query()
+                    ->with([
+                        'component.ports', 'branchRootJoint', 'headerPipe.line', 'branchPipe.line',
+                        'headerLine', 'headerJoint', 'branchJoint',
+                    ])
+                    ->whereHas('component', fn ($query) => $query->where('piping_line_id', $line->id))
                     ->orderBy('created_at')
                     ->get();
 
@@ -130,6 +154,8 @@ final class ComponentController extends Controller
                     $joints,
                     $this->joints->lineMetrics($line),
                     $branchRoots,
+                    $branchPadRoots,
+                    $branchPads,
                     $wallBranchPorts,
                     $wallOlets,
                     $wallHeaders,
@@ -227,6 +253,8 @@ final class ComponentController extends Controller
             'open' => $open,
             'joints' => $joints,
             'branchRoots' => $branchRoots,
+            'branchPadRoots' => $branchPadRoots,
+            'branchPads' => $branchPads,
             'wallBranchPorts' => $wallBranchPorts,
             'wallOlets' => $wallOlets,
             'wallHeaders' => $wallHeaders,
@@ -391,6 +419,10 @@ final class ComponentController extends Controller
             'branch_kind' => ['nullable', 'required_if:wall_kind,P2P', 'in:STUB_IN,STUB_ON'],
             'station_mm' => ['required', 'numeric', 'min:0'],
             'offset_mm' => ['nullable', 'numeric'],
+            'branch_longitudinal_angle_deg' => [
+                'nullable', 'required_if:wall_kind,P2P', 'prohibited_if:wall_kind,OLET',
+                'numeric', 'between:45,90', 'regex:/^\\d+(?:\\.\\d{1,2})?$/',
+            ],
             'line_owner' => ['nullable', 'in:BRANCH,HEADER'],
         ]);
 
@@ -417,6 +449,7 @@ final class ComponentController extends Controller
                         (string) $data['branch_kind'],
                         $stationMm,
                         $offsetMm,
+                        (float) $data['branch_longitudinal_angle_deg'],
                         $user,
                         $attributes,
                     );
@@ -445,6 +478,31 @@ final class ComponentController extends Controller
             return redirect($this->backTo($projectCode, $lineId, $lang, $request))
                 ->withInput()
                 ->withErrors($e->errors());
+        }
+
+        return redirect($this->backTo($projectCode, $lineId, $lang, $request));
+    }
+
+    /** Install a header-class-governed pad with its two numbered fillet joints. */
+    public function installBranchPad(Request $request, string $projectCode, string $lineId): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+        $data = $request->validate([
+            'branch_root_joint_id' => ['required', 'uuid'],
+        ]);
+
+        try {
+            $this->tenant->runAs($user->company_id, function () use ($data, $lineId, $user): void {
+                $line = PipingLine::query()->findOrFail($lineId);
+                $root = Joint::query()->with('portA.component')->whereKey($data['branch_root_joint_id'])->firstOrFail();
+                abort_unless($root->portA?->component?->piping_line_id === $line->id, 404);
+                $this->branchPads->install($root, $user);
+            }, $project->id);
+        } catch (ValidationException $e) {
+            return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+                ->withInput()->withErrors($e->errors());
         }
 
         return redirect($this->backTo($projectCode, $lineId, $lang, $request));

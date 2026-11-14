@@ -155,8 +155,9 @@ final class BranchWallJointTest extends TestCase
         Component $headerPipe,
         float $station = 3000.0,
         array $attributes = [],
+        float $betaDeg = 90.0,
     ): array {
-        return $this->asOwner(function () use ($branch, $headerPipe, $station, $attributes): array {
+        return $this->asOwner(function () use ($branch, $headerPipe, $station, $attributes, $betaDeg): array {
             $branchPipe = app(ComponentService::class)->place($branch, $this->owner(), 'PIPE');
 
             $joint = app(JointService::class)->joinToWall(
@@ -165,6 +166,7 @@ final class BranchWallJointTest extends TestCase
                 JointBranchKind::STUB_IN,
                 $station,
                 0.0,
+                $betaDeg,
                 $this->owner(),
                 $attributes,
             );
@@ -189,6 +191,7 @@ final class BranchWallJointTest extends TestCase
         $this->assertSame($headerPipe->id, $joint->branch_header_component_id);
         $this->assertSame(3000.0, $joint->branch_station_mm);
         $this->assertSame(0.0, $joint->branch_offset_mm);
+        $this->assertSame(90.0, $joint->branch_longitudinal_angle_deg);
 
         // No owner override was supplied, so it uses the BRANCH default.
         $this->assertTrue($joint->isWeld());
@@ -488,6 +491,46 @@ final class BranchWallJointTest extends TestCase
         $this->assertSame($header->id, $remainingRoot->piping_line_id);
     }
 
+    public function test_a_p2p_wall_root_persists_an_explicit_oblique_beta(): void
+    {
+        ['branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+        ]]);
+
+        ['joint' => $joint] = $this->weldOnWall($branch, $headerPipe, betaDeg: 45.0);
+
+        $this->assertSame(45.0, $joint->branch_longitudinal_angle_deg);
+    }
+
+    public function test_p2p_wall_root_refuses_beta_outside_the_supported_domain(): void
+    {
+        ['branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+        ]]);
+
+        try {
+            $this->weldOnWall($branch, $headerPipe, betaDeg: 44.99);
+            $this->fail('A P2P beta below 45 degrees was accepted.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('branch_longitudinal_angle_deg', $exception->errors());
+        }
+    }
+
+    public function test_database_guard_rejects_an_out_of_range_p2p_beta_update(): void
+    {
+        ['branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+        ]]);
+        ['joint' => $joint] = $this->weldOnWall($branch, $headerPipe);
+
+        $this->expectException(QueryException::class);
+        $this->asOwner(fn () => DB::table('joints')->where('id', $joint->id)
+            ->update(['branch_longitudinal_angle_deg' => 90.01]));
+    }
+
     public function test_a_p2p_wall_root_requires_a_branch_pipe_end(): void
     {
         ['branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
@@ -506,6 +549,7 @@ final class BranchWallJointTest extends TestCase
                 JointBranchKind::STUB_IN,
                 3000.0,
                 0.0,
+                90.0,
                 $this->owner(),
             );
         });
@@ -524,7 +568,7 @@ final class BranchWallJointTest extends TestCase
             $pipe = app(ComponentService::class)->place($branch, $this->owner(), 'PIPE');
 
             app(JointService::class)->joinToWall(
-                $pipe->ports->first(), $headerPipe, JointBranchKind::OLET, 3000.0, 0.0, $this->owner(),
+                $pipe->ports->first(), $headerPipe, JointBranchKind::OLET, 3000.0, 0.0, 90.0, $this->owner(),
             );
         });
     }
@@ -573,6 +617,7 @@ final class BranchWallJointTest extends TestCase
                 JointBranchKind::STUB_IN,
                 3000.0,
                 0.0,
+                90.0,
                 $this->owner(),
             );
         });
@@ -657,10 +702,10 @@ final class BranchWallJointTest extends TestCase
             $port = $pipe->ports->first();
 
             app(JointService::class)->joinToWall(
-                $port, $headerPipe, JointBranchKind::STUB_IN, 1000.0, 0.0, $this->owner(),
+                $port, $headerPipe, JointBranchKind::STUB_IN, 1000.0, 0.0, 90.0, $this->owner(),
             );
             app(JointService::class)->joinToWall(
-                $port, $headerPipe, JointBranchKind::STUB_IN, 2000.0, 0.0, $this->owner(),
+                $port, $headerPipe, JointBranchKind::STUB_IN, 2000.0, 0.0, 90.0, $this->owner(),
             );
         });
     }
@@ -744,7 +789,7 @@ final class BranchWallJointTest extends TestCase
 
             // The header is 6", so its outer radius is about 84 mm.
             app(JointService::class)->joinToWall(
-                $pipe->ports->first(), $headerPipe, JointBranchKind::STUB_IN, 3000.0, 500.0, $this->owner(),
+                $pipe->ports->first(), $headerPipe, JointBranchKind::STUB_IN, 3000.0, 500.0, 90.0, $this->owner(),
             );
         });
     }
@@ -768,7 +813,7 @@ final class BranchWallJointTest extends TestCase
             $pipe = app(ComponentService::class)->place($branch, $this->owner(), 'PIPE');
 
             app(JointService::class)->joinToWall(
-                $pipe->ports->first(), $headerPipe, JointBranchKind::STUB_IN, 3000.0, 0.0, $this->owner(),
+                $pipe->ports->first(), $headerPipe, JointBranchKind::STUB_IN, 3000.0, 0.0, 90.0, $this->owner(),
             );
         });
     }

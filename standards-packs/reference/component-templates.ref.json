@@ -1,7 +1,7 @@
 {
   "refId": "component-templates",
-  "version": "1.0.0",
-  "source": "ADR-009 section 2 (port counts come from templates, the Plant 3D catalog-template pattern); ADR-010 section 2 (two-tier: universal read-only, project-defined additive)",
+  "version": "1.1.1",
+  "source": "ADR-009 section 2 (port counts come from templates, the Plant 3D catalog-template pattern); ADR-010 section 2 (two-tier: universal read-only, project-defined additive); BRANCH_PAD two-interface shape (ADR-006 §16, owner requirement 2026-11-11)",
   "note": "This is the UNIVERSAL tier and it is read-only. A tee has three ports on every project in the world, so that fact ships with the release and cannot be redefined by a project. Projects may add their own templates but may NOT shadow a code used here - the same closed-vocabulary / configurable-subset split as FacilityKind::all() versus selectable() in ADR-004.",
   "portRoles": {
     "RUN": {
@@ -31,6 +31,14 @@
     "NOZZLE": {
       "en": "Nozzle",
       "fa": "نازل"
+    },
+    "PAD_HEADER": {
+      "en": "Header-side pad weld",
+      "fa": "جوش پد به هدر"
+    },
+    "PAD_BRANCH": {
+      "en": "Branch-side pad weld",
+      "fa": "جوش پد به انشعاب"
     }
   },
   "sizeRules": {
@@ -239,6 +247,31 @@
           "seq": 2,
           "role": "BRANCH",
           "defaultEnd": "BW"
+        }
+      ]
+    },
+    {
+      "code": "BRANCH_PAD",
+      "name": {
+        "en": "Branch reinforcement pad",
+        "fa": "پد تقویتی انشعاب"
+      },
+      "category": "FITTING",
+      "sizeRule": "INDEPENDENT",
+      "note": {
+        "en": "A branch reinforcement pad has exactly two explicit fillet-weld interfaces: one to the header pipe and one to the branch pipe. It is created only through the branch-pad workflow, which binds both independently numbered fillet welds to the header line and takes thickness from that line's issued PMS snapshot. A direct P2P root records an explicit beta angle; the current nominal two-axis saddle-envelope method accepts only a centred 90-degree root and refuses other angles until an approved method exists. The dimensions are not a code minimum or fabrication drawing.",
+        "fa": "پد تقویتی انشعاب دقیقاً دو رابط جوش فیلت دارد: یکی به لوله هدر و دیگری به لوله انشعاب. فقط از گردش‌کار پد ساخته می‌شود؛ هر جوش شماره مستقل دارد و ضخامت از snapshot صادرشده PMS خط هدر می‌آید. زاویهٔ β روی ریشهٔ مستقیم P2P صریح ثبت می‌شود؛ روش فعلی پوش زینیِ دو‌محورهٔ اسمی فقط ریشهٔ متمرکز ۹۰ درجه را می‌پذیرد و تا زمان تعریف روش تأییدشده، زاویه‌های دیگر را برای نصب PAD رد می‌کند. این ابعاد حداقل کدی یا نقشهٔ ساخت نیستند."
+      },
+      "ports": [
+        {
+          "seq": 1,
+          "role": "PAD_HEADER",
+          "defaultEnd": "FA"
+        },
+        {
+          "seq": 2,
+          "role": "PAD_BRANCH",
+          "defaultEnd": "FA"
         }
       ]
     },

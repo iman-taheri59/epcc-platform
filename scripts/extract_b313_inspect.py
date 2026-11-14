@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Locate the pages of an ASME B31.3-2024 PDF that carry the data the
 platform needs for pad-thickness validation (P-24): Table A-1 / A-1M
-allowable stresses, Table 304.1.2 (Y), para 302.3.5 (W), para 328.5.4
+allowable stresses, Table 304.1.1-1 (Y), para 302.3.5 (W), para 328.5.4
 (minimum welds) and Appendix H worked examples.
 
 Usage:

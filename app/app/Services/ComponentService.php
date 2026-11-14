@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\BranchPad;
 use App\Models\Component;
+use App\Models\Joint;
 use App\Models\PipingLine;
 use App\Models\Port;
 use App\Models\Project;
 use App\Models\User;
 use App\Support\LineReleaseState;
 use App\Support\Reference\PipeReference;
+use App\Support\Reference\PipeSize;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -49,11 +53,41 @@ final class ComponentService
      */
     public function place(PipingLine $line, User $actor, string $templateCode, array $attributes = []): Component
     {
+        return $this->placeFromTemplate($line, $actor, $templateCode, $attributes, allowBranchPad: false);
+    }
+
+    /**
+     * Internal construction path used only by BranchPadService. A pad must be
+     * born together with its two wall-fillets and PMS snapshot; exposing it in
+     * the ordinary "place a component" flow would allow an unconnected plate
+     * with no governing header or weld records.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function placeBranchPad(PipingLine $line, User $actor, array $attributes): Component
+    {
+        return $this->placeFromTemplate($line, $actor, 'BRANCH_PAD', $attributes, allowBranchPad: true);
+    }
+
+    /** @param array<string, mixed> $attributes */
+    private function placeFromTemplate(
+        PipingLine $line,
+        User $actor,
+        string $templateCode,
+        array $attributes,
+        bool $allowBranchPad,
+    ): Component {
         $project = Project::query()->findOrFail($line->project_id);
         $this->archives->assertWritable($project);
         $this->assertLineIsModellable($line);
 
         $template = $this->template($templateCode);
+
+        if ($template['code'] === 'BRANCH_PAD' && ! $allowBranchPad) {
+            throw ValidationException::withMessages([
+                'template_code' => 'A branch pad must be created from a branch wall root so its two fillet joints and header-class thickness are recorded together.',
+            ]);
+        }
 
         return DB::transaction(function () use ($line, $actor, $template, $attributes, $project): Component {
             // Lock the LINE row: the sequence counter is scoped to it. Same
@@ -210,7 +244,7 @@ final class ComponentService
      * discouraged.
      *
      * @param  array<string, mixed>  $attributes
-     * @return array{component: Component, parentPort: Port, childPort: Port, joint: \App\Models\Joint}
+     * @return array{component: Component, parentPort: Port, childPort: Port, joint: Joint}
      */
     public function attach(Port $port, User $actor, string $templateCode, array $attributes = []): array
     {
@@ -277,7 +311,22 @@ final class ComponentService
         $this->archives->assertWritable($project);
         $this->assertLineIsModellable($line);
 
+        if ($component->template_code !== 'BRANCH_PAD'
+            && BranchPad::query()->where(function ($query) use ($component): void {
+                $query->where('header_pipe_component_id', $component->id)
+                    ->orWhere('branch_pipe_component_id', $component->id);
+            })->exists()) {
+            throw ValidationException::withMessages([
+                'component_id' => 'Remove the branch reinforcement pad and its two fillet joints before removing either connected pipe.',
+            ]);
+        }
+
         DB::transaction(function () use ($component, $actor): void {
+            if ($component->template_code === 'BRANCH_PAD') {
+                $pad = BranchPad::query()->where('component_id', $component->id)->firstOrFail();
+                $this->joints->removeBranchPad($pad, $actor);
+            }
+
             // Phase 3 closes the hole phase 2 documented. Every joint touching
             // this component is separated FIRST, which reopens the neighbour's
             // port; only then do this component's own ports go. Deleting the
@@ -302,9 +351,9 @@ final class ComponentService
      * ADR-009 §2.3 calls this the single most useful query in the system: it
      * drives the worklist, the progress metric and the import validator.
      *
-     * @return \Illuminate\Support\Collection<int, Port>
+     * @return Collection<int, Port>
      */
-    public function openPorts(PipingLine $line): \Illuminate\Support\Collection
+    public function openPorts(PipingLine $line): Collection
     {
         return Port::query()
             ->where('is_connected', false)
@@ -335,6 +384,13 @@ final class ComponentService
         $out = [];
 
         foreach ($this->reference->templates() as $t) {
+            // A reinforcement pad has a dedicated atomic workflow: ordinary
+            // placement would leave its two wall fillets and class thickness
+            // unrepresented.
+            if (($t['code'] ?? null) === 'BRANCH_PAD') {
+                continue;
+            }
+
             // NOZZLE belongs to equipment, not to a line. It is in the pack
             // because a nozzle port is still a port (ADR-010 §3), but offering
             // it here would let someone place a bare nozzle mid-line.
@@ -390,7 +446,7 @@ final class ComponentService
         }
     }
 
-    private function resolveSize(mixed $nps): ?\App\Support\Reference\PipeSize
+    private function resolveSize(mixed $nps): ?PipeSize
     {
         if ($nps === null || $nps === '') {
             return null;

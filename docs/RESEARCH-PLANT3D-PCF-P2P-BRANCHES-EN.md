@@ -42,7 +42,8 @@ Autodesk Support, 2024](https://www.autodesk.com/support/technical/article/caas/
 - No automatic **reinforcement pad**: nothing in the stub-in flow inserts a
   pad or computes reinforcement; pads, where required, are separate manual
   items. (Corroborates proposal P-23: pad material must come from the class
-  rule, never from the 3D import.)
+  rule, never from the 3D import; if not separately declared, it defaults to
+  the header's issued PIPE_MATERIAL.)
 - Known reporting quirks (FW annotation, stub dimensions on isos) are
   iso-config issues, not model issues — the connection itself is fully
   modelled.

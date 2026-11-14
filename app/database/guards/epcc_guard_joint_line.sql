@@ -1,13 +1,12 @@
 -- Guard for the line that owns a joint's register entry and sequence.
 --
--- The physical ports of an ordinary joint must still be on the same line. A
--- branch wall root is an explicit cross-line shape: P2P and OLET roots name
--- their header component, and may be owned by either the branch line or that
--- header line. Later joints may use the header register through that explicit
--- wall root. A TEE/CROSS BRANCH-port weld is the one other manual case: it may
--- carry an explicit same-project header-line reference while its physical
--- ports remain on their one physical line. Neither case permits an ordinary
--- cross-line port-to-port tie-in.
+-- Ordinary physical ports remain on one line. P2P/OLET wall roots carry an
+-- explicit header component, while TEE/CROSS branch-port welds may carry an
+-- explicit same-project header-line selection. Reinforcement-pad fillets are
+-- the one additional wall shape: each has a real BRANCH_PAD-side port, an
+-- explicit target pipe wall, a direct P2P root, and the header line as register
+-- owner. None of these shapes admits an ordinary cross-line port-to-port
+-- tie-in or moves physical components.
 --
 -- Nozzles own no line. A normal nozzle-to-component joint therefore remains
 -- owned by the pipe side (ADR-010 §3.1).
@@ -30,6 +29,9 @@ DECLARE
     v_owner_project uuid;
     v_branch_root uuid;
     v_manual_header_line uuid;
+    v_branch_pad uuid;
+    v_branch_pad_side text;
+    v_branch_wall_component uuid;
     v_is_tee_cross_branch boolean := false;
     v_root_branch_line uuid;
     v_root_header_line uuid;
@@ -40,10 +42,13 @@ DECLARE
     v_root_header_component uuid;
     v_root_type text;
 BEGIN
-    -- Read optional columns through JSON so this function remains runnable
-    -- during rollback after either ownership column is removed.
+    -- Read optional ownership fields through JSON so this function remains
+    -- safe during rollback after an optional column is removed.
     v_branch_root := NULLIF(to_jsonb(NEW)->>'branch_root_joint_id', '')::uuid;
     v_manual_header_line := NULLIF(to_jsonb(NEW)->>'branch_header_line_id', '')::uuid;
+    v_branch_pad := NULLIF(to_jsonb(NEW)->>'branch_pad_id', '')::uuid;
+    v_branch_pad_side := NULLIF(to_jsonb(NEW)->>'branch_pad_side', '');
+    v_branch_wall_component := NULLIF(to_jsonb(NEW)->>'branch_wall_component_id', '')::uuid;
 
     SELECT c.piping_line_id, c.project_id, p.owner_kind, p.role, c.template_code
       INTO v_line_a, v_project_a, v_owner_a, v_role_a, v_template_a
@@ -51,9 +56,97 @@ BEGIN
       LEFT JOIN components c ON c.id = p.component_id
      WHERE p.id = NEW.port_a_id;
 
+    -- The two independently numbered pad fillets are wall joints with a pad
+    -- port on side A. They must be created from the referenced BranchPad and
+    -- target exactly its header pipe or branch pipe; the header line owns both
+    -- the number and PMS class. This is not a physical pipe-to-pipe tie-in.
+    IF v_branch_pad IS NOT NULL OR v_branch_pad_side IS NOT NULL OR v_branch_wall_component IS NOT NULL THEN
+        IF v_branch_pad IS NULL OR v_branch_pad_side NOT IN ('HEADER', 'BRANCH')
+            OR v_branch_wall_component IS NULL OR v_branch_root IS NULL
+            OR NEW.port_b_id IS NOT NULL OR NEW.branch_header_component_id IS NOT NULL
+            OR NEW.joint_type <> 'FILLET_WELD' THEN
+            RAISE EXCEPTION 'JT_BRANCH_PAD_INVALID' USING ERRCODE = '23514';
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+              FROM branch_pads bp
+              JOIN components pad_component ON pad_component.id = bp.component_id
+              JOIN components header_component ON header_component.id = bp.header_pipe_component_id
+              JOIN components branch_component ON branch_component.id = bp.branch_pipe_component_id
+              JOIN components target_component ON target_component.id = NEW.branch_wall_component_id
+              JOIN ports pad_port ON pad_port.id = NEW.port_a_id
+              JOIN joints root ON root.id = bp.branch_root_joint_id
+              JOIN ports root_port ON root_port.id = root.port_a_id
+              JOIN components branch_anchor ON branch_anchor.id = root_port.component_id
+              JOIN piping_lines header_line ON header_line.id = bp.header_line_id
+             WHERE bp.id = v_branch_pad
+               AND bp.branch_root_joint_id = v_branch_root
+               AND NEW.branch_pad_id = bp.id
+               AND NEW.project_id = bp.project_id
+               AND NEW.company_id = bp.company_id
+               AND NEW.id = CASE v_branch_pad_side
+                    WHEN 'HEADER' THEN bp.header_joint_id
+                    WHEN 'BRANCH' THEN bp.branch_joint_id
+                   END
+               AND NEW.piping_line_id = bp.header_line_id
+               AND header_line.project_id = bp.project_id
+               AND header_line.pms_class_snapshot_id = bp.pms_class_snapshot_id
+               AND root.project_id = bp.project_id
+               AND root.port_b_id IS NULL
+               AND root.branch_header_component_id = bp.header_pipe_component_id
+               AND root.joint_type IN ('BRANCH_STUB_IN', 'BRANCH_STUB_ON')
+               AND root.branch_kind = CASE root.joint_type
+                    WHEN 'BRANCH_STUB_IN' THEN 'STUB_IN'
+                    WHEN 'BRANCH_STUB_ON' THEN 'STUB_ON'
+                   END
+               AND root.port_a_id = bp.branch_pipe_port_id
+               AND root_port.id = bp.branch_pipe_port_id
+               AND root_port.role = 'RUN'
+               AND root_port.component_id = bp.branch_pipe_component_id
+               AND branch_anchor.project_id = bp.project_id
+               AND branch_anchor.piping_line_id = branch_component.piping_line_id
+               AND pad_component.project_id = bp.project_id
+               AND pad_component.template_code = 'BRANCH_PAD'
+               AND pad_component.piping_line_id = branch_component.piping_line_id
+               AND pad_port.component_id = pad_component.id
+               AND target_component.project_id = bp.project_id
+               AND target_component.template_code = 'PIPE'
+               AND NEW.joint_type = 'FILLET_WELD'
+               AND NEW.numbering_policy = 'REQUIRED'
+               AND NEW.joint_seq IS NOT NULL
+               AND NEW.branch_rule_state = 'RULE'
+               AND NEW.branch_kind IS NULL
+               AND NEW.branch_class_type = bp.branch_rule_component_type
+               AND NEW.branch_class_p2p_kind IS NOT DISTINCT FROM bp.branch_rule_p2p_kind
+               AND NEW.branch_pad_thickness_mm = bp.pad_thickness_mm
+               AND (
+                    (v_branch_pad_side = 'HEADER'
+                     AND NEW.branch_wall_component_id = bp.header_pipe_component_id
+                     AND target_component.piping_line_id = bp.header_line_id
+                     AND pad_port.role = 'PAD_HEADER'
+                     AND NEW.branch_station_mm = root.branch_station_mm
+                     AND NEW.branch_offset_mm = root.branch_offset_mm
+                     AND bp.header_joint_id = NEW.id)
+                    OR
+                    (v_branch_pad_side = 'BRANCH'
+                     AND NEW.branch_wall_component_id = bp.branch_pipe_component_id
+                     AND target_component.piping_line_id = branch_component.piping_line_id
+                     AND pad_port.role = 'PAD_BRANCH'
+                     AND NEW.branch_station_mm IS NULL
+                     AND NEW.branch_offset_mm IS NULL
+                     AND bp.branch_joint_id = NEW.id)
+               )
+        ) THEN
+            RAISE EXCEPTION 'JT_BRANCH_PAD_INVALID' USING ERRCODE = '23514';
+        END IF;
+
+        RETURN NEW;
+    END IF;
+
     IF NEW.port_b_id IS NULL THEN
-        -- A wall root has no second port, but it must name the real header and
-        -- be one of the explicitly modelled P2P/OLET wall-weld shapes.
+        -- A P2P/OLET wall root has no second port, but it must name the real
+        -- header and be one of the explicitly modelled branch wall shapes.
         IF NEW.branch_header_component_id IS NULL OR v_line_a IS NULL THEN
             RAISE EXCEPTION 'JT_NO_LINE_SIDE' USING ERRCODE = '23514';
         END IF;

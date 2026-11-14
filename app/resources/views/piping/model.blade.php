@@ -40,10 +40,59 @@
         'wallStubOn' => ['fa' => 'استاب‌آن', 'en' => 'Stub-on'],
         'wallStation' => ['fa' => 'ایستگاه روی هدر (میلی‌متر)', 'en' => 'Station along header (mm)'],
         'wallOffset' => ['fa' => 'آفست از محور هدر (میلی‌متر)', 'en' => 'Offset from header centreline (mm)'],
+        'wallBeta' => ['fa' => 'زاویهٔ β بین محور شاخه و هدر (درجه)', 'en' => 'β between branch and header axes (degrees)'],
+        'wallBetaHelp' => ['fa' => 'برای P2P الزامی است؛ ۹۰° یعنی عمود. دامنهٔ ثبت ۴۵° تا ۹۰° است. برای OLET خالی بماند. β، θ یا چرخش component نیست.', 'en' => 'Required for P2P; 90° means perpendicular. Record 45°–90°. Leave blank for OLET. β does not encode θ or component rotation.'],
         'wallCreate' => ['fa' => 'ثبت جوینت دیواره‌ای', 'en' => 'Create wall joint'],
         'wallSelect' => ['fa' => '— انتخاب کنید —', 'en' => '— Select —'],
         'wallNoCandidates' => ['fa' => 'ابتدا یک سر باز لولهٔ انشعاب یا OLET با پورت RUN باز روی این خط مدل کنید.', 'en' => 'Place an open branch-pipe end or an OLET with an open RUN port on this line first.'],
         'wallNoHeader' => ['fa' => 'ابتدا لولهٔ هدر با سایز و طول مشخص مدل کنید.', 'en' => 'Place a header pipe with a known size and length first.'],
+        'padTitle' => ['fa' => 'پد تقویتی P2P', 'en' => 'P2P reinforcement pad'],
+        'padHelp' => ['fa' => 'فقط برای ریشهٔ مستقیم P2P (استاب‌این/استاب‌آن): ضخامت از PMS صادرشدهٔ خط هدر خوانده می‌شود و نصب، قطعهٔ فیزیکی را همراه دو جوش فیلتِ شماره‌دار جداگانه روی رجیستر هدر می‌سازد. جنس PAD اگر در value.pad_material قاعدهٔ PMS نیاید، از PIPE_MATERIAL هدر گرفته می‌شود؛ جنس تصریح‌شده در همان قاعده اعمال می‌شود. β باید صریحاً روی ریشه ثبت شده باشد؛ روش فعلی پروفیل زینی فقط برای β=۹۰° و آفست صفر معتبر است.', 'en' => 'Direct P2P stub-in/stub-on roots only: thickness comes from the header line’s issued PMS, and installation creates one physical pad plus two separately numbered fillet joints on the header register. If value.pad_material is absent from the PMS branch rule, PAD uses the header PIPE_MATERIAL; an explicitly declared PAD material is honored. β must be explicitly recorded on the root; the current saddle-perimeter method supports only β=90° and zero offset.'],
+        'padMajorAxis' => ['fa' => 'محور بزرگ، روی محیط هدر', 'en' => 'Major axis, around header'],
+        'padMinorAxis' => ['fa' => 'محور کوچک، در امتداد هدر', 'en' => 'Minor axis, along header'],
+        'padMajorAxisShort' => ['fa' => 'محور بزرگ', 'en' => 'Major axis'],
+        'padMinorAxisShort' => ['fa' => 'محور کوچک', 'en' => 'Minor axis'],
+        'padZoneHalfWidth' => ['fa' => 'نیم‌عرض ناحیهٔ تقویت d₂', 'en' => 'Reinforcement-zone half-width d₂'],
+        'padBeta' => ['fa' => 'زاویهٔ β', 'en' => 'Branch angle β'],
+        'padGeometryNote' => ['fa' => 'این ابعاد کران‌های مرز بیرونیِ اسمی‌اند، نه حداقل کد یا نقشهٔ ساخت. منحنی تماس ایده‌آل دو استوانه و امتداد یکنواخت روی سطح بازشدهٔ هدر جداگانه ثبت می‌شوند؛ ضخامت دیواره، θ/چرخش، لقی Fit-up و تلرانس ساخت در پروفیل برش منظور نشده‌اند.', 'en' => 'These are bounds of the nominal outer perimeter—not code minimums or a fabrication drawing. The ideal cylinder-contact curve and uniform offset on the developed header surface are recorded separately; wall compensation, θ/rotation, fit-up clearance, and fabrication tolerance are not included in a cut profile.'],
+        'pad3dTitle' => ['fa' => 'نمای سه‌بعدی شماتیک و ابعاد محاسبه‌شده', 'en' => '3D schematic and calculated dimensions'],
+        'pad3dNote' => ['fa' => 'این نمایش، مرز بیرونی نمونه‌برداری‌شده را روی سطح هدر می‌پیچد؛ منحنی تماس استوانه‌ای و امتداد یکنواخت روی سطح بازشده جداگانه محاسبه و ذخیره می‌شوند. برش ضخامت‌دار شاخه، جبران دیواره، پخ/آماده‌سازی جوش، Fit-up و تلرانس ساخت مدل نشده‌اند؛ نقشهٔ ساخت نیست. فقط β=۹۰° و آفست صفر.', 'en' => 'This schematic wraps the sampled outer perimeter onto the header; the cylinder-contact curve and uniform developed-surface offset are calculated and stored separately. It does not model the branch wall cut, wall compensation, weld preparation, fit-up, or fabrication tolerances, and is not a fabrication drawing. Only β=90° and zero offset are supported.'],
+        'pad3dControls' => ['fa' => 'برای چرخاندن نما بکشید؛ این فقط دوربین است و θ/چرخش قطعه نیست. با چرخ ماوس بزرگ‌نمایی کنید.', 'en' => 'Drag to rotate the camera only—not θ or part rotation. Use the mouse wheel to zoom.'],
+        'pad3dReset' => ['fa' => 'بازنشانی نما', 'en' => 'Reset view'],
+        'pad3dRotateLeft' => ['fa' => 'چرخش به چپ', 'en' => 'Rotate left'],
+        'pad3dRotateRight' => ['fa' => 'چرخش به راست', 'en' => 'Rotate right'],
+        'pad3dCanvasFallback' => ['fa' => 'نمای سه‌بعدی شماتیک PAD؛ ابعاد در کنار شکل درج شده‌اند.', 'en' => '3D PAD schematic; calculated dimensions are listed beside the view.'],
+        'pad3dRenderError' => ['fa' => 'نمای سه‌بعدی برای این snapshot قابل نمایش نیست؛ مقادیر ذخیره‌شده همچنان مرجع هستند.', 'en' => 'The 3D view is unavailable for this snapshot; the saved dimensions remain authoritative.'],
+        'pad3dSpanError' => ['fa' => 'پوش محاسبه‌شده تقریباً از یک دور کامل هدر بزرگ‌تر است؛ برای جلوگیری از نمایش گمراه‌کننده، مدل سه‌بعدی رسم نشد.', 'en' => 'The calculated envelope is approximately larger than one full header circumference, so the 3D schematic was withheld to avoid a misleading wrap.'],
+        'pad3dHeaderOD' => ['fa' => 'قطر بیرونی هدر', 'en' => 'Header OD'],
+        'pad3dBranchOD' => ['fa' => 'قطر بیرونی شاخه', 'en' => 'Branch OD'],
+        'pad3dSchedule' => ['fa' => 'Schedule', 'en' => 'Schedule'],
+        'pad3dCa' => ['fa' => 'CA حاکم', 'en' => 'Governing CA'],
+        'pad3dOffset' => ['fa' => 'آفست', 'en' => 'Offset'],
+        'padDirectionAround' => ['fa' => 'در راستای محیط هدر', 'en' => 'around header'],
+        'padDirectionAlong' => ['fa' => 'در امتداد هدر', 'en' => 'along header'],
+        'padRoot' => ['fa' => 'ریشهٔ P2P', 'en' => 'P2P wall root'],
+        'padInstall' => ['fa' => 'نصب پد و دو جوش فیلت', 'en' => 'Install pad and two fillets'],
+        'padNone' => ['fa' => 'ریشهٔ مستقیم P2P بدون پد که PMS صادرشدهٔ خط هدر برای آن نصب پد را الزامی کند موجود نیست.', 'en' => 'No uncovered direct P2P root currently requires a pad under its header’s issued PMS rule.'],
+        'padList' => ['fa' => 'پدهای تقویتی نصب‌شده', 'en' => 'Installed reinforcement pads'],
+        'padThickness' => ['fa' => 'ضخامت پد', 'en' => 'Pad thickness'],
+        'padMaterial' => ['fa' => 'جنس PAD', 'en' => 'PAD material'],
+        'padMaterialDefault' => ['fa' => 'پیش‌فرض از جنس هدر', 'en' => 'defaulted from header'],
+        'padMaterialPms' => ['fa' => 'طبق قاعدهٔ PMS', 'en' => 'as declared in PMS'],
+        'padStressRatio' => ['fa' => 'نسبت تنش PAD به هدر', 'en' => 'PAD/run stress ratio'],
+        'padHeaderJoint' => ['fa' => 'جوش پد به هدر', 'en' => 'Pad-to-header fillet'],
+        'padBranchJoint' => ['fa' => 'جوش پد به لولهٔ شاخه', 'en' => 'Pad-to-branch-pipe fillet'],
+        'padWeldRequirements' => ['fa' => 'حداقل‌های دو جوش فیلت PAD', 'en' => 'PAD fillet-weld minimums'],
+        'padWeldThroat' => ['fa' => 'حداقل گلویی طراحی', 'en' => 'Minimum design throat'],
+        'padWeldEqualLeg' => ['fa' => 'معادل نظری اندازهٔ پای مساوی', 'en' => 'Theoretical equal-leg equivalent'],
+        'padWeldBasis' => ['fa' => 'این مقادیر حداقل گلویی طراحی طبق B31.3-2024 هستند؛ معادل پای مساوی فقط نظری است. اندازهٔ واقعی جوش و پذیرش بازرسی در اینجا ثبت یا تأیید نمی‌شود.', 'en' => 'These are B31.3-2024 minimum design throats; equal-leg values are theoretical equivalents. Actual as-welded size and inspection acceptance are not recorded or verified here.'],
+        'padOwner' => ['fa' => 'مالک رجیستر/PMS', 'en' => 'Register/PMS owner'],
+        'padWeldMetrics' => ['fa' => 'جوش فیلت پد، شماره‌گذاری‌شده روی این خط', 'en' => 'Pad fillet welds registered on this line'],
+        'padPhysicalElsewhere' => ['fa' => 'جوش فیلت پدِ فیزیکی این خط که در خط دیگری شماره‌گذاری شده', 'en' => 'Pad fillets physically on this line but registered elsewhere'],
+        'padSideHeader' => ['fa' => 'سمت هدر', 'en' => 'header side'],
+        'padSideBranch' => ['fa' => 'سمت شاخه', 'en' => 'branch side'],
+        'padFilletTo' => ['fa' => 'فیلت به', 'en' => 'fillet to'],
+        'padRuleRequired' => ['fa' => 'نصب پد فقط وقتی مجاز است که قاعدهٔ صادرشدهٔ PMS هدر برای این سایز، پد را الزام کند.', 'en' => 'A pad can be installed only when the header’s issued PMS rule requires one for this size pair.'],
         'add'      => ['fa' => 'افزودن قطعهٔ مستقل', 'en' => 'Add a standalone component'],
         'addbtn'   => ['fa' => 'افزودن', 'en' => 'Add'],
         'branch'   => ['fa' => 'سایز انشعاب', 'en' => 'Branch size'],
@@ -129,6 +178,7 @@
 <title>{{ $line->line_number }} — {{ $L('title') }}</title>
 @include('partials.shell')
 @include('partials.tabletools')
+<script src="{{ asset('js/branch-pad-3d.js') }}" defer></script>
 </head>
 <body>
 <div class="app">
@@ -329,12 +379,70 @@
         <label style="color:var(--muted);font-size:11px;">{{ $L('wallOffset') }}
           <input type="number" name="offset_mm" step="any" value="{{ old('offset_mm', '0') }}" style="width:100%;box-sizing:border-box;margin-top:3px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
         </label>
+        <label style="color:var(--muted);font-size:11px;">{{ $L('wallBeta') }}
+          <input type="number" name="branch_longitudinal_angle_deg" min="45" max="90" step="0.01" value="{{ old('branch_longitudinal_angle_deg') }}" style="width:100%;box-sizing:border-box;margin-top:3px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+        </label>
+        <small style="grid-column:1/-1;color:var(--muted);font-size:10px;">{{ $L('wallBetaHelp') }}</small>
         <button type="submit" style="align-self:end;padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;cursor:pointer;">
           {{ $L('wallCreate') }}
         </button>
         <small style="grid-column:1/-1;color:var(--muted);font-size:10px;">{{ $L('ownerScopeHelp') }}</small>
       </form>
     @endif
+  @endif
+
+  @if($editable && $branchPadRoots->isNotEmpty())
+    <h2 style="margin-top:24px;font-size:15px;">{{ $L('padTitle') }}</h2>
+    <p style="color:var(--muted);font-size:11px;line-height:1.7;margin:5px 0;">{{ $L('padHelp') }}</p>
+    <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/model/pads?{{ http_build_query($q) }}"
+          style="margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card);display:flex;gap:8px;align-items:end;flex-wrap:wrap;">
+      @csrf
+      <label style="flex:1 1 260px;color:var(--muted);font-size:11px;">{{ $L('padRoot') }}
+        <select name="branch_root_joint_id" required style="width:100%;margin-top:3px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+          <option value="">{{ $L('wallSelect') }}</option>
+          @foreach($branchPadRoots as $root)
+            <option value="{{ $root->id }}" @selected(old('branch_root_joint_id') === $root->id)>
+              {{ $root->branchHeaderComponent?->line?->line_number ?? '?' }} · {{ $root->joint_type }} · {{ $num($root->displayNumber() ?? '—') }}
+            </option>
+          @endforeach
+        </select>
+      </label>
+      <button type="submit" style="padding:6px 12px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;cursor:pointer;">{{ $L('padInstall') }}</button>
+      <small style="flex:1 1 100%;color:var(--muted);font-size:10px;">{{ $L('padRuleRequired') }}</small>
+    </form>
+  @elseif($editable && $branchRoots->contains(fn ($root) => in_array($root->joint_type, ['BRANCH_STUB_IN', 'BRANCH_STUB_ON'], true)))
+    <h2 style="margin-top:24px;font-size:15px;">{{ $L('padTitle') }}</h2>
+    <p style="color:var(--muted);font-size:11px;">{{ $L('padNone') }}</p>
+  @endif
+
+  @if($branchPads->isNotEmpty())
+    <h3 style="margin-top:20px;font-size:14px;">{{ $L('padList') }}</h3>
+    <div style="display:grid;gap:8px;margin-top:8px;">
+      @foreach($branchPads as $pad)
+        <div style="padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:12px;">
+          <strong><bdi>{{ $pad->component?->label() }}</bdi></strong>
+          <span style="color:var(--muted);">· {{ $L('padThickness') }} <bdi>{{ $num($pad->pad_thickness_mm) }} mm</bdi></span>
+          <span style="color:var(--muted);">· {{ $L('padOwner') }} <bdi>{{ $pad->headerLine?->line_number ?? '—' }}</bdi></span>
+          <div style="margin-top:5px;color:var(--muted);">
+            {{ $L('padMajorAxis') }}: <bdi>{{ $num($pad->pad_major_axis_mm) }} mm</bdi>
+            <span style="color:var(--line);">|</span>
+            {{ $L('padMinorAxis') }}: <bdi>{{ $num($pad->pad_minor_axis_mm) }} mm</bdi>
+            <span style="color:var(--line);">|</span>
+            {{ $L('padZoneHalfWidth') }}: <bdi>{{ $num($pad->pad_geometry_d2_mm) }} mm</bdi>
+            <span style="color:var(--line);">|</span>
+            {{ $L('padBeta') }}: <bdi>{{ $num($pad->pad_geometry_beta_deg) }}°</bdi>
+          </div>
+          <div style="margin-top:4px;color:var(--muted);font-size:11px;line-height:1.6;">{{ $L('padGeometryNote') }}</div>
+          @include('piping.partials.branch-pad-3d', ['pad' => $pad])
+          <div style="margin-top:5px;color:var(--muted);">
+            {{ $L('padHeaderJoint') }}: <bdi>{{ $num($pad->headerJoint?->displayNumber() ?? '—') }}</bdi>
+            <span style="color:var(--line);">|</span>
+            {{ $L('padBranchJoint') }}: <bdi>{{ $num($pad->branchJoint?->displayNumber() ?? '—') }}</bdi>
+          </div>
+          @include('piping.partials.branch-pad-weld-requirements', ['pad' => $pad])
+        </div>
+      @endforeach
+    </div>
   @endif
 
   {{-- ------------------------------------------------ components -------- --}}
@@ -534,6 +642,14 @@
       <bdi>{{ $num($metrics['fitted']) }} {{ $L('jfitted') }}</bdi>
       <span style="color:var(--line);">|</span>
       <bdi>{{ $num(rtrim(rtrim(number_format($metrics['dia_inch'], 2, '.', ''), '0'), '.')) }} {{ $L('jdia') }}</bdi>
+      @if(($metrics['branch_pad_welds'] ?? 0) > 0)
+        <span style="color:var(--line);">|</span>
+        <bdi>{{ $num($metrics['branch_pad_welds']) }} {{ $L('padWeldMetrics') }}</bdi>
+      @endif
+      @if(($metrics['branch_pad_welds_on_line_registered_elsewhere'] ?? 0) > 0)
+        <span style="color:var(--line);">|</span>
+        <bdi>{{ $num($metrics['branch_pad_welds_on_line_registered_elsewhere']) }} {{ $L('padPhysicalElsewhere') }}</bdi>
+      @endif
     </span>
   </h2>
   <p style="color:var(--muted);font-size:11.5px;margin:4px 0 0;">{{ $L('jdianote') }}</p>
@@ -556,6 +672,7 @@
         $cB = $j->portB?->component;
         $physicalLine = $cA?->line ?? $cB?->line;
         $wallHeader = $j->branchHeaderComponent;
+        $wallTarget = $j->branchWallComponent;
         $station = $j->branch_station_mm === null
             ? null
             : rtrim(rtrim(number_format((float) $j->branch_station_mm, 3, '.', ''), '0'), '.');
@@ -587,12 +704,18 @@
             <bdi>{{ $num($cB->sequence).' '.$cB->template_code }}</bdi>
           @elseif($wallHeader)
             <bdi>{{ $num($wallHeader->sequence).' '.$wallHeader->template_code }}</bdi>
-            <span style="color:var(--muted);">({{ $L('wall') }}@if($station !== null) · <bdi>{{ $L('station') }} {{ $num($station) }} mm</bdi>@endif)</span>
+            <span style="color:var(--muted);">({{ $L('wall') }}@if($station !== null) · <bdi>{{ $L('station') }} {{ $num($station) }} mm</bdi>@endif @if($j->branch_longitudinal_angle_deg !== null) · <bdi>β {{ $num($j->branch_longitudinal_angle_deg) }}°</bdi>@endif)</span>
+          @elseif($wallTarget)
+            <bdi>{{ $num($wallTarget->sequence).' '.$wallTarget->template_code }}</bdi>
+            <span style="color:var(--muted);">({{ $L('padFilletTo') }} {{ $j->branch_pad_side === 'HEADER' ? $L('padSideHeader') : $L('padSideBranch') }})</span>
           @else
             <bdi>?</bdi>
           @endif
           @if($physicalLine && $physicalLine->id !== $line->id)
             <small style="display:block;color:var(--muted);font-size:10px;">{{ $L('jointPhysicalLine') }}: <bdi>{{ $physicalLine->line_number }}</bdi></small>
+          @endif
+          @if($j->isBranchPadFillet() && $j->line && $j->line->id !== $physicalLine?->id)
+            <small style="display:block;color:var(--muted);font-size:10px;">{{ $L('padOwner') }}: <bdi>{{ $j->line->line_number }}</bdi></small>
           @endif
         </td>
         <td style="font-size:12px;">

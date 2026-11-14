@@ -1,0 +1,240 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">پیش‌نمایش رابط گرافیکی PAD</title>
+  <desc id="desc">نمای فارسیِ کارت PAD نصب‌شده شامل شماتیک سه‌بعدی هدر، شاخه و پد زینی، محورهای محاسبه‌شده و داده‌های snapshot.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#111c31"/><stop offset="1" stop-color="#0b1220"/>
+    </linearGradient>
+    <linearGradient id="sidebar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1220"/><stop offset="1" stop-color="#080e19"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0.88" y2="1">
+      <stop offset="0" stop-color="#cbd5e1"/><stop offset="0.19" stop-color="#64748b"/><stop offset="0.47" stop-color="#334155"/><stop offset="0.76" stop-color="#64748b"/><stop offset="1" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="steelTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dbeafe"/><stop offset="0.32" stop-color="#94a3b8"/><stop offset="1" stop-color="#475569"/>
+    </linearGradient>
+    <linearGradient id="branchSteel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#334155"/><stop offset="0.18" stop-color="#cbd5e1"/><stop offset="0.47" stop-color="#64748b"/><stop offset="0.78" stop-color="#dbeafe"/><stop offset="1" stop-color="#334155"/>
+    </linearGradient>
+    <linearGradient id="padGold" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#fcd34d"/><stop offset="0.38" stop-color="#f59e0b"/><stop offset="0.78" stop-color="#b45309"/><stop offset="1" stop-color="#7c2d12"/>
+    </linearGradient>
+    <linearGradient id="canvasBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#101d32"/><stop offset="1" stop-color="#07111f"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#243247"/><stop offset="1" stop-color="#1b283b"/>
+    </linearGradient>
+    <linearGradient id="logo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#4f46e5"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#1e293b" stroke-width="1" opacity=".45"/>
+      <circle cx="0" cy="0" r="1.2" fill="#334155" opacity=".7"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#020617" flood-opacity=".34"/>
+    </filter>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="9" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrowGold" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse" markerUnits="strokeWidth">
+      <path d="M0 0L8 4L0 8Z" fill="#fde68a"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse" markerUnits="strokeWidth">
+      <path d="M0 0L8 4L0 8Z" fill="#7dd3fc"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse" markerUnits="strokeWidth">
+      <path d="M0 0L8 4L0 8Z" fill="#86efac"/>
+    </marker>
+    <style>
+      text { font-family: "DejaVu Sans", Tahoma, sans-serif; }
+      .fa { direction: rtl; unicode-bidi: plaintext; }
+      .muted { fill:#94a3b8; }
+      .white { fill:#e2e8f0; }
+      .small { font-size:12px; }
+      .tiny { font-size:10px; }
+      .number { font-family: "DejaVu Sans", Tahoma, sans-serif; font-variant-numeric:tabular-nums; }
+      .dim { font-size:11px; font-weight:700; }
+    </style>
+  </defs>
+
+  <!-- App canvas and RTL sidebar -->
+  <rect width="1600" height="1000" fill="url(#background)"/>
+  <rect x="1347" y="0" width="253" height="1000" fill="url(#sidebar)"/>
+  <line x1="1347" y1="0" x2="1347" y2="1000" stroke="#334155"/>
+
+  <!-- Sidebar brand -->
+  <rect x="1530" y="25" width="42" height="42" rx="12" fill="url(#logo)"/>
+  <text x="1551" y="52" fill="#fff" font-size="15" font-weight="800" text-anchor="middle" direction="ltr">EP</text>
+  <text x="1516" y="43" class="fa white" font-size="14" font-weight="700" text-anchor="end">سامانهٔ EPCC</text>
+  <text x="1516" y="62" class="fa muted" font-size="10" text-anchor="end">مهندسی و ساخت پروژه</text>
+  <line x1="1365" y1="84" x2="1582" y2="84" stroke="#334155"/>
+
+  <!-- Sidebar navigation -->
+  <text x="1577" y="119" class="fa" fill="#64748b" font-size="10" font-weight="700" text-anchor="end">پروژه</text>
+  <g fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1548 143l12-9 12 9v13h-9v-8h-7v8h-8z"/>
+    <rect x="1551" y="177" width="18" height="15" rx="2"/><path d="M1555 182h10M1555 186h10"/>
+    <path d="M1551 221h18M1551 228h18M1551 235h12"/>
+  </g>
+  <text x="1537" y="153" class="fa" fill="#cbd5e1" font-size="12" text-anchor="end">داشبورد</text>
+  <text x="1537" y="188" class="fa" fill="#cbd5e1" font-size="12" text-anchor="end">خطوط لوله</text>
+  <text x="1537" y="227" class="fa" fill="#c4b5fd" font-size="12" font-weight="700" text-anchor="end">مدل خط</text>
+  <rect x="1373" y="207" width="202" height="39" rx="9" fill="#8b5cf6" opacity=".15" stroke="#8b5cf6" stroke-opacity=".35"/>
+  <g fill="none" stroke="#a78bfa" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1551 264h17M1551 270h17M1551 276h12"/>
+    <path d="M1552 303h15v17h-15zM1555 307h9M1555 311h9"/>
+  </g>
+  <text x="1537" y="276" class="fa" fill="#cbd5e1" font-size="12" text-anchor="end">قطعات و جوینت‌ها</text>
+  <text x="1537" y="315" class="fa" fill="#cbd5e1" font-size="12" text-anchor="end">مدارک پروژه</text>
+  <text x="1577" y="365" class="fa" fill="#64748b" font-size="10" font-weight="700" text-anchor="end">ابزارها</text>
+  <g fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round">
+    <circle cx="1560" cy="392" r="8"/><path d="M1560 379v4M1560 401v4M1547 392h4M1569 392h4M1551 383l3 3M1566 398l3 3M1569 383l-3 3M1554 398l-3 3"/>
+  </g>
+  <text x="1537" y="397" class="fa" fill="#cbd5e1" font-size="12" text-anchor="end">تنظیمات</text>
+  <line x1="1365" y1="900" x2="1582" y2="900" stroke="#334155"/>
+  <circle cx="1559" cy="930" r="15" fill="#352b58" stroke="#8b5cf6"/>
+  <text x="1559" y="934" fill="#ddd6fe" font-size="11" font-weight="700" text-anchor="middle">م</text>
+  <text x="1535" y="927" class="fa white" font-size="11" font-weight="600" text-anchor="end">کاربر پروژه</text>
+  <text x="1535" y="944" class="fa muted" font-size="9" text-anchor="end">مهندس پایپینگ</text>
+  <text x="1575" y="978" class="fa" fill="#a78bfa" font-size="10" text-anchor="end">English</text>
+  <text x="1381" y="978" class="fa muted" font-size="10" text-anchor="start">زبان رابط</text>
+
+  <!-- Main page top bar -->
+  <rect x="1148" y="27" width="38" height="34" rx="9" fill="#1e293b" stroke="#334155"/>
+  <path d="M1159 38h16M1159 44h16M1159 50h16" stroke="#cbd5e1" stroke-width="1.6" stroke-linecap="round"/>
+  <text x="1188" y="45" class="fa muted" font-size="11" text-anchor="end">مدل‌سازی پایپینگ</text>
+  <text x="1188" y="81" class="fa white" font-size="23" font-weight="700" text-anchor="end">مدل خط</text>
+  <text x="1188" y="105" class="fa muted" font-size="11" text-anchor="end">قطعات روی خط و جوینت‌های ثبت‌شده</text>
+  <text x="161" y="107" fill="#64748b" font-size="10" direction="ltr">PIPING / LINE MODEL</text>
+
+  <!-- Section title -->
+  <text x="1188" y="145" class="fa white" font-size="15" font-weight="700" text-anchor="end">پدهای تقویتی نصب‌شده</text>
+  <text x="161" y="145" class="fa muted" font-size="10" text-anchor="start">نمونهٔ رابط · دادهٔ آزمون</text>
+
+  <!-- Installed PAD card -->
+  <rect x="138" y="163" width="1050" height="785" rx="15" fill="url(#card)" stroke="#334155" filter="url(#shadow)"/>
+  <rect x="1122" y="181" width="45" height="23" rx="6" fill="#0b1220" stroke="#475569"/>
+  <text x="1144" y="196" fill="#cbd5e1" font-size="9" font-weight="700" text-anchor="middle" direction="ltr">P2P</text>
+  <rect x="1004" y="181" width="104" height="23" rx="11.5" fill="#10b981" fill-opacity=".14" stroke="#10b981" stroke-opacity=".4"/>
+  <circle cx="1090" cy="192.5" r="3" fill="#6ee7b7"/>
+  <text x="1079" y="196" class="fa" fill="#6ee7b7" font-size="10" font-weight="700" text-anchor="end">نصب‌شده</text>
+  <text x="985" y="198" class="fa white" font-size="14" font-weight="700" text-anchor="end">پد تقویتی P2P</text>
+  <text x="161" y="198" fill="#94a3b8" font-size="10" text-anchor="start" direction="ltr">BRANCH_PAD · SCH 80</text>
+
+  <text x="1167" y="231" class="fa muted" font-size="10" text-anchor="end">ضخامت از PMS صادرشدهٔ هدر · دو جوش فیلت مستقل روی رجیستر هدر</text>
+  <text x="1167" y="250" class="fa muted" font-size="10" text-anchor="end">کران‌های مرز بیرونیِ اسمی؛ نه حداقل کد و نه نقشهٔ ساخت. منحنی تماس و امتداد یکنواخت جداگانه ثبت می‌شوند.</text>
+  <line x1="159" y1="267" x2="1167" y2="267" stroke="#334155"/>
+
+  <!-- Expanded viewer summary -->
+  <path d="M1152 290l8 8-8 8" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1137" y="301" class="fa" fill="#93c5fd" font-size="12" font-weight="700" text-anchor="end">نمای سه‌بعدی شماتیک و ابعاد محاسبه‌شده</text>
+  <text x="171" y="301" class="fa muted" font-size="9" text-anchor="start">برای بازنشانی یا چرخاندن، کنترل‌های زیر نما را ببینید</text>
+
+  <!-- 3D canvas card -->
+  <rect x="650" y="318" width="518" height="414" rx="11" fill="url(#canvasBg)" stroke="#334155"/>
+  <rect x="651" y="319" width="516" height="350" rx="10" fill="url(#grid)" opacity=".7"/>
+  <ellipse cx="921" cy="567" rx="200" ry="48" fill="#020617" opacity=".55" filter="url(#softGlow)"/>
+
+  <!-- Header pipe: horizontal run, shown as a shaded cylinder -->
+  <path d="M717 471 C721 437 748 413 784 416 L1085 463 C1126 469 1148 495 1140 526 C1133 555 1102 570 1066 562 L759 512 C730 507 713 491 717 471Z" fill="url(#steel)" stroke="#64748b" stroke-width="1.2"/>
+  <path d="M720 460 C730 431 753 416 784 419 L1085 466 C1113 470 1134 484 1140 502 C1126 485 1109 479 1084 475 L779 428 C754 425 735 438 720 460Z" fill="url(#steelTop)" opacity=".65"/>
+  <path d="M717 471 C718 446 736 426 758 423 C780 421 797 440 795 465 C793 490 777 510 755 511 C733 510 716 493 717 471Z" fill="#475569" stroke="#94a3b8" stroke-width="1.4"/>
+  <ellipse cx="757" cy="467" rx="17" ry="39" transform="rotate(8 757 467)" fill="#1e293b" stroke="#cbd5e1" stroke-width="1.5"/>
+  <ellipse cx="757" cy="467" rx="10" ry="29" transform="rotate(8 757 467)" fill="#0b1220" stroke="#64748b" stroke-width="1"/>
+  <path d="M1072 464 C1096 464 1118 483 1119 508 C1121 533 1101 552 1077 558" fill="none" stroke="#cbd5e1" stroke-opacity=".45" stroke-width="1.2"/>
+  <path d="M783 437 L1086 484" stroke="#e2e8f0" stroke-opacity=".18" stroke-width="2"/>
+
+  <!-- Sampled outer PAD perimeter wrapped onto the header surface, highlighted in amber -->
+  <path d="M852 452 C866 428 900 414 936 418 C976 422 1020 439 1043 459 C1058 472 1053 488 1035 500 C1007 518 964 518 926 506 C891 496 861 479 852 463 C850 459 850 455 852 452Z" fill="#f59e0b" opacity=".18" filter="url(#softGlow)"/>
+  <path d="M852 450 C869 425 901 413 938 418 C976 422 1018 438 1042 457 C1058 471 1054 486 1035 498 C1008 514 967 515 928 504 C892 494 862 479 852 463 C849 458 849 454 852 450Z" fill="url(#padGold)" stroke="#fcd34d" stroke-width="1.7"/>
+  <path d="M852 462 C866 479 895 494 929 504 C967 515 1008 514 1035 498 L1031 507 C1003 525 962 527 924 515 C888 505 858 490 848 474Z" fill="#7c2d12" opacity=".9" stroke="#fb923c" stroke-width="1"/>
+  <path d="M862 451 C889 431 917 429 945 434 C979 440 1009 452 1028 467" fill="none" stroke="#fef3c7" stroke-opacity=".55" stroke-width="1.4"/>
+
+  <!-- Branch stub, perpendicular to header -->
+  <path d="M910 440 L910 368 C910 351 925 339 949 337 L985 339 C1007 341 1022 354 1022 370 L1022 453 C1006 466 991 470 967 467 C944 464 925 455 910 440Z" fill="url(#branchSteel)" stroke="#cbd5e1" stroke-width="1.2"/>
+  <path d="M910 368 C910 350 927 339 952 338 C990 336 1022 348 1022 367 C1022 384 1003 396 970 396 C937 396 910 385 910 368Z" fill="url(#steelTop)" stroke="#e2e8f0" stroke-width="1.6"/>
+  <ellipse cx="966" cy="367" rx="38" ry="14" fill="#334155" stroke="#f8fafc" stroke-width="1.2"/>
+  <ellipse cx="966" cy="367" rx="27" ry="8.5" fill="#07111f" stroke="#94a3b8" stroke-width="1"/>
+  <path d="M923 372 L923 442 M1008 374 L1008 450" stroke="#f8fafc" stroke-opacity=".28" stroke-width="1.4"/>
+
+  <!-- Callouts and camera-only dimensions -->
+  <rect x="1053" y="342" width="71" height="22" rx="7" fill="#0b1220" stroke="#475569"/>
+  <text x="1088" y="357" class="fa" fill="#cbd5e1" font-size="9" text-anchor="middle">شاخه</text>
+  <path d="M1053 353 L1025 360" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3 3"/>
+  <rect x="718" y="535" width="61" height="21" rx="7" fill="#0b1220" stroke="#475569"/>
+  <text x="748" y="549" class="fa" fill="#cbd5e1" font-size="9" text-anchor="middle">هدر</text>
+  <path d="M779 545 L802 528" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3 3"/>
+
+  <!-- A: circumferential major axis -->
+  <path d="M1038 430 C1066 451 1072 477 1055 496" fill="none" stroke="#fde68a" stroke-width="2" stroke-dasharray="5 4" marker-start="url(#arrowGold)" marker-end="url(#arrowGold)"/>
+  <circle cx="1070" cy="464" r="11" fill="#020617" stroke="#fde68a" stroke-width="1.4"/>
+  <text x="1070" y="468" fill="#fde68a" font-size="11" font-weight="700" text-anchor="middle">A</text>
+  <!-- B: axial minor axis -->
+  <path d="M872 485 C913 500 986 514 1031 505" fill="none" stroke="#7dd3fc" stroke-width="2" stroke-dasharray="5 4" marker-start="url(#arrowBlue)" marker-end="url(#arrowBlue)"/>
+  <circle cx="946" cy="501" r="10" fill="#020617" stroke="#7dd3fc" stroke-width="1.4"/>
+  <text x="946" y="505" fill="#7dd3fc" font-size="10" font-weight="700" text-anchor="middle">B</text>
+  <!-- T: pad thickness marker -->
+  <path d="M865 458 L858 474" fill="none" stroke="#86efac" stroke-width="1.8" marker-start="url(#arrowGreen)" marker-end="url(#arrowGreen)"/>
+  <circle cx="844" cy="465" r="9" fill="#020617" stroke="#86efac" stroke-width="1.2"/>
+  <text x="844" y="469" fill="#86efac" font-size="9" font-weight="700" text-anchor="middle">T</text>
+
+  <!-- Canvas controls -->
+  <line x1="667" y1="674" x2="1151" y2="674" stroke="#334155"/>
+  <rect x="1099" y="685" width="31" height="27" rx="7" fill="#0f172a" stroke="#334155"/>
+  <text x="1115" y="704" fill="#cbd5e1" font-size="16" text-anchor="middle">↶</text>
+  <rect x="1061" y="685" width="31" height="27" rx="7" fill="#0f172a" stroke="#334155"/>
+  <text x="1077" y="704" fill="#cbd5e1" font-size="16" text-anchor="middle">↷</text>
+  <rect x="951" y="685" width="101" height="27" rx="7" fill="#0f172a" stroke="#334155"/>
+  <text x="1001" y="703" class="fa" fill="#cbd5e1" font-size="9" text-anchor="middle">بازنشانی نما</text>
+  <text x="932" y="702" class="fa muted" font-size="8.5" text-anchor="end">کشیدن: چرخش دوربین · چرخ ماوس: بزرگ‌نمایی</text>
+
+  <!-- Dimensions and stored input data -->
+  <rect x="158" y="318" width="474" height="414" rx="11" fill="#0f172a" fill-opacity=".34" stroke="#334155"/>
+  <rect x="397" y="333" width="219" height="70" rx="8" fill="#0f172a" stroke="#334155"/>
+  <text x="601" y="354" class="fa muted" font-size="10" text-anchor="end">A · محور بزرگ · در راستای محیط هدر</text>
+  <text x="601" y="385" class="number" fill="#fde68a" font-size="20" font-weight="700" text-anchor="end">۱۰۸.۵۸۱ <tspan font-size="11" fill="#cbd5e1">mm</tspan></text>
+  <rect x="174" y="333" width="209" height="70" rx="8" fill="#0f172a" stroke="#334155"/>
+  <text x="368" y="354" class="fa muted" font-size="10" text-anchor="end">B · محور کوچک · در امتداد هدر</text>
+  <text x="368" y="385" class="number" fill="#7dd3fc" font-size="20" font-weight="700" text-anchor="end">۱۰۷.۲۱۰ <tspan font-size="11" fill="#cbd5e1">mm</tspan></text>
+
+  <rect x="174" y="414" width="442" height="56" rx="8" fill="#0f172a" stroke="#334155"/>
+  <text x="596" y="436" class="fa muted" font-size="10" text-anchor="end">T · ضخامت پد</text>
+  <text x="596" y="458" class="number white" font-size="16" font-weight="700" text-anchor="end">۸.۵۰۰ <tspan font-size="10" fill="#94a3b8">mm</tspan></text>
+
+  <rect x="397" y="481" width="219" height="58" rx="8" fill="#0f172a" stroke="#334155"/>
+  <text x="601" y="502" class="fa muted" font-size="10" text-anchor="end">زاویهٔ β</text>
+  <text x="601" y="526" class="number white" font-size="16" font-weight="700" text-anchor="end">۹۰°</text>
+  <rect x="174" y="481" width="209" height="58" rx="8" fill="#0f172a" stroke="#334155"/>
+  <text x="368" y="502" class="fa muted" font-size="10" text-anchor="end">نیم‌عرض ناحیهٔ تقویت d₂</text>
+  <text x="368" y="526" class="number white" font-size="16" font-weight="700" text-anchor="end">۵۳.۶۰۵ <tspan font-size="9" fill="#94a3b8">mm</tspan></text>
+
+  <rect x="174" y="550" width="442" height="165" rx="8" fill="#0f172a" stroke="#334155"/>
+  <text x="596" y="572" class="fa white" font-size="10" font-weight="700" text-anchor="end">ورودی‌های ذخیره‌شدهٔ هندسه</text>
+  <line x1="190" y1="582" x2="600" y2="582" stroke="#334155"/>
+  <text x="596" y="604" class="fa muted" font-size="9.5" text-anchor="end">هدر · OD ۱۶۸.۳ mm · Schedule 80 · دیوارهٔ مؤثر ۹.۵۹۹ mm</text>
+  <text x="596" y="627" class="fa muted" font-size="9.5" text-anchor="end">شاخه · OD ۶۰.۳ mm · Schedule 80 · دیوارهٔ مؤثر ۴.۸۴۸ mm</text>
+  <text x="596" y="650" class="fa muted" font-size="9.5" text-anchor="end">CA حاکم · ۱.۵ mm <tspan fill="#475569">|</tspan> آفست · ۰ mm</text>
+  <rect x="190" y="671" width="410" height="25" rx="6" fill="#1e293b"/>
+  <text x="585" y="688" class="fa" fill="#cbd5e1" font-size="8.5" text-anchor="end">snapshot نصب PAD · β ریشه: ۹۰° · آفست: صفر</text>
+
+  <!-- Explicit schematic / fabrication disclaimer -->
+  <rect x="158" y="748" width="1010" height="104" rx="9" fill="#f59e0b" fill-opacity=".08" stroke="#f59e0b" stroke-opacity=".45"/>
+  <circle cx="1138" cy="774" r="10" fill="#f59e0b" fill-opacity=".18" stroke="#f59e0b"/>
+  <text x="1138" y="778" fill="#fcd34d" font-size="12" font-weight="700" text-anchor="middle">!</text>
+  <text x="1119" y="778" class="fa" fill="#fcd34d" font-size="10.5" font-weight="700" text-anchor="end">شماتیک است؛ نقشهٔ ساخت یا پروفیل تأییدشده نیست</text>
+  <text x="1144" y="802" class="fa" fill="#cbd5e1" font-size="9.5" text-anchor="end">مرز بیرونیِ نمونه‌برداری‌شده روی هدر نشان داده شده؛ منحنی تماس و امتداد یکنواخت جداگانه در snapshot ذخیره شده‌اند.</text>
+  <text x="1144" y="823" class="fa" fill="#cbd5e1" font-size="9.5" text-anchor="end">برش ضخامت‌دار شاخه، جبران دیواره، آماده‌سازی جوش، Fit-up و تلرانس ساخت مدل نشده‌اند؛ فقط β=۹۰° و آفست صفر.</text>
+  <text x="1144" y="840" class="fa" fill="#cbd5e1" font-size="9.5" text-anchor="end">چرخش نما فقط دوربین را می‌چرخاند؛ θ یا چرخش فیزیکی قطعه نیست.</text>
+
+  <!-- Weld ownership / context -->
+  <line x1="158" y1="873" x2="1168" y2="873" stroke="#334155"/>
+  <text x="1147" y="899" class="fa muted" font-size="10" text-anchor="end">جوش پد به هدر: شماره‌دار</text>
+  <circle cx="972" cy="895" r="2" fill="#475569"/>
+  <text x="950" y="899" class="fa muted" font-size="10" text-anchor="end">جوش پد به لولهٔ شاخه: شماره‌دار</text>
+  <rect x="158" y="883" width="116" height="27" rx="7" fill="#0f172a" stroke="#334155"/>
+  <text x="216" y="900" class="fa" fill="#94a3b8" font-size="9" text-anchor="middle">ثبت روی خط هدر</text>
+  <text x="158" y="929" class="fa" fill="#64748b" font-size="8.5" text-anchor="start">تصویر ثابتِ نمونه برای پیش‌نمایش رابط · اعداد از fixture تست PAD</text>
+</svg>

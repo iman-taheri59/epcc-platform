@@ -58,7 +58,10 @@ final class QualityResultFixture
             $components = app(ComponentService::class);
             $tee = $components->place($line, $owner, 'TEE');
             $branch = $tee->ports->firstWhere('role', 'BRANCH');
-            $attached = $components->attach($branch, $owner, 'PIPE', ['length_mm' => 1500]);
+            $attached = $components->attach($branch, $owner, 'PIPE', [
+                'length_mm' => 1500,
+                'branch_circumferential_angle_deg' => 0.0,
+            ]);
 
             return app(JointService::class)->markFitted($attached['joint'], $owner, 'FIT-QA');
         }, $line->project_id);
