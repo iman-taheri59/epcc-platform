@@ -103,6 +103,101 @@ final class PipingPadGateTest extends TestCase
         });
     }
 
+    public function test_gate_fails_closed_when_rule_footprint_has_no_supported_dn_pair(): void
+    {
+        $gate = new BranchConnectionPadGate(
+            app(PipeReference::class),
+            app(MaterialReference::class),
+        );
+        $material = static fn (int $dn): array => [
+            'spec' => 'A106',
+            'grade' => 'B',
+            'psl' => null,
+            'pipe_type' => null,
+            's_mpa_override' => 138.0,
+            'ej_override' => 1.0,
+            'p_no' => '1',
+            'group_no' => '1',
+        ];
+        $cases = [
+            'empty header size range' => [[], [15]],
+            'empty branch size range' => [[15], []],
+            'all branch sizes exceed all header sizes' => [[15], [40]],
+        ];
+
+        foreach ($cases as $label => [$headerDns, $branchDns]) {
+            $result = $gate->checkCell(
+                pressureMpa: 1.0,
+                temperatureC: 200.0,
+                headerDns: $headerDns,
+                branchDns: $branchDns,
+                scheduleFor: static fn (int $dn): string => '40',
+                caFor: static fn (int $dn): float => 0.0,
+                materialFor: $material,
+                reinforcement: 'NONE',
+                padThickness: null,
+            );
+
+            $this->assertFalse($result['pass'], $label);
+            $this->assertNull($result['worst'], $label);
+            $this->assertStringContainsString('supported DN pair', implode(' ', $result['violations']), $label);
+        }
+    }
+
+    public function test_gate_refuses_a_high_d_to_t_branch_at_the_half_run_diameter_boundary(): void
+    {
+        $gate = new BranchConnectionPadGate(
+            app(PipeReference::class),
+            app(MaterialReference::class),
+        );
+
+        // NPS 22 / DN550 schedule 10 has Dh/Th >= 100 after the 0.875
+        // mill-tolerance factor. DN300 / NPS 12 exceeds half of its 559 mm OD.
+        $result = $gate->checkCell(
+            pressureMpa: 1.0,
+            temperatureC: 200.0,
+            headerDns: [550],
+            branchDns: [300],
+            scheduleFor: static fn (int $dn): string => $dn === 550 ? '10' : '40',
+            caFor: static fn (int $dn): float => 0.0,
+            materialFor: static fn (int $dn): array => [
+                'spec' => 'A106',
+                'grade' => 'B',
+                'psl' => null,
+                'pipe_type' => null,
+                's_mpa_override' => 138.0,
+                'ej_override' => 1.0,
+                'p_no' => '1',
+                'group_no' => '1',
+            ],
+            reinforcement: 'NONE',
+            padThickness: null,
+        );
+
+        $this->assertFalse($result['pass']);
+        $this->assertNull($result['worst']);
+        $this->assertStringContainsString('outside para 304.3.1(b)', implode(' ', $result['violations']));
+    }
+
+    public function test_publish_refuses_a_branch_rule_with_no_reference_dn_pair(): void
+    {
+        $class = $this->readyClass('EMPTY-DN-CLS');
+
+        $this->asPars(fn () => $this->classes->addBranchRule(
+            $this->project(), $this->user(), $class,
+            601, 602, 15, 16, 'TEE', 'en',
+        ));
+
+        try {
+            $this->asPars(fn () => $this->classes->publish($this->project(), $this->user(), $class, 'en'));
+            $this->fail('A branch-rule footprint outside the reference DN vocabulary must not publish vacuously.');
+        } catch (ValidationException $exception) {
+            $message = implode(' ', $exception->errors()['branch_rules'] ?? []);
+            $this->assertStringContainsString('[601,602) x [15,16)', $message);
+            $this->assertStringContainsString('No supported DN pair', $message);
+        }
+    }
+
     public function test_publish_passes_when_every_cell_is_adequate(): void
     {
         $class = $this->readyClass();

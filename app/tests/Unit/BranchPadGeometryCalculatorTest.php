@@ -108,6 +108,15 @@ final class BranchPadGeometryCalculatorTest extends TestCase
         $this->assertNotEquals($smallerHeader['pad_major_axis_mm'], $largerHeader['pad_major_axis_mm']);
     }
 
+    public function test_pad_geometry_rejects_b31_3_high_d_to_t_branch_at_half_run_diameter(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('B31.3 para 304.3.1(b)');
+        PadGeometry::forCenteredRightAngleSaddle(
+            Dh: 100.0, Th: 1.0, Db: 50.0, Tb: 5.0, c: 0.0,
+        );
+    }
+
     public function test_branch_larger_than_header_is_rejected(): void
     {
         $this->expectException(InvalidArgumentException::class);

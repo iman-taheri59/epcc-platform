@@ -16,6 +16,10 @@ use InvalidArgumentException;
  * Pure function: no DB, no locale, no state — the ADR-006 s5.4 pattern.
  * All lengths in ONE consistent unit (the platform standard is mm); areas
  * come out squared in that unit. Angles in degrees, valid range 45..90.
+ * Applicability follows §304.3.1(b): when Dh/Th >= 100, Db must be < Dh/2;
+ * Db <= Dh applies in either case. This API has no offset input and assumes
+ * the branch and run axes intersect. Outside those limits, qualify under
+ * §304.7.2 rather than treating an area-replacement result as valid.
  *
  * Nomenclature (B31.3 Fig 304.3.3):
  *   Dh/Db  outside diameter of run (header) / branch pipe
@@ -94,6 +98,7 @@ final class BranchReinforcementCalculator
         if ($Db > $Dh) {
             throw new InvalidArgumentException('The branch OD Db must not exceed the run OD Dh for the §304.3.3 area-replacement method.');
         }
+        self::assertAreaReplacementApplicability($Dh, $Th, $Db);
         if ($Db - 2.0 * ($Tb - $c) <= 0.0) {
             throw new InvalidArgumentException('The effective branch opening d1 must be positive.');
         }
@@ -137,6 +142,7 @@ final class BranchReinforcementCalculator
         if ($Db > $Dh) {
             throw new InvalidArgumentException('The branch OD Db must not exceed the run OD Dh for the §304.3.3 area-replacement method.');
         }
+        self::assertAreaReplacementApplicability($Dh, $Th, $Db);
         if ($Db - 2.0 * ($Tb - $c) <= 0.0) {
             throw new InvalidArgumentException('The effective branch opening d1 must be positive.');
         }
@@ -286,6 +292,7 @@ final class BranchReinforcementCalculator
         if ($Db > $Dh) {
             throw new InvalidArgumentException('The branch OD Db must not exceed the run OD Dh for the §304.3.3 area-replacement method.');
         }
+        self::assertAreaReplacementApplicability($Dh, $Th, $Db);
         if ($Db - 2.0 * ($Tb - $c) <= 0.0) {
             throw new InvalidArgumentException('The effective branch opening d1 must be positive.');
         }
@@ -407,6 +414,18 @@ final class BranchReinforcementCalculator
             'pad_effective_height' => $padHeight,
             'pad_width_to_height_ratio' => $padWidthToHeight,
         ];
+    }
+
+    /**
+     * Enforce the diameter/thickness branch-size applicability gate in §304.3.1(b).
+     */
+    private static function assertAreaReplacementApplicability(float $Dh, float $Th, float $Db): void
+    {
+        if ($Dh / $Th >= 100.0 && $Db >= $Dh / 2.0) {
+            throw new InvalidArgumentException(
+                'B31.3 para 304.3.1(b): when Dh/Th >= 100, branch OD Db must be less than Dh/2; otherwise qualify under para 304.7.2.'
+            );
+        }
     }
 
     /**

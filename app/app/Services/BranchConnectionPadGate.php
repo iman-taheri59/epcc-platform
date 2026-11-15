@@ -58,6 +58,8 @@ use InvalidArgumentException;
  *   - Y from Table 304.1.1-1, ferritic or austenitic by family;
  *   - pairs outside para 304.3.1(b) applicability (Dh/Th >= 100 with
  *     Db >= Dh/2) are REFUSED, never silently skipped;
+ *   - an empty footprint, or one with no reference-size pair where branch DN
+ *     is at most header DN, is REFUSED rather than passing vacuously;
  *   - if `value.pad_material` is present on the branch rule, its Table A-1
  *     allowable stress is used for A4 (capped at run S); otherwise PAD material
  *     defaults to the header DN's `PIPE_MATERIAL` rule, so S_pad/S_run=1.
@@ -122,6 +124,26 @@ final class BranchConnectionPadGate
             return [
                 'pass' => false,
                 'violations' => ['A NONE rule cannot carry a PAD material.'],
+                'worst' => null,
+            ];
+        }
+
+        $hasSupportedPair = false;
+        foreach ($headerDns as $headerDn) {
+            foreach ($branchDns as $branchDn) {
+                if ($branchDn <= $headerDn) {
+                    $hasSupportedPair = true;
+                    break 2;
+                }
+            }
+        }
+
+        if (! $hasSupportedPair) {
+            return [
+                'pass' => false,
+                'violations' => [
+                    'No supported DN pair exists in this branch-rule footprint; at least one branch DN must be covered and must not exceed a header DN.',
+                ],
                 'worst' => null,
             ];
         }

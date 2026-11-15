@@ -519,9 +519,26 @@ issued `PIPE_MATERIAL` rule. The selected material identity, design-temperature
 allowable stress, source (explicit or default), and applied
 `min(1,S_pad/S_run)` ratio are frozen in the installation snapshot; the
 publish gate uses the same material rule. Actual as-welded sizes are not
-recorded or verified. PHPUnit could not be run because PHP, Composer, and application dependencies are absent; the
+recorded or verified. At the time of this PDF reconciliation, PHPUnit could not
+be run because PHP, Composer, and application dependencies were absent; the
 changed PHP source/tests were syntax-parsed with `php-parser`, and independent
-Python numeric checks covered H302, the β-sweep, and the fallback-versus-weaker-PAD-stress gate fixture.
+Python numeric checks covered H302, the β-sweep, and the
+fallback-versus-weaker-PAD-stress gate fixture.
+
+**Sandbox runtime verification (2026-10-26).** After restoring the Arena
+sandbox runtime, `BranchReinforcementCalculator` enforces §304.3.1(b) in
+`zoneGeometry()`, `criticalBetaAngles()` and `evaluate()`: when `Dh/Th >= 100`,
+`Db` must be strictly less than `Dh/2`; `Db <= Dh` remains the general limit.
+The APIs assume intersecting axes and do not accept offsets. The publication
+gate also fails closed for empty footprints and for footprints with no
+reference DN pair satisfying `branch DN <= header DN`, preventing a vacuous
+pass. Targeted PHPUnit verification passed: the PAD, reinforcement and gate
+filter completed **81 tests / 1,820 assertions**. Boundary coverage pins both
+regimes: at `Dh/Th = 100`, `Db = Dh/2` is rejected; just below 100, the general
+inclusive `Db <= Dh` limit accepts equal ODs. `PipingClassTest.php` passed
+separately with **20 tests / 53 assertions**. Feature tests used the isolated
+`epcc_test` database; pure unit tests were DB-independent. The full suite was
+not run.
 
 **Flange rating step (2026-10-12, BUILT).** The owner-uploaded ASME
 B16.5-2025 extends Step B to flanged joints:

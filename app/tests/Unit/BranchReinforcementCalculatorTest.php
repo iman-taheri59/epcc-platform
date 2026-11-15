@@ -362,6 +362,53 @@ class BranchReinforcementCalculatorTest extends TestCase
         );
     }
 
+    public function test_zone_geometry_rejects_high_d_to_t_branch_at_half_run_diameter(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('B31.3 para 304.3.1(b)');
+        Calc::zoneGeometry(Dh: 100.0, Th: 1.0, Db: 50.0, Tb: 5.0, c: 0.0);
+    }
+
+    public function test_zone_geometry_allows_both_permitted_diameter_to_wall_regimes_and_the_inclusive_limit(): void
+    {
+        // At Dh/Th = 100, B31.3 requires Db < Dh/2.
+        $highRatioSmallBranch = Calc::zoneGeometry(
+            Dh: 100.0, Th: 1.0, Db: 49.9, Tb: 5.0, c: 0.0,
+        );
+        $this->assertEqualsWithDelta(39.9, $highRatioSmallBranch['d1'], 1e-12);
+
+        // Just below Dh/Th = 100, a smaller branch is inside the general limit.
+        $belowThreshold = Calc::zoneGeometry(
+            Dh: 100.0, Th: 1.0001, Db: 80.0, Tb: 10.0, c: 0.0,
+        );
+        $this->assertEqualsWithDelta(60.0, $belowThreshold['d1'], 1e-12);
+
+        // The general Db/Dh <= 1 limit is inclusive: equal ODs remain allowed.
+        $atDiameterLimit = Calc::zoneGeometry(
+            Dh: 100.0, Th: 1.0001, Db: 100.0, Tb: 10.0, c: 0.0,
+        );
+        $this->assertEqualsWithDelta(80.0, $atDiameterLimit['d1'], 1e-12);
+        $this->assertEqualsWithDelta(80.0, $atDiameterLimit['d2'], 1e-12);
+    }
+
+    public function test_area_balance_rejects_the_high_d_to_t_half_diameter_boundary(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('B31.3 para 304.3.1(b)');
+        Calc::evaluate(
+            Dh: 100.0, Th: 1.0, th: 0.5,
+            Db: 50.0, Tb: 5.0, tb: 2.0,
+            c: 0.0,
+        );
+    }
+
+    public function test_critical_beta_sweep_rejects_out_of_scope_high_d_to_t_geometry(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('B31.3 para 304.3.1(b)');
+        Calc::criticalBetaAngles(Dh: 100.0, Th: 1.0, Db: 50.0, Tb: 5.0, c: 0.0);
+    }
+
     public function test_zone_geometry_refuses_non_finite_inputs(): void
     {
         $this->expectException(InvalidArgumentException::class);
