@@ -16,10 +16,11 @@ operational workflow may remain open) · `BUILT` (all stated acceptance met) ·
 `REJECTED` (considered and refused — kept so it is not raised again).
 
 Last updated: **2026-10-26** (P-21/P-22 OLET-path reconciliation; targeted
-OLET/joint regressions passed 84 tests / 218 assertions; P-26 now also has a
-separate pose-derived β diagnostic for supported P2P wall roots. Its focused
-unit/features and host-surface regression passed 14 tests / 180 assertions;
-Pint and PHP syntax checks pass. The full Laravel suite remains separate).
+OLET/joint regressions passed 84 tests / 218 assertions; P-26 now also has
+separate pose-derived β and dual-endpoint branch-station-projection diagnostics
+for supported P2P wall roots. `BranchStationProjectionCalculatorTest` (2/4),
+`JointPortGeometryDiagnosticServiceTest` (7/64), and `ComponentModellingTest`
+(75/518) pass; Pint and PHP syntax checks pass. No full Laravel suite was run).
 
 ---
 
@@ -52,7 +53,7 @@ Pint and PHP syntax checks pass. The full Laravel suite remains separate).
 | P-23 | Requirement / MTO | MTO has no coverage of branch-connection material: reinforcement pads (plate) and coped stub ends | OPEN — scope decision |
 | P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator + B31.3-2024 materials pack + class design basis + publish-gate validation built; **flange step built 2026-10-12**: ASME B16.5-2025 P-T ratings pack (45 SI tables, cross-checked against the Customary twin) + `FlangeRatingReference` + publish gate rating every FLANGE_TYPE cell against the class design basis; B16.47 large-diameter + Section II Part D extensions remain follow-ups; runtime verification on owner's Laragon pending | PARTIAL — Step B + flange gate built |
 | P-25 | Standards / data | Parallel-session engineering reference library discovered on the owner-published `workspace` branch and ported (commit `bf15816`): full B31.3-2024 Table A-1 stresses (798 rows/138 specs), materials library v1.8, B16.5+B16.47 flange P-T curves, bolting, B16.9 fitting dimensions, valve packs, per-pack schemas and the 2,835-line validator; both flange provenances cross-checked cell-by-cell (4,725/4,725 exact). **Steps 1-4 ported; step 5 catalogue/adoption-only adaptation implemented (awaiting Laragon verification)**: ADR-019 documents ITP-only citation host/migration and mutable-edition conflict; owner chose option A; citation/ITP still deferred. Compatibility assessment (`3bdff9b`) + engineering screening & fitting-review module + MR entry module ported (awaiting Laragon test runs). Next: Laragon verification; group A fluid-service classification implemented pending tests (ADR-020); step 7 baseline/model-import assessed as no-go for wholesale port, owner approved parser-only; pure PCF parser ported (ADR-021), branch-vocabulary conflict handled by a read-only P2P classifier (ADR-022); model importer/baseline deferred | PARTIAL — porting in progress |
-| P-26 | Requirement / engineering model | Manual component slope/orientation/rotation entry and calculated transformed geometry, beyond branch β/θ alone | PARTIAL — persisted project frame and DRAFT-only poses for supported PIPE/NIPPLE and scoped B16.9 BW LR/B16.11 forged elbows; bilingual azimuth/inclination/roll and signed run/rise entry; immutable, source-fingerprinted joint snapshots. Added a separate pose-derived β diagnostic only for direct P2P STUB_IN/STUB_ON wall roots with current header/branch PIPE poses in common frame/MM; recorded β remains authoritative, Δ is raw/UNASSESSED, and changes show STALE. Wall contact stays UNRESOLVED without host-surface geometry; no θ/PAD use or verdict. Wider fitting coverage and authentic Autodesk Plant 3D CTPL/PCAT remain open |
+| P-26 | Requirement / engineering model | Manual component slope/orientation/rotation entry and calculated transformed geometry, beyond branch β/θ alone | PARTIAL — persisted project frame and DRAFT-only poses for supported PIPE/NIPPLE and scoped B16.9 BW LR/B16.11 forged elbows; bilingual azimuth/inclination/roll and signed run/rise entry; immutable, source-fingerprinted joint snapshots. Added separate pose-derived β and branch-station-projection diagnostics for direct P2P STUB_IN/STUB_ON wall roots with current header/branch PIPE poses in common frame/MM. Recorded β remains authoritative; β Δ and both station candidates are raw/UNASSESSED; upstream end is not inferred, branch_offset does not place the wall contact, and changes show STALE. Wall contact stays UNRESOLVED without host-surface geometry; no θ/PAD use or verdict. Wider fitting coverage and authentic Autodesk Plant 3D CTPL/PCAT remain open |
 
 ---
 
@@ -717,16 +718,36 @@ The explicit joint value is never changed/backfilled, and no acceptance verdict,
 TEE/CROSS are excluded; wall contact remains `UNRESOLVED` without host-surface
 geometry.
 
-Verification for this slice: `JointPortGeometryDiagnosticServiceTest` (6/39),
-focused `ComponentModellingTest` (7/127; EN/FA β labels checked), and the wall-host-surface unresolved
-regression (1/14) all pass, as do Pint, PHP syntax, `git diff --check`, and Blade
-directive-balance checks. Both databases were confirmed empty before the tests. The feature
-fixtures used their normal `migrate:fresh`/seed setup only on isolated
-`epcc_test`; afterward it has 131 public tables and 128 migration rows. The
-`epcc` development database remains empty (zero public tables; no migrations
-run). No full Laravel suite was run. Other dependent-check classes and sourced
-acceptance rules remain open. Explicit β remains authoritative, θ is not inferred, and PAD
-calculations remain outside this feature.
+The next 2026-10-26 dependent check projects the current branch-pipe root-port
+point onto the header PIPE centreline and compares the raw axial projection
+with the recorded P2P wall station. Because no field selects which header port
+is upstream, it reports signed candidate stations and geometry-minus-recorded
+Δ from both port 1 and port 2; the result remains `UNASSESSED` with
+`UPSTREAM_ENDPOINT_NOT_IDENTIFIED`. It consumes no `branch_offset_mm`, defines
+no circumferential direction or contact surface, and does not change the
+wall-root parent result from `UNRESOLVED`. The new method and both current poses
+are included in the source fingerprint and immutable snapshot; changed inputs
+make the captured result `STALE`. This station check is not an acceptance
+verdict, fit-up rule, θ, PAD input, or topology change. P-26 remains `PARTIAL`.
+
+At the earlier β checkpoint, `JointPortGeometryDiagnosticServiceTest` (6/39),
+focused `ComponentModellingTest` (7/127; EN/FA β labels checked), and the
+wall-host-surface unresolved regression (1/14) passed; the full application
+suite was not run.
+
+The station-projection follow-on verification passes `BranchStationProjectionCalculatorTest`
+(2/4), `JointPortGeometryDiagnosticServiceTest` (7/64), and the focused
+`ComponentModellingTest` file (75/518), including both station candidates,
+unchanged unresolved wall contact, immutable capture, source staleness, and
+EN/FA display. PHP syntax, Pint, `git diff --check`, and
+Blade directive-balance checks pass. Before the fixture run, both `epcc` and
+`epcc_test` had zero public tables and migrations; the normal test refresh/seed
+ran only against isolated `epcc_test`, which now has 131 public tables and 128
+migration rows. The development `epcc` database remains empty and unmigrated.
+No full Laravel suite was run. Other dependent-check classes and sourced
+acceptance rules remain open. Explicit β remains authoritative, θ is not
+inferred, and PAD calculations remain outside this feature; P-26 remains
+`PARTIAL`.
 
 
 ## How to use this file

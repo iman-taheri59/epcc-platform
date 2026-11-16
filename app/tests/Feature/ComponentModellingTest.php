@@ -2152,7 +2152,7 @@ final class ComponentModellingTest extends TestCase
         $frame = $this->modelFrame();
         $poses = $this->poseService();
         $poses->recordManual($project, $headerLine, $headerPipe, $frame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]);
-        $poses->recordManual($project, $branchLine, $branchPipe, $frame, $owner, 60.0, 0.0, 0.0, [0, 0, 0]);
+        $poses->recordManual($project, $branchLine, $branchPipe, $frame, $owner, 60.0, 0.0, 0.0, [2500, 0, 0]);
 
         $captureUrl = route('piping.model.geometry-snapshots', [
             'projectCode' => 'PH-14', 'lineId' => $branchLine->id, 'lang' => 'en',
@@ -2165,13 +2165,22 @@ final class ComponentModellingTest extends TestCase
         $first = $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
             ->where('joint_id', $joint->id)->firstOrFail());
         $firstBeta = $first->diagnostic_snapshot['branch_beta_geometry'];
+        $firstStation = $first->diagnostic_snapshot['branch_station_geometry'];
         $this->assertSame('UNRESOLVED', $first->diagnostic_status, 'Wall contact still lacks host-surface geometry.');
         $this->assertSame('WALL_REFERENCE_WITHOUT_HOST_SURFACE_GEOMETRY', $first->diagnostic_reason);
-        $this->assertSame('JOINT_GEOMETRY_INPUT_V2', $first->source_snapshot['schema']);
+        $this->assertSame('JOINT_GEOMETRY_INPUT_V3', $first->source_snapshot['schema']);
         $this->assertSame('UNASSESSED', $firstBeta['status']);
         $this->assertEqualsWithDelta(60.0, $firstBeta['beta_geometry_deg'], 1e-10);
         $this->assertSame(45.0, (float) $firstBeta['beta_recorded_deg']);
         $this->assertEqualsWithDelta(15.0, $firstBeta['delta_geometry_minus_recorded_deg'], 1e-10);
+        $this->assertSame(JointPortGeometryDiagnosticService::BRANCH_STATION_METHOD, $firstStation['method_code']);
+        $this->assertSame('UNASSESSED', $firstStation['status']);
+        $this->assertSame('UPSTREAM_ENDPOINT_NOT_IDENTIFIED', $firstStation['reason']);
+        $this->assertEqualsWithDelta(2500.0, $firstStation['station_recorded_mm'], 1e-10);
+        $this->assertEqualsWithDelta(2500.0, $firstStation['station_from_port_1_mm'], 1e-10);
+        $this->assertEqualsWithDelta(3500.0, $firstStation['station_from_port_2_mm'], 1e-10);
+        $this->assertEqualsWithDelta(0.0, $firstStation['delta_from_port_1_mm'], 1e-10);
+        $this->assertEqualsWithDelta(1000.0, $firstStation['delta_from_port_2_mm'], 1e-10);
         $this->assertNull($first->source_snapshot['endpoint_b']);
 
         $this->actingAs($owner)->get($modelUrl)
@@ -2179,7 +2188,11 @@ final class ComponentModellingTest extends TestCase
             ->assertSee('Pose-derived branch β (diagnostic only; explicit joint β remains authoritative)')
             ->assertSee('Geometry β:')
             ->assertSee('Recorded β:')
-            ->assertSee('Raw Δ (geometry − recorded):');
+            ->assertSee('Raw Δ (geometry − recorded):')
+            ->assertSee('Pose-derived branch station projection (diagnostic only; upstream end is not identified)')
+            ->assertSee('Station projected from port 1:')
+            ->assertSee('Station projected from port 2:')
+            ->assertSee('Raw station Δ from port 1 (geometry − recorded):');
 
         $persianModelUrl = route('piping.model', [
             'projectCode' => 'PH-14', 'lineId' => $branchLine->id, 'lang' => 'fa',
@@ -2189,13 +2202,17 @@ final class ComponentModellingTest extends TestCase
             ->assertSee('β مستخرج از pose')
             ->assertSee('β از هندسه')
             ->assertSee('β ثبت‌شده')
-            ->assertSee('Δ خام (هندسه − ثبت‌شده)');
+            ->assertSee('Δ خام (هندسه − ثبت‌شده)')
+            ->assertSee('پروجکشن ایستگاه انشعاب از pose')
+            ->assertSee('ایستگاه تصویرشده از پورت ۱:')
+            ->assertSee('ایستگاه تصویرشده از پورت ۲:');
 
-        $poses->recordManual($project, $branchLine, $branchPipe, $frame, $owner, 90.0, 0.0, 0.0, [0, 0, 0]);
+        $poses->recordManual($project, $branchLine, $branchPipe, $frame, $owner, 90.0, 0.0, 0.0, [2500, 0, 0]);
         $this->actingAs($owner)->get($modelUrl)
             ->assertOk()
             ->assertSee('STALE — inputs changed since capture; capture a new snapshot to record a current result.')
-            ->assertDontSee('Geometry β:');
+            ->assertDontSee('Geometry β:')
+            ->assertDontSee('Station projected from port 1:');
 
         $this->actingAs($owner)->post($captureUrl)->assertRedirect();
         $revisions = $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
@@ -2204,11 +2221,15 @@ final class ComponentModellingTest extends TestCase
             ->get());
         $this->assertCount(2, $revisions);
         $secondBeta = $revisions->last()->diagnostic_snapshot['branch_beta_geometry'];
+        $secondStation = $revisions->last()->diagnostic_snapshot['branch_station_geometry'];
         $this->assertSame('UNRESOLVED', $revisions->last()->diagnostic_status);
         $this->assertSame('UNASSESSED', $secondBeta['status']);
         $this->assertEqualsWithDelta(90.0, $secondBeta['beta_geometry_deg'], 1e-10);
         $this->assertSame(45.0, (float) $secondBeta['beta_recorded_deg']);
         $this->assertEqualsWithDelta(45.0, $secondBeta['delta_geometry_minus_recorded_deg'], 1e-10);
+        $this->assertSame('UNASSESSED', $secondStation['status']);
+        $this->assertEqualsWithDelta(2500.0, $secondStation['station_from_port_1_mm'], 1e-10);
+        $this->assertEqualsWithDelta(3500.0, $secondStation['station_from_port_2_mm'], 1e-10);
         $freshJoint = $this->asOwner(fn () => Joint::query()->whereKey($joint->id)->firstOrFail());
         $this->assertSame(45.0, (float) $freshJoint->branch_longitudinal_angle_deg);
         $this->assertNull($freshJoint->port_b_id);
@@ -2218,7 +2239,9 @@ final class ComponentModellingTest extends TestCase
             ->assertOk()
             ->assertSee('Current snapshot revision')
             ->assertSee('Pose-derived branch β (diagnostic only; explicit joint β remains authoritative)')
-            ->assertSee('Geometry β:');
+            ->assertSee('Geometry β:')
+            ->assertSee('Pose-derived branch station projection (diagnostic only; upstream end is not identified)')
+            ->assertSee('Station projected from port 1:');
     }
 
     public function test_joint_diagnostic_snapshots_are_immutable_idempotent_and_mark_changed_sources_stale(): void

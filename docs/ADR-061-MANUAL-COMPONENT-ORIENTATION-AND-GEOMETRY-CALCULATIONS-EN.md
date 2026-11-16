@@ -13,10 +13,12 @@ convention, and transformed ports are versioned and hashed; pose input remains
 explicit azimuth/inclination/roll or a dimensioned signed run/rise triangle.
 Raw diagnostics for explicit two-port joints can be captured as immutable,
 source-fingerprinted revisions; unchanged inputs reuse the latest revision and
-changed inputs display `STALE`. This is not full FR-ENG-16: other fitting
-variants, wall-surface geometry, broader dependent-check coverage, native
-Autodesk Plant 3D CTPL/PCAT delivery, and engineering acceptance rules remain
-open. The normative functional requirement is [SRS `FR-ENG-16`](SRS-EPCC-Platform.md)
+changed inputs display `STALE`. Supported direct P2P wall roots also expose a
+pose-derived β comparison and a two-origin axial station projection; neither
+resolves wall contact or creates an acceptance verdict. This is not full
+FR-ENG-16: other fitting variants, wall-surface geometry, broader dependent-check
+coverage, native Autodesk Plant 3D CTPL/PCAT delivery, and engineering
+acceptance rules remain open. The normative functional requirement is [SRS `FR-ENG-16`](SRS-EPCC-Platform.md)
 (Must); work is tracked in [P-26](IMPROVEMENT-PROPOSALS-EN.md). Related piping
 model: [ADR-006](ADR-006-Piping-Line-Component-Joint-Model.md) §§14–16.
 
@@ -615,3 +617,27 @@ boundaries and the remaining profile, diagnostics, and acceptance work.
   setup only against isolated `epcc_test` (131 public tables / 128 migration
   rows remain afterward). The `epcc` development database remains empty and
   unmigrated. No full Laravel suite was run.
+- **2026-10-26 — pose-derived P2P wall-station projection:** added a separate
+  raw dependent check for direct `STUB_IN`/`STUB_ON` wall roots, gated on
+  current resolved header/branch `PIPE` geometry in the same project frame and
+  `MM`. It orthogonally projects the branch root-port point onto the straight
+  header centreline and reports signed station candidates and raw
+  geometry-minus-recorded deltas from both header port endpoints. The data
+  model has no upstream-end selector, so neither candidate is selected and the
+  result stays `UNASSESSED/UPSTREAM_ENDPOINT_NOT_IDENTIFIED`; it consumes no
+  `branch_offset_mm`, invents no radial/contact-surface direction, and leaves
+  the overall wall-contact diagnostic `UNRESOLVED`. P2P-root input snapshots
+  include the method and use schema V3; the immutable capture fingerprints the
+  joint and both current poses, so changed sources make it `STALE`. Unaffected
+  explicit two-port snapshots retain their V2 input contract. The feature does
+  not establish an acceptance
+  tolerance, fit-up verdict, θ, PAD input, or topology change. Verification
+  passed: `BranchStationProjectionCalculatorTest` (2 tests / 4 assertions),
+  `JointPortGeometryDiagnosticServiceTest` (7 / 64), and the focused
+  `ComponentModellingTest` file (75 / 518), including snapshot
+  capture/staleness and EN/FA display. PHP syntax, Pint, Blade directive
+  balance, and `git diff --check` also passed. Before fixture runs both `epcc`
+  and `epcc_test` had zero public tables/migrations; the normal test refresh and
+  seed setup ran only against `epcc_test`, which now has 131 tables / 128
+  migration rows. The development `epcc` database remains empty and
+  unmigrated. No full Laravel suite was run; P-26 remains `PARTIAL`.

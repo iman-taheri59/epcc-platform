@@ -22,6 +22,8 @@ final class JointPortGeometryDiagnosticService
 
     public const BRANCH_BETA_METHOD = 'POSE_DERIVED_P2P_BRANCH_BETA_V1';
 
+    public const BRANCH_STATION_METHOD = 'POSE_DERIVED_P2P_BRANCH_STATION_PROJECTION_V1';
+
     /**
      * Calculate diagnostics for only the joints the caller has already loaded
      * and authorized. Geometry is supplied by ComponentPoseService so all
@@ -66,6 +68,7 @@ final class JointPortGeometryDiagnosticService
 
             if ($this->isP2pWallRoot($joint)) {
                 $diagnostic['branch_beta_geometry'] = $this->branchBetaGeometry($joint, $geometryByComponentId);
+                $diagnostic['branch_station_geometry'] = $this->branchStationGeometry($joint, $geometryByComponentId);
             }
 
             return $diagnostic;
@@ -250,6 +253,116 @@ final class JointPortGeometryDiagnosticService
         ];
     }
 
+    /**
+     * Compare the branch-port model point with the recorded wall station
+     * without choosing which header endpoint is upstream or using the offset
+     * as a circumferential/contact-surface direction.
+     *
+     * @param  array<string, array<string, mixed>>  $geometryByComponentId
+     * @return array<string, mixed>
+     */
+    private function branchStationGeometry(Joint $joint, array $geometryByComponentId): array
+    {
+        $branchPort = $joint->portA;
+        $header = $joint->branchHeaderComponent;
+        $branch = $branchPort?->component;
+
+        if (! $branchPort instanceof Port
+            || ! $header instanceof Component
+            || ! $branch instanceof Component) {
+            return $this->unresolvedBranchStation('P2P_WALL_ROOT_ENDPOINT_NOT_AVAILABLE');
+        }
+
+        if ($header->template_code !== 'PIPE'
+            || $branch->template_code !== 'PIPE'
+            || $branchPort->role !== 'RUN') {
+            return $this->unresolvedBranchStation('P2P_WALL_ROOT_PIPE_PROFILE_UNSUPPORTED');
+        }
+
+        $headerGeometry = $geometryByComponentId[$header->id] ?? null;
+        $branchGeometry = $geometryByComponentId[$branch->id] ?? null;
+        if (! is_array($headerGeometry) || ! is_array($branchGeometry)) {
+            return $this->unresolvedBranchStation('BRANCH_STATION_GEOMETRY_NOT_AVAILABLE');
+        }
+
+        $headerStatus = $headerGeometry['status'] ?? 'UNRESOLVED';
+        $branchStatus = $branchGeometry['status'] ?? 'UNRESOLVED';
+        if ($headerStatus !== 'RESOLVED' || $branchStatus !== 'RESOLVED') {
+            $stale = $headerStatus === 'STALE' || $branchStatus === 'STALE';
+
+            return $this->unresolvedBranchStation(
+                $stale ? 'BRANCH_STATION_GEOMETRY_STALE' : 'BRANCH_STATION_GEOMETRY_UNRESOLVED',
+                $stale ? 'STALE' : 'UNRESOLVED',
+            );
+        }
+
+        if (($headerGeometry['model_frame_id'] ?? null) !== ($branchGeometry['model_frame_id'] ?? null)
+            || ($headerGeometry['coordinate_unit'] ?? null) !== ($branchGeometry['coordinate_unit'] ?? null)
+            || ($headerGeometry['coordinate_unit'] ?? null) !== 'MM') {
+            return $this->unresolvedBranchStation('BRANCH_STATION_FRAME_OR_UNIT_MISMATCH', 'STALE');
+        }
+
+        if (($headerGeometry['profile_id'] ?? null) !== LinearTwoPortComponentGeometryProfile::PIPE_PROFILE_ID
+            || ($branchGeometry['profile_id'] ?? null) !== LinearTwoPortComponentGeometryProfile::PIPE_PROFILE_ID) {
+            return $this->unresolvedBranchStation('BRANCH_STATION_PIPE_PROFILE_UNSUPPORTED');
+        }
+
+        $headerPort1 = $this->portGeometryBySequence($headerGeometry, 1);
+        $headerPort2 = $this->portGeometryBySequence($headerGeometry, 2);
+        $branchPortGeometry = $this->portGeometry($branchGeometry, $branchPort);
+        if ($headerPort1 === null || $headerPort2 === null || $branchPortGeometry === null
+            || $headerPort1['role'] !== 'RUN'
+            || $headerPort2['role'] !== 'RUN'
+            || $branchPortGeometry['role'] !== 'RUN') {
+            return $this->unresolvedBranchStation('BRANCH_STATION_PORT_GEOMETRY_NOT_AVAILABLE');
+        }
+
+        try {
+            $projection = BranchStationProjectionCalculator::measure(
+                $headerPort1['point_model'],
+                $headerPort2['point_model'],
+                $branchPortGeometry['point_model'],
+            );
+        } catch (InvalidArgumentException) {
+            return $this->unresolvedBranchStation('BRANCH_STATION_AXIS_INVALID');
+        }
+
+        $recorded = $joint->branch_station_mm;
+        $recorded = (is_int($recorded) || is_float($recorded)) && is_finite((float) $recorded)
+            ? (float) $recorded
+            : null;
+
+        return [
+            'method_code' => self::BRANCH_STATION_METHOD,
+            'status' => 'UNASSESSED',
+            'reason' => 'UPSTREAM_ENDPOINT_NOT_IDENTIFIED',
+            'station_recorded_mm' => $recorded,
+            'header_length_from_pose_mm' => $projection['header_length_from_pose_mm'],
+            'station_from_port_1_mm' => $projection['station_from_port_1_mm'],
+            'station_from_port_2_mm' => $projection['station_from_port_2_mm'],
+            'delta_from_port_1_mm' => $recorded === null
+                ? null
+                : $projection['station_from_port_1_mm'] - $recorded,
+            'delta_from_port_2_mm' => $recorded === null
+                ? null
+                : $projection['station_from_port_2_mm'] - $recorded,
+            'model_frame_id' => $headerGeometry['model_frame_id'],
+            'coordinate_unit' => $headerGeometry['coordinate_unit'],
+            'pose_revision_header' => $headerGeometry['pose_revision'] ?? null,
+            'pose_revision_branch' => $branchGeometry['pose_revision'] ?? null,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function unresolvedBranchStation(string $reason, string $status = 'UNRESOLVED'): array
+    {
+        return [
+            'method_code' => self::BRANCH_STATION_METHOD,
+            'status' => $status,
+            'reason' => $reason,
+        ];
+    }
+
     /** @return array<string, mixed> */
     private function unresolvedBranchBeta(string $reason, string $status = 'UNRESOLVED'): array
     {
@@ -270,10 +383,17 @@ final class JointPortGeometryDiagnosticService
      */
     private function inputSnapshot(Joint $joint, array $geometryByComponentId): array
     {
-        return [
-            'schema' => 'JOINT_GEOMETRY_INPUT_V2',
+        $isP2pWallRoot = $this->isP2pWallRoot($joint);
+        $input = [
+            'schema' => $isP2pWallRoot ? 'JOINT_GEOMETRY_INPUT_V3' : 'JOINT_GEOMETRY_INPUT_V2',
             'method_code' => self::METHOD,
-            'branch_beta_method_code' => $this->isP2pWallRoot($joint) ? self::BRANCH_BETA_METHOD : null,
+            'branch_beta_method_code' => $isP2pWallRoot ? self::BRANCH_BETA_METHOD : null,
+        ];
+        if ($isP2pWallRoot) {
+            $input['branch_station_method_code'] = self::BRANCH_STATION_METHOD;
+        }
+
+        return $input + [
             'joint' => [
                 'id' => $joint->id,
                 'project_id' => $joint->project_id,

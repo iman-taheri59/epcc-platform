@@ -69,6 +69,15 @@
         'betaDiagnosticHelp' => ['fa' => 'مقدار خام است؛ قاعدهٔ پذیرش یا تلرانس اختلاف تعیین نشده. این تشخیص β صریح را تغییر نمی‌دهد و وارد θ یا PAD نمی‌شود.', 'en' => 'Raw values only; no acceptance rule or mismatch tolerance is defined. This diagnostic does not change explicit β and does not feed θ or PAD.'],
         'betaDiagnosticUnresolved' => ['fa' => 'UNRESOLVED — pose جاری و محور هر دو PIPE برای محاسبهٔ β در دسترس نیستند.', 'en' => 'UNRESOLVED — current poses and both PIPE axes are required for geometry β.'],
         'betaDiagnosticStale' => ['fa' => 'STALE — فریم/واحد یا poseها برای مقایسه سازگار نیستند.', 'en' => 'STALE — frames, units, or poses are not compatible for comparison.'],
+        'branchStationTitle' => ['fa' => 'پروجکشن ایستگاه انشعاب از pose — تشخیصی؛ سر بالادست مشخص نشده', 'en' => 'Pose-derived branch station projection (diagnostic only; upstream end is not identified)'],
+        'stationRecorded' => ['fa' => 'ایستگاه ثبت‌شده', 'en' => 'Recorded station'],
+        'stationFromPort1' => ['fa' => 'ایستگاه تصویرشده از پورت ۱', 'en' => 'Station projected from port 1'],
+        'stationFromPort2' => ['fa' => 'ایستگاه تصویرشده از پورت ۲', 'en' => 'Station projected from port 2'],
+        'stationDeltaFromPort1' => ['fa' => 'Δ خام ایستگاه از پورت ۱ (هندسه − ثبت‌شده)', 'en' => 'Raw station Δ from port 1 (geometry − recorded)'],
+        'stationDeltaFromPort2' => ['fa' => 'Δ خام ایستگاه از پورت ۲ (هندسه − ثبت‌شده)', 'en' => 'Raw station Δ from port 2 (geometry − recorded)'],
+        'stationDiagnosticHelp' => ['fa' => 'پروجکشن روی محور مرکزی PIPE هدر است؛ چون سر بالادست در مدل مشخص نشده، هر دو جهتِ مبدأ نمایش داده می‌شوند. فقط مقدار خام و UNASSESSED است؛ قاعده یا تلرانس پذیرش ندارد، branch_offset_mm مصرف نمی‌شود و سطح تماس دیواره حل نمی‌شود.', 'en' => 'This is a projection onto the header PIPE centreline. The upstream end is not identified, so both endpoint origins are shown. Raw and UNASSESSED only; no acceptance rule or tolerance is defined. branch_offset_mm is not used and wall contact remains unresolved.'],
+        'stationDiagnosticUnresolved' => ['fa' => 'UNRESOLVED — pose دو PIPE و نقاط دو سر هدر برای پروجکشن ایستگاه در دسترس نیستند.', 'en' => 'UNRESOLVED — both PIPE poses and the header endpoint points are required for station projection.'],
+        'stationDiagnosticStale' => ['fa' => 'STALE — فریم/واحد یا poseها برای پروجکشن ایستگاه سازگار نیستند.', 'en' => 'STALE — frames, units, or poses are not compatible for station projection.'],
         'seq'      => ['fa' => 'ردیف', 'en' => 'No.'],
         'type'     => ['fa' => 'نوع', 'en' => 'Type'],
         'size'     => ['fa' => 'سایز', 'en' => 'Size'],
@@ -916,6 +925,36 @@
               @else
                 <div style="color:#fcd34d;">{{ $L('betaDiagnosticUnresolved') }}</div>
                 <div class="mono" style="color:var(--muted);">{{ $branchBetaGeometry['reason'] ?? 'BRANCH_BETA_GEOMETRY_UNRESOLVED' }}</div>
+              @endif
+            </div>
+          @endif
+          @php $branchStationGeometry = $diagnostic['branch_station_geometry'] ?? null; @endphp
+          @if(($diagnostic['snapshot_state'] ?? null) !== 'STALE' && is_array($branchStationGeometry))
+            <div style="margin-top:5px;padding-top:4px;border-top:1px solid var(--line);">
+              <strong>{{ $L('branchStationTitle') }}</strong>
+              @if(($branchStationGeometry['status'] ?? null) === 'UNASSESSED')
+                <div>
+                  {{ $L('stationRecorded') }}: <bdi>{{ $branchStationGeometry['station_recorded_mm'] === null ? '—' : $formatMm($branchStationGeometry['station_recorded_mm']) }} mm</bdi>
+                </div>
+                <div>
+                  {{ $L('stationFromPort1') }}: <bdi>{{ $formatMm($branchStationGeometry['station_from_port_1_mm']) }} mm</bdi>
+                  @if($branchStationGeometry['delta_from_port_1_mm'] !== null)
+                    · {{ $L('stationDeltaFromPort1') }}: <bdi>{{ $formatMm($branchStationGeometry['delta_from_port_1_mm']) }} mm</bdi>
+                  @endif
+                </div>
+                <div>
+                  {{ $L('stationFromPort2') }}: <bdi>{{ $formatMm($branchStationGeometry['station_from_port_2_mm']) }} mm</bdi>
+                  @if($branchStationGeometry['delta_from_port_2_mm'] !== null)
+                    · {{ $L('stationDeltaFromPort2') }}: <bdi>{{ $formatMm($branchStationGeometry['delta_from_port_2_mm']) }} mm</bdi>
+                  @endif
+                </div>
+                <small style="color:var(--muted);">{{ $L('stationDiagnosticHelp') }}</small>
+              @elseif(($branchStationGeometry['status'] ?? null) === 'STALE')
+                <div style="color:#fca5a5;">{{ $L('stationDiagnosticStale') }}</div>
+                <div class="mono" style="color:var(--muted);">{{ $branchStationGeometry['reason'] ?? 'BRANCH_STATION_GEOMETRY_STALE' }}</div>
+              @else
+                <div style="color:#fcd34d;">{{ $L('stationDiagnosticUnresolved') }}</div>
+                <div class="mono" style="color:var(--muted);">{{ $branchStationGeometry['reason'] ?? 'BRANCH_STATION_GEOMETRY_UNRESOLVED' }}</div>
               @endif
             </div>
           @endif
