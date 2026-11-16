@@ -10,9 +10,10 @@ use InvalidArgumentException;
  * Project a branch-end point onto a straight header centreline.
  *
  * Both endpoint-based station candidates are returned because the piping
- * model does not identify which header port is upstream. This is a coordinate
- * projection only: it does not use branch_offset_mm, model a wall surface, or
- * decide whether the branch contacts the header.
+ * model does not identify which header port is upstream. The perpendicular
+ * centreline distance is a point-to-axis measurement only: it does not use
+ * branch_offset_mm to place a point, model a wall surface, or decide whether
+ * the branch contacts the header.
  */
 final class BranchStationProjectionCalculator
 {
@@ -23,7 +24,8 @@ final class BranchStationProjectionCalculator
      * @return array{
      *   header_length_from_pose_mm:float,
      *   station_from_port_1_mm:float,
-     *   station_from_port_2_mm:float
+     *   station_from_port_2_mm:float,
+     *   perpendicular_distance_to_header_axis_mm:float
      * }
      */
     public static function measure(
@@ -63,15 +65,27 @@ final class BranchStationProjectionCalculator
             + $branchFromPort1[2] * $headerAxis[2]
         ) / $headerLength;
         $stationFromPort2 = $headerLength - $stationFromPort1;
+        $perpendicularVector = [
+            $branchFromPort1[0] - $stationFromPort1 * $headerAxis[0] / $headerLength,
+            $branchFromPort1[1] - $stationFromPort1 * $headerAxis[1] / $headerLength,
+            $branchFromPort1[2] - $stationFromPort1 * $headerAxis[2] / $headerLength,
+        ];
+        $perpendicularDistance = sqrt(
+            $perpendicularVector[0] * $perpendicularVector[0]
+            + $perpendicularVector[1] * $perpendicularVector[1]
+            + $perpendicularVector[2] * $perpendicularVector[2],
+        );
 
-        if (! is_finite($stationFromPort1) || ! is_finite($stationFromPort2)) {
-            throw new InvalidArgumentException('The projected branch station must be finite.');
+        if (! is_finite($stationFromPort1) || ! is_finite($stationFromPort2)
+            || ! is_finite($perpendicularDistance)) {
+            throw new InvalidArgumentException('The projected branch station and axis distance must be finite.');
         }
 
         return [
             'header_length_from_pose_mm' => $headerLength,
             'station_from_port_1_mm' => $stationFromPort1,
             'station_from_port_2_mm' => $stationFromPort2,
+            'perpendicular_distance_to_header_axis_mm' => $perpendicularDistance,
         ];
     }
 

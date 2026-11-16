@@ -91,6 +91,7 @@ final class JointPortGeometryDiagnosticServiceTest extends TestCase
         self::assertEqualsWithDelta(3500.0, $station['station_from_port_2_mm'], 1e-10);
         self::assertEqualsWithDelta(0.0, $station['delta_from_port_1_mm'], 1e-10);
         self::assertEqualsWithDelta(1000.0, $station['delta_from_port_2_mm'], 1e-10);
+        self::assertEqualsWithDelta(sqrt(125.0 ** 2 + 35.0 ** 2), $station['perpendicular_distance_to_header_axis_mm'], 1e-10);
         self::assertArrayNotHasKey('branch_offset_mm', $station);
         self::assertArrayNotHasKey('contact_surface', $station);
         self::assertArrayNotHasKey('wall_contact', $station);

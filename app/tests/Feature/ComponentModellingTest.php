@@ -2179,6 +2179,7 @@ final class ComponentModellingTest extends TestCase
         $this->assertEqualsWithDelta(2500.0, $firstStation['station_recorded_mm'], 1e-10);
         $this->assertEqualsWithDelta(2500.0, $firstStation['station_from_port_1_mm'], 1e-10);
         $this->assertEqualsWithDelta(3500.0, $firstStation['station_from_port_2_mm'], 1e-10);
+        $this->assertEqualsWithDelta(0.0, $firstStation['perpendicular_distance_to_header_axis_mm'], 1e-10);
         $this->assertEqualsWithDelta(0.0, $firstStation['delta_from_port_1_mm'], 1e-10);
         $this->assertEqualsWithDelta(1000.0, $firstStation['delta_from_port_2_mm'], 1e-10);
         $this->assertNull($first->source_snapshot['endpoint_b']);
@@ -2190,6 +2191,8 @@ final class ComponentModellingTest extends TestCase
             ->assertSee('Recorded β:')
             ->assertSee('Raw Δ (geometry − recorded):')
             ->assertSee('Pose-derived branch station projection (diagnostic only; upstream end is not identified)')
+            ->assertSee('Header axis length from pose:')
+            ->assertSee('Branch-port point perpendicular distance to header axis:')
             ->assertSee('Station projected from port 1:')
             ->assertSee('Station projected from port 2:')
             ->assertSee('Raw station Δ from port 1 (geometry − recorded):');
@@ -2204,6 +2207,8 @@ final class ComponentModellingTest extends TestCase
             ->assertSee('β ثبت‌شده')
             ->assertSee('Δ خام (هندسه − ثبت‌شده)')
             ->assertSee('پروجکشن ایستگاه انشعاب از pose')
+            ->assertSee('طول محور هدر از pose:')
+            ->assertSee('فاصلهٔ عمود نقطهٔ پورت شاخه تا محور هدر:')
             ->assertSee('ایستگاه تصویرشده از پورت ۱:')
             ->assertSee('ایستگاه تصویرشده از پورت ۲:');
 

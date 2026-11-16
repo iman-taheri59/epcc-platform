@@ -21,6 +21,7 @@ final class BranchStationProjectionCalculatorTest extends TestCase
         self::assertEqualsWithDelta(10.0, $projection['header_length_from_pose_mm'], 1e-12);
         self::assertEqualsWithDelta(2.5, $projection['station_from_port_1_mm'], 1e-12);
         self::assertEqualsWithDelta(7.5, $projection['station_from_port_2_mm'], 1e-12);
+        self::assertEqualsWithDelta(4.0, $projection['perpendicular_distance_to_header_axis_mm'], 1e-12);
     }
 
     public function test_degenerate_header_centreline_is_refused(): void

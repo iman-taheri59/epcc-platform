@@ -718,17 +718,21 @@ The explicit joint value is never changed/backfilled, and no acceptance verdict,
 TEE/CROSS are excluded; wall contact remains `UNRESOLVED` without host-surface
 geometry.
 
-The next 2026-10-26 dependent check projects the current branch-pipe root-port
+The 2026-10-26 dependent check projects the current branch-pipe root-port
 point onto the header PIPE centreline and compares the raw axial projection
-with the recorded P2P wall station. Because no field selects which header port
-is upstream, it reports signed candidate stations and geometry-minus-recorded
-Δ from both port 1 and port 2; the result remains `UNASSESSED` with
-`UPSTREAM_ENDPOINT_NOT_IDENTIFIED`. It consumes no `branch_offset_mm`, defines
-no circumferential direction or contact surface, and does not change the
-wall-root parent result from `UNRESOLVED`. The new method and both current poses
-are included in the source fingerprint and immutable snapshot; changed inputs
-make the captured result `STALE`. This station check is not an acceptance
-verdict, fit-up rule, θ, PAD input, or topology change. P-26 remains `PARTIAL`.
+with the recorded P2P wall station. It also records the Euclidean perpendicular
+distance from that posed branch-port point to the infinite header centreline.
+This is point-to-axis geometry only: it is not a header radius, wall surface,
+contact distance, or signed/circumferential offset. Because no field selects
+which header port is upstream, signed candidate stations and
+geometry-minus-recorded Δ are reported from both port 1 and port 2; the result
+remains `UNASSESSED` with `UPSTREAM_ENDPOINT_NOT_IDENTIFIED`. It consumes no
+`branch_offset_mm`, defines no circumferential direction or contact surface, and
+does not change the wall-root parent result from `UNRESOLVED`. The derived
+length, stations, point-to-axis distance, method and both current poses are
+included in the immutable snapshot/fingerprint; changed inputs make the
+captured result `STALE`. This check is not an acceptance verdict, fit-up rule,
+θ, PAD input, or topology change. P-26 remains `PARTIAL`.
 
 At the earlier β checkpoint, `JointPortGeometryDiagnosticServiceTest` (6/39),
 focused `ComponentModellingTest` (7/127; EN/FA β labels checked), and the
@@ -744,10 +748,17 @@ Blade directive-balance checks pass. Before the fixture run, both `epcc` and
 `epcc_test` had zero public tables and migrations; the normal test refresh/seed
 ran only against isolated `epcc_test`, which now has 131 public tables and 128
 migration rows. The development `epcc` database remains empty and unmigrated.
-No full Laravel suite was run. Other dependent-check classes and sourced
-acceptance rules remain open. Explicit β remains authoritative, θ is not
-inferred, and PAD calculations remain outside this feature; P-26 remains
-`PARTIAL`.
+The perpendicular-axis-distance follow-on verifies `BranchStationProjectionCalculatorTest`
+(2 tests/5 assertions), `JointPortGeometryDiagnosticServiceTest` (7/65), and the
+targeted P2P snapshot/display/staleness feature test (1/62). It checks the
+non-zero point-to-axis distance independently of station projection, snapshot
+capture, and bilingual labels. Pint, PHP syntax, Blade view compilation, and
+`git diff --check` pass. The test database has 131 public tables and 128
+migration rows; `epcc` remains at zero tables and zero migration rows. The
+full `ComponentModellingTest.php` file and full Laravel suite were not rerun in
+this follow-on. Other dependent-check classes and sourced acceptance rules
+remain open. Explicit β remains authoritative, θ is not inferred, and PAD
+calculations remain outside this feature; P-26 remains `PARTIAL`.
 
 
 ## How to use this file

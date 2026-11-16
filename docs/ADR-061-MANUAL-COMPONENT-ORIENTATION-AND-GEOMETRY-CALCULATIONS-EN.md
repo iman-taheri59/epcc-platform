@@ -14,11 +14,13 @@ explicit azimuth/inclination/roll or a dimensioned signed run/rise triangle.
 Raw diagnostics for explicit two-port joints can be captured as immutable,
 source-fingerprinted revisions; unchanged inputs reuse the latest revision and
 changed inputs display `STALE`. Supported direct P2P wall roots also expose a
-pose-derived β comparison and a two-origin axial station projection; neither
-resolves wall contact or creates an acceptance verdict. This is not full
-FR-ENG-16: other fitting variants, wall-surface geometry, broader dependent-check
-coverage, native Autodesk Plant 3D CTPL/PCAT delivery, and engineering
-acceptance rules remain open. The normative functional requirement is [SRS `FR-ENG-16`](SRS-EPCC-Platform.md)
+pose-derived β comparison and a two-origin axial station projection, including
+the raw perpendicular distance from the branch root-port point to the header
+centreline; neither resolves wall contact or creates an acceptance verdict.
+This is not full FR-ENG-16: other fitting variants, wall-surface geometry,
+broader dependent-check coverage, native Autodesk Plant 3D CTPL/PCAT delivery,
+and engineering acceptance rules remain open. The normative functional
+requirement is [SRS `FR-ENG-16`](SRS-EPCC-Platform.md)
 (Must); work is tracked in [P-26](IMPROVEMENT-PROPOSALS-EN.md). Related piping
 model: [ADR-006](ADR-006-Piping-Line-Component-Joint-Model.md) §§14–16.
 

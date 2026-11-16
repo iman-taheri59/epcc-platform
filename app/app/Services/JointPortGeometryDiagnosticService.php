@@ -340,6 +340,7 @@ final class JointPortGeometryDiagnosticService
             'header_length_from_pose_mm' => $projection['header_length_from_pose_mm'],
             'station_from_port_1_mm' => $projection['station_from_port_1_mm'],
             'station_from_port_2_mm' => $projection['station_from_port_2_mm'],
+            'perpendicular_distance_to_header_axis_mm' => $projection['perpendicular_distance_to_header_axis_mm'],
             'delta_from_port_1_mm' => $recorded === null
                 ? null
                 : $projection['station_from_port_1_mm'] - $recorded,
