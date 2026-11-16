@@ -179,14 +179,20 @@ final class ComponentModellingTest extends TestCase
             $this->assertArrayHasKey('fitting_qualifier', $exception->errors());
         }
 
-        foreach (['90SR', '45', '180LR'] as $unsupported) {
+        foreach ([
+            ['90SR', 'fitting_qualifier'],
+            // An unqualified 45 is a B16.11 angle, so the safe error is to
+            // require its explicit standard rather than imply B16.9 semantics.
+            ['45', 'fitting_standard'],
+            ['180LR', 'fitting_qualifier'],
+        ] as [$unsupported, $expectedField]) {
             try {
                 $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'ELBOW', [
                     'fitting_qualifier' => $unsupported,
                 ]));
                 $this->fail("Unsupported elbow qualifier $unsupported must be refused.");
             } catch (ValidationException $exception) {
-                $this->assertArrayHasKey('fitting_qualifier', $exception->errors());
+                $this->assertArrayHasKey($expectedField, $exception->errors());
             }
         }
 
