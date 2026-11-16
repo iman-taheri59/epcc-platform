@@ -10,13 +10,18 @@ use App\Models\Joint;
 use App\Models\PipingLine;
 use App\Models\Port;
 use App\Models\Project;
+use App\Models\ProjectModelFrameRevision;
 use App\Services\BranchPadService;
+use App\Services\ComponentPoseService;
 use App\Services\ComponentService;
+use App\Services\JointGeometryDiagnosticRevisionService;
+use App\Services\JointPortGeometryDiagnosticService;
 use App\Services\JointService;
 use App\Services\PipeScheduleExceptionRequestService;
 use App\Services\PipeScheduleReportService;
 use App\Services\PmsPinnedClassSpecification;
 use App\Services\ProjectArchiveService;
+use App\Services\ProjectModelFrameService;
 use App\Support\AuthorizationPipeline;
 use App\Support\LineReleaseState;
 use App\Support\Reference\PipeReference;
@@ -44,6 +49,10 @@ final class ComponentController extends Controller
 {
     public function __construct(
         private readonly ComponentService $components,
+        private readonly ComponentPoseService $poses,
+        private readonly ProjectModelFrameService $modelFrames,
+        private readonly JointPortGeometryDiagnosticService $jointGeometry,
+        private readonly JointGeometryDiagnosticRevisionService $jointGeometrySnapshots,
         private readonly TenantContext $tenant,
         private readonly PipeReference $reference,
         private readonly PmsPinnedClassSpecification $issuedPms,
@@ -66,7 +75,7 @@ final class ComponentController extends Controller
             function () use ($lineId): array {
                 $line = PipingLine::with(['subsystem', 'pipingClass', 'pmsSnapshot.documentRevision.document'])->findOrFail($lineId);
 
-                $rows = Component::with(['ports', 'branchPad'])
+                $rows = Component::with(['ports', 'branchPad', 'latestPoseRevision.modelFrameRevision'])
                     ->where('piping_line_id', $line->id)
                     ->orderBy('sequence')
                     ->get();
@@ -165,6 +174,24 @@ final class ComponentController extends Controller
             $project->id,
         );
 
+        $currentModelFrame = $this->modelFrames->latestForProject($project, $user);
+        $geometryComponents = $rows->concat($joints->flatMap(fn (Joint $joint) => [
+            $joint->portA?->component,
+            $joint->portB?->component,
+            $joint->branchHeaderComponent,
+            $joint->branchWallComponent,
+        ]))->filter()->unique('id')->values();
+        $componentGeometry = $this->poses->currentGeometries($project, $user, $geometryComponents);
+        $liveJointGeometry = $this->jointGeometry->forJoints($joints, $componentGeometry);
+        $latestJointGeometrySnapshots = $this->jointGeometrySnapshots->latestForJoints($project, $user, $joints);
+        $jointGeometry = $this->jointGeometrySnapshots->forDisplay($liveJointGeometry, $latestJointGeometrySnapshots);
+        $canMaintainModel = $this->archives->isWritable($project) && $this->tenant->runAs(
+            $user->company_id,
+            fn (): bool => $this->authz->allows($user, 'equipment.maintain', $project),
+            $project->id,
+        );
+        $canEditPose = $canMaintainModel && LineReleaseState::isEditable((string) $line->release_state);
+
         // Read-only comparison against the eagerly loaded ISSUE-TIME snapshot.
         // Missing/corrupt evidence is unknown, never silently marked conforming.
         $scheduleChecks = [];
@@ -244,6 +271,11 @@ final class ComponentController extends Controller
             'pendingScheduleRequests' => $pendingScheduleRequests,
             'canCapture' => $canCapture,
             'scheduleChecks' => $scheduleChecks,
+            'currentModelFrame' => $currentModelFrame,
+            'componentGeometry' => $componentGeometry,
+            'jointGeometry' => $jointGeometry,
+            'canMaintainModel' => $canMaintainModel,
+            'canEditPose' => $canEditPose,
             'lang' => $lang,
             'dir' => $lang === 'fa' ? 'rtl' : 'ltr',
             'user' => $user,
@@ -270,6 +302,182 @@ final class ComponentController extends Controller
         ]);
     }
 
+    /** Define or revise the project-local model-frame origin (ADR-061). */
+    public function defineModelFrame(Request $request, string $projectCode, string $lineId): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+        $data = $request->validate([
+            'origin_description' => ['required', 'string', 'max:1000'],
+        ]);
+
+        try {
+            $this->tenant->runAs($user->company_id, function () use ($project, $lineId): void {
+                PipingLine::query()
+                    ->where('project_id', $project->id)
+                    ->whereKey($lineId)
+                    ->firstOrFail();
+            }, $project->id);
+
+            $frame = $this->modelFrames->define($project, $user, $data['origin_description']);
+        } catch (ValidationException $exception) {
+            return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+                ->withInput()
+                ->withErrors($exception->errors());
+        }
+
+        return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+            ->with('status', $lang === 'fa'
+                ? 'فریم مدل پروژه در بازنگری '.$frame->revision.' ثبت شد.'
+                : 'Project model frame revision '.$frame->revision.' saved.');
+    }
+
+    /** Capture immutable, source-versioned diagnostics for this DRAFT line. */
+    public function captureGeometrySnapshots(Request $request, string $projectCode, string $lineId): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+
+        try {
+            $line = $this->tenant->runAs($user->company_id, function () use (
+                $project,
+                $lineId,
+            ): PipingLine {
+                return PipingLine::query()
+                    ->where('project_id', $project->id)
+                    ->whereKey($lineId)
+                    ->firstOrFail();
+            }, $project->id);
+
+            $snapshots = $this->jointGeometrySnapshots->capture($project, $line, $user);
+        } catch (ValidationException $exception) {
+            return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+                ->withErrors($exception->errors());
+        }
+
+        $created = collect($snapshots)->filter(
+            static fn ($snapshot): bool => $snapshot->wasRecentlyCreated,
+        )->count();
+        $reused = count($snapshots) - $created;
+
+        return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+            ->with('status', $lang === 'fa'
+                ? sprintf('%d بازنگری تشخیصی ثبت و %d موردِ بدون تغییر بازاستفاده شد؛ نتایج خام‌اند و PASS/FAIL صادر نمی‌شود.', $created, $reused)
+                : sprintf('%d diagnostic snapshot revision(s) recorded; %d unchanged snapshot(s) reused. Raw values only—no PASS/FAIL.', $created, $reused));
+    }
+
+    /** Save a new append-only manual pose revision for one component. */
+    public function storePose(Request $request, string $projectCode, string $lineId, string $componentId): RedirectResponse
+    {
+        $lang = $this->lang($request);
+        $user = $request->user();
+        $project = $this->resolveProject($user, $projectCode);
+        $coordinateBounds = 'between:-999999999999999.999,999999999999999.999';
+        $data = $request->validate([
+            'input_mode' => ['required', 'in:AZIMUTH_INCLINATION_ROLL,DIMENSIONED_TRIANGLE'],
+            'component_id' => ['required', 'uuid'],
+            'model_frame_revision_id' => ['required', 'uuid'],
+            'azimuth_deg' => ['required', 'numeric'],
+            'inclination_deg' => [
+                'required_if:input_mode,AZIMUTH_INCLINATION_ROLL',
+                'prohibited_if:input_mode,DIMENSIONED_TRIANGLE',
+                'nullable', 'numeric', 'between:-90,90',
+            ],
+            'roll_deg' => ['required', 'numeric'],
+            'run_mm' => [
+                'required_if:input_mode,DIMENSIONED_TRIANGLE',
+                'prohibited_if:input_mode,AZIMUTH_INCLINATION_ROLL',
+                'nullable', 'numeric', 'min:0',
+            ],
+            'rise_mm' => [
+                'required_if:input_mode,DIMENSIONED_TRIANGLE',
+                'prohibited_if:input_mode,AZIMUTH_INCLINATION_ROLL',
+                'nullable', 'numeric',
+            ],
+            'measured_hypotenuse_mm' => [
+                'prohibited_if:input_mode,AZIMUTH_INCLINATION_ROLL',
+                'nullable', 'numeric', 'gt:0',
+            ],
+            'anchor_easting_mm' => ['required', 'numeric', $coordinateBounds],
+            'anchor_northing_mm' => ['required', 'numeric', $coordinateBounds],
+            'anchor_elevation_mm' => ['required', 'numeric', $coordinateBounds],
+        ]);
+
+        abort_unless($data['component_id'] === $componentId, 404);
+
+        try {
+            [$line, $component, $frame] = $this->tenant->runAs($user->company_id, function () use (
+                $project,
+                $lineId,
+                $componentId,
+                $data,
+            ): array {
+                $line = PipingLine::query()
+                    ->where('project_id', $project->id)
+                    ->whereKey($lineId)
+                    ->firstOrFail();
+                $component = Component::query()
+                    ->where('project_id', $project->id)
+                    ->where('piping_line_id', $line->id)
+                    ->whereKey($componentId)
+                    ->firstOrFail();
+                $frame = ProjectModelFrameRevision::query()
+                    ->where('project_id', $project->id)
+                    ->whereKey($data['model_frame_revision_id'])
+                    ->firstOrFail();
+
+                return [$line, $component, $frame];
+            }, $project->id);
+
+            $anchorModel = [
+                (float) $data['anchor_easting_mm'],
+                (float) $data['anchor_northing_mm'],
+                (float) $data['anchor_elevation_mm'],
+            ];
+
+            if ($data['input_mode'] === 'DIMENSIONED_TRIANGLE') {
+                $pose = $this->poses->recordDimensionedTriangle(
+                    $project,
+                    $line,
+                    $component,
+                    $frame,
+                    $user,
+                    (float) $data['azimuth_deg'],
+                    (float) $data['roll_deg'],
+                    (float) $data['run_mm'],
+                    (float) $data['rise_mm'],
+                    isset($data['measured_hypotenuse_mm'])
+                        ? (float) $data['measured_hypotenuse_mm']
+                        : null,
+                    $anchorModel,
+                );
+            } else {
+                $pose = $this->poses->recordManual(
+                    $project,
+                    $line,
+                    $component,
+                    $frame,
+                    $user,
+                    (float) $data['azimuth_deg'],
+                    (float) $data['inclination_deg'],
+                    (float) $data['roll_deg'],
+                    $anchorModel,
+                );
+            }
+        } catch (ValidationException $exception) {
+            return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+                ->withInput()
+                ->withErrors($exception->errors());
+        }
+
+        return redirect($this->backTo($projectCode, $lineId, $lang, $request))
+            ->with('status', $lang === 'fa'
+                ? 'بازنگری جهت‌گیری '.$pose->revision.' ثبت شد؛ وضعیت هندسه: '.$pose->geometry_status.'؛ نتیجهٔ پذیرش مهندسی ارزیابی نشده است.'
+                : 'Pose revision '.$pose->revision.' saved; geometry status: '.$pose->geometry_status.'; engineering acceptance remains unassessed.');
+    }
+
     /** Place a component that is not attached to anything yet. */
     public function store(Request $request, string $projectCode, string $lineId): RedirectResponse
     {
@@ -279,6 +487,10 @@ final class ComponentController extends Controller
 
         $data = $request->validate([
             'template_code' => ['required', 'string', 'max:32'],
+            'fitting_qualifier' => ['nullable', 'string', 'max:16'],
+            'fitting_standard' => ['nullable', 'in:B16.9,B16.11'],
+            'fitting_class_designation' => ['nullable', 'in:2000,3000,6000,9000'],
+            'fitting_end_type' => ['nullable', 'in:BW,SW,SC'],
             'nominal_size' => ['nullable', 'string', 'max:16'],
             'branch_size' => ['nullable', 'string', 'max:16'],
             'small_size' => ['nullable', 'string', 'max:16'],
@@ -382,6 +594,10 @@ final class ComponentController extends Controller
         $data = $request->validate([
             'port_id' => ['required', 'uuid'],
             'template_code' => ['required', 'string', 'max:32'],
+            'fitting_qualifier' => ['nullable', 'string', 'max:16'],
+            'fitting_standard' => ['nullable', 'in:B16.9,B16.11'],
+            'fitting_class_designation' => ['nullable', 'in:2000,3000,6000,9000'],
+            'fitting_end_type' => ['nullable', 'in:BW,SW,SC'],
             'branch_size' => ['nullable', 'string', 'max:16'],
             'small_size' => ['nullable', 'string', 'max:16'],
             'length_mm' => ['nullable', 'numeric', 'min:0'],

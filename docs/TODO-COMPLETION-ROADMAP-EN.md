@@ -31,6 +31,10 @@
 - [ ] **0.4 Promote the Python harnesses into CI** — `scripts/tests/*.py` (MTO journal
       concurrency, notification time UI) run outside any runner (debt B7). Either add them
       to the workflow or to `scripts/run-tests.sh` with loud skip reporting. (S)
+      Current working-tree implementation runs both in a dedicated CI job after the
+      complete Laravel matrix/no-skip verdict, with a disposable socket-only PostgreSQL
+      cluster and generated synthetic UI fixtures; close this task only after the next
+      CI run passes both harnesses.
 - [ ] **0.5 Convert disclaimers into status badges** — pages are heavy with "this is not a
       technical acceptance / not a release" text; render the same boundaries as visual
       badges/states (requirement: keep the legal wording in tooltips/guides, not five

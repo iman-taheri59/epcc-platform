@@ -1,0 +1,3 @@
+# Fixed versions for the two Python integration harnesses promoted to GitHub Actions.
+psycopg[binary]==3.2.6
+playwright==1.65.2

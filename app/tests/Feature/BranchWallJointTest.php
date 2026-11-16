@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Models\Component;
 use App\Models\Joint;
+use App\Models\JointGeometryDiagnosticRevision;
 use App\Models\PipingClass;
 use App\Models\PipingLine;
 use App\Models\Port;
@@ -199,6 +200,45 @@ final class BranchWallJointTest extends TestCase
         $this->assertNotNull($joint->joint_seq);
         $this->assertSame($branch->id, $joint->piping_line_id);
         $this->assertNotSame($header->id, $joint->piping_line_id);
+    }
+
+    public function test_wall_joint_diagnostic_snapshot_stays_unresolved_without_host_surface_geometry(): void
+    {
+        ['header' => $header, 'branch' => $branch, 'headerPipe' => $headerPipe] = $this->twoLines([[
+            'header' => [100, 300], 'branch' => [15, 100],
+            'type' => BranchConnectionType::P2P, 'p2p_kind' => P2pKind::STUB_IN,
+        ]]);
+        ['joint' => $joint] = $this->weldOnWall($branch, $headerPipe, 2500.0, [], 90.0);
+
+        $captureUrl = route('piping.model.geometry-snapshots', [
+            'projectCode' => 'PH-14', 'lineId' => $branch->id, 'lang' => 'en',
+        ]);
+        $modelUrl = route('piping.model', [
+            'projectCode' => 'PH-14', 'lineId' => $branch->id, 'lang' => 'en',
+        ]);
+        $this->actingAs($this->owner())->post($captureUrl)->assertRedirect();
+
+        $snapshot = $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('joint_id', $joint->id)->firstOrFail());
+        $this->assertSame('UNRESOLVED', $snapshot->diagnostic_status);
+        $this->assertSame('WALL_REFERENCE_WITHOUT_HOST_SURFACE_GEOMETRY', $snapshot->diagnostic_reason);
+        $this->assertNull($snapshot->source_snapshot['endpoint_b']);
+        $this->assertSame($headerPipe->id, $snapshot->source_snapshot['joint']['branch_header_component_id']);
+        $this->assertSame(90.0, (float) $snapshot->source_snapshot['joint']['branch_longitudinal_angle_deg']);
+        $this->assertSame($branch->id, $snapshot->piping_line_id);
+
+        $this->actingAs($this->owner())->get($modelUrl)
+            ->assertOk()
+            ->assertSee('UNRESOLVED — insufficient geometry is available for this joint.')
+            ->assertSee('WALL_REFERENCE_WITHOUT_HOST_SURFACE_GEOMETRY');
+
+        $this->asOwner(function () use ($joint, $header, $headerPipe): void {
+            $fresh = Joint::query()->whereKey($joint->id)->firstOrFail();
+            $this->assertNull($fresh->port_b_id);
+            $this->assertSame($header->id, $fresh->branchHeaderComponent->line->id);
+            $this->assertSame($headerPipe->id, $fresh->branch_header_component_id);
+            $this->assertSame(90.0, (float) $fresh->branch_longitudinal_angle_deg);
+        });
     }
 
     public function test_a_p2p_wall_root_can_be_numbered_on_the_header_line(): void

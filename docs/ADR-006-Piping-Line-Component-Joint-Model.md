@@ -742,17 +742,20 @@ assuming 90°. OLET wall roots and pad fillets do not carry this P2P-only field.
 The current PAD perimeter method v2 requires a recorded β=90° and zero offset;
 a non-perpendicular root can be modelled but is not eligible for PAD
 installation until an approved angled-saddle perimeter method is defined. It
-does not consume θ or component rotation. This branch-specific β field does not resolve the
-broader component-orientation design below.
+does not consume θ or component rotation. This branch-specific β field does not
+implement the broader component-orientation capability; see the selected
+technical contract in ADR-061.
 
 **Scope limitation — general component orientation.** These β/θ fields are a
 branch-joint geometry contract only; they do not provide manual, component-level
 slope/rotation entry or transform general component/port geometry. The owner has
 now recorded that broader project requirement as SRS `FR-ENG-16` (2026-10-26),
 formalized in [ADR-061](ADR-061-MANUAL-COMPONENT-ORIENTATION-AND-GEOMETRY-CALCULATIONS-EN.md)
-and tracked in P-26. Coordinate frames, rotation
-conventions and the dependent calculation catalogue remain for detailed design;
-nothing in this branch-specific contract resolves them.
+and tracked in P-26. ADR-061 now selects the initial project-frame and
+azimuth/inclination/roll convention for the separate general-pose design; it
+has not been integrated into this joint model. The branch-specific β remains
+authoritative, θ is not inferred, and PAD geometry does not consume the general
+component pose.
 
 **Numbering, verdict and dia-inch.** The joint sequence and its issued branch-
 rule verdict both follow the selected owner's line: `BRANCH` uses the branch
@@ -875,8 +878,9 @@ mandated by B31.3 and not a code minimum. `d1`/`d2` retain their §304.3.3
 reinforcement-zone meaning; the area-replacement calculation is unchanged.
 The record includes the analytic contact definition, sampled contact points,
 perimeter construction, edge extension, sampled perimeter, OD inputs, and
-assumptions. The local axes in the profile do not settle the project-wide
-coordinate frame deferred by ADR-061.
+assumptions. These PAD-local axes describe only this geometry profile; they
+are not a component pose and do not consume ADR-061's separate project-frame or
+azimuth/inclination/roll convention.
 
 The root now carries an explicit P2P β field, but this perimeter method is
 still limited to a recorded β=90° and a centred root

@@ -100,6 +100,13 @@ final class ComponentService
                 ->max('sequence') ?? 0) + 1;
 
             $size = $this->resolveSize($attributes['nominal_size'] ?? $line->nominal_size);
+            $fittingSpecification = $this->resolveFittingSpecification($template, $attributes);
+            if (($fittingSpecification['endType'] ?? null) !== null) {
+                // The B16.11 geometry slice is explicitly two-ended and does
+                // not infer or mix end preparations. Store the selected code
+                // on each generated port, not as a component/PMS class.
+                $attributes['end_type'] = $fittingSpecification['endType'];
+            }
 
             // A pipe with no entered schedule inherits the LINE'S ISSUED PMS
             // specification, not the mutable/current piping-class rules.
@@ -115,6 +122,9 @@ final class ComponentService
                 'company_id' => $actor->company_id,
                 'piping_line_id' => $line->id,
                 'template_code' => $template['code'],
+                'fitting_qualifier' => $fittingSpecification['qualifier'],
+                'fitting_standard' => $fittingSpecification['standard'],
+                'fitting_class_designation' => $fittingSpecification['classDesignation'],
                 'sequence' => $sequence,
                 'nominal_size' => $size?->nps,
                 'nominal_size_decimal' => $size?->npsDecimal,
@@ -477,6 +487,152 @@ final class ComponentService
         $length = $attributes['length_mm'] ?? null;
 
         return $length === null || $length === '' ? null : (float) $length;
+    }
+
+    /**
+     * Resolve the two deliberately separate elbow specification paths.
+     * B16.9's existing LR qualifier remains sufficient for legacy BW elbows;
+     * B16.11 requires an explicit standard, angle, dimensional class, and one
+     * explicit end type that is copied to both template ports.
+     *
+     * @param  array<string, mixed>  $template
+     * @param  array<string, mixed>  $attributes
+     * @return array{standard:?string,qualifier:?string,classDesignation:?int,endType:?string}
+     */
+    private function resolveFittingSpecification(array $template, array $attributes): array
+    {
+        $templateCode = (string) ($template['code'] ?? '');
+        $rawQualifier = $attributes['fitting_qualifier'] ?? null;
+        $qualifier = $rawQualifier === null ? '' : strtoupper(trim((string) $rawQualifier));
+        $rawStandard = $attributes['fitting_standard'] ?? null;
+        $standard = $rawStandard === null || trim((string) $rawStandard) === ''
+            ? null
+            : strtoupper(trim((string) $rawStandard));
+        $rawClass = $attributes['fitting_class_designation'] ?? null;
+        $classText = $rawClass === null ? '' : trim((string) $rawClass);
+        $classDesignation = null;
+        if ($classText !== '') {
+            if (preg_match('/^(2000|3000|6000|9000)$/D', $classText) !== 1) {
+                throw ValidationException::withMessages([
+                    'fitting_class_designation' => __('epcc.component.elbow_class_invalid'),
+                ]);
+            }
+            $classDesignation = (int) $classText;
+        }
+        $rawEndType = $attributes['fitting_end_type'] ?? null;
+        $endType = $rawEndType === null || trim((string) $rawEndType) === ''
+            ? null
+            : strtoupper(trim((string) $rawEndType));
+        $legacyEndType = $attributes['end_type'] ?? null;
+        $firstPortEnd = $endType
+            ?? ($legacyEndType === null || trim((string) $legacyEndType) === ''
+                ? strtoupper((string) ($template['ports'][0]['defaultEnd'] ?? ''))
+                : strtoupper(trim((string) $legacyEndType)));
+
+        if ($templateCode !== 'ELBOW') {
+            if ($qualifier !== '' || $standard !== null || $classDesignation !== null || $endType !== null) {
+                throw ValidationException::withMessages([
+                    'fitting_qualifier' => __('epcc.component.fitting_qualifier_not_applicable'),
+                ]);
+            }
+
+            return ['standard' => null, 'qualifier' => null, 'classDesignation' => null, 'endType' => null];
+        }
+
+        if ($standard !== null && ! in_array($standard, ['B16.9', 'B16.11'], true)) {
+            throw ValidationException::withMessages([
+                'fitting_standard' => __('epcc.component.elbow_standard_unsupported'),
+            ]);
+        }
+
+        if ($standard === 'B16.11') {
+            if (! in_array($qualifier, ForgedFittingElbowGeometryProfile::SUPPORTED_ANGLES, true)) {
+                throw ValidationException::withMessages([
+                    'fitting_qualifier' => __('epcc.component.b16_11_angle_required'),
+                ]);
+            }
+            if ($classDesignation === null) {
+                throw ValidationException::withMessages([
+                    'fitting_class_designation' => __('epcc.component.elbow_class_required'),
+                ]);
+            }
+            if ($endType === null) {
+                throw ValidationException::withMessages([
+                    'fitting_end_type' => __('epcc.component.b16_11_end_type_required'),
+                ]);
+            }
+            if (! in_array($endType, ['SW', 'SC'], true)) {
+                throw ValidationException::withMessages([
+                    'fitting_end_type' => __('epcc.component.b16_11_end_type_unsupported'),
+                ]);
+            }
+
+            return [
+                'standard' => 'B16.11',
+                'qualifier' => $qualifier,
+                'classDesignation' => $classDesignation,
+                'endType' => $endType,
+            ];
+        }
+
+        if ($standard === null
+            && ($classDesignation !== null
+                || in_array($qualifier, ForgedFittingElbowGeometryProfile::SUPPORTED_ANGLES, true)
+                || ($endType !== null && ! in_array($qualifier, ButtWeldElbowGeometryProfile::SUPPORTED_QUALIFIERS, true)))) {
+            throw ValidationException::withMessages([
+                'fitting_standard' => __('epcc.component.b16_11_standard_required'),
+            ]);
+        }
+
+        if ($classDesignation !== null) {
+            throw ValidationException::withMessages([
+                'fitting_class_designation' => __('epcc.component.elbow_class_requires_b16_11'),
+            ]);
+        }
+
+        if ($standard === 'B16.9') {
+            if (! in_array($qualifier, ButtWeldElbowGeometryProfile::SUPPORTED_QUALIFIERS, true)) {
+                throw ValidationException::withMessages([
+                    'fitting_qualifier' => __('epcc.component.elbow_qualifier_required'),
+                ]);
+            }
+            if ($firstPortEnd !== 'BW') {
+                throw ValidationException::withMessages([
+                    'fitting_qualifier' => __('epcc.component.elbow_qualifier_requires_bw'),
+                ]);
+            }
+
+            return ['standard' => 'B16.9', 'qualifier' => $qualifier, 'classDesignation' => null, 'endType' => null];
+        }
+
+        // A legacy 90LR/45LR value already names the B16.9 geometry path.
+        // This preserves existing callers while new UI submissions also store
+        // the standard explicitly.
+        if (in_array($qualifier, ButtWeldElbowGeometryProfile::SUPPORTED_QUALIFIERS, true)) {
+            if ($firstPortEnd !== 'BW') {
+                throw ValidationException::withMessages([
+                    'fitting_qualifier' => __('epcc.component.elbow_qualifier_requires_bw'),
+                ]);
+            }
+
+            return ['standard' => 'B16.9', 'qualifier' => $qualifier, 'classDesignation' => null, 'endType' => null];
+        }
+
+        if ($qualifier !== '') {
+            throw ValidationException::withMessages([
+                'fitting_qualifier' => __('epcc.component.elbow_qualifier_unsupported'),
+            ]);
+        }
+
+        if ($firstPortEnd === 'BW') {
+            throw ValidationException::withMessages([
+                'fitting_qualifier' => __('epcc.component.elbow_qualifier_required'),
+            ]);
+        }
+
+        // Other unqualified legacy elbows may still be modelled, but neither
+        // B16.9 nor B16.11 geometry is claimed for them.
+        return ['standard' => null, 'qualifier' => null, 'classDesignation' => null, 'endType' => null];
     }
 
     /** @param array<string, mixed> $attributes */

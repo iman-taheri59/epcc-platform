@@ -1,6 +1,6 @@
 {
   "refId": "component-templates",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "source": "ADR-009 section 2 (port counts come from templates, the Plant 3D catalog-template pattern); ADR-010 section 2 (two-tier: universal read-only, project-defined additive); BRANCH_PAD two-interface shape (ADR-006 §16, owner requirement 2026-11-11)",
   "note": "This is the UNIVERSAL tier and it is read-only. A tee has three ports on every project in the world, so that fact ships with the release and cannot be redefined by a project. Projects may add their own templates but may NOT shadow a code used here - the same closed-vocabulary / configurable-subset split as FacilityKind::all() versus selectable() in ADR-004.",
   "portRoles": {
@@ -82,6 +82,7 @@
         "90LR",
         "90SR",
         "45",
+        "45LR",
         "180LR"
       ],
       "ports": [

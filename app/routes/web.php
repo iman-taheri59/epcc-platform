@@ -16,7 +16,6 @@ use App\Http\Controllers\MaterialsController;
 use App\Http\Controllers\MtrBindingController;
 use App\Http\Controllers\OrderGapController;
 use App\Http\Controllers\PipingConfigController;
-use App\Http\Controllers\PmsRevisionDraftController;
 use App\Http\Controllers\PipingCustodyAmendmentController;
 use App\Http\Controllers\PipingCustodyController;
 use App\Http\Controllers\PipingGrnController;
@@ -25,6 +24,7 @@ use App\Http\Controllers\PipingQaDecisionController;
 use App\Http\Controllers\PipingReceiptAccessController;
 use App\Http\Controllers\PipingReceivingReviewController;
 use App\Http\Controllers\PipingTraceabilityController;
+use App\Http\Controllers\PmsRevisionDraftController;
 use App\Http\Controllers\ProjectFittingDefinitionController;
 use App\Http\Controllers\ProjectSetupController;
 use App\Http\Controllers\PunchController;
@@ -125,6 +125,9 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     // are different working sessions.
     Route::get('/projects/{projectCode}/piping/{lineId}/model', [ComponentController::class, 'index'])->name('piping.model');
     Route::post('/projects/{projectCode}/piping/{lineId}/model', [ComponentController::class, 'store'])->name('piping.model.store');
+    Route::post('/projects/{projectCode}/piping/{lineId}/model/frame', [ComponentController::class, 'defineModelFrame'])->name('piping.model.frame');
+    Route::post('/projects/{projectCode}/piping/{lineId}/model/geometry-snapshots', [ComponentController::class, 'captureGeometrySnapshots'])->name('piping.model.geometry-snapshots');
+    Route::post('/projects/{projectCode}/piping/{lineId}/model/{componentId}/pose', [ComponentController::class, 'storePose'])->name('piping.model.pose');
     Route::post('/projects/{projectCode}/piping/{lineId}/model/attach', [ComponentController::class, 'attach'])->name('piping.model.attach');
     Route::post('/projects/{projectCode}/piping/{lineId}/model/wall', [ComponentController::class, 'attachToWall'])->name('piping.model.wall');
     Route::post('/projects/{projectCode}/piping/{lineId}/model/pads', [ComponentController::class, 'installBranchPad'])->name('piping.model.pads');

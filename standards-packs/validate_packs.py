@@ -51,6 +51,7 @@ REF_PACKS = {
     "fluid-service": REF_DIR / "fluid-service.ref.json",
     "allowable-stress": REF_DIR / "allowable-stress.ref.json",
     "fitting-dimensions": REF_DIR / "fitting-dimensions.ref.json",
+    "forged-fitting-elbow-dimensions": REF_DIR / "forged-fitting-elbow-dimensions.ref.json",
 }
 
 # Packs that must remain loadable even though the module is deferred.
@@ -2792,6 +2793,136 @@ def check_fitting_dimensions(refs: dict) -> None:
 
 
 
+def check_forged_fitting_elbow_dimensions(refs: dict) -> None:
+    """ASME B16.11-2021 elbow dimension transcription (source data only)."""
+    pack = refs.get("forged-fitting-elbow-dimensions")
+    if pack is None:
+        fail("[ref:forged-fitting-elbow-dimensions] pack not loaded")
+        return
+
+    nps = ["1/8", "1/4", "3/8", "1/2", "3/4", "1", "1 1/4", "1 1/2",
+           "2", "2 1/2", "3", "4"]
+    expected_coverage = {
+        ("SOCKET_WELD_BOTH_ENDS", 3000): nps,
+        ("SOCKET_WELD_BOTH_ENDS", 6000): nps[:9],
+        ("SOCKET_WELD_BOTH_ENDS", 9000): nps[3:9],
+        ("THREADED_BOTH_ENDS", 2000): nps,
+        ("THREADED_BOTH_ENDS", 3000): nps,
+        ("THREADED_BOTH_ENDS", 6000): nps,
+    }
+    expected_keys = {
+        (configuration, class_designation, size)
+        for (configuration, class_designation), sizes in expected_coverage.items()
+        for size in sizes
+    }
+    actual_coverage = {}
+    for entry in pack.get("coverage", []):
+        if not isinstance(entry, dict):
+            fail("[ref:forged-fitting-elbow-dimensions] invalid coverage entry")
+            continue
+        key = (entry.get("endConfiguration"), entry.get("classDesignation"))
+        if key in actual_coverage:
+            fail(f"[ref:forged-fitting-elbow-dimensions] duplicate coverage {key}")
+        actual_coverage[key] = entry.get("nps")
+    if actual_coverage != expected_coverage:
+        fail("[ref:forged-fitting-elbow-dimensions] Table 1.1.1-1 coverage matrix "
+             "does not match the declared B16.11 elbow NPS/class ranges")
+
+    if pack.get("verified") is not True:
+        fail("[ref:forged-fitting-elbow-dimensions] source rows are not marked verified")
+    standard = pack.get("standard", {})
+    if standard.get("sourcePdfSha256") != (
+        "5fb9295df91fcb38978ec6a7eddabc53057c5465af63aac647f5a56bb4040664"
+    ):
+        fail("[ref:forged-fitting-elbow-dimensions] source PDF fingerprint changed; review before use")
+    if set(standard.get("sourceTables", [])) != {
+        "Table 1.1.1-1", "Table 6.1-1", "Table 6.1-3"
+    }:
+        fail("[ref:forged-fitting-elbow-dimensions] source table manifest changed")
+    if set(standard.get("sourceFigures", [])) != {"Figure 6.2.7-1"}:
+        fail("[ref:forged-fitting-elbow-dimensions] source figure manifest changed")
+
+    sizes_pack = refs.get("pipe-sizes", {})
+    known_nps = {row.get("nps") for row in sizes_pack.get("sizes", [])}
+    if not known_nps:
+        fail("[ref:forged-fitting-elbow-dimensions] PIPE_REFERENCE missing or empty")
+
+    indexed = {}
+    source_tables = set()
+    for row in pack.get("dimensions", []):
+        if not isinstance(row, dict):
+            fail("[ref:forged-fitting-elbow-dimensions] invalid dimension row")
+            continue
+        key = (row.get("endConfiguration"), row.get("classDesignation"), row.get("nps"))
+        if key in indexed:
+            fail(f"[ref:forged-fitting-elbow-dimensions] duplicate dimension row {key}")
+        indexed[key] = row
+        if key not in expected_keys:
+            fail(f"[ref:forged-fitting-elbow-dimensions] dimension outside Table 1.1.1-1 coverage: {key}")
+        if key[2] not in known_nps:
+            fail(f"[ref:forged-fitting-elbow-dimensions] NPS {key[2]} is not in pipe-sizes")
+
+        is_socket = key[0] == "SOCKET_WELD_BOTH_ENDS"
+        expected_table = "Table 6.1-1" if is_socket else "Table 6.1-3"
+        source_tables.add(row.get("sourceTable"))
+        if row.get("sourceTable") != expected_table:
+            fail(f"[ref:forged-fitting-elbow-dimensions] wrong source table for {key}")
+
+        socket_depth = row.get("socketDepthMinMm")
+        if is_socket:
+            if (type(socket_depth) not in (int, float)
+                    or not math.isfinite(socket_depth) or socket_depth <= 0):
+                fail(f"[ref:forged-fitting-elbow-dimensions] socket depth J missing/invalid for {key}")
+        elif "socketDepthMinMm" in row:
+            fail(f"[ref:forged-fitting-elbow-dimensions] socket depth on threaded row {key}")
+
+        bends = row.get("bendDimensions", {})
+        if set(bends) != {"45", "90"}:
+            fail(f"[ref:forged-fitting-elbow-dimensions] 45/90 dimensions missing for {key}")
+            continue
+        for angle, bend in bends.items():
+            expected_symbol = "A" if is_socket or angle == "90" else "C"
+            expected_dimension = (
+                "CENTRE_TO_BOTTOM_OF_SOCKET" if is_socket else "CENTRE_TO_END"
+            )
+            value = bend.get("mm") if isinstance(bend, dict) else None
+            if (not isinstance(bend, dict)
+                    or bend.get("symbol") != expected_symbol
+                    or bend.get("dimension") != expected_dimension
+                    or type(value) not in (int, float)
+                    or not math.isfinite(value) or value <= 0):
+                fail(f"[ref:forged-fitting-elbow-dimensions] invalid {angle}-degree dimension for {key}")
+
+    if set(indexed) != expected_keys:
+        missing = len(expected_keys - set(indexed))
+        extra = len(set(indexed) - expected_keys)
+        fail(f"[ref:forged-fitting-elbow-dimensions] coverage/data mismatch ({missing} missing, {extra} extra)")
+    if source_tables != {"Table 6.1-1", "Table 6.1-3"}:
+        fail("[ref:forged-fitting-elbow-dimensions] row source-table set differs from tables 6.1-1/6.1-3")
+
+    # Pin representative cells from both tables, including a class/size edge.
+    anchors = {
+        ("SOCKET_WELD_BOTH_ENDS", 3000, "1/2"): (9.5, 15.5, 11.0),
+        ("SOCKET_WELD_BOTH_ENDS", 9000, "1/2"): (9.5, 25.5, 15.5),
+        ("THREADED_BOTH_ENDS", 2000, "1/8"): (None, 21.0, 17.0),
+        ("THREADED_BOTH_ENDS", 6000, "4"): (None, 114.0, 79.0),
+    }
+    for key, (j_mm, dim90_mm, dim45_mm) in anchors.items():
+        row = indexed.get(key)
+        if row is None:
+            continue
+        actual = (
+            row.get("socketDepthMinMm"),
+            row.get("bendDimensions", {}).get("90", {}).get("mm"),
+            row.get("bendDimensions", {}).get("45", {}).get("mm"),
+        )
+        if actual != (j_mm, dim90_mm, dim45_mm):
+            fail(f"[ref:forged-fitting-elbow-dimensions] source spot-check mismatch for {key}")
+
+    notes.append(f"[ref:forged-fitting-elbow-dimensions] {len(indexed)} size/class rows "
+                 "(27 socket-welding, 36 threaded); source pack validated, application pose profile is separate")
+
+
 def main() -> int:
     packs = check_schema()
     check_extends(packs)
@@ -2813,6 +2944,7 @@ def main() -> int:
     check_fluid_service(refs)
     check_allowable_stress(refs)
     check_fitting_dimensions(refs)
+    check_forged_fitting_elbow_dimensions(refs)
     check_flange_bolting(refs)
     check_flange_pt_ratings(refs)
 

@@ -77,6 +77,12 @@ cd /home/user/epcc-platform && bash restore.sh
 cd app && php artisan serve --host=0.0.0.0 --port=8000
 ```
 
+The default restore rebuilds runtime/dependencies and leaves database contents,
+`.env`, and any non-empty `APP_KEY` intact. It does **not** migrate or seed. Only
+when the existing database has been inspected and pending migrations are
+intended, run `bash restore.sh --apply`; that runs `php artisan migrate --force`
+only—never `migrate:fresh`, `drop`, or a seeder. `--quick` skips package installs.
+
 This has happened four times. Do not debug the application first — check
 `command -v php` before anything else.
 
@@ -235,8 +241,10 @@ Point the app at it with `DB_PORT=6432`. Costs ~1.5 ms per request.
 
 ## 0a-3. Demo accounts
 
-`migrate:fresh --seed` creates plans, roles and users. Password for every
-account is `password`. The login screen lists them and fills the form on click.
+These are demo fixtures created by `EpccDemoSeeder`, not by `restore.sh`.
+Restore preserves existing database rows and runs no seeder, so the accounts
+exist only if the target database was explicitly seeded earlier. Password for
+each listed demo account is `password` when present.
 
 | Email | Company | Role | Notes |
 |---|---|---|---|
@@ -312,33 +320,34 @@ cd /home/user/epcc-platform/app
 ls resources/views/ config/epcc.php routes/web.php   # the ones that went missing
 ```
 
-Then confirm the whole thing actually works end to end:
+Then confirm the restored runtime and tests without resetting the application DB:
 
 ```bash
-cd /home/user/epcc-platform/app && php artisan migrate:fresh --seed --force
-bash ../prototype/test/run-all.sh          # expect ALL SUITES PASSED
+cd /home/user/epcc-platform
+bash restore.sh --apply                 # only after reviewing the read-only DB preflight
+bash prototype/test/run-all.sh          # expect ALL SUITES PASSED
 ```
 
-`migrate:fresh --seed` must report `EpccDemoSeeder ... DONE` and leave
-6 companies / 3 projects / 4 certificates. If it reports only `Seeding
-database.` and nothing else, `DatabaseSeeder` has reverted to the Laravel stock
-file and is not calling `EpccDemoSeeder` (covered by `SeedPathTest`).
+`restore.sh --apply` runs only pending migrations. It never runs a seeder. The
+Laravel feature suite must use its dedicated `epcc_test` database; its own
+`migrate:fresh` setup is test-only and must not be pointed at the application DB.
+Demo fixture counts are not a restore acceptance criterion because restore
+intentionally preserves existing records rather than creating/replacing them.
 
 ## Database
 
-The app now needs PostgreSQL (SQLite cannot express Row-Level Security).
+The app needs PostgreSQL (SQLite cannot express Row-Level Security). Use the
+idempotent restore script to install/start the local runtime and create only
+missing roles/databases; it checks existing ownership and role posture, prints a
+read-only database preflight, and does not replace existing records.
 
 ```bash
-sudo apt-get install -y postgresql postgresql-contrib php-pgsql
-sudo pg_ctlcluster 17 main start
-sudo -u postgres psql -c "CREATE ROLE epcc LOGIN PASSWORD 'epcc_dev' NOSUPERUSER NOBYPASSRLS;"
-sudo -u postgres psql -c "CREATE DATABASE epcc OWNER epcc;"
-sudo -u postgres psql -c "CREATE DATABASE epcc_test OWNER epcc;"   # test suite
-
-cd app
-php artisan migrate:fresh --seed --seeder=EpccDemoSeeder --force
-php artisan serve --host=0.0.0.0 --port=8000
+cd /home/user/epcc-platform
+bash restore.sh                       # runtime/dependencies; no app migrations or seed data
+bash restore.sh --apply               # reviewed, pending migrations only; no reset/seed
+cd app && php artisan serve --host=0.0.0.0 --port=8000
 ```
 
-`NOBYPASSRLS` on the role is deliberate: it makes it impossible to accidentally
-run the app with a role that ignores the tenant policies.
+`NOBYPASSRLS` on the app role is deliberate: a role that bypasses row-level
+security would invalidate the tenancy boundary. The feature-test suite must
+continue to use `epcc_test`, never the application database.

@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-# Rebuild the Arena sandbox/preview runtime after an environment reset.
-#
-# This is deliberately NOT the repository-root restore.sh: it does not drop or
-# wipe databases, never runs migrate:fresh, and never seeds demo data. Existing
-# app/.env and APP_KEY values are preserved; a new .env is copied from the
-# example only when one does not already exist.
+# Canonical implementation behind the repository-root restore.sh entry point.
+# This script never drops or wipes databases, never runs migrate:fresh, and
+# never seeds demo data. Existing app/.env and APP_KEY values are preserved; a
+# new .env is copied from the example only when one does not already exist.
 #
 #   bash scripts/rebuild-arena-sandbox.sh                 # read-only preflight
 #   bash scripts/rebuild-arena-sandbox.sh --apply         # rebuild + pending migrations
@@ -180,13 +178,14 @@ case "$COMPOSER_CACHE_REAL/" in
 esac
 
 if (( QUICK == 0 )); then
-    say 'Installing PHP 8.4, Composer and PostgreSQL 17 packages'
+    say 'Installing PHP 8.4, Composer, PostgreSQL 17 and PDF-rendering packages'
     sudo apt-get update -qq
     sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
         ca-certificates curl git unzip composer python3 \
         php8.4-cli php8.4-pgsql php8.4-sqlite3 php8.4-mbstring php8.4-xml \
         php8.4-curl php8.4-zip php8.4-gd php8.4-intl php8.4-bcmath \
-        postgresql-17 postgresql-client-17
+        postgresql-17 postgresql-client-17 postgresql-contrib \
+        chromium fonts-vazirmatn poppler-utils
 fi
 
 for tool in php composer pg_createcluster pg_ctlcluster pg_lsclusters pg_isready psql python3; do
@@ -196,7 +195,8 @@ done
 php -r 'exit(PHP_VERSION_ID >= 80401 && PHP_VERSION_ID < 80500 ? 0 : 1);' \
     || die 'The locked app requires PHP 8.4.1 or newer in the 8.4 series.'
 for extension in pdo_pgsql xmlreader xmlwriter mbstring intl; do
-    php -m | grep -qi "^${extension}$" || die "Required PHP extension '$extension' is missing."
+    php -r 'exit(extension_loaded($argv[1]) ? 0 : 1);' "$extension" \
+        || die "Required PHP extension '$extension' is missing."
 done
 
 # Preserve existing configuration and keys. On a first run only, create .env
@@ -438,7 +438,7 @@ composer_sandbox() (
 
 say 'Installing Composer dependencies from composer.lock into the excluded cache'
 # Defer Composer's Laravel boot scripts until .env and APP_KEY are ready.
-composer_sandbox --no-interaction install --no-scripts --no-progress --prefer-source
+composer_sandbox --no-interaction install --no-scripts --no-progress --prefer-dist
 
 if [[ -z "$(dotenv_value APP_KEY '')" ]]; then
     say 'Generating APP_KEY only because it is empty (an existing key is preserved)'
@@ -454,6 +454,18 @@ artisan config:clear --no-interaction
 artisan route:clear --no-interaction
 artisan view:clear --no-interaction
 artisan filament:assets --no-interaction
+
+# The browser-side harnesses expect jsdom under the home directory (outside
+# the snapshot). Restore it when Node/npm are available; do not block runtime
+# restoration if this optional test-only dependency cannot be installed.
+if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+    if ! node -e "require('/home/user/node_modules/jsdom')" >/dev/null 2>&1; then
+        say 'Installing jsdom for the browser harnesses'
+        (cd /home/user && npm install jsdom --no-audit --no-fund --silent)
+    fi
+else
+    echo 'Warning: node/npm missing; browser jsdom harnesses will be unavailable.' >&2
+fi
 
 # Read-only DB inspection before migrations; report metadata only, never rows.
 pg_app() {
@@ -472,6 +484,12 @@ printf '\nDatabase preflight: db=%s, public_tables=%s, recorded_migrations=%s, s
 if (( MIGRATE == 1 )) && [[ "$migration_count" == 0 && "$public_tables" != 0 ]]; then
     die 'Database has public tables but no recorded migrations; refusing to migrate an ambiguous schema.'
 fi
+if [[ "$migration_count" != 0 ]]; then
+    say 'Migration status (read-only; pending migration names are shown before apply)'
+    artisan migrate:status --no-interaction
+else
+    echo 'No Laravel migrations are recorded in the target database.'
+fi
 
 if (( MIGRATE == 1 )); then
     say 'Applying pending migrations only (never migrate:fresh)'
@@ -480,9 +498,11 @@ else
     say 'Skipping migrations (--no-migrate was requested)'
 fi
 
-say 'Verifying the Laravel DB connection and workspace budget'
+say 'Verifying the Laravel DB connection and checking the workspace budget'
 laravel_db_probe
-bash "$REPO_ROOT/scripts/workspace-budget.sh" --check
+if ! bash "$REPO_ROOT/scripts/workspace-budget.sh" --check; then
+    echo 'Warning: runtime restoration succeeded, but the workspace is over its snapshot budget; no files were removed.' >&2
+fi
 
 cat <<EOF
 

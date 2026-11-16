@@ -26,7 +26,7 @@ final class Component extends Model
 
     protected $fillable = [
         'project_id', 'company_id', 'piping_line_id',
-        'template_code', 'sequence',
+        'template_code', 'fitting_qualifier', 'fitting_standard', 'fitting_class_designation', 'sequence',
         'nominal_size', 'nominal_size_decimal',
         'schedule', 'material_code', 'length_mm',
         'fabrication', 'tag', 'remark',
@@ -35,6 +35,7 @@ final class Component extends Model
 
     protected $casts = [
         'nominal_size_decimal' => 'float',
+        'fitting_class_designation' => 'integer',
         'length_mm' => 'float',
         'sequence' => 'integer',
     ];
@@ -76,6 +77,21 @@ final class Component extends Model
         return $this->hasOne(BranchPad::class);
     }
 
+    /** Immutable manual pose history; edits append a new revision. */
+    public function poseRevisions(): HasMany
+    {
+        return $this->hasMany(ComponentPoseRevision::class)->orderBy('revision');
+    }
+
+    /** The latest recorded pose revision, if one exists. */
+    public function latestPoseRevision(): HasOne
+    {
+        // A normal ordered has-one is intentional. Laravel's latestOfMany()
+        // also aggregates the primary key as a tie-breaker, but PostgreSQL
+        // cannot apply MAX() to this model's UUID key.
+        return $this->hasOne(ComponentPoseRevision::class)->orderByDesc('revision');
+    }
+
     /** Ports with nothing joined to them yet - the modelling worklist. */
     public function openPorts(): HasMany
     {
@@ -97,6 +113,15 @@ final class Component extends Model
     public function label(): string
     {
         $parts = ['#'.$this->sequence, $this->template_code];
+        if ($this->fitting_standard === 'B16.11') {
+            $angle = $this->fitting_qualifier === null ? '—' : $this->fitting_qualifier.'°';
+            $class = $this->fitting_class_designation === null ? '—' : (string) $this->fitting_class_designation;
+            $parts[] = $angle.' B16.11 Class '.$class;
+        } elseif ($this->fitting_qualifier !== null) {
+            // Legacy B16.9 rows may predate fitting_standard; their qualifier
+            // still carries the unambiguous 90LR/45LR meaning.
+            $parts[] = $this->fitting_qualifier;
+        }
 
         if ($this->nominal_size !== null) {
             $parts[] = $this->nominal_size.'"';

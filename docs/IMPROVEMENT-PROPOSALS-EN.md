@@ -16,9 +16,11 @@ operational workflow may remain open) · `BUILT` (all stated acceptance met) ·
 `REJECTED` (considered and refused — kept so it is not raised again).
 
 Last updated: **2026-10-26** (P-21/P-22 OLET-path reconciliation; targeted
-OLET/joint regressions passed 84 tests / 218 assertions; full-suite run is
-separate; owner requirement P-26 for general manual component orientation
-recorded in SRS FR-ENG-16, with detailed design/implementation still open).
+OLET/joint regressions passed 84 tests / 218 assertions; P-26 includes explicit
+signed run/rise input and immutable, source-fingerprinted joint-diagnostic
+snapshots; focused P-26 suites pass: ComponentModellingTest 65 / 350,
+BranchWallJointTest 27 / 93, and math/profile unit files 78 / 298; full-suite
+run remains separate).
 
 ---
 
@@ -51,7 +53,7 @@ recorded in SRS FR-ENG-16, with detailed design/implementation still open).
 | P-23 | Requirement / MTO | MTO has no coverage of branch-connection material: reinforcement pads (plate) and coped stub ends | OPEN — scope decision |
 | P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator + B31.3-2024 materials pack + class design basis + publish-gate validation built; **flange step built 2026-10-12**: ASME B16.5-2025 P-T ratings pack (45 SI tables, cross-checked against the Customary twin) + `FlangeRatingReference` + publish gate rating every FLANGE_TYPE cell against the class design basis; B16.47 large-diameter + Section II Part D extensions remain follow-ups; runtime verification on owner's Laragon pending | PARTIAL — Step B + flange gate built |
 | P-25 | Standards / data | Parallel-session engineering reference library discovered on the owner-published `workspace` branch and ported (commit `bf15816`): full B31.3-2024 Table A-1 stresses (798 rows/138 specs), materials library v1.8, B16.5+B16.47 flange P-T curves, bolting, B16.9 fitting dimensions, valve packs, per-pack schemas and the 2,835-line validator; both flange provenances cross-checked cell-by-cell (4,725/4,725 exact). **Steps 1-4 ported; step 5 catalogue/adoption-only adaptation implemented (awaiting Laragon verification)**: ADR-019 documents ITP-only citation host/migration and mutable-edition conflict; owner chose option A; citation/ITP still deferred. Compatibility assessment (`3bdff9b`) + engineering screening & fitting-review module + MR entry module ported (awaiting Laragon test runs). Next: Laragon verification; group A fluid-service classification implemented pending tests (ADR-020); step 7 baseline/model-import assessed as no-go for wholesale port, owner approved parser-only; pure PCF parser ported (ADR-021), branch-vocabulary conflict handled by a read-only P2P classifier (ADR-022); model importer/baseline deferred | PARTIAL — porting in progress |
-| P-26 | Requirement / engineering model | Manual component slope/orientation/rotation entry and calculated transformed geometry, beyond branch β/θ alone | ACCEPTED — SRS FR-ENG-16 and [ADR-061](ADR-061-MANUAL-COMPONENT-ORIENTATION-AND-GEOMETRY-CALCULATIONS-EN.md) recorded; design/implementation open |
+| P-26 | Requirement / engineering model | Manual component slope/orientation/rotation entry and calculated transformed geometry, beyond branch β/θ alone | PARTIAL — persisted project frame; DRAFT-only PIPE/NIPPLE poses plus source-backed B16.9-2018 BW LR `90LR`/`45LR` elbow port geometry; qualifier is persisted and profile/source row is hashed, with explicit P1 anchor, +X/+Y bend-plane convention and roll; bilingual azimuth/inclination/roll and signed dimensioned run/rise entry; immutable, RLS-protected, source-fingerprinted joint snapshots remain idempotent/STALE as designed. Raw values are UNASSESSED without sourced tolerance; wall references remain UNRESOLVED without host-surface geometry. SR/180/reducing/return and SW/threaded geometry plus wider fitting coverage remain outside this profile slice; the requested authentic Autodesk Plant 3D CTPL/PCAT artifact remains an open, separate deliverable because no catalog/template source file is present |
 
 ---
 
@@ -642,13 +644,67 @@ into model coordinates, and recalculate/report affected connection/joint
 geometry and applicable geometry-dependent checks after a change. Manual entry
 must not depend on the availability of CAD, PCF or other model import.
 
-**Status: ACCEPTED — requirement recorded; detailed design and implementation
-OPEN.** This does not authorize native CAD authoring or decide every downstream
-engineering formula. Before implementation, define the component anchor/origin,
-coordinate frame, units and slope representation, axis/sign/zero conventions,
-rotation composition order, tolerances, imported-model conflict behavior, and
-the calculation/check catalogue. Do not infer those choices from provisional
-branch θ.
+**Status: PARTIAL — the selected technical contract and the straight-`PIPE`,
+explicit-length `NIPPLE`, and scoped B16.9-2018 BW LR elbow profiles are
+implemented (2026-10-26); FR-ENG-16 remains open.** ADR-061 selects a project-local,
+right-handed Easting/Northing/Up frame in `MM`; profile-defined component
+anchors and local port geometry; and azimuth/inclination/roll input resolved by
+an explicit local-to-model basis formula. The alternate dimensioned-triangle
+mode requires a declared azimuth plane, non-negative horizontal run along that
+azimuth, signed rise along +Z, and explicit roll; inclination is `atan2(rise,
+run)`. It preserves raw inputs, method/unit provenance and, when supplied, the
+measured hypotenuse and raw `measured - hypot(run, rise)` residual. No tolerance
+or PASS/FAIL verdict is inferred. Geometry edits are append-only, DRAFT-only,
+and never change topology; changed frame/profile inputs report `STALE`, missing
+inputs remain `UNRESOLVED`, and fit residuals remain unassessed without a
+sourced tolerance. This does not authorize native CAD authoring or a PCF writer.
+
+The current vertical slice persists immutable project-frame and component-pose
+revisions with RLS, origin/frame provenance, raw angle or triangle inputs,
+anchor, profile hash and transformed geometry. The bilingual piping model page
+lets authorized modelers define the project frame, use either explicit pose
+input mode for supported `PIPE`/`NIPPLE` and B16.9 BW LR elbow components, and
+inspect transformed port positions/directions plus triangle closure and elbow
+dimension provenance. Existing explicit two-port joints receive raw gap and
+outward-axis-deviation diagnostics when
+both endpoint profiles and poses resolve; these remain `UNASSESSED` without an
+approved tolerance. An explicit DRAFT-only capture action stores an immutable,
+RLS-protected diagnostic revision with source JSON, method/version and SHA-256
+fingerprint. Capture reselects the line's joint scope and recalculates
+endpoint geometry after project/line/joint locks, rather than persisting a
+pre-transaction page read. Unchanged inputs reuse the latest revision; any
+changed source or method displays that historical result as `STALE`.
+Wall-reference joints are captured as `UNRESOLVED` until host-surface geometry
+exists. Earlier focused verification remains historical: `ComponentModellingTest`
+(67 tests, 367 assertions), `ComponentPortGeometryTransformerTest` (13 tests,
+84 assertions), the live joint-diagnostic case (1/10), `BranchWallJointTest`
+(27/93), and the P-26 math/profile set (78/298) passed at the prior checkpoints;
+the complete application suite was not run.
+
+The current follow-on persists `fitting_qualifier` and resolves only B16.9-2018
+Table 6.1-1 BW long-radius `90LR` and `45LR` elbows. P1 centre is the local
+origin, +X points from P1 toward the virtual intersection of extended port
+centre-lines, +Y selects the bend side, and explicit roll clocks the local XY
+bend plane. The tabulated centre-to-end is used as the tangent distance on both
+axes to resolve port 2; it is never treated as an end-to-end length. Qualifier,
+source row and profile hash are part of the pose snapshot; changed inputs make
+prior geometry `STALE`. No SR, 180°, reducing, return, or SW/threaded geometry
+is guessed. This internal JSON/profile work is not an Autodesk Plant 3D CTPL or
+PCAT: no real catalog/template file was present in the workspace, so that
+requested artifact remains open for a genuine Plant 3D source/template.
+
+Verification now passes for the elbow follow-on: `ButtWeldElbowGeometryProfileTest`
+(4 tests / 69 assertions), `ComponentPortGeometryTransformerTest` (13 / 84),
+and the focused `ComponentModellingTest` file (70 / 403). All 9 changed PHP
+files pass Pint and PHP syntax checks; `standards-packs/validate_packs.py`
+passes all 3 standards packs and 16 reference packs, including
+`component-templates` v1.1.2. The feature suite ran on a newly created isolated
+verification database; the main `epcc` database was left unmigrated, and no full
+application suite was run.
+
+Other dependent-check classes and sourced acceptance rules remain open. Branch
+β stays explicit, θ is not inferred, and PAD calculations remain outside this
+feature.
 
 
 ## How to use this file

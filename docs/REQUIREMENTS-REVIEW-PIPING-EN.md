@@ -91,7 +91,15 @@ relationships/checks.
 
 **Disposition:** requirement registered in `docs/SRS-EPCC-Platform.md`
 (`FR-ENG-16`, Must), formalized in [ADR-061](ADR-061-MANUAL-COMPONENT-ORIENTATION-AND-GEOMETRY-CALCULATIONS-EN.md),
-and tracked as **P-26** in `docs/IMPROVEMENT-PROPOSALS-EN.md`. Requirement
-recording is complete; coordinate frames, conventions, calculation scope,
-detailed design and implementation remain open. No general
-component-orientation implementation is claimed here.
+and tracked as **P-26** in `docs/IMPROVEMENT-PROPOSALS-EN.md`. The initial
+project frame, azimuth/inclination/roll convention, anchor/profile contract,
+change semantics, and calculation boundary are selected in ADR-061. An initial
+authorized, DRAFT-only straight-PIPE frame/pose workflow and read-time raw
+explicit-joint diagnostics are implemented and focused tests pass. The
+bilingual pose entry also accepts a dimensioned signed run/rise triangle,
+preserving its plane, roll, raw dimensions, method/unit provenance and optional
+closure residual without an acceptance verdict. Immutable, source-versioned
+snapshots for the current explicit two-port joint diagnostic are implemented.
+Broader sourced profiles, additional dependent-check coverage, wall-surface
+geometry and acceptance tolerances remain open. P-26 is **PARTIAL**; this does
+not claim full FR-ENG-16 completion.

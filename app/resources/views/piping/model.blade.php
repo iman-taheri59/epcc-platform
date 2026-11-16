@@ -5,6 +5,63 @@
         'sub'      => ['fa' => 'قطعات روی این خط و سرهای بازی که هنوز به چیزی وصل نیستند',
                        'en' => 'The components on this line and the ends not yet connected to anything'],
         'back'     => ['fa' => 'بازگشت به فهرست خطوط', 'en' => 'Back to the line register'],
+        'geometry' => ['fa' => 'جهت‌گیری و هندسه', 'en' => 'Orientation & geometry'],
+        'modelFrame' => ['fa' => 'فریم مدل پروژه', 'en' => 'Project model frame'],
+        'frameNone' => ['fa' => 'فریم مختصات پروژه هنوز تعریف نشده است؛ جهت‌گیری بدون فریم صریح قابل ثبت نیست.', 'en' => 'No project coordinate frame is defined yet; orientation cannot be saved without an explicit frame.'],
+        'frameRevision' => ['fa' => 'بازنگری فریم', 'en' => 'Frame revision'],
+        'frameOrigin' => ['fa' => 'شرح صریح مبدأ مختصات مدل', 'en' => 'Explicit model-coordinate origin description'],
+        'frameAxes' => ['fa' => 'دست‌راست: X=شرق، Y=شمال، Z=بالا · واحد MM', 'en' => 'Right-handed: X=Easting, Y=Northing, Z=Up · unit MM'],
+        'frameHelp' => ['fa' => 'شرح مبدأ باید مشخص کند مختصات نسبت به چه مبنای پروژه‌ای ثبت می‌شوند؛ سامانه مبدأ جغرافیایی یا نقطه‌ای را حدس نمی‌زند.', 'en' => 'Describe the project datum for these coordinates; the system does not infer a geographic datum or origin point.'],
+        'frameSave' => ['fa' => 'ثبت/بازنگری فریم', 'en' => 'Save/revise frame'],
+        'poseForm' => ['fa' => 'ثبت جهت‌گیری دستی (درجه)', 'en' => 'Record manual orientation (degrees)'],
+        'trianglePoseForm' => ['fa' => 'ثبت مثلث بُعددار run/rise', 'en' => 'Record a dimensioned run/rise triangle'],
+        'triangleHelp' => ['fa' => 'آزیموت صفحه و رول صریح‌اند و حدس زده نمی‌شوند. run افقی و نامنفی در جهت آزیموت است؛ rise در راستای +Z علامت‌دار است. میل از atan2(rise, run) محاسبه می‌شود. همهٔ طول‌ها mm هستند. هیپوتنوز اندازه‌گیری‌شده اختیاری است؛ residual برابر measured − hypot(run, rise) فقط گزارش می‌شود، نه PASS/FAIL.', 'en' => 'Plane azimuth and roll are explicit and never inferred. Horizontal run is non-negative along azimuth; rise is signed along +Z. Inclination is atan2(rise, run). Lengths are in mm. A measured hypotenuse is optional; measured − hypot(run, rise) is reported as a raw residual, not PASS/FAIL.'],
+        'azimuth' => ['fa' => 'آزیموت α', 'en' => 'Azimuth α'],
+        'triangleAzimuth' => ['fa' => 'آزیموت صفحه α', 'en' => 'Plane azimuth α'],
+        'inclination' => ['fa' => 'میل ε', 'en' => 'Inclination ε'],
+        'roll' => ['fa' => 'رول ρ', 'en' => 'Roll ρ'],
+        'run' => ['fa' => 'run افقی (mm)', 'en' => 'Horizontal run (mm)'],
+        'rise' => ['fa' => 'rise علامت‌دار در +Z (mm)', 'en' => 'Signed rise along +Z (mm)'],
+        'measuredHypotenuse' => ['fa' => 'هیپوتنوز اندازه‌گیری‌شده، اختیاری (mm)', 'en' => 'Measured hypotenuse, optional (mm)'],
+        'calculatedHypotenuse' => ['fa' => 'هیپوتنوز محاسبه‌شده', 'en' => 'Calculated hypotenuse'],
+        'triangleRaw' => ['fa' => 'ورودی خام مثلث و روش محاسبه', 'en' => 'Raw triangle input and calculation provenance'],
+        'triangleResidual' => ['fa' => 'باقیماندهٔ خام closure', 'en' => 'Raw closure residual'],
+        'residualUnassessed' => ['fa' => 'UNASSESSED — قاعدهٔ تلرانس پذیرش مهندسی تعریف نشده است.', 'en' => 'UNASSESSED — no engineering acceptance tolerance is defined.'],
+        'anchorE' => ['fa' => 'لنگر: Easting (mm)', 'en' => 'Anchor: Easting (mm)'],
+        'anchorN' => ['fa' => 'لنگر: Northing (mm)', 'en' => 'Anchor: Northing (mm)'],
+        'anchorZ' => ['fa' => 'لنگر: ارتفاع (mm)', 'en' => 'Anchor: elevation (mm)'],
+        'poseSave' => ['fa' => 'ثبت بازنگری جهت‌گیری', 'en' => 'Save pose revision'],
+        'poseNone' => ['fa' => 'هنوز جهت‌گیری دستی ثبت نشده است.', 'en' => 'No manual pose has been recorded.'],
+        'poseRevision' => ['fa' => 'بازنگری جهت‌گیری', 'en' => 'Pose revision'],
+        'geometryStatus' => ['fa' => 'وضعیت هندسه', 'en' => 'Geometry status'],
+        'geometryUnsupported' => ['fa' => 'پروفیل هندسی این نوع قطعه هنوز پشتیبانی نمی‌شود؛ مختصات یا محور حدس زده نمی‌شود.', 'en' => 'This component type has no supported geometry profile yet; coordinates and axes are not guessed.'],
+        'elbowStandard' => ['fa' => 'استاندارد بُعدی زانویی', 'en' => 'Elbow dimensional standard'],
+        'elbowStandardHelp' => ['fa' => 'B16.9 برای زانویی BW شعاع‌بلند؛ B16.11 برای زانویی فورج‌شده با دو سر SW یا دو سر رزوه‌ای. کلاس B16.11 کلید بُعدی است، نه کلاس PMS.', 'en' => 'B16.9 is the BW long-radius path; B16.11 is the forged path with two SW or two threaded ends. B16.11 class is a dimensional lookup key, not the project PMS class.'],
+        'elbowQualifier' => ['fa' => 'گونه / زاویهٔ خم', 'en' => 'Variant / bend angle'],
+        'elbowQualifierHelp' => ['fa' => 'B16.9: فقط 90LR یا 45LR. B16.11: فقط 90 یا 45 درجه؛ B16.11 عنوان LR/SR ندارد و با B16.9 alias نمی‌شود.', 'en' => 'B16.9: 90LR or 45LR only. B16.11: 90 or 45 degrees only; B16.11 does not name LR/SR elbows and is not aliased to B16.9.'],
+        'elbowClass' => ['fa' => 'کلاس بُعدی B16.11', 'en' => 'B16.11 dimensional class'],
+        'elbowClassHelp' => ['fa' => 'برای B16.11 اجباری و صریح؛ خالی برای B16.9. این مقدار از کلاس PMS یا pressure rating استنباط نمی‌شود.', 'en' => 'Required explicitly for B16.11; leave blank for B16.9. This is not inferred from PMS or treated as a direct pressure rating.'],
+        'elbowEndType' => ['fa' => 'نوع سر هر دو انتها', 'en' => 'End type at both ends'],
+        'elbowEndTypeHelp' => ['fa' => 'برای B16.11 صریح انتخاب کنید: SW یا SC. این پروفیل سرهای مختلط و street elbow را پوشش نمی‌دهد.', 'en' => 'Choose explicitly for B16.11: SW or SC. Mixed-end and street elbows are outside this profile.'],
+        'elbowGeometryHelp' => ['fa' => 'این پروفیل هندسهٔ پورت است، نه مدل CAD. لنگر مرکز P1 است؛ +X از P1 به تقاطع مجازی امتداد محورهای مرکز پورت‌ها می‌رود؛ +Y سمت خم را تعیین می‌کند و رول صریحاً صفحهٔ خم را می‌چرخاند. مقدار center-to-end از ردیف B16.9-2018 Table 6.1-1 می‌آید؛ این فایل، تمپلت Autodesk Plant 3D نیست.', 'en' => 'This is a port-geometry profile, not a CAD solid. The anchor is P1 centre; local +X runs from P1 to the virtual intersection of the extended port centre-lines; +Y selects the bend side and explicit roll clocks the bend plane. Centre-to-end comes from B16.9-2018 Table 6.1-1; this is not an Autodesk Plant 3D template.'],
+        'forgedElbowGeometryHelp' => ['fa' => 'این پروفیل فقط مختصات دو پورت است، نه CAD solid. B16.11-2021 فقط زاویه‌های 45/90 و ردیف‌های NPS/class مرجع را حل می‌کند. threaded از A (۹۰°) یا C (۴۵°)، مرکز تا انتها، استفاده می‌کند. برای SW، قرارداد برنامه datum پورت را کف سوکت می‌گیرد و A مرکز تا کف سوکت را مستقیم مصرف می‌کند؛ J عمق حداقل سوکت جداگانه ثبت می‌شود. فاصلهٔ تقریبی پیشنهادی پیش از جوش 1.5 mm اعمال نمی‌شود. هیچ شعاع LR/SR، انتهای مختلط، street elbow یا CAD solid استنباط نمی‌شود.', 'en' => 'This profile resolves two port coordinates only, not a CAD solid. B16.11-2021 resolves only 45/90-degree rows present for the exact NPS/class. Threaded uses table A (90°) or C (45°), centre-to-end. For SW, the application contract sets the port datum at the socket bottom and uses A directly; minimum socket depth J is recorded separately. The approximate recommended 1.5 mm pre-weld gap is not applied. No LR/SR radius, mixed ends, street elbow, or CAD solid is inferred.'],
+        'geometryPoints' => ['fa' => 'مختصات پورت‌ها در فریم مدل (mm)', 'en' => 'Port coordinates in model frame (mm)'],
+        'geometryPoint' => ['fa' => 'نقطه', 'en' => 'point'],
+        'geometryAxis' => ['fa' => 'محور خروجی', 'en' => 'outward axis'],
+        'frameRequired' => ['fa' => 'ابتدا فریم مدل پروژه را ثبت کنید.', 'en' => 'Define the project model frame before recording a pose.'],
+        'poseDraftOnly' => ['fa' => 'ویرایش جهت‌گیری فقط در وضعیت DRAFT مجاز است.', 'en' => 'Pose editing is available only while the line is DRAFT.'],
+        'jointGeometry' => ['fa' => 'تشخیص هندسی جوینت', 'en' => 'Joint geometry diagnostic'],
+        'snapshotAction' => ['fa' => 'ثبت snapshot هندسهٔ جوینت‌ها', 'en' => 'Capture joint-geometry snapshots'],
+        'snapshotHelp' => ['fa' => 'Snapshotها تغییرناپذیر و نسخه‌محورند؛ با تغییر هر ورودی STALE می‌شوند. ثبت نتیجه قاعدهٔ پذیرش یا PASS/FAIL ایجاد نمی‌کند.', 'en' => 'Snapshots are immutable and versioned; any changed input makes them STALE. Capturing a result does not create an acceptance rule or a PASS/FAIL verdict.'],
+        'snapshotMissing' => ['fa' => 'هنوز snapshot ثبت نشده؛ مقدار زیر محاسبهٔ زنده و ذخیره‌نشده است.', 'en' => 'No snapshot yet; the value below is live and not persisted.'],
+        'snapshotCurrent' => ['fa' => 'snapshot جاری، بازنگری', 'en' => 'Current snapshot revision'],
+        'snapshotStale' => ['fa' => 'STALE — ورودی‌ها از زمان snapshot تغییر کرده‌اند؛ برای ثبت نتیجهٔ تازه snapshot بگیرید.', 'en' => 'STALE — inputs changed since capture; capture a new snapshot to record a current result.'],
+        'gap' => ['fa' => 'فاصلهٔ خام', 'en' => 'raw gap'],
+        'axisDeviation' => ['fa' => 'انحراف محور از جهت مخالف', 'en' => 'outward-axis deviation from opposition'],
+        'unassessed' => ['fa' => 'UNASSESSED', 'en' => 'UNASSESSED'],
+        'unassessedHelp' => ['fa' => 'مقدار خام هندسی است؛ قاعده/تلرانس پذیرش برای PASS/FAIL تعریف نشده است.', 'en' => 'Raw geometry only; no acceptance rule/tolerance is defined for PASS/FAIL.'],
+        'checkStale' => ['fa' => 'STALE — هندسهٔ وابسته تا ثبت pose تازه قابل ارزیابی نیست.', 'en' => 'STALE — dependent geometry cannot be evaluated until a new pose is recorded.'],
+        'checkUnresolved' => ['fa' => 'UNRESOLVED — دادهٔ هندسی کافی برای این جوینت وجود ندارد.', 'en' => 'UNRESOLVED — insufficient geometry is available for this joint.'],
         'seq'      => ['fa' => 'ردیف', 'en' => 'No.'],
         'type'     => ['fa' => 'نوع', 'en' => 'Type'],
         'size'     => ['fa' => 'سایز', 'en' => 'Size'],
@@ -98,6 +155,7 @@
         'branch'   => ['fa' => 'سایز انشعاب', 'en' => 'Branch size'],
         'small'    => ['fa' => 'سر کوچک', 'en' => 'Small end'],
         'lenmm'    => ['fa' => 'طول (میلی‌متر)', 'en' => 'Length (mm)'],
+        'lengthGeometryHelp' => ['fa' => 'فقط برای پروفیل هندسی: طول PIPE همان طول برش ثبت‌شده است؛ طول NIPPLE فاصلهٔ انتها تا انتها میان صفحه‌های مرکزی پورت است. این فیلد برای ELBOW به‌کار نمی‌رود؛ center-to-end فقط از مرجع B16.9 و qualifier صریح خوانده می‌شود.', 'en' => 'For geometry profiles only: PIPE length is its entered cut length; NIPPLE length is end-to-end between port centre planes. This field does not define an ELBOW; centre-to-end is read from the B16.9 reference row selected by its explicit qualifier.'],
         'sched'    => ['fa' => 'رده', 'en' => 'Schedule'],
         'issuedPms'=> ['fa' => 'بازنگری PMS زمان صدور', 'en' => 'Issued PMS revision'],
         'unmapped' => ['fa' => 'در انتظار بررسی کلاس و بازنگری PMS', 'en' => 'Class/PMS revision review required'],
@@ -152,6 +210,7 @@
     ];
     $L = fn (string $k): string => $t[$k][$lang] ?? $t[$k]['en'];
     $num = fn ($v): string => \App\Support\JalaliDate::digits((string) $v, $lang);
+    $formatMm = fn ($value): string => $num(rtrim(rtrim(number_format((float) $value, 3, '.', ''), '0'), '.'));
 
     // Inch marks inside an <option>: no markup is allowed there, so <bdi> is
     // out. A trailing LRM pins the quote to its number rather than letting
@@ -226,6 +285,8 @@
     </div>
   @endif
 
+  @include('piping.partials.model-frame')
+
   {{-- ------------------------------------------------ open ends --------- --}}
   <h2 style="margin-top:26px;font-size:16px;">{{ $L('openends') }}
     <span style="color:var(--muted);font-weight:400;font-size:13px;">({{ $num(count($open)) }})</span>
@@ -259,6 +320,54 @@
                 <option value="{{ $tpl['code'] }}">{{ $tpl['name'][$lang] ?? $tpl['name']['en'] }} ({{ $num($tpl['ports']) }})</option>
               @endforeach
             </select>
+            <label style="flex:1 1 100%;min-width:160px;color:var(--muted);font-size:11px;">
+              {{ $L('elbowStandard') }}
+              <select name="fitting_standard" aria-label="{{ $L('elbowStandard') }}"
+                      style="width:100%;margin-top:3px;padding:5px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+                <option value="">—</option>
+                <option value="B16.9" @selected(old('fitting_standard') === 'B16.9')>ASME B16.9-2018 · BW LR</option>
+                <option value="B16.11" @selected(old('fitting_standard') === 'B16.11')>ASME B16.11-2021 · forged</option>
+              </select>
+              <small style="display:block;margin-top:3px;line-height:1.5;">{{ $L('elbowStandardHelp') }}</small>
+            </label>
+            <label style="flex:1 1 100%;min-width:160px;color:var(--muted);font-size:11px;">
+              {{ $L('elbowQualifier') }}
+              <select name="fitting_qualifier" aria-label="{{ $L('elbowQualifier') }}"
+                      style="width:100%;margin-top:3px;padding:5px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+                <option value="">—</option>
+                <optgroup label="B16.9 · BW long radius">
+                  <option value="90LR" @selected(old('fitting_qualifier') === '90LR')>90° LR</option>
+                  <option value="45LR" @selected(old('fitting_qualifier') === '45LR')>45° LR</option>
+                </optgroup>
+                <optgroup label="B16.11 · angle only">
+                  <option value="90" @selected(old('fitting_qualifier') === '90')>90°</option>
+                  <option value="45" @selected(old('fitting_qualifier') === '45')>45°</option>
+                </optgroup>
+              </select>
+              <small style="display:block;margin-top:3px;line-height:1.5;">{{ $L('elbowQualifierHelp') }}</small>
+            </label>
+            <label style="flex:1 1 48%;min-width:140px;color:var(--muted);font-size:11px;">
+              {{ $L('elbowClass') }}
+              <select name="fitting_class_designation" aria-label="{{ $L('elbowClass') }}"
+                      style="width:100%;margin-top:3px;padding:5px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+                <option value="">—</option>
+                @foreach([2000, 3000, 6000, 9000] as $classDesignation)
+                  <option value="{{ $classDesignation }}" @selected((string) old('fitting_class_designation') === (string) $classDesignation)>{{ $classDesignation }}</option>
+                @endforeach
+              </select>
+              <small style="display:block;margin-top:3px;line-height:1.5;">{{ $L('elbowClassHelp') }}</small>
+            </label>
+            <label style="flex:1 1 48%;min-width:140px;color:var(--muted);font-size:11px;">
+              {{ $L('elbowEndType') }}
+              <select name="fitting_end_type" aria-label="{{ $L('elbowEndType') }}"
+                      style="width:100%;margin-top:3px;padding:5px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;font-size:12px;">
+                <option value="">—</option>
+                <option value="BW" @selected(old('fitting_end_type') === 'BW')>BW</option>
+                <option value="SW" @selected(old('fitting_end_type') === 'SW')>SW</option>
+                <option value="SC" @selected(old('fitting_end_type') === 'SC')>SC · threaded</option>
+              </select>
+              <small style="display:block;margin-top:3px;line-height:1.5;">{{ $L('elbowEndTypeHelp') }}</small>
+            </label>
             @if($branchRoots->isNotEmpty() || $isTeeCrossBranchPort)
               <label style="flex:1 1 45%;min-width:140px;color:var(--muted);font-size:11px;">
                 {{ $L('lineowner') }}
@@ -462,6 +571,7 @@
         <th data-sort="text">{{ $L('sched') }}</th>
         <th>{{ $L('ports') }}</th>
         <th data-sort="number">{{ $L('length') }}</th>
+        <th>{{ $L('geometry') }}</th>
         <th>{{ $L('actions') }}</th>
       </tr>
     </thead>
@@ -470,7 +580,14 @@
       <tr>
         <td class="mono">{{ $num($c->sequence) }}</td>
         <td>{{ $tplName($c->template_code) }}
-          <div style="color:var(--muted);font-size:11px;" class="mono">{{ $c->template_code }}</div>
+          <div style="color:var(--muted);font-size:11px;" class="mono">
+            {{ $c->template_code }}
+            @if($c->fitting_standard === 'B16.11')
+              · B16.11-2021 · {{ $c->fitting_qualifier }}° · Class {{ $c->fitting_class_designation }} · {{ $c->ports->first()?->end_type }} both ends
+            @elseif($c->fitting_qualifier)
+              · {{ $c->fitting_standard === 'B16.9' ? 'B16.9-2018 · ' : '' }}{{ $c->fitting_qualifier }}
+            @endif
+          </div>
         </td>
         <td class="mono">@if($c->nominal_size)<bdi>{{ $num($c->nominal_size) }}"</bdi>@else—@endif</td>
         <td class="mono">
@@ -609,6 +726,12 @@
           @endforeach
         </td>
         <td class="mono">{{ $c->length_mm ? $num(rtrim(rtrim(number_format((float) $c->length_mm, 1, '.', ''), '0'), '.')) : '—' }}</td>
+        <td style="min-width:250px;max-width:420px;white-space:normal;">
+          @include('piping.partials.component-geometry', [
+            'component' => $c,
+            'geometry' => $componentGeometry[$c->id] ?? ['status' => 'UNRESOLVED', 'reason' => 'GEOMETRY_NOT_AVAILABLE', 'ports' => []],
+          ])
+        </td>
         <td>
           @if($editable)
           <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/model/{{ $c->id }}/delete?{{ http_build_query($q) }}"
@@ -623,7 +746,7 @@
         </td>
       </tr>
     @empty
-      <tr><td colspan="7" style="color:var(--muted);">{{ $L('none') }}</td></tr>
+      <tr><td colspan="8" style="color:var(--muted);">{{ $L('none') }}</td></tr>
     @endforelse
     </tbody>
   </table>
@@ -653,6 +776,17 @@
     </span>
   </h2>
   <p style="color:var(--muted);font-size:11.5px;margin:4px 0 0;">{{ $L('jdianote') }}</p>
+  <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:8px;">
+    <small style="color:var(--muted);max-width:760px;line-height:1.6;">{{ $L('snapshotHelp') }}</small>
+    @if($canEditPose && $joints->isNotEmpty())
+      <form method="POST" action="/projects/{{ $project->code }}/piping/{{ $line->id }}/model/geometry-snapshots?{{ http_build_query($q) }}">
+        @csrf
+        <button type="submit" style="padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:inherit;font:inherit;font-size:12px;cursor:pointer;">
+          {{ $L('snapshotAction') }}
+        </button>
+      </form>
+    @endif
+  </div>
 
   <table data-tt style="margin-top:10px;">
     <thead>
@@ -662,6 +796,7 @@
         <th>{{ $L('jbetween') }}</th>
         <th data-sort="text" data-facet>{{ $L('jstate') }}</th>
         <th data-sort="number">{{ $L('jdia') }}</th>
+        <th>{{ $L('jointGeometry') }}</th>
       </tr>
     </thead>
     <tbody>
@@ -733,9 +868,32 @@
             <span style="color:var(--muted);">—</span>
           @endif
         </td>
+        <td style="min-width:230px;white-space:normal;font-size:11px;">
+          @php $diagnostic = $jointGeometry[$j->id] ?? ['status' => 'UNRESOLVED', 'reason' => 'DIAGNOSTIC_NOT_AVAILABLE']; @endphp
+          @if(($diagnostic['snapshot_state'] ?? null) === 'NOT_CAPTURED')
+            <small style="display:block;color:var(--muted);">{{ $L('snapshotMissing') }}</small>
+          @elseif(($diagnostic['snapshot_state'] ?? null) === 'CURRENT')
+            <small style="display:block;color:var(--muted);">{{ $L('snapshotCurrent') }} <bdi>{{ $num($diagnostic['snapshot_revision']) }}</bdi></small>
+          @endif
+          @if(($diagnostic['snapshot_state'] ?? null) === 'STALE')
+            <span style="color:#fca5a5;">{{ $L('snapshotStale') }}</span>
+            <div class="mono" style="color:var(--muted);">{{ $diagnostic['reason'] }}</div>
+          @elseif($diagnostic['status'] === 'UNASSESSED')
+            <strong style="color:#fcd34d;">{{ $L('unassessed') }}</strong>
+            <div>{{ $L('gap') }}: <bdi>{{ $formatMm($diagnostic['gap_mm']) }} mm</bdi></div>
+            <div>{{ $L('axisDeviation') }}: <bdi>{{ $formatMm($diagnostic['outward_axis_deviation_deg']) }}°</bdi></div>
+            <small style="color:var(--muted);">{{ $L('unassessedHelp') }}</small>
+          @elseif($diagnostic['status'] === 'STALE')
+            <span style="color:#fca5a5;">{{ $L('checkStale') }}</span>
+            <div class="mono" style="color:var(--muted);">{{ $diagnostic['reason'] }}</div>
+          @else
+            <span style="color:#fcd34d;">{{ $L('checkUnresolved') }}</span>
+            <div class="mono" style="color:var(--muted);">{{ $diagnostic['reason'] }}</div>
+          @endif
+        </td>
       </tr>
     @empty
-      <tr><td colspan="5" style="color:var(--muted);">{{ $L('jnone') }}</td></tr>
+      <tr><td colspan="6" style="color:var(--muted);">{{ $L('jnone') }}</td></tr>
     @endforelse
     </tbody>
   </table>
@@ -760,6 +918,58 @@
             </option>
           @endforeach
         </select>
+      </label>
+
+      <label style="font-size:12px;color:var(--muted);">
+        {{ $L('elbowStandard') }}
+        <select name="fitting_standard"
+                style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+          <option value="">—</option>
+          <option value="B16.9" @selected(old('fitting_standard') === 'B16.9')>ASME B16.9-2018 · BW LR</option>
+          <option value="B16.11" @selected(old('fitting_standard') === 'B16.11')>ASME B16.11-2021 · forged</option>
+        </select>
+        <small style="display:block;margin-top:3px;line-height:1.5;">{{ $L('elbowStandardHelp') }}</small>
+      </label>
+
+      <label style="font-size:12px;color:var(--muted);">
+        {{ $L('elbowQualifier') }}
+        <select name="fitting_qualifier"
+                style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+          <option value="">—</option>
+          <optgroup label="B16.9 · BW long radius">
+            <option value="90LR" @selected(old('fitting_qualifier') === '90LR')>90° LR</option>
+            <option value="45LR" @selected(old('fitting_qualifier') === '45LR')>45° LR</option>
+          </optgroup>
+          <optgroup label="B16.11 · angle only">
+            <option value="90" @selected(old('fitting_qualifier') === '90')>90°</option>
+            <option value="45" @selected(old('fitting_qualifier') === '45')>45°</option>
+          </optgroup>
+        </select>
+        <small style="display:block;margin-top:3px;line-height:1.5;">{{ $L('elbowQualifierHelp') }}</small>
+      </label>
+
+      <label style="font-size:12px;color:var(--muted);">
+        {{ $L('elbowClass') }}
+        <select name="fitting_class_designation"
+                style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+          <option value="">—</option>
+          @foreach([2000, 3000, 6000, 9000] as $classDesignation)
+            <option value="{{ $classDesignation }}" @selected((string) old('fitting_class_designation') === (string) $classDesignation)>{{ $classDesignation }}</option>
+          @endforeach
+        </select>
+        <small style="display:block;margin-top:3px;line-height:1.5;">{{ $L('elbowClassHelp') }}</small>
+      </label>
+
+      <label style="font-size:12px;color:var(--muted);">
+        {{ $L('elbowEndType') }}
+        <select name="fitting_end_type"
+                style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+          <option value="">—</option>
+          <option value="BW" @selected(old('fitting_end_type') === 'BW')>BW</option>
+          <option value="SW" @selected(old('fitting_end_type') === 'SW')>SW</option>
+          <option value="SC" @selected(old('fitting_end_type') === 'SC')>SC · threaded</option>
+        </select>
+        <small style="display:block;margin-top:3px;line-height:1.5;">{{ $L('elbowEndTypeHelp') }}</small>
       </label>
 
       <label style="font-size:12px;color:var(--muted);">
@@ -798,6 +1008,7 @@
         {{ $L('lenmm') }}
         <input type="number" step="any" min="0" name="length_mm" value="{{ old('length_mm') }}"
                style="width:100%;margin-top:4px;padding:6px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+        <small style="display:block;margin-top:3px;line-height:1.5;">{{ $L('lengthGeometryHelp') }}</small>
       </label>
 
       <button type="submit"

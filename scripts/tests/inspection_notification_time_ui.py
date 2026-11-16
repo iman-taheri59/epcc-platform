@@ -3,6 +3,8 @@
 Run the focused PHP fixture with EPCC_TIME_UI_EVIDENCE=1 first. No server or DB writes.
 """
 import json
+import os
+import shutil
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
@@ -38,8 +40,20 @@ def load(page, name):
 def form_data(page, form):
     return page.locator(form).evaluate('(form) => [...new FormData(form).entries()]')
 
+def chromium_executable():
+    configured = os.environ.get('EPCC_CHROMIUM_PATH')
+    candidates = [configured] if configured else []
+    candidates.extend(
+        shutil.which(name)
+        for name in ('chromium', 'chromium-browser', 'google-chrome', 'google-chrome-stable', 'headless-shell')
+    )
+    for candidate in candidates:
+        if candidate and Path(candidate).is_file() and os.access(candidate, os.X_OK):
+            return candidate
+    raise SystemExit('No executable Chromium/Chrome found; set EPCC_CHROMIUM_PATH explicitly.')
+
 with sync_playwright() as p:
-    browser = p.chromium.launch(executable_path='/usr/bin/chromium', args=['--no-sandbox'])
+    browser = p.chromium.launch(executable_path=chromium_executable(), args=['--no-sandbox'])
     all_errors, requests = [], []
     for lang in ['en', 'fa']:
         for tz in ['Asia/Tehran', 'America/New_York']:

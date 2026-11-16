@@ -6,6 +6,8 @@
 #
 #   static     standards-pack validator + rule-engine conformance corpus
 #   laravel    the full PHPUnit suite against a real PostgreSQL 17 with RLS
+#   python     after the full PHPUnit verdict: isolated MTO workers + offline
+#              notification-time browser harnesses on a private Postgres cluster
 #   prototype  the jsdom harnesses over prototype/*.html
 #   image      the development image still builds and still contains the PDF
 #              toolchain, and compose.yaml still parses
@@ -582,6 +584,69 @@ jobs:
               sys.exit(1)
           print(f"All green: {tests} tests, {assertions} assertions, 0 failures, 0 errors, 0 skipped.")
           PY
+
+  # -------------------------------------------------------------------------
+  # These harnesses use real PHP workers and an actual browser, so they run in
+  # a separate job only after the complete Laravel matrix and its no-skip
+  # verdict have finished. The MTO test gets a disposable socket-only cluster;
+  # the UI fixture is generated from the real Laravel-rendered synthetic page.
+  # -------------------------------------------------------------------------
+  python-harnesses:
+    name: Isolated Python integration harnesses
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    needs: [changes, laravel-report]
+    if: needs.changes.outputs.code == 'true' && needs.laravel-report.result == 'success'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_pgsql, pgsql, intl, bcmath, gd, zip, pcntl, sockets, mbstring, exif
+          tools: composer:v2
+          coverage: none
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Composer dependencies
+        working-directory: app
+        run: composer install --no-scripts --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare app environment
+        working-directory: app
+        run: |
+          set -euo pipefail
+          cp .env.example .env
+          sed -i 's/^APP_DEBUG=.*/APP_DEBUG=false/' .env
+          php artisan key:generate --force --no-interaction
+
+      - name: Install PostgreSQL 17
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y --no-install-recommends postgresql-17
+
+      - name: Install pinned Python harness dependencies
+        run: python3 -m pip install --disable-pip-version-check --no-input -r scripts/tests/requirements-ci.txt
+
+      - name: Run isolated concurrency and browser harnesses
+        run: bash scripts/tests/run_ci_python_harnesses.sh
+
+      - name: Upload isolated Python harness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: isolated-python-harness-evidence-${{ github.run_id }}
+          path: docs/evidence/2026-10-20-inspection-notification-time-ui/
+          if-no-files-found: ignore
+          retention-days: 14
 
   # -------------------------------------------------------------------------
   # The development image itself. Cheap insurance that a Dockerfile edit did

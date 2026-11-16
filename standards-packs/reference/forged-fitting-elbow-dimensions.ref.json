@@ -1,0 +1,137 @@
+{
+  "refId": "forged-fitting-elbow-dimensions",
+  "version": "1.0.0",
+  "source": "ASME B16.11-2021, Tables 1.1.1-1, 6.1-1 (SI), and 6.1-3 (SI); transcribed from the user-supplied PDF with SHA-256 5fb9295df91fcb38978ec6a7eddabc53057c5465af63aac647f5a56bb4040664.",
+  "units": {
+    "length": "mm",
+    "system": "SI"
+  },
+  "standard": {
+    "code": "B16.11",
+    "editionYear": 2021,
+    "title": "Forged Fittings, Socket-Welding and Threaded",
+    "sourceTables": [
+      "Table 1.1.1-1",
+      "Table 6.1-1",
+      "Table 6.1-3"
+    ],
+    "sourceFigures": [
+      "Figure 6.2.7-1"
+    ],
+    "sourcePdfSha256": "5fb9295df91fcb38978ec6a7eddabc53057c5465af63aac647f5a56bb4040664"
+  },
+  "verified": true,
+  "readOn": "2026-10-26",
+  "notes": {
+    "coverage": "Only the NPS/class combinations listed in coverage are represented. Missing combinations are unsupported here; no interpolation or extrapolation is performed.",
+    "socketWeldDimensions": "Table 6.1-1 dimension A is center-to-bottom of socket and J is minimum socket depth. This pack retains both raw dimensions separately. Figure 6.2.7-1 illustrates an approximate 1.5 mm recommended pre-weld gap; that recommendation is not used as an exact geometric offset. No socket-mouth, pipe-insertion clearance, weld-gap, or center-to-end distance is derived. The limited ADR-061 application profile separately selects the standard-defined socket-bottom datum and uses tabulated A directly as its port distance; this is an explicit application convention, not a newly derived standard dimension or a socket-mouth location.",
+    "threadedDimensions": "Table 6.1-3 gives center-to-end A for 90-degree elbows and center-to-end C for 45-degree elbows.",
+    "qualifierSemantics": "Only the explicit bend angles 45 and 90 are represented. B16.11 does not label these table rows long-radius or short-radius.",
+    "classDesignation": "B16.11 class designation is a dimensional lookup key here. Do not treat it as the project PMS class or as a directly encoded pressure rating.",
+    "scope": "This transcription is limited to two-ended 45-degree and 90-degree elbows. It excludes street elbows (Table 6.1-4), mixed socket-welding/threaded ends, reducing construction, other fitting types, and special dimensions agreed under para. 1.1.2.",
+    "unitBasis": "Only the SI millimeter tables are transcribed. The US Customary tables are an independent standard unit system and are not converted or mixed with these values.",
+    "limitations": "Table dimensions are nominal and subject to manufacturing tolerances. This reference is not a CAD solid, installation-weld specification, or engineering certification."
+  },
+  "coverage": [
+    {
+      "endConfiguration": "SOCKET_WELD_BOTH_ENDS",
+      "classDesignation": 3000,
+      "nps": ["1/8", "1/4", "3/8", "1/2", "3/4", "1", "1 1/4", "1 1/2", "2", "2 1/2", "3", "4"]
+    },
+    {
+      "endConfiguration": "SOCKET_WELD_BOTH_ENDS",
+      "classDesignation": 6000,
+      "nps": ["1/8", "1/4", "3/8", "1/2", "3/4", "1", "1 1/4", "1 1/2", "2"]
+    },
+    {
+      "endConfiguration": "SOCKET_WELD_BOTH_ENDS",
+      "classDesignation": 9000,
+      "nps": ["1/2", "3/4", "1", "1 1/4", "1 1/2", "2"]
+    },
+    {
+      "endConfiguration": "THREADED_BOTH_ENDS",
+      "classDesignation": 2000,
+      "nps": ["1/8", "1/4", "3/8", "1/2", "3/4", "1", "1 1/4", "1 1/2", "2", "2 1/2", "3", "4"]
+    },
+    {
+      "endConfiguration": "THREADED_BOTH_ENDS",
+      "classDesignation": 3000,
+      "nps": ["1/8", "1/4", "3/8", "1/2", "3/4", "1", "1 1/4", "1 1/2", "2", "2 1/2", "3", "4"]
+    },
+    {
+      "endConfiguration": "THREADED_BOTH_ENDS",
+      "classDesignation": 6000,
+      "nps": ["1/8", "1/4", "3/8", "1/2", "3/4", "1", "1 1/4", "1 1/2", "2", "2 1/2", "3", "4"]
+    }
+  ],
+  "dimensions": [
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":3000,"nps":"1/8","socketDepthMinMm":9.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":11.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":8.0}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":3000,"nps":"1/4","socketDepthMinMm":9.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":11.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":8.0}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":3000,"nps":"3/8","socketDepthMinMm":9.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":13.5},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":8.0}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":3000,"nps":"1/2","socketDepthMinMm":9.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":15.5},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":11.0}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":3000,"nps":"3/4","socketDepthMinMm":12.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":19.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":13.0}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":3000,"nps":"1","socketDepthMinMm":12.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":22.5},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":14.0}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":3000,"nps":"1 1/4","socketDepthMinMm":12.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":27.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":17.5}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":3000,"nps":"1 1/2","socketDepthMinMm":12.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":32.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":20.5}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":3000,"nps":"2","socketDepthMinMm":16.0,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":38.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":25.5}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":3000,"nps":"2 1/2","socketDepthMinMm":16.0,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":41.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":28.5}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":3000,"nps":"3","socketDepthMinMm":16.0,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":57.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":32.0}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":3000,"nps":"4","socketDepthMinMm":19.0,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":66.5},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":41.0}},"sourceTable":"Table 6.1-1"},
+
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":6000,"nps":"1/8","socketDepthMinMm":9.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":11.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":8.0}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":6000,"nps":"1/4","socketDepthMinMm":9.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":13.5},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":8.0}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":6000,"nps":"3/8","socketDepthMinMm":9.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":15.5},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":11.0}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":6000,"nps":"1/2","socketDepthMinMm":9.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":19.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":12.5}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":6000,"nps":"3/4","socketDepthMinMm":12.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":22.5},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":14.0}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":6000,"nps":"1","socketDepthMinMm":12.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":27.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":17.5}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":6000,"nps":"1 1/4","socketDepthMinMm":12.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":32.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":20.5}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":6000,"nps":"1 1/2","socketDepthMinMm":12.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":38.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":25.5}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":6000,"nps":"2","socketDepthMinMm":16.0,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":41.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":28.5}},"sourceTable":"Table 6.1-1"},
+
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":9000,"nps":"1/2","socketDepthMinMm":9.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":25.5},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":15.5}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":9000,"nps":"3/4","socketDepthMinMm":12.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":28.5},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":19.0}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":9000,"nps":"1","socketDepthMinMm":12.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":32.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":20.5}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":9000,"nps":"1 1/4","socketDepthMinMm":12.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":35.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":22.5}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":9000,"nps":"1 1/2","socketDepthMinMm":12.5,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":38.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":25.5}},"sourceTable":"Table 6.1-1"},
+    {"endConfiguration":"SOCKET_WELD_BOTH_ENDS","classDesignation":9000,"nps":"2","socketDepthMinMm":16.0,"bendDimensions":{"90":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":54.0},"45":{"dimension":"CENTRE_TO_BOTTOM_OF_SOCKET","symbol":"A","mm":28.5}},"sourceTable":"Table 6.1-1"},
+
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":2000,"nps":"1/8","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":21.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":17.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":2000,"nps":"1/4","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":21.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":17.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":2000,"nps":"3/8","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":25.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":19.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":2000,"nps":"1/2","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":28.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":22.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":2000,"nps":"3/4","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":33.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":25.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":2000,"nps":"1","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":38.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":28.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":2000,"nps":"1 1/4","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":44.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":33.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":2000,"nps":"1 1/2","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":51.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":35.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":2000,"nps":"2","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":60.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":43.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":2000,"nps":"2 1/2","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":76.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":52.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":2000,"nps":"3","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":86.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":64.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":2000,"nps":"4","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":106.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":79.0}},"sourceTable":"Table 6.1-3"},
+
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":3000,"nps":"1/8","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":21.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":17.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":3000,"nps":"1/4","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":25.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":19.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":3000,"nps":"3/8","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":28.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":22.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":3000,"nps":"1/2","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":33.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":25.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":3000,"nps":"3/4","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":38.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":28.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":3000,"nps":"1","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":44.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":33.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":3000,"nps":"1 1/4","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":51.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":35.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":3000,"nps":"1 1/2","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":60.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":43.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":3000,"nps":"2","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":64.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":44.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":3000,"nps":"2 1/2","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":83.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":52.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":3000,"nps":"3","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":95.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":64.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":3000,"nps":"4","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":114.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":79.0}},"sourceTable":"Table 6.1-3"},
+
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":6000,"nps":"1/8","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":25.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":19.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":6000,"nps":"1/4","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":28.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":22.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":6000,"nps":"3/8","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":33.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":25.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":6000,"nps":"1/2","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":38.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":28.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":6000,"nps":"3/4","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":44.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":33.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":6000,"nps":"1","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":51.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":35.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":6000,"nps":"1 1/4","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":60.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":43.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":6000,"nps":"1 1/2","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":64.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":44.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":6000,"nps":"2","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":83.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":52.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":6000,"nps":"2 1/2","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":95.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":64.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":6000,"nps":"3","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":106.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":79.0}},"sourceTable":"Table 6.1-3"},
+    {"endConfiguration":"THREADED_BOTH_ENDS","classDesignation":6000,"nps":"4","bendDimensions":{"90":{"dimension":"CENTRE_TO_END","symbol":"A","mm":114.0},"45":{"dimension":"CENTRE_TO_END","symbol":"C","mm":79.0}},"sourceTable":"Table 6.1-3"}
+  ]
+}

@@ -196,4 +196,25 @@ final class PcfParserTest extends TestCase
         $this->assertSame(1500.0, $taps[0]->location?->x);
         $this->assertCount(2, $host->connectingKeypoints(), 'TAP-CONNECTION is not an extra header end.');
     }
+
+    public function test_orientation_cues_are_preserved_as_raw_component_specific_attributes(): void
+    {
+        $file = $this->parse(
+            "UNITS-BORE INCH\nUNITS-CO-ORDS MM\nPIPELINE-REFERENCE L-1\n"
+            ."ELBOW\n    END-POINT 0 0 0 6 BW\n    END-POINT 100 100 0 6 BW\n    ANGLE 4500\n"
+            ."VALVE\n    END-POINT 100 100 0 6 BW\n    END-POINT 200 100 0 6 BW\n    SPINDLE-DIRECTION UP\n"
+            ."ERED\n    END-POINT 200 100 0 6 BW\n    END-POINT 250 100 0 4 BW\n"
+            ."    FLAT-DIRECTION WEST\n    DIRECTION UP 45 DEG NORTH\n"
+        );
+
+        [$elbow, $valve, $reducer] = $file->materialComponents();
+
+        // PCF ANGLE remains a raw, component-specific bend/fitting value; it
+        // is not silently turned into a generic component-pose rotation.
+        $this->assertSame('4500', $elbow->attribute('ANGLE'));
+        $this->assertCount(2, $elbow->connectingKeypoints());
+        $this->assertSame('UP', $valve->attribute('SPINDLE-DIRECTION'));
+        $this->assertSame('WEST', $reducer->attribute('FLAT-DIRECTION'));
+        $this->assertSame('UP 45 DEG NORTH', $reducer->attribute('DIRECTION'));
+    }
 }

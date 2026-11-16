@@ -9,6 +9,7 @@ use App\Support\ProjectState;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Project extends Model
 {
@@ -26,6 +27,12 @@ final class Project extends Model
     public function archivedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'archived_by');
+    }
+
+    /** Immutable project coordinate-frame definitions, ordered by revision. */
+    public function modelFrameRevisions(): HasMany
+    {
+        return $this->hasMany(ProjectModelFrameRevision::class)->orderBy('revision');
     }
 
     /**

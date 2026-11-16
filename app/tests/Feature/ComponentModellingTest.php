@@ -4,24 +4,40 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Company;
 use App\Models\Component;
+use App\Models\ComponentPoseRevision;
+use App\Models\Joint;
+use App\Models\JointGeometryDiagnosticRevision;
 use App\Models\PipingClass;
 use App\Models\PipingLine;
 use App\Models\Port;
 use App\Models\Project;
+use App\Models\ProjectModelFrameRevision;
+use App\Models\Role;
 use App\Models\Subsystem;
 use App\Models\User;
+use App\Services\ComponentPoseService;
 use App\Services\ComponentService;
+use App\Services\JointPortGeometryDiagnosticService;
+use App\Services\JointService;
+use App\Services\PipeScheduleExceptionRequestService;
+use App\Services\PipeScheduleReportService;
 use App\Services\PipingLineService;
 use App\Services\ProjectArchiveService;
+use App\Services\ProjectModelFrameService;
 use App\Support\LineReleaseState;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Tests\TestCase;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\Support\ApprovedPmsClassFixture;
+use Tests\TestCase;
 
 /**
  * ADR-006 phase 2 - components and ports.
@@ -93,6 +109,32 @@ final class ComponentModellingTest extends TestCase
         });
     }
 
+    private function pipe(PipingLine $line, ?float $lengthMm = 3000.0): Component
+    {
+        $attributes = $lengthMm === null ? [] : ['length_mm' => $lengthMm];
+
+        return $this->asOwner(fn () => $this->svc()->place(
+            $line,
+            $this->owner(),
+            'PIPE',
+            $attributes,
+        ));
+    }
+
+    private function modelFrame(?Project $project = null, ?User $actor = null, string $origin = 'PH-14 survey origin'): ProjectModelFrameRevision
+    {
+        return app(ProjectModelFrameService::class)->define(
+            $project ?? $this->project(),
+            $actor ?? $this->owner(),
+            $origin,
+        );
+    }
+
+    private function poseService(): ComponentPoseService
+    {
+        return app(ComponentPoseService::class);
+    }
+
     // ------------------------------------------- ports come from templates --
 
     public function test_a_pipe_gets_two_ports_without_being_asked(): void
@@ -124,6 +166,36 @@ final class ComponentModellingTest extends TestCase
         $cap = $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'CAP'));
 
         $this->assertCount(1, $cap->ports);
+    }
+
+    public function test_bw_elbow_requires_and_persists_a_supported_b16_9_qualifier(): void
+    {
+        $line = $this->line('6');
+
+        try {
+            $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'ELBOW'));
+            $this->fail('A BW elbow must not default its angle or radius.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('fitting_qualifier', $exception->errors());
+        }
+
+        foreach (['90SR', '45', '180LR'] as $unsupported) {
+            try {
+                $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'ELBOW', [
+                    'fitting_qualifier' => $unsupported,
+                ]));
+                $this->fail("Unsupported elbow qualifier $unsupported must be refused.");
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey('fitting_qualifier', $exception->errors());
+            }
+        }
+
+        $elbow = $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'ELBOW', [
+            'fitting_qualifier' => '45LR',
+        ]));
+
+        $this->assertSame('45LR', $elbow->fitting_qualifier);
+        $this->assertSame('#1 ELBOW 45LR 6"', $elbow->label());
     }
 
     public function test_the_service_exposes_no_way_to_set_a_port_count(): void
@@ -297,7 +369,11 @@ final class ComponentModellingTest extends TestCase
             $port = $tee->ports->firstWhere('seq', 1);
 
             $this->svc()->attach($port, $this->owner(), 'PIPE');
-            $this->svc()->attach($port->fresh(), $this->owner(), 'ELBOW');
+            // This second request must fail on the already-connected parent
+            // port, not because the candidate BW elbow lacks its qualifier.
+            $this->svc()->attach($port->fresh(), $this->owner(), 'ELBOW', [
+                'fitting_qualifier' => '90LR',
+            ]);
         });
     }
 
@@ -350,7 +426,7 @@ final class ComponentModellingTest extends TestCase
 
         [$first, $second, $other] = $this->asOwner(fn () => [
             $this->svc()->place($a, $this->owner(), 'PIPE'),
-            $this->svc()->place($a, $this->owner(), 'ELBOW'),
+            $this->svc()->place($a, $this->owner(), 'ELBOW', ['fitting_qualifier' => '90LR']),
             $this->svc()->place($b, $this->owner(), 'PIPE'),
         ]);
 
@@ -465,15 +541,15 @@ final class ComponentModellingTest extends TestCase
 
         $component = $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'PIPE'));
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
 
         $this->asOwner(fn () => DB::table('ports')->insert([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'project_id' => $component->project_id,
             'company_id' => $component->company_id,
             'owner_kind' => 'COMPONENT',
             'component_id' => $component->id,
-            'nozzle_id' => (string) \Illuminate\Support\Str::uuid(),
+            'nozzle_id' => (string) Str::uuid(),
             'seq' => 9,
             'role' => 'RUN',
             'created_at' => now(),
@@ -486,10 +562,10 @@ final class ComponentModellingTest extends TestCase
         $line = $this->line('6');
         $component = $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'PIPE'));
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
 
         $this->asOwner(fn () => DB::table('ports')->insert([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'project_id' => $component->project_id,
             'company_id' => $component->company_id,
             'owner_kind' => 'COMPONENT',
@@ -507,10 +583,10 @@ final class ComponentModellingTest extends TestCase
         $line = $this->line('6');
         $component = $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'PIPE'));
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
 
         $this->asOwner(fn () => DB::table('ports')->insert([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'project_id' => $component->project_id,
             'company_id' => $component->company_id,
             'owner_kind' => 'COMPONENT',
@@ -529,7 +605,7 @@ final class ComponentModellingTest extends TestCase
         $line = $this->line('6');
         $component = $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'PIPE'));
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
 
         $this->asOwner(fn () => DB::table('components')
             ->where('id', $component->id)
@@ -541,10 +617,10 @@ final class ComponentModellingTest extends TestCase
         $line = $this->line('6');
         $component = $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'PIPE'));
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
 
         $this->asOwner(fn () => DB::table('components')->insert([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'project_id' => $component->project_id,
             'company_id' => $component->company_id,
             'piping_line_id' => $component->piping_line_id,
@@ -555,7 +631,151 @@ final class ComponentModellingTest extends TestCase
         ]));
     }
 
+    public function test_the_database_rejects_an_unsupported_elbow_qualifier(): void
+    {
+        $line = $this->line('6');
+        $elbow = $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'ELBOW', [
+            'fitting_qualifier' => '90LR',
+        ]));
+
+        try {
+            $this->asOwner(fn () => DB::table('components')->where('id', $elbow->id)
+                ->update(['fitting_qualifier' => '90SR']));
+            $this->fail('The database must not admit an unsupported elbow qualifier.');
+        } catch (QueryException $exception) {
+            $this->assertStringContainsString('components_fitting_qualifier_scope_valid', $exception->getMessage());
+        }
+    }
+
     // ------------------------------------------------------------- HTTP --
+
+    public function test_bw_elbow_qualifier_flows_through_http_and_the_model_page(): void
+    {
+        $line = $this->line('6');
+        $url = "/projects/PH-14/piping/{$line->id}/model?lang=en";
+
+        $this->actingAs($this->owner())
+            ->post($url, ['template_code' => 'ELBOW', 'nominal_size' => '6'])
+            ->assertRedirect()
+            ->assertSessionHasErrors('fitting_qualifier');
+
+        $this->actingAs($this->owner())
+            ->post($url, [
+                'template_code' => 'ELBOW',
+                'fitting_qualifier' => '90LR',
+                'nominal_size' => '6',
+            ])
+            ->assertRedirect();
+
+        $elbow = $this->asOwner(fn () => Component::query()
+            ->where('piping_line_id', $line->id)
+            ->where('template_code', 'ELBOW')
+            ->firstOrFail());
+        $this->assertSame('90LR', $elbow->fitting_qualifier);
+
+        $this->actingAs($this->owner())->get($url)
+            ->assertOk()
+            ->assertSee('90LR')
+            ->assertSee('Variant / bend angle')
+            ->assertSee('name="fitting_standard"', false)
+            ->assertSee('name="fitting_qualifier"', false)
+            ->assertSee('name="fitting_class_designation"', false)
+            ->assertSee('name="fitting_end_type"', false)
+            ->assertSee('B16.9: 90LR or 45LR only.')
+            ->assertSee('B16.11 does not name LR/SR elbows');
+    }
+
+    public function test_b16_11_elbow_specification_flows_through_http_without_pms_or_default_inference(): void
+    {
+        $line = $this->line('6');
+        $url = "/projects/PH-14/piping/{$line->id}/model?lang=en";
+
+        $this->actingAs($this->owner())
+            ->post($url, [
+                'template_code' => 'ELBOW',
+                'nominal_size' => '1/2',
+                'fitting_standard' => 'B16.11',
+                'fitting_qualifier' => '90',
+                'fitting_end_type' => 'SW',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasErrors('fitting_class_designation');
+
+        $this->actingAs($this->owner())
+            ->post($url, [
+                'template_code' => 'ELBOW',
+                'nominal_size' => '1/2',
+                'fitting_standard' => 'B16.11',
+                'fitting_qualifier' => '90',
+                'fitting_class_designation' => '3000',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasErrors('fitting_end_type');
+
+        $this->actingAs($this->owner())
+            ->post($url, [
+                'template_code' => 'ELBOW',
+                'nominal_size' => '1/2',
+                'fitting_qualifier' => '90',
+                'fitting_class_designation' => '3000',
+                'fitting_end_type' => 'SW',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasErrors('fitting_standard');
+
+        $this->actingAs($this->owner())
+            ->post($url, [
+                'template_code' => 'ELBOW',
+                'nominal_size' => '1/2',
+                'fitting_standard' => 'B16.11',
+                'fitting_qualifier' => '90',
+                'fitting_class_designation' => '3000',
+                'fitting_end_type' => 'SW',
+            ])
+            ->assertRedirect();
+
+        $elbow = $this->asOwner(fn () => Component::query()
+            ->with('ports')
+            ->where('piping_line_id', $line->id)
+            ->where('template_code', 'ELBOW')
+            ->firstOrFail());
+        $this->assertSame('B16.11', $elbow->fitting_standard);
+        $this->assertSame(3000, $elbow->fitting_class_designation);
+        $this->assertSame(['SW', 'SW'], $elbow->ports->pluck('end_type')->all());
+
+        // Exercise the separate attach form/controller mapping too. A plain
+        // pipe end is a valid field-weld mate for the new socket port; this
+        // verifies the explicit fitting_end_type reaches both child ports.
+        $plainPipe = $this->asOwner(fn () => $this->svc()->place(
+            $line,
+            $this->owner(),
+            'PIPE',
+            ['nominal_size' => '1/2', 'end_type' => 'PL'],
+        ));
+        $attachUrl = "/projects/PH-14/piping/{$line->id}/model/attach?lang=en";
+        $this->actingAs($this->owner())
+            ->post($attachUrl, [
+                'port_id' => $plainPipe->ports->first()->id,
+                'template_code' => 'ELBOW',
+                'fitting_standard' => 'B16.11',
+                'fitting_qualifier' => '45',
+                'fitting_class_designation' => '3000',
+                'fitting_end_type' => 'SW',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $attachedElbow = $this->asOwner(fn () => Component::query()
+            ->with('ports')
+            ->where('piping_line_id', $line->id)
+            ->where('template_code', 'ELBOW')
+            ->where('sequence', '>', $elbow->sequence)
+            ->firstOrFail());
+        $this->assertSame('B16.11', $attachedElbow->fitting_standard);
+        $this->assertSame('45', $attachedElbow->fitting_qualifier);
+        $this->assertSame(3000, $attachedElbow->fitting_class_designation);
+        $this->assertSame(['SW', 'SW'], $attachedElbow->ports->pluck('end_type')->all());
+    }
 
     public function test_the_model_page_renders_components_and_open_ends(): void
     {
@@ -576,7 +796,7 @@ final class ComponentModellingTest extends TestCase
         $this->assertStringContainsString('PH-14-PIP-PMS-A1', $html);
         $this->assertStringContainsString('Schedule', $html);
         // Assert the PIPE schedule and status, not the obsolete exact HTML cell.
-        $document = new \DOMDocument();
+        $document = new \DOMDocument;
         @$document->loadHTML('<?xml encoding="UTF-8">'.$html);
         $cells = (new \DOMXPath($document))->query('//tr[td[2]//div[normalize-space(.)="PIPE"]]/td[4]');
         $this->assertCount(1, $cells);
@@ -608,7 +828,7 @@ final class ComponentModellingTest extends TestCase
         $line = $this->line('6');
         $pipe = $this->asOwner(fn () => $this->svc()->place($line, $this->owner(), 'PIPE', ['schedule' => '40']));
         $actor = $this->owner();
-        $id = (string) \Illuminate\Support\Str::uuid();
+        $id = (string) Str::uuid();
         $request = [
             'id' => $id, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
             'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
@@ -620,18 +840,18 @@ final class ComponentModellingTest extends TestCase
             $this->asOwner(fn () => DB::transaction(fn () => DB::table('pipe_schedule_exception_requests')
                 ->where('id', $id)->update(['reason' => 'Changed after submission'])));
             $this->fail('Audit reason must be immutable.');
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             $this->assertSame('23514', $e->getCode());
         }
         try {
             $this->asOwner(fn () => DB::transaction(fn () => DB::table('pipe_schedule_exception_decisions')->insert([
-                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'id' => (string) Str::uuid(),
                 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
                 'request_id' => $id, 'decision' => 'APPROVED', 'note' => 'Looks acceptable',
                 'decided_by' => $actor->id,
             ])));
             $this->fail('The requester must not approve their own exception.');
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             $this->assertSame('23514', $e->getCode());
         }
         $this->assertSame(0, $this->asOwner(fn () => DB::table('pipe_schedule_exception_decisions')->count()));
@@ -642,15 +862,15 @@ final class ComponentModellingTest extends TestCase
         $line = $this->line('6');
         $actor = $this->owner();
         $pipe = $this->asOwner(fn () => $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']));
-        $requestId = (string) \Illuminate\Support\Str::uuid();
+        $requestId = (string) Str::uuid();
         $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
             'id' => $requestId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
             'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
             'expected_schedule' => '80', 'actual_schedule' => '40',
             'reason' => 'Reviewed outside the application by contractor', 'requested_by' => $actor->id,
         ]));
-        $signerCompany = \App\Models\Company::where('code', 'EPC-PARS')->firstOrFail();
-        $signatureId = (string) \Illuminate\Support\Str::uuid();
+        $signerCompany = Company::where('code', 'EPC-PARS')->firstOrFail();
+        $signatureId = (string) Str::uuid();
         $this->asOwner(fn () => DB::table('pipe_schedule_external_signatures')->insert([
             'id' => $signatureId, 'request_id' => $requestId,
             'project_id' => $line->project_id, 'company_id' => $actor->company_id,
@@ -661,7 +881,7 @@ final class ComponentModellingTest extends TestCase
         ]));
         $this->assertSame($signerCompany->id, $this->asOwner(fn () => DB::table('pipe_schedule_external_signatures')
             ->where('id', $signatureId)->value('signer_company_id')));
-        $metadataOnlyId = (string) \Illuminate\Support\Str::uuid();
+        $metadataOnlyId = (string) Str::uuid();
         $this->asOwner(fn () => DB::table('pipe_schedule_external_signatures')->insert([
             'id' => $metadataOnlyId, 'request_id' => $requestId,
             'project_id' => $line->project_id, 'company_id' => $actor->company_id,
@@ -673,13 +893,13 @@ final class ComponentModellingTest extends TestCase
             ->where('id', $metadataOnlyId)->value('file_sha256')));
         try {
             $this->asOwner(fn () => DB::transaction(fn () => DB::table('pipe_schedule_signature_verifications')->insert([
-                'id' => (string) \Illuminate\Support\Str::uuid(), 'signature_id' => $signatureId,
+                'id' => (string) Str::uuid(), 'signature_id' => $signatureId,
                 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
                 'decision' => 'VERIFIED', 'authority_basis' => 'PH14 contract appointment',
                 'note' => 'Signature checked', 'verified_by' => $actor->id,
             ])));
             $this->fail('The uploader cannot verify their own uploaded signature.');
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             $this->assertSame('23514', $e->getCode());
         }
     }
@@ -689,7 +909,7 @@ final class ComponentModellingTest extends TestCase
         $line = $this->line('6');
         $actor = $this->owner();
         $pipe = $this->asOwner(fn () => $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']));
-        $requestId = (string) \Illuminate\Support\Str::uuid();
+        $requestId = (string) Str::uuid();
         $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
             'id' => $requestId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
             'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
@@ -699,11 +919,11 @@ final class ComponentModellingTest extends TestCase
         $base = ['request_id' => $requestId, 'project_id' => $line->project_id,
             'company_id' => $actor->company_id, 'recorded_by' => $actor->id];
         $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->insert($base + [
-            'id' => (string) \Illuminate\Support\Str::uuid(), 'kind' => 'TQ',
+            'id' => (string) Str::uuid(), 'kind' => 'TQ',
             'origin' => 'IN_SYSTEM', 'state' => 'DRAFT',
         ]));
         $this->asOwner(fn () => DB::table('pipe_schedule_discrepancy_reports')->insert($base + [
-            'id' => (string) \Illuminate\Support\Str::uuid(), 'kind' => 'NCR',
+            'id' => (string) Str::uuid(), 'kind' => 'NCR',
             'origin' => 'EXTERNAL_REGISTER', 'state' => 'EXTERNAL_RECORDED',
             'report_number' => 'EXT-NCR-42', 'reported_issuer' => 'Project contractor',
             'reported_signer' => 'External engineer', 'reported_signer_capacity' => 'NCR signatory',
@@ -720,9 +940,9 @@ final class ComponentModellingTest extends TestCase
         ] as $invalid) {
             try {
                 $this->asOwner(fn () => DB::transaction(fn () => DB::table('pipe_schedule_discrepancy_reports')
-                    ->insert($base + ['id' => (string) \Illuminate\Support\Str::uuid()] + $invalid)));
+                    ->insert($base + ['id' => (string) Str::uuid()] + $invalid)));
                 $this->fail('Incomplete external metadata or forged internal issue must be refused.');
-            } catch (\Illuminate\Database\QueryException $e) {
+            } catch (QueryException $e) {
                 $this->assertSame('23514', $e->getCode());
             }
         }
@@ -733,7 +953,7 @@ final class ComponentModellingTest extends TestCase
         $line = $this->line('6');
         $actor = $this->owner();
         $pipe = $this->asOwner(fn () => $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']));
-        $requestId = (string) \Illuminate\Support\Str::uuid();
+        $requestId = (string) Str::uuid();
         $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
             'id' => $requestId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
             'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
@@ -741,7 +961,7 @@ final class ComponentModellingTest extends TestCase
             'nps_at_request' => '6', 'dn_at_request' => 150,
             'reason' => 'Reference conflict needs independent resolution', 'requested_by' => $actor->id,
         ]));
-        $service = app(\App\Services\PipeScheduleReportService::class);
+        $service = app(PipeScheduleReportService::class);
         $draft = $service->draft($this->project(), $actor, $requestId, 'TQ');
         $this->assertSame('DRAFT', $draft->state);
         $this->assertNull($draft->report_number);
@@ -766,7 +986,7 @@ final class ComponentModellingTest extends TestCase
                 $this->assertArrayHasKey($field, $e->errors());
             }
         }
-        $forgedId = (string) \Illuminate\Support\Str::uuid();
+        $forgedId = (string) Str::uuid();
         $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
             'id' => $forgedId, 'project_id' => $line->project_id, 'company_id' => $actor->company_id,
             'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
@@ -812,23 +1032,23 @@ final class ComponentModellingTest extends TestCase
 
     public function test_report_capture_needs_its_own_capability_and_piping_scope(): void
     {
-        $service = app(\App\Services\PipeScheduleReportService::class);
+        $service = app(PipeScheduleReportService::class);
         $project = $this->project();
-        $requestId = (string) \Illuminate\Support\Str::uuid();
+        $requestId = (string) Str::uuid();
         $civilEngineer = $this->userByEmail('mousavi@sahand.example');
         try {
             $service->draft($project, $civilEngineer, $requestId, 'TQ');
             $this->fail('A CIVIL-only project member cannot capture PIPING reports.');
-        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        } catch (HttpException $e) {
             $this->assertSame(403, $e->getStatusCode());
         }
 
-        $role = \App\Models\Role::where('code', 'employer_rep')->firstOrFail();
+        $role = Role::where('code', 'employer_rep')->firstOrFail();
         $role->update(['capabilities' => ['project.view']]);
         try {
             $service->draft($project, $this->owner(), $requestId, 'TQ');
             $this->fail('Project viewing alone must not grant report capture.');
-        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        } catch (HttpException $e) {
             $this->assertSame(403, $e->getStatusCode());
         }
     }
@@ -841,7 +1061,7 @@ final class ComponentModellingTest extends TestCase
             $this->svc()->place($line, $actor, 'PIPE'),
             $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']),
         ]);
-        $requests = app(\App\Services\PipeScheduleExceptionRequestService::class);
+        $requests = app(PipeScheduleExceptionRequestService::class);
         try {
             $requests->submit($this->project(), $actor, $matching->id, 'Schedule differs from contract PMS');
             $this->fail('A pipe matching the issued PMS cannot request a difference.');
@@ -879,7 +1099,7 @@ final class ComponentModellingTest extends TestCase
         $this->actingAs($actor)->get("/projects/PH-14/piping/{$line->id}/model?lang=en")
             ->assertOk()->assertSee('Previous value; not applicable to current schedule');
         try {
-            app(\App\Services\PipeScheduleReportService::class)
+            app(PipeScheduleReportService::class)
                 ->draft($this->project(), $actor, $record->id, 'TQ');
             $this->fail('The old DN150 request cannot seed a DN200 internal draft.');
         } catch (ValidationException $e) {
@@ -893,7 +1113,7 @@ final class ComponentModellingTest extends TestCase
         $actor = $this->owner();
         $pipe = $this->asOwner(fn () => $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']));
         $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->insert([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'id' => (string) Str::uuid(),
             'project_id' => $line->project_id, 'company_id' => $actor->company_id,
             'component_id' => $pipe->id, 'pms_class_snapshot_id' => $line->pms_class_snapshot_id,
             'expected_schedule' => '60', 'actual_schedule' => '40',
@@ -906,7 +1126,7 @@ final class ComponentModellingTest extends TestCase
             ->assertSee('Request PMS value does not match the current issued basis')
             ->assertSee('Request discrepancy review')
             ->assertDontSee('/draft?lang=en', false);
-        $valid = app(\App\Services\PipeScheduleExceptionRequestService::class)
+        $valid = app(PipeScheduleExceptionRequestService::class)
             ->submit($this->project(), $actor, $pipe->id, 'Review against the real issued PMS schedule');
         $this->assertSame('80', $valid->expected_schedule);
         $this->assertSame(2, $this->asOwner(fn () => DB::table('pipe_schedule_exception_requests')->count()));
@@ -920,7 +1140,7 @@ final class ComponentModellingTest extends TestCase
             $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '40']),
             $this->svc()->place($line, $actor, 'PIPE', ['schedule' => '160']),
         ]);
-        $requests = app(\App\Services\PipeScheduleExceptionRequestService::class);
+        $requests = app(PipeScheduleExceptionRequestService::class);
         try {
             $requests->submit($this->project(), $actor, $thin->id,
                 'Plan an internal transition for this pipe', 'INTERNAL_TAPER_PROPOSED');
@@ -981,7 +1201,7 @@ final class ComponentModellingTest extends TestCase
             'reported_issued_at' => '2026-10-14', 'reported_signed_at' => '2026-10-14',
             'external_register_ref' => 'Contractor NCR register / 42',
         ])->assertRedirect($url.'?lang=en')->assertSessionHasErrors('report_number');
-        $this->actingAs($this->owner())->post("/projects/PH-14/piping/".\Illuminate\Support\Str::uuid()."/model/reports/{$request->id}/draft?lang=en", [
+        $this->actingAs($this->owner())->post('/projects/PH-14/piping/'.Str::uuid()."/model/reports/{$request->id}/draft?lang=en", [
             'kind' => 'TQ',
         ])->assertNotFound();
         $this->actingAs($this->owner())->get($url.'?lang=en')->assertOk()
@@ -1001,7 +1221,7 @@ final class ComponentModellingTest extends TestCase
         $this->actingAs($this->owner())->post($url."/{$pipe->id}/request-review?lang=en", [
             'reason' => 'Duplicate report for same discrepancy',
         ])->assertRedirect($url.'?lang=en')->assertSessionHasErrors('component_id');
-        $this->actingAs($this->owner())->post($url.'/'.\Illuminate\Support\Str::uuid().'/request-review?lang=en', [
+        $this->actingAs($this->owner())->post($url.'/'.Str::uuid().'/request-review?lang=en', [
             'reason' => 'Attempt to use an unrelated component identifier',
         ])->assertNotFound();
         $this->asOwner(fn () => DB::table('components')->where('id', $pipe->id)->update(['schedule' => '60']));
@@ -1085,6 +1305,7 @@ final class ComponentModellingTest extends TestCase
             ->post("/projects/PH-14/piping/{$line->id}/model/attach?lang=en", [
                 'port_id' => $port->id,
                 'template_code' => 'ELBOW',
+                'fitting_qualifier' => '90LR',
             ])
             ->assertRedirect();
 
@@ -1128,5 +1349,928 @@ final class ComponentModellingTest extends TestCase
         $this->actingAs($this->userByEmail('hosseini@arvand.example'))
             ->get("/projects/PH-14/piping/{$line->id}/model?lang=en")
             ->assertNotFound();
+    }
+
+    public function test_manual_pose_saves_only_in_draft_and_appends_a_second_revision(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $pipe = $this->pipe($line);
+        $frame = $this->modelFrame();
+        $service = $this->poseService();
+
+        $first = $service->recordManual($project, $line, $pipe, $frame, $owner, 0.0, 0.0, 0.0, [1000, 2000, 300]);
+        $second = $service->recordManual($project, $line, $pipe, $frame, $owner, 90.0, 0.0, 30.0, [1000, 2000, 300]);
+
+        $this->assertSame(1, $first->revision);
+        $this->assertSame(2, $second->revision);
+        $this->assertSame(2, $this->asOwner(fn () => ComponentPoseRevision::query()
+            ->where('component_id', $pipe->id)->count()));
+
+        $current = $service->currentGeometry($project, $owner, $pipe);
+        $this->assertSame('RESOLVED', $current['status']);
+        $this->assertSame(2, $current['pose_revision']);
+        $this->assertEqualsWithDelta(1000.0, $current['ports'][1]['point_model'][0], 0.001);
+        $this->assertEqualsWithDelta(5000.0, $current['ports'][1]['point_model'][1], 0.001);
+        $this->assertEqualsWithDelta(300.0, $current['ports'][1]['point_model'][2], 0.001);
+
+        // A participating contractor can read the same project frame and pose
+        // snapshot; the RLS policy is project-participant scoped, not owner-only.
+        $contractor = $this->userByEmail('rezaei@pars.example');
+        $sharedView = $service->currentGeometry($project, $contractor, $pipe);
+        $this->assertSame(2, $sharedView['pose_revision']);
+    }
+
+    public function test_explicit_length_nipple_pose_resolves_and_length_change_marks_it_stale(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $nipple = $this->asOwner(fn () => $this->svc()->place(
+            $line,
+            $owner,
+            'NIPPLE',
+            ['length_mm' => 180.0],
+        ));
+        $frame = $this->modelFrame();
+        $service = $this->poseService();
+
+        $first = $service->recordManual(
+            $project,
+            $line,
+            $nipple,
+            $frame,
+            $owner,
+            0.0,
+            0.0,
+            45.0,
+            [100, 200, 300],
+        );
+
+        $this->assertSame('STRAIGHT_NIPPLE_TWO_PORTS_V1', $first->geometry_profile_id);
+        $this->assertSame('RESOLVED', $first->geometry_status);
+        $this->assertSame(['RUN', 'RUN'], array_column($first->resolved_port_geometry['ports'], 'role'));
+        $this->assertEquals([100.0, 200.0, 300.0], $first->resolved_port_geometry['ports'][0]['point_model']);
+        $this->assertEquals([280.0, 200.0, 300.0], $first->resolved_port_geometry['ports'][1]['point_model']);
+
+        $this->asOwner(fn () => DB::table('components')
+            ->where('id', $nipple->id)
+            ->update(['length_mm' => 240.0]));
+
+        $stale = $service->currentGeometry($project, $owner, $nipple);
+        $this->assertSame('STALE', $stale['status']);
+        $this->assertSame('GEOMETRY_PROFILE_CHANGED', $stale['reason']);
+        $this->assertSame([], $stale['ports']);
+
+        $second = $service->recordManual(
+            $project,
+            $line,
+            $nipple,
+            $frame,
+            $owner,
+            0.0,
+            0.0,
+            0.0,
+            [100, 200, 300],
+        );
+        $this->assertSame(2, $second->revision);
+        $this->assertEquals([340.0, 200.0, 300.0], $second->resolved_port_geometry['ports'][1]['point_model']);
+
+        $modelUrl = route('piping.model', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]);
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('RESOLVED')
+            ->assertSee('P1 RUN')
+            ->assertSee('NIPPLE length is end-to-end between port centre planes')
+            ->assertSee('name="azimuth_deg"', false);
+    }
+
+    public function test_bw_long_radius_elbow_pose_uses_b16_9_and_qualifier_changes_make_it_stale(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line('6');
+        $elbow = $this->asOwner(fn () => $this->svc()->place(
+            $line,
+            $owner,
+            'ELBOW',
+            ['fitting_qualifier' => '90LR'],
+        ));
+        $this->assertSame('90LR', $elbow->fitting_qualifier);
+        $frame = $this->modelFrame();
+        $poses = $this->poseService();
+
+        $first = $poses->recordManual($project, $line, $elbow, $frame, $owner, 0.0, 0.0, 0.0, [100, 200, 300]);
+        $this->assertSame('ASME_B16_9_BW_LR_ELBOW_TWO_PORTS_V1', $first->geometry_profile_id);
+        $this->assertSame('RESOLVED', $first->geometry_status);
+        $this->assertEqualsWithDelta(229.0, (float) $first->resolved_port_geometry['profile_parameters']['center_to_end_mm'], 1e-9);
+        $this->assertSame('A', $first->resolved_port_geometry['profile_parameters']['dimension_symbol']);
+        $this->assertEquals([329.0, 429.0, 300.0], $first->resolved_port_geometry['ports'][1]['point_model']);
+
+        $this->asOwner(fn () => DB::table('components')->where('id', $elbow->id)
+            ->update(['fitting_qualifier' => '45LR']));
+        $stale = $poses->currentGeometry($project, $owner, $elbow);
+        $this->assertSame('STALE', $stale['status']);
+        $this->assertSame('GEOMETRY_PROFILE_CHANGED', $stale['reason']);
+        $this->assertSame([], $stale['ports']);
+
+        $second = $poses->recordManual($project, $line, $elbow, $frame, $owner, 0.0, 0.0, 90.0, [100, 200, 300]);
+        $this->assertSame(2, $second->revision);
+        $this->assertEqualsWithDelta(95.0, (float) $second->resolved_port_geometry['profile_parameters']['center_to_end_mm'], 1e-9);
+        $this->assertSame('B', $second->resolved_port_geometry['profile_parameters']['dimension_symbol']);
+        $this->assertEqualsWithDelta(100 + 95 * (1 + sqrt(0.5)), $second->resolved_port_geometry['ports'][1]['point_model'][0], 1e-8);
+        $this->assertEqualsWithDelta(200.0, $second->resolved_port_geometry['ports'][1]['point_model'][1], 1e-8);
+        $this->assertEqualsWithDelta(300 + 95 * sqrt(0.5), $second->resolved_port_geometry['ports'][1]['point_model'][2], 1e-8);
+
+        $current = $poses->currentGeometry($project, $owner, $elbow);
+        $this->assertSame('RESOLVED', $current['status']);
+        $this->assertSame(2, $current['pose_revision']);
+
+        $modelUrl = route('piping.model', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]);
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('45LR')
+            ->assertSee('B16.9-2018')
+            ->assertSee('Table 6.1-1');
+    }
+
+    public function test_b16_11_elbow_requires_explicit_standard_angle_class_and_end_type(): void
+    {
+        $line = $this->line('6');
+        $owner = $this->owner();
+
+        foreach ([
+            [
+                'fitting_standard' => 'B16.11',
+                'fitting_qualifier' => '90',
+                'fitting_end_type' => 'SW',
+            ],
+            [
+                'fitting_standard' => 'B16.11',
+                'fitting_qualifier' => '90',
+                'fitting_class_designation' => 3000,
+            ],
+            [
+                'fitting_qualifier' => '90',
+                'fitting_class_designation' => 3000,
+                'fitting_end_type' => 'SW',
+            ],
+        ] as $missingInput) {
+            try {
+                $this->asOwner(fn () => $this->svc()->place($line, $owner, 'ELBOW', $missingInput));
+                $this->fail('B16.11 must not infer its standard, class, or end type.');
+            } catch (ValidationException $exception) {
+                $expectedField = match (true) {
+                    ! isset($missingInput['fitting_standard']) => 'fitting_standard',
+                    ! isset($missingInput['fitting_class_designation']) => 'fitting_class_designation',
+                    ! isset($missingInput['fitting_end_type']) => 'fitting_end_type',
+                    default => 'fitting_qualifier',
+                };
+                $this->assertArrayHasKey($expectedField, $exception->errors());
+            }
+        }
+
+        $elbow = $this->asOwner(fn () => $this->svc()->place($line, $owner, 'ELBOW', [
+            'nominal_size' => '1/2',
+            'fitting_standard' => 'B16.11',
+            'fitting_qualifier' => '90',
+            'fitting_class_designation' => 3000,
+            'fitting_end_type' => 'SW',
+        ]));
+
+        $this->assertSame('B16.11', $elbow->fitting_standard);
+        $this->assertSame(3000, $elbow->fitting_class_designation);
+        $this->assertSame('90', $elbow->fitting_qualifier);
+        $this->assertSame(['SW', 'SW'], $elbow->ports->pluck('end_type')->all());
+        $this->assertSame('#1 ELBOW 90° B16.11 Class 3000 1/2"', $elbow->label());
+    }
+
+    public function test_b16_11_pose_uses_the_explicit_end_configuration_class_and_stales_when_class_changes(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line('6');
+        $elbow = $this->asOwner(fn () => $this->svc()->place($line, $owner, 'ELBOW', [
+            'nominal_size' => '1/2',
+            'fitting_standard' => 'B16.11',
+            'fitting_qualifier' => '90',
+            'fitting_class_designation' => 3000,
+            'fitting_end_type' => 'SW',
+        ]));
+        $frame = $this->modelFrame();
+        $poses = $this->poseService();
+
+        $first = $poses->recordManual($project, $line, $elbow, $frame, $owner, 0.0, 0.0, 0.0, [100, 200, 300]);
+        $this->assertSame('ASME_B16_11_FORGED_ELBOW_TWO_PORTS_V1', $first->geometry_profile_id);
+        $this->assertSame('RESOLVED', $first->geometry_status);
+        $this->assertSame('B16.11', $first->resolved_port_geometry['profile_parameters']['standard_code']);
+        $this->assertSame(3000, $first->resolved_port_geometry['profile_parameters']['class_designation']);
+        $this->assertSame('SW', $first->resolved_port_geometry['profile_parameters']['end_type']);
+        $this->assertSame('A', $first->resolved_port_geometry['profile_parameters']['dimension_symbol']);
+        $this->assertSame('CENTRE_TO_BOTTOM_OF_SOCKET', $first->resolved_port_geometry['profile_parameters']['dimension']);
+        $this->assertEqualsWithDelta(15.5, $first->resolved_port_geometry['profile_parameters']['dimension_mm'], 1e-9);
+        $this->assertEqualsWithDelta(9.5, $first->resolved_port_geometry['profile_parameters']['socket_depth_min_mm'], 1e-9);
+        $this->assertEquals([115.5, 215.5, 300.0], $first->resolved_port_geometry['ports'][1]['point_model']);
+
+        $this->asOwner(fn () => DB::table('components')->where('id', $elbow->id)
+            ->update(['fitting_class_designation' => 6000]));
+        $stale = $poses->currentGeometry($project, $owner, $elbow);
+        $this->assertSame('STALE', $stale['status']);
+        $this->assertSame('GEOMETRY_PROFILE_CHANGED', $stale['reason']);
+        $this->assertSame([], $stale['ports']);
+
+        $second = $poses->recordManual($project, $line, $elbow, $frame, $owner, 0.0, 0.0, 0.0, [100, 200, 300]);
+        $this->assertSame(2, $second->revision);
+        $this->assertSame(6000, $second->resolved_port_geometry['profile_parameters']['class_designation']);
+        $this->assertEqualsWithDelta(19.0, $second->resolved_port_geometry['profile_parameters']['dimension_mm'], 1e-9);
+        $this->assertEquals([119.0, 219.0, 300.0], $second->resolved_port_geometry['ports'][1]['point_model']);
+
+        $modelUrl = route('piping.model', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]);
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('B16.11-2021')
+            ->assertSee('Class 6000')
+            ->assertSee('A (CENTRE_TO_BOTTOM_OF_SOCKET) = 19 mm')
+            ->assertSee('J (minimum socket depth) = 9.5 mm')
+            ->assertSee('SOCKET_BOTTOM');
+    }
+
+    public function test_b16_11_unlisted_class_and_size_pair_stays_unresolved_without_extrapolation(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line('6');
+        $elbow = $this->asOwner(fn () => $this->svc()->place($line, $owner, 'ELBOW', [
+            'nominal_size' => '1/2',
+            'fitting_standard' => 'B16.11',
+            'fitting_qualifier' => '90',
+            'fitting_class_designation' => 2000,
+            'fitting_end_type' => 'SW',
+        ]));
+        $frame = $this->modelFrame();
+
+        $pose = $this->poseService()->recordManual($project, $line, $elbow, $frame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]);
+        $this->assertSame('UNRESOLVED', $pose->geometry_status);
+        $this->assertSame('SIZE_CLASS_NOT_COVERED', $pose->unresolved_reason);
+        $this->assertSame([], $pose->resolved_port_geometry['ports']);
+
+        $current = $this->poseService()->currentGeometry($project, $owner, $elbow);
+        $this->assertSame('UNRESOLVED', $current['status']);
+        $this->assertSame('SIZE_CLASS_NOT_COVERED', $current['reason']);
+    }
+
+    public function test_manual_pose_is_rejected_for_each_non_draft_line_state(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $pipe = $this->pipe($line);
+        $frame = $this->modelFrame();
+        $service = $this->poseService();
+
+        foreach ([LineReleaseState::AFC_CONFIRMED, LineReleaseState::RELEASED] as $state) {
+            $provenance = [
+                'release_state' => $state,
+                'afc_confirmed_at' => now(),
+                'afc_confirmed_by' => $owner->id,
+            ];
+            if ($state === LineReleaseState::RELEASED) {
+                $provenance['released_at'] = now();
+                $provenance['released_by'] = $owner->id;
+            }
+            $this->asOwner(fn () => DB::table('piping_lines')->where('id', $line->id)
+                ->update($provenance));
+
+            $this->assertPoseRejected(fn () => $service->recordManual(
+                $project, $line, $pipe, $frame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]
+            ), 'release_state');
+        }
+
+        $this->assertSame(0, $this->asOwner(fn () => ComponentPoseRevision::query()
+            ->where('component_id', $pipe->id)->count()));
+    }
+
+    public function test_manual_pose_write_is_refused_for_an_archived_project(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $pipe = $this->pipe($line);
+        $frame = $this->modelFrame();
+
+        app(ProjectArchiveService::class)->archive($project, $owner, 'Pose freeze integration test');
+
+        $this->assertPoseRejected(fn () => $this->poseService()->recordManual(
+            $project, $line, $pipe, $frame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]
+        ), 'project');
+        $this->assertSame(0, $this->asOwner(fn () => ComponentPoseRevision::query()
+            ->where('component_id', $pipe->id)->count()));
+    }
+
+    public function test_manual_pose_rejects_project_component_and_frame_mismatches_and_non_members(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $lineA = $this->line('6');
+        $lineB = $this->line('4');
+        $pipeA = $this->pipe($lineA);
+        $pipeB = $this->pipe($lineB);
+        $frameA = $this->modelFrame($project, $owner, 'PH-14 survey origin');
+
+        $otherProject = Project::query()->where('code', 'BB-2')->firstOrFail();
+        $otherActor = $this->userByEmail('ahmadi@nigc.example');
+        $frameB = $this->modelFrame($otherProject, $otherActor, 'BB-2 survey origin');
+        $service = $this->poseService();
+
+        $this->assertPoseRejected(fn () => $service->recordManual(
+            $otherProject, $lineA, $pipeA, $frameB, $otherActor, 0.0, 0.0, 0.0, [0, 0, 0]
+        ));
+        $this->assertPoseRejected(fn () => $service->recordManual(
+            $project, $lineA, $pipeB, $frameA, $owner, 0.0, 0.0, 0.0, [0, 0, 0]
+        ));
+        $this->assertPoseRejected(fn () => $service->recordManual(
+            $project, $lineA, $pipeA, $frameB, $owner, 0.0, 0.0, 0.0, [0, 0, 0]
+        ));
+
+        try {
+            app(ProjectModelFrameService::class)->define(
+                $project,
+                $otherActor,
+                'Should not be recorded for a non-member',
+            );
+            $this->fail('A user without project membership must not define a project frame.');
+        } catch (NotFoundHttpException) {
+            $this->assertTrue(true);
+        }
+
+        $this->assertSame(0, $this->asOwner(fn () => ComponentPoseRevision::query()
+            ->where('project_id', $project->id)->count()));
+    }
+
+    public function test_missing_pipe_length_is_saved_as_unresolved_without_port_coordinates(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $pipe = $this->pipe($line, null);
+        $frame = $this->modelFrame();
+
+        $pose = $this->poseService()->recordManual(
+            $project, $line, $pipe, $frame, $owner, 25.0, 10.0, -15.0, [1200, 2400, 350]
+        );
+
+        $this->assertSame('UNRESOLVED', $pose->geometry_status);
+        $this->assertSame('MISSING_LENGTH', $pose->unresolved_reason);
+        $this->assertSame([], $pose->resolved_port_geometry['ports']);
+
+        $current = $this->poseService()->currentGeometry($project, $owner, $pipe);
+        $this->assertSame('UNRESOLVED', $current['status']);
+        $this->assertSame('MISSING_LENGTH', $current['reason']);
+        $this->assertSame([], $current['ports']);
+    }
+
+    public function test_geometry_is_reported_stale_until_a_new_draft_pose_refreshes_it(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $pipe = $this->pipe($line, 3000.0);
+        $frame = $this->modelFrame($project, $owner, 'PH-14 survey origin');
+        $service = $this->poseService();
+
+        $first = $service->recordManual($project, $line, $pipe, $frame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]);
+        $this->assertSame(1, $first->revision);
+
+        $this->asOwner(fn () => DB::table('components')->where('id', $pipe->id)->update(['length_mm' => 4200.0]));
+        $staleProfile = $service->currentGeometry($project, $owner, $pipe);
+        $this->assertSame('STALE', $staleProfile['status']);
+        $this->assertSame('GEOMETRY_PROFILE_CHANGED', $staleProfile['reason']);
+        $this->assertSame([], $staleProfile['ports']);
+
+        $second = $service->recordManual($project, $line, $pipe, $frame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]);
+        $this->assertSame(2, $second->revision);
+        $this->assertEqualsWithDelta(
+            4200.0,
+            (float) $service->currentGeometry($project, $owner, $pipe)['ports'][1]['point_model'][0],
+            0.001,
+        );
+
+        $newFrame = $this->modelFrame($project, $owner, 'PH-14 revised survey origin');
+        $staleFrame = $service->currentGeometry($project, $owner, $pipe);
+        $this->assertSame('STALE', $staleFrame['status']);
+        $this->assertSame('FRAME_REVISION_CHANGED', $staleFrame['reason']);
+        $this->assertSame([], $staleFrame['ports']);
+
+        $this->assertPoseRejected(fn () => $service->recordManual(
+            $project, $line, $pipe, $frame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]
+        ), 'model_frame_revision_id');
+
+        $third = $service->recordManual($project, $line, $pipe, $newFrame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]);
+        $this->assertSame(3, $third->revision);
+        $this->assertSame('RESOLVED', $service->currentGeometry($project, $owner, $pipe)['status']);
+
+        $this->asOwner(fn () => DB::table('ports')->where('component_id', $pipe->id)
+            ->where('seq', 2)->update(['role' => 'SMALL']));
+        $stalePortShape = $service->currentGeometry($project, $owner, $pipe);
+        $this->assertSame('STALE', $stalePortShape['status']);
+        $this->assertSame('PROFILE_PORT_SHAPE_CHANGED', $stalePortShape['reason']);
+        $this->assertSame([], $stalePortShape['ports']);
+    }
+
+    public function test_project_frame_cannot_change_while_pose_exists_on_a_non_draft_line(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $pipe = $this->pipe($line);
+        $frame = $this->modelFrame($project, $owner, 'PH-14 survey origin');
+
+        $this->poseService()->recordManual($project, $line, $pipe, $frame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]);
+        $this->asOwner(fn () => DB::table('piping_lines')->where('id', $line->id)->update([
+            'release_state' => LineReleaseState::AFC_CONFIRMED,
+            'afc_confirmed_at' => now(),
+            'afc_confirmed_by' => $owner->id,
+        ]));
+
+        $this->assertPoseRejected(fn () => $this->modelFrame(
+            $project, $owner, 'An origin change after AFC must be refused'
+        ), 'origin_description');
+        $this->assertSame(1, $this->asOwner(fn () => ProjectModelFrameRevision::query()
+            ->where('project_id', $project->id)->count()));
+    }
+
+    public function test_component_removal_preserves_pose_snapshot_history(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $pipe = $this->pipe($line);
+        $frame = $this->modelFrame();
+
+        $this->poseService()->recordManual($project, $line, $pipe, $frame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]);
+        $this->asOwner(fn () => $this->svc()->remove($pipe, $owner));
+
+        $this->assertSame(1, $this->asOwner(fn () => ComponentPoseRevision::query()
+            ->where('component_id', $pipe->id)->count()));
+        $this->assertSame(0, $this->asOwner(fn () => Component::query()->whereKey($pipe->id)->count()));
+    }
+
+    public function test_model_page_records_a_project_frame_and_manual_component_pose(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $pipe = $this->pipe($line, 3000.0);
+        $modelUrl = route('piping.model', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]);
+        $frameUrl = route('piping.model.frame', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]);
+
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('Project model frame')
+            ->assertSee('No project coordinate frame is defined yet')
+            ->assertSee('Orientation & geometry')
+            ->assertDontSee('name="azimuth_deg"', false);
+
+        $this->actingAs($owner)->post($frameUrl, [
+            'origin_description' => 'PH-14 grid intersection A/1',
+        ])->assertRedirect($modelUrl)
+            ->assertSessionHas('status', 'Project model frame revision 1 saved.');
+
+        $frame = $this->asOwner(fn () => ProjectModelFrameRevision::query()
+            ->where('project_id', $project->id)
+            ->firstOrFail());
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('PH-14 grid intersection A/1')
+            ->assertSee('name="azimuth_deg"', false)
+            ->assertSee('name="anchor_easting_mm"', false);
+
+        $this->actingAs($owner)->post(route('piping.model.pose', [
+            'projectCode' => 'PH-14',
+            'lineId' => $line->id,
+            'componentId' => $pipe->id,
+            'lang' => 'en',
+        ]), [
+            'input_mode' => 'AZIMUTH_INCLINATION_ROLL',
+            'component_id' => $pipe->id,
+            'model_frame_revision_id' => $frame->id,
+            'azimuth_deg' => 90,
+            'inclination_deg' => 0,
+            'roll_deg' => 30,
+            'anchor_easting_mm' => 1000,
+            'anchor_northing_mm' => 2000,
+            'anchor_elevation_mm' => 300,
+        ])->assertRedirect($modelUrl)
+            ->assertSessionHas('status', 'Pose revision 1 saved; geometry status: RESOLVED; engineering acceptance remains unassessed.');
+
+        $geometry = $this->poseService()->currentGeometry($project, $owner, $pipe);
+        $this->assertSame('RESOLVED', $geometry['status']);
+        $this->assertEqualsWithDelta(1000.0, $geometry['ports'][1]['point_model'][0], 0.001);
+        $this->assertEqualsWithDelta(5000.0, $geometry['ports'][1]['point_model'][1], 0.001);
+        $this->assertEqualsWithDelta(300.0, $geometry['ports'][1]['point_model'][2], 0.001);
+
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('RESOLVED')
+            ->assertSee('[1000, 5000, 300]')
+            ->assertSee('Frame revision 1');
+
+        $faUrl = route('piping.model', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'fa',
+        ]);
+        $this->actingAs($owner)->get($faUrl)
+            ->assertOk()
+            ->assertSee('فریم مدل پروژه')
+            ->assertSee('ثبت جهت‌گیری دستی');
+    }
+
+    public function test_model_page_records_dimensioned_triangle_pose_with_raw_input_and_method_provenance(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $pipe = $this->pipe($line, 5000.0);
+        $frame = $this->modelFrame();
+        $modelUrl = route('piping.model', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]);
+
+        $this->actingAs($owner)->post(route('piping.model.pose', [
+            'projectCode' => 'PH-14',
+            'lineId' => $line->id,
+            'componentId' => $pipe->id,
+            'lang' => 'en',
+        ]), [
+            'input_mode' => 'DIMENSIONED_TRIANGLE',
+            'component_id' => $pipe->id,
+            'model_frame_revision_id' => $frame->id,
+            'azimuth_deg' => 90,
+            'roll_deg' => 25,
+            'run_mm' => 3000,
+            'rise_mm' => 4000,
+            'measured_hypotenuse_mm' => 5000.25,
+            'anchor_easting_mm' => 1000,
+            'anchor_northing_mm' => 2000,
+            'anchor_elevation_mm' => 300,
+        ])->assertRedirect($modelUrl)
+            ->assertSessionHas('status', 'Pose revision 1 saved; geometry status: RESOLVED; engineering acceptance remains unassessed.');
+
+        $pose = $this->asOwner(fn () => ComponentPoseRevision::query()
+            ->where('component_id', $pipe->id)
+            ->firstOrFail());
+        $this->assertSame('DIMENSIONED_TRIANGLE', $pose->input_geometry['input_mode']);
+        $this->assertSame('AZIMUTH_SIGNED_RUN_RISE_ROLL_V1', $pose->input_geometry['adapter_method']);
+        $this->assertSame('SIGNED_PLANAR_RUN_RISE_ATAN2_V1', $pose->input_geometry['angle_calculation_method']);
+        $this->assertSame('RUN_RISE_HYPOTENUSE_RESIDUAL_V1', $pose->input_geometry['closure_calculation_method']);
+        $this->assertSame('DEG', $pose->input_geometry['angle_unit']);
+        $this->assertSame('MM', $pose->input_geometry['length_unit']);
+        $this->assertEqualsWithDelta(3000.0, $pose->input_geometry['run_mm'], 1e-9);
+        $this->assertEqualsWithDelta(4000.0, $pose->input_geometry['rise_mm'], 1e-9);
+        $this->assertEqualsWithDelta(5000.25, $pose->input_geometry['measured_hypotenuse_mm'], 1e-9);
+        $this->assertEqualsWithDelta(5000.0, $pose->input_geometry['calculated_hypotenuse_mm'], 1e-9);
+        $this->assertEqualsWithDelta(0.25, $pose->input_geometry['closure_residual_mm'], 1e-9);
+        $this->assertEqualsWithDelta(53.13010235415598, $pose->input_inclination_deg, 1e-12);
+
+        $geometry = $this->poseService()->currentGeometry($project, $owner, $pipe);
+        $this->assertSame('RESOLVED', $geometry['status']);
+        $this->assertEqualsWithDelta(1000.0, $geometry['ports'][1]['point_model'][0], 0.001);
+        $this->assertEqualsWithDelta(5000.0, $geometry['ports'][1]['point_model'][1], 0.001);
+        $this->assertEqualsWithDelta(4300.0, $geometry['ports'][1]['point_model'][2], 0.001);
+
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('Raw triangle input and calculation provenance')
+            ->assertSee('AZIMUTH_SIGNED_RUN_RISE_ROLL_V1')
+            ->assertSee('Calculated hypotenuse')
+            ->assertSee('<bdi>0.25</bdi> mm', false)
+            ->assertSee('UNASSESSED — no engineering acceptance tolerance is defined.')
+            ->assertSee('Plane azimuth α');
+    }
+
+    public function test_triangle_pose_requires_explicit_plane_and_roll_and_refuses_negative_run(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $pipe = $this->pipe($line);
+        $frame = $this->modelFrame($project, $owner);
+        $poseUrl = route('piping.model.pose', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'componentId' => $pipe->id, 'lang' => 'en',
+        ]);
+
+        $this->actingAs($owner)->post($poseUrl, [
+            'input_mode' => 'DIMENSIONED_TRIANGLE',
+            'component_id' => $pipe->id,
+            'model_frame_revision_id' => $frame->id,
+            'run_mm' => 3,
+            'rise_mm' => 4,
+            'anchor_easting_mm' => 0,
+            'anchor_northing_mm' => 0,
+            'anchor_elevation_mm' => 0,
+        ])->assertRedirect()
+            ->assertSessionHasErrors(['azimuth_deg', 'roll_deg']);
+
+        $this->actingAs($owner)->post($poseUrl, [
+            'input_mode' => 'DIMENSIONED_TRIANGLE',
+            'component_id' => $pipe->id,
+            'model_frame_revision_id' => $frame->id,
+            'azimuth_deg' => 0,
+            'roll_deg' => 0,
+            'run_mm' => -3,
+            'rise_mm' => 4,
+            'anchor_easting_mm' => 0,
+            'anchor_northing_mm' => 0,
+            'anchor_elevation_mm' => 0,
+        ])->assertRedirect()
+            ->assertSessionHasErrors('run_mm');
+
+        $this->assertSame(0, $this->asOwner(fn () => ComponentPoseRevision::query()
+            ->where('component_id', $pipe->id)->count()));
+    }
+
+    public function test_pose_and_frame_endpoints_require_the_modeling_capability(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $pipe = $this->pipe($line);
+        $frame = $this->modelFrame();
+        $qc = $this->userByEmail('sadeghi@pars.example');
+        $modelUrl = route('piping.model', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]);
+
+        $this->actingAs($qc)->get($modelUrl)
+            ->assertOk()
+            ->assertDontSee('name="origin_description"', false)
+            ->assertDontSee('name="azimuth_deg"', false);
+
+        $this->actingAs($qc)->post(route('piping.model.frame', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]), [
+            'origin_description' => 'Unauthorized frame attempt',
+        ])->assertForbidden();
+
+        $this->actingAs($qc)->post(route('piping.model.pose', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'componentId' => $pipe->id, 'lang' => 'en',
+        ]), [
+            'input_mode' => 'AZIMUTH_INCLINATION_ROLL',
+            'component_id' => $pipe->id,
+            'model_frame_revision_id' => $frame->id,
+            'azimuth_deg' => 0,
+            'inclination_deg' => 0,
+            'roll_deg' => 0,
+            'anchor_easting_mm' => 0,
+            'anchor_northing_mm' => 0,
+            'anchor_elevation_mm' => 0,
+        ])->assertForbidden();
+
+        $this->actingAs($qc)->post(route('piping.model.geometry-snapshots', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]))->assertForbidden();
+
+        $this->assertSame(1, $this->asOwner(fn () => ProjectModelFrameRevision::query()
+            ->where('project_id', $project->id)->count()));
+        $this->assertSame(0, $this->asOwner(fn () => ComponentPoseRevision::query()
+            ->where('component_id', $pipe->id)->count()));
+        $this->assertSame(0, $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('project_id', $project->id)->count()));
+    }
+
+    public function test_joint_diagnostic_snapshot_capture_is_draft_only_even_when_no_joints_exist(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $this->pipe($line);
+        $this->asOwner(fn () => DB::table('piping_lines')->where('id', $line->id)
+            ->update([
+                'release_state' => LineReleaseState::AFC_CONFIRMED,
+                'afc_confirmed_at' => now(),
+                'afc_confirmed_by' => $owner->id,
+            ]));
+
+        $this->actingAs($owner)->post(route('piping.model.geometry-snapshots', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]))->assertRedirect()->assertSessionHasErrors('release_state');
+
+        $this->assertSame(0, $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('project_id', $project->id)->count()));
+    }
+
+    public function test_connected_nipple_joint_reports_raw_unassessed_geometry_and_marks_it_stale(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $first = $this->asOwner(fn () => $this->svc()->place(
+            $line,
+            $owner,
+            'NIPPLE',
+            ['length_mm' => 1000.0],
+        ));
+        $second = $this->asOwner(fn () => $this->svc()->place(
+            $line,
+            $owner,
+            'NIPPLE',
+            ['length_mm' => 1000.0],
+        ));
+        $joint = $this->asOwner(fn () => app(JointService::class)->join(
+            $first->ports->firstWhere('seq', 2),
+            $second->ports->firstWhere('seq', 1),
+            $owner,
+        ));
+        $frame = $this->modelFrame();
+        $poses = $this->poseService();
+        $poses->recordManual($project, $line, $first, $frame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]);
+        $poses->recordManual($project, $line, $second, $frame, $owner, 0.0, 0.0, 0.0, [1100, 0, 0]);
+
+        $joints = $this->asOwner(fn () => Joint::query()
+            ->with(['portA.component', 'portB.component'])
+            ->whereKey($joint->id)
+            ->get());
+        $geometryByComponentId = $poses->currentGeometries($project, $owner, [$first, $second]);
+        $diagnostic = app(JointPortGeometryDiagnosticService::class)
+            ->forJoints($joints, $geometryByComponentId)[$joint->id];
+
+        $this->assertSame('UNASSESSED', $diagnostic['status']);
+        $this->assertSame('NO_ACCEPTANCE_RULE', $diagnostic['reason']);
+        $this->assertEqualsWithDelta(100.0, $diagnostic['gap_mm'], 0.001);
+        $this->assertEqualsWithDelta(0.0, $diagnostic['outward_axis_deviation_deg'], 0.001);
+
+        $modelUrl = route('piping.model', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]);
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('Joint geometry diagnostic')
+            ->assertSee('Raw geometry only; no acceptance rule/tolerance is defined for PASS/FAIL.')
+            ->assertSee('100 mm');
+
+        $this->asOwner(fn () => DB::table('components')->where('id', $second->id)
+            ->update(['length_mm' => 1500.0]));
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('STALE — dependent geometry cannot be evaluated until a new pose is recorded.');
+    }
+
+    public function test_joint_diagnostic_snapshots_are_immutable_idempotent_and_mark_changed_sources_stale(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $first = $this->pipe($line, 1000.0);
+        $second = $this->pipe($line, 1000.0);
+        $joint = $this->asOwner(fn () => app(JointService::class)->join(
+            $first->ports->firstWhere('seq', 2),
+            $second->ports->firstWhere('seq', 1),
+            $owner,
+        ));
+        $frame = $this->modelFrame();
+        $poses = $this->poseService();
+        $poses->recordManual($project, $line, $first, $frame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]);
+        $poses->recordManual($project, $line, $second, $frame, $owner, 0.0, 0.0, 0.0, [1100, 0, 0]);
+
+        $captureUrl = route('piping.model.geometry-snapshots', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]);
+        $modelUrl = route('piping.model', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]);
+
+        $this->actingAs($owner)->post($captureUrl)->assertRedirect();
+        $firstRevision = $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('joint_id', $joint->id)->firstOrFail());
+        $this->assertSame(1, $firstRevision->revision);
+        $this->assertSame('UNASSESSED', $firstRevision->diagnostic_status);
+        $this->assertSame('NO_ACCEPTANCE_RULE', $firstRevision->diagnostic_reason);
+        $this->assertSame('EXPLICIT_TWO_PORT_PORT_GAP_AXIS_DEVIATION_V1', $firstRevision->method_code);
+        $this->assertSame('JOINT_GEOMETRY_INPUT_V1', $firstRevision->source_snapshot['schema']);
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $firstRevision->source_fingerprint);
+        $this->assertNotNull($firstRevision->source_snapshot['endpoint_a']['component']['geometry_source_fingerprint']);
+
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('Current snapshot revision')
+            ->assertSee('Raw geometry only; no acceptance rule/tolerance is defined for PASS/FAIL.')
+            ->assertSee('100 mm');
+
+        // Re-capturing identical inputs reuses the same immutable revision.
+        $this->actingAs($owner)->post($captureUrl)->assertRedirect();
+        $this->assertSame(1, $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('joint_id', $joint->id)->count()));
+
+        $this->asOwner(fn () => DB::table('components')->where('id', $second->id)
+            ->update(['length_mm' => 1500.0]));
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('STALE — inputs changed since capture; capture a new snapshot to record a current result.');
+
+        // A new pose against the changed pipe length restores resolved source
+        // geometry; the next capture is a fresh diagnostic revision, not a
+        // rewrite of the prior snapshot.
+        $poses->recordManual($project, $line, $second, $frame, $owner, 0.0, 0.0, 0.0, [1100, 0, 0]);
+        $this->actingAs($owner)->post($captureUrl)->assertRedirect();
+        $revisions = $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('joint_id', $joint->id)->orderBy('revision')->get());
+        $this->assertCount(2, $revisions);
+        $this->assertSame(2, $revisions->last()->revision);
+        $this->assertSame('UNASSESSED', $revisions->last()->diagnostic_status);
+        $this->assertSame('NO_ACCEPTANCE_RULE', $revisions->last()->diagnostic_reason);
+
+        $changed = $this->asOwner(fn () => DB::table('joint_geometry_diagnostic_revisions')
+            ->where('id', $revisions->last()->id)
+            ->update(['diagnostic_reason' => 'FORGED_VERDICT']));
+        $deleted = $this->asOwner(fn () => DB::table('joint_geometry_diagnostic_revisions')
+            ->where('id', $revisions->last()->id)->delete());
+        $this->assertSame(0, $changed, 'RLS must refuse in-place mutation of a diagnostic revision.');
+        $this->assertSame(0, $deleted, 'RLS must refuse deletion of a diagnostic revision.');
+
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('Current snapshot revision')
+            ->assertSee('100 mm');
+    }
+
+    public function test_diagnostic_history_survives_draft_joint_deletion_and_database_rejects_verdicts(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $line = $this->line();
+        $first = $this->pipe($line, 1000.0);
+        $second = $this->pipe($line, 1000.0);
+        $joint = $this->asOwner(fn () => app(JointService::class)->join(
+            $first->ports->firstWhere('seq', 2),
+            $second->ports->firstWhere('seq', 1),
+            $owner,
+        ));
+        $frame = $this->modelFrame();
+        $poses = $this->poseService();
+        $poses->recordManual($project, $line, $first, $frame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]);
+        $poses->recordManual($project, $line, $second, $frame, $owner, 0.0, 0.0, 0.0, [1100, 0, 0]);
+
+        $this->actingAs($owner)->post(route('piping.model.geometry-snapshots', [
+            'projectCode' => 'PH-14', 'lineId' => $line->id, 'lang' => 'en',
+        ]))->assertRedirect();
+        $snapshot = $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('joint_id', $joint->id)->firstOrFail());
+
+        try {
+            $this->asOwner(fn () => DB::table('joint_geometry_diagnostic_revisions')->insert([
+                'id' => (string) Str::uuid(),
+                'project_id' => $project->id,
+                'company_id' => $owner->company_id,
+                'piping_line_id' => $joint->piping_line_id,
+                'joint_id' => $joint->id,
+                'revision' => 2,
+                'method_code' => $snapshot->method_code,
+                'source_fingerprint' => $snapshot->source_fingerprint,
+                'diagnostic_status' => 'PASS',
+                'diagnostic_reason' => 'FABRICATED_VERDICT',
+                'source_snapshot' => json_encode($snapshot->source_snapshot, JSON_THROW_ON_ERROR),
+                'diagnostic_snapshot' => json_encode([
+                    'status' => 'PASS',
+                    'reason' => 'FABRICATED_VERDICT',
+                ], JSON_THROW_ON_ERROR),
+                'created_by' => $owner->id,
+                'created_at' => now(),
+            ]));
+            $this->fail('The database must refuse PASS/FAIL diagnostic snapshots.');
+        } catch (QueryException $exception) {
+            $this->assertStringContainsString('joint_geom_diag_state_valid', $exception->getMessage());
+        }
+
+        $this->asOwner(fn () => app(ComponentService::class)->remove($second, $owner));
+        $this->assertSame(0, $this->asOwner(fn () => Joint::query()->whereKey($joint->id)->count()));
+
+        $history = $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('joint_id', $joint->id)->orderBy('revision')->get());
+        $this->assertCount(1, $history);
+        $this->assertSame($snapshot->id, $history->first()->id);
+        $this->assertSame($snapshot->source_fingerprint, $history->first()->source_fingerprint);
+        $this->assertSame($snapshot->source_snapshot, $history->first()->source_snapshot);
+        $this->assertSame($snapshot->diagnostic_snapshot, $history->first()->diagnostic_snapshot);
+        $this->assertNull($history->first()->joint);
+    }
+
+    private function assertPoseRejected(callable $write, string $field = 'component_id'): void
+    {
+        try {
+            $write();
+            $this->fail('Expected the manual pose write to be rejected.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey($field, $exception->errors());
+        }
     }
 }

@@ -8,10 +8,11 @@ use App\Services\PdfRenderer;
 use App\Services\StandardsPackRepository;
 use App\Support\Reference\FittingDimensions;
 use App\Support\Reference\FlangeRatingReference;
+use App\Support\Reference\ForgedFittingElbowDimensions;
 use App\Support\Reference\MaterialReference;
 use App\Support\Reference\PipeReference;
-use App\Support\Units\UnitRegistry;
 use App\Support\TenantContext;
+use App\Support\Units\UnitRegistry;
 use Epcc\StandardsEngine\ReleaseGateEvaluator;
 use Illuminate\Support\ServiceProvider;
 
@@ -66,6 +67,17 @@ final class EpccServiceProvider extends ServiceProvider
             ),
         );
 
+        // B16.11 forged-elbow dimensions are kept in a separate pack and
+        // reader: its class/end-configuration keys and A/J semantics must not
+        // be merged with the B16.9 LR centre-to-end lookup.
+        $this->app->singleton(
+            ForgedFittingElbowDimensions::class,
+            fn (): ForgedFittingElbowDimensions => new ForgedFittingElbowDimensions(
+                (string) config('epcc.reference_dir', base_path('../standards-packs/reference')),
+                $this->app->make(PipeReference::class),
+            ),
+        );
+
         // ASME B16.5-2025 flange pressure-temperature ratings (P-24
         // continuation): the FLANGE_TYPE publish gate resolves every flange
         // class against its material group's Table 2 ladder. Code-edition
@@ -94,6 +106,6 @@ final class EpccServiceProvider extends ServiceProvider
 
         // The evaluator is framework-free by design (ADR-003 Annex A §6).
         // Laravel only wires it up; it knows nothing about Laravel.
-        $this->app->singleton(ReleaseGateEvaluator::class, fn (): ReleaseGateEvaluator => new ReleaseGateEvaluator());
+        $this->app->singleton(ReleaseGateEvaluator::class, fn (): ReleaseGateEvaluator => new ReleaseGateEvaluator);
     }
 }
