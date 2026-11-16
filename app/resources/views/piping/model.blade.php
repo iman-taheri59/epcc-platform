@@ -62,6 +62,13 @@
         'unassessedHelp' => ['fa' => 'مقدار خام هندسی است؛ قاعده/تلرانس پذیرش برای PASS/FAIL تعریف نشده است.', 'en' => 'Raw geometry only; no acceptance rule/tolerance is defined for PASS/FAIL.'],
         'checkStale' => ['fa' => 'STALE — هندسهٔ وابسته تا ثبت pose تازه قابل ارزیابی نیست.', 'en' => 'STALE — dependent geometry cannot be evaluated until a new pose is recorded.'],
         'checkUnresolved' => ['fa' => 'UNRESOLVED — دادهٔ هندسی کافی برای این جوینت وجود ندارد.', 'en' => 'UNRESOLVED — insufficient geometry is available for this joint.'],
+        'branchBetaTitle' => ['fa' => 'β مستخرج از pose — فقط تشخیصی؛ β صریح جوینت مرجع می‌ماند', 'en' => 'Pose-derived branch β (diagnostic only; explicit joint β remains authoritative)'],
+        'geometryBeta' => ['fa' => 'β از هندسه', 'en' => 'Geometry β'],
+        'recordedBeta' => ['fa' => 'β ثبت‌شده', 'en' => 'Recorded β'],
+        'betaDelta' => ['fa' => 'Δ خام (هندسه − ثبت‌شده)', 'en' => 'Raw Δ (geometry − recorded)'],
+        'betaDiagnosticHelp' => ['fa' => 'مقدار خام است؛ قاعدهٔ پذیرش یا تلرانس اختلاف تعیین نشده. این تشخیص β صریح را تغییر نمی‌دهد و وارد θ یا PAD نمی‌شود.', 'en' => 'Raw values only; no acceptance rule or mismatch tolerance is defined. This diagnostic does not change explicit β and does not feed θ or PAD.'],
+        'betaDiagnosticUnresolved' => ['fa' => 'UNRESOLVED — pose جاری و محور هر دو PIPE برای محاسبهٔ β در دسترس نیستند.', 'en' => 'UNRESOLVED — current poses and both PIPE axes are required for geometry β.'],
+        'betaDiagnosticStale' => ['fa' => 'STALE — فریم/واحد یا poseها برای مقایسه سازگار نیستند.', 'en' => 'STALE — frames, units, or poses are not compatible for comparison.'],
         'seq'      => ['fa' => 'ردیف', 'en' => 'No.'],
         'type'     => ['fa' => 'نوع', 'en' => 'Type'],
         'size'     => ['fa' => 'سایز', 'en' => 'Size'],
@@ -889,6 +896,28 @@
           @else
             <span style="color:#fcd34d;">{{ $L('checkUnresolved') }}</span>
             <div class="mono" style="color:var(--muted);">{{ $diagnostic['reason'] }}</div>
+          @endif
+          @php $branchBetaGeometry = $diagnostic['branch_beta_geometry'] ?? null; @endphp
+          @if(($diagnostic['snapshot_state'] ?? null) !== 'STALE' && is_array($branchBetaGeometry))
+            <div style="margin-top:5px;padding-top:4px;border-top:1px solid var(--line);">
+              <strong>{{ $L('branchBetaTitle') }}</strong>
+              @if(($branchBetaGeometry['status'] ?? null) === 'UNASSESSED')
+                <div>
+                  {{ $L('geometryBeta') }}: <bdi>{{ $formatMm($branchBetaGeometry['beta_geometry_deg']) }}°</bdi>
+                  · {{ $L('recordedBeta') }}: <bdi>{{ $branchBetaGeometry['beta_recorded_deg'] === null ? '—' : $formatMm($branchBetaGeometry['beta_recorded_deg']).'°' }}</bdi>
+                  @if($branchBetaGeometry['delta_geometry_minus_recorded_deg'] !== null)
+                    · {{ $L('betaDelta') }}: <bdi>{{ $formatMm($branchBetaGeometry['delta_geometry_minus_recorded_deg']) }}°</bdi>
+                  @endif
+                </div>
+                <small style="color:var(--muted);">{{ $L('betaDiagnosticHelp') }}</small>
+              @elseif(($branchBetaGeometry['status'] ?? null) === 'STALE')
+                <div style="color:#fca5a5;">{{ $L('betaDiagnosticStale') }}</div>
+                <div class="mono" style="color:var(--muted);">{{ $branchBetaGeometry['reason'] ?? 'BRANCH_BETA_GEOMETRY_STALE' }}</div>
+              @else
+                <div style="color:#fcd34d;">{{ $L('betaDiagnosticUnresolved') }}</div>
+                <div class="mono" style="color:var(--muted);">{{ $branchBetaGeometry['reason'] ?? 'BRANCH_BETA_GEOMETRY_UNRESOLVED' }}</div>
+              @endif
+            </div>
           @endif
         </td>
       </tr>

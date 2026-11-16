@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Component;
 use App\Models\Joint;
 use App\Models\Port;
+use InvalidArgumentException;
 
 /**
  * Read-only diagnostics for explicit two-port joints (ADR-061).
@@ -18,6 +19,8 @@ use App\Models\Port;
 final class JointPortGeometryDiagnosticService
 {
     public const METHOD = 'EXPLICIT_TWO_PORT_PORT_GAP_AXIS_DEVIATION_V1';
+
+    public const BRANCH_BETA_METHOD = 'POSE_DERIVED_P2P_BRANCH_BETA_V1';
 
     /**
      * Calculate diagnostics for only the joints the caller has already loaded
@@ -54,12 +57,18 @@ final class JointPortGeometryDiagnosticService
         $portB = $joint->portB;
 
         if (! $portA instanceof Port || ! $portB instanceof Port) {
-            return [
+            $diagnostic = [
                 'status' => 'UNRESOLVED',
                 'reason' => $joint->isOnWall()
                     ? 'WALL_REFERENCE_WITHOUT_HOST_SURFACE_GEOMETRY'
                     : 'SECOND_PORT_NOT_REPRESENTED',
             ];
+
+            if ($this->isP2pWallRoot($joint)) {
+                $diagnostic['branch_beta_geometry'] = $this->branchBetaGeometry($joint, $geometryByComponentId);
+            }
+
+            return $diagnostic;
         }
 
         if ($portA->owner_kind !== Port::OWNER_COMPONENT
@@ -150,6 +159,107 @@ final class JointPortGeometryDiagnosticService
         ];
     }
 
+    private function isP2pWallRoot(Joint $joint): bool
+    {
+        return $joint->port_b_id === null
+            && $joint->branch_header_component_id !== null
+            && in_array($joint->joint_type, [Joint::TYPE_BRANCH_STUB_IN, Joint::TYPE_BRANCH_STUB_ON], true);
+    }
+
+    /** @param array<string, array<string, mixed>> $geometryByComponentId @return array<string, mixed> */
+    private function branchBetaGeometry(Joint $joint, array $geometryByComponentId): array
+    {
+        $branchPort = $joint->portA;
+        $header = $joint->branchHeaderComponent;
+        $branch = $branchPort?->component;
+
+        if (! $branchPort instanceof Port
+            || ! $header instanceof Component
+            || ! $branch instanceof Component) {
+            return $this->unresolvedBranchBeta('P2P_WALL_ROOT_ENDPOINT_NOT_AVAILABLE');
+        }
+
+        if ($header->template_code !== 'PIPE'
+            || $branch->template_code !== 'PIPE'
+            || $branchPort->role !== 'RUN') {
+            return $this->unresolvedBranchBeta('P2P_WALL_ROOT_PIPE_PROFILE_UNSUPPORTED');
+        }
+
+        $headerGeometry = $geometryByComponentId[$header->id] ?? null;
+        $branchGeometry = $geometryByComponentId[$branch->id] ?? null;
+        if (! is_array($headerGeometry) || ! is_array($branchGeometry)) {
+            return $this->unresolvedBranchBeta('BRANCH_BETA_GEOMETRY_NOT_AVAILABLE');
+        }
+
+        $headerStatus = $headerGeometry['status'] ?? 'UNRESOLVED';
+        $branchStatus = $branchGeometry['status'] ?? 'UNRESOLVED';
+        if ($headerStatus !== 'RESOLVED' || $branchStatus !== 'RESOLVED') {
+            $stale = $headerStatus === 'STALE' || $branchStatus === 'STALE';
+
+            return $this->unresolvedBranchBeta(
+                $stale ? 'BRANCH_BETA_GEOMETRY_STALE' : 'BRANCH_BETA_GEOMETRY_UNRESOLVED',
+                $stale ? 'STALE' : 'UNRESOLVED',
+            );
+        }
+
+        if (($headerGeometry['model_frame_id'] ?? null) !== ($branchGeometry['model_frame_id'] ?? null)
+            || ($headerGeometry['coordinate_unit'] ?? null) !== ($branchGeometry['coordinate_unit'] ?? null)
+            || ($headerGeometry['coordinate_unit'] ?? null) !== 'MM') {
+            return $this->unresolvedBranchBeta('BRANCH_BETA_FRAME_OR_UNIT_MISMATCH', 'STALE');
+        }
+
+        if (($headerGeometry['profile_id'] ?? null) !== LinearTwoPortComponentGeometryProfile::PIPE_PROFILE_ID
+            || ($branchGeometry['profile_id'] ?? null) !== LinearTwoPortComponentGeometryProfile::PIPE_PROFILE_ID) {
+            return $this->unresolvedBranchBeta('BRANCH_BETA_PIPE_PROFILE_UNSUPPORTED');
+        }
+
+        $headerPort = $this->portGeometryBySequence($headerGeometry, 1);
+        $branchPortGeometry = $this->portGeometry($branchGeometry, $branchPort);
+        if ($headerPort === null || $branchPortGeometry === null
+            || $headerPort['role'] !== 'RUN' || $branchPortGeometry['role'] !== 'RUN') {
+            return $this->unresolvedBranchBeta('BRANCH_BETA_AXIS_NOT_AVAILABLE');
+        }
+
+        try {
+            $measured = BranchAxisAngleCalculator::measure(
+                $headerPort['outward_direction_model'],
+                $branchPortGeometry['outward_direction_model'],
+            );
+        } catch (InvalidArgumentException) {
+            return $this->unresolvedBranchBeta('BRANCH_BETA_AXIS_INVALID');
+        }
+
+        $recorded = $joint->branch_longitudinal_angle_deg;
+        $recorded = (is_int($recorded) || is_float($recorded)) && is_finite((float) $recorded)
+            ? (float) $recorded
+            : null;
+
+        return [
+            'method_code' => self::BRANCH_BETA_METHOD,
+            'status' => 'UNASSESSED',
+            'reason' => 'NO_BETA_ACCEPTANCE_RULE',
+            'beta_geometry_deg' => $measured['beta_deg'],
+            'beta_recorded_deg' => $recorded,
+            'delta_geometry_minus_recorded_deg' => $recorded === null
+                ? null
+                : $measured['beta_deg'] - $recorded,
+            'model_frame_id' => $headerGeometry['model_frame_id'],
+            'coordinate_unit' => $headerGeometry['coordinate_unit'],
+            'pose_revision_header' => $headerGeometry['pose_revision'] ?? null,
+            'pose_revision_branch' => $branchGeometry['pose_revision'] ?? null,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function unresolvedBranchBeta(string $reason, string $status = 'UNRESOLVED'): array
+    {
+        return [
+            'method_code' => self::BRANCH_BETA_METHOD,
+            'status' => $status,
+            'reason' => $reason,
+        ];
+    }
+
     /**
      * Capture every explicit joint/endpoint source used by this diagnostic.
      * Component pose ids and current source fingerprints bind the inputs to
@@ -161,8 +271,9 @@ final class JointPortGeometryDiagnosticService
     private function inputSnapshot(Joint $joint, array $geometryByComponentId): array
     {
         return [
-            'schema' => 'JOINT_GEOMETRY_INPUT_V1',
+            'schema' => 'JOINT_GEOMETRY_INPUT_V2',
             'method_code' => self::METHOD,
+            'branch_beta_method_code' => $this->isP2pWallRoot($joint) ? self::BRANCH_BETA_METHOD : null,
             'joint' => [
                 'id' => $joint->id,
                 'project_id' => $joint->project_id,
@@ -263,22 +374,35 @@ final class JointPortGeometryDiagnosticService
 
     /**
      * @param  array<string, mixed>  $geometry
-     * @return array{point_model: array{0:float,1:float,2:float}, outward_direction_model: array{0:float,1:float,2:float}}|null
+     * @return array{role:string,point_model: array{0:float,1:float,2:float}, outward_direction_model: array{0:float,1:float,2:float}}|null
      */
     private function portGeometry(array $geometry, Port $port): ?array
     {
+        return $this->portGeometryBySequence($geometry, (int) $port->seq);
+    }
+
+    /**
+     * @param  array<string, mixed>  $geometry
+     * @return array{role:string,point_model: array{0:float,1:float,2:float}, outward_direction_model: array{0:float,1:float,2:float}}|null
+     */
+    private function portGeometryBySequence(array $geometry, int $sequence): ?array
+    {
         foreach ($geometry['ports'] ?? [] as $candidate) {
-            if (! is_array($candidate) || ($candidate['seq'] ?? null) !== $port->seq) {
+            if (! is_array($candidate) || ($candidate['seq'] ?? null) !== $sequence) {
                 continue;
             }
 
+            $role = $candidate['role'] ?? null;
             $point = $candidate['point_model'] ?? null;
             $axis = $candidate['outward_direction_model'] ?? null;
-            if (! $this->isFiniteVector3($point) || ! $this->isFiniteVector3($axis)) {
+            if (! is_string($role) || trim($role) === ''
+                || ! $this->isFiniteVector3($point)
+                || ! $this->isFiniteVector3($axis)) {
                 return null;
             }
 
             return [
+                'role' => $role,
                 'point_model' => [(float) $point[0], (float) $point[1], (float) $point[2]],
                 'outward_direction_model' => [(float) $axis[0], (float) $axis[1], (float) $axis[2]],
             ];

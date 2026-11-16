@@ -475,7 +475,7 @@ boundaries and the remaining profile, diagnostics, and acceptance work.
 | Derived geometry | Transformed ports for supported `PIPE`/`NIPPLE`, B16.9 BW LR elbows and exact covered B16.11 elbows plus raw two-port gap/axis-deviation diagnostics; explicit DRAFT-only capture stores immutable, source-fingerprinted joint revisions and displays changed sources as `STALE` | Broaden supported fitting profiles and dependent checks; wall geometry stays unresolved without host-surface data |
 | Engineering acceptance | Matrix tolerance is `1e-8`; fit residuals remain `UNASSESSED` without a joint/type/project rule | Define and source each applicable linear/angular acceptance tolerance; do not invent a global one |
 | Change control | Pose writes only on `DRAFT`; frame changes are guarded after poses on non-DRAFT lines; changed frame/profile hides old coordinates as `STALE` | Integrate any later fitted/released dependant review and refresh transactions without bypassing the existing return-to-DRAFT/re-approval path |
-| Branch β / θ | Entered β remains authoritative; θ is not inferred and PAD does not consume pose | Any pose-derived β diagnostic remains separate and is not implemented; no automatic backfill or PAD consumption |
+| Branch β / θ | Entered β remains authoritative; θ is not inferred and PAD does not consume pose | A separate pose-derived β diagnostic is implemented only for direct P2P stub-in/stub-on wall roots when current header/branch `PIPE` poses resolve in one frame/`MM`; it reports raw geometry β and signed geometry-minus-recorded Δ as `UNASSESSED`, is fingerprinted/STALE, and never backfills or overwrites explicit β. TEE/CROSS, OLET, θ, PAD consumption, and acceptance/mismatch verdicts remain out of scope |
 | PCF/import | Feature-specific attributes are not generic pose | Any future writer must explicitly map component type, coordinate units and provenance; current parser remains read-only |
 
 ### Implementation gates and remaining work
@@ -502,10 +502,12 @@ boundaries and the remaining profile, diagnostics, and acceptance work.
    append-only, RLS-protected, source-fingerprinted revisions and changes to
    inputs display `STALE`. Topology/ownership remain untouched. Wider profiles,
    host-surface geometry and other dependent-check classes remain open.
-5. Keep wall-reference joints unresolved until host surface geometry exists;
-   keep fit-up results `UNASSESSED` until a cited type/project tolerance is
-   configured. Any future pose-derived β must be a separate diagnostic only;
-   do not write β/θ or feed the result to PAD.
+5. Keep wall-contact geometry unresolved until host-surface geometry exists;
+   keep fit-up and β-difference results `UNASSESSED` until a cited
+   type/project acceptance rule is configured. The implemented pose-derived β
+   is a separate diagnostic only for supported P2P stub wall roots with current
+   `PIPE` poses in a common frame. Do not write/backfill explicit β, infer θ,
+   or feed any result to PAD.
 
 ## Scope boundaries and consequences
 
@@ -596,3 +598,20 @@ boundaries and the remaining profile, diagnostics, and acceptance work.
   development database and applied pending migrations only (no drop/reset,
   `migrate:fresh`, or seed). Read-only migration status confirms the B16.11
   migration ran. No full Laravel suite was run.
+- **2026-10-26 — separate diagnostic β for supported P2P wall roots:** added a
+  pose-derived β only when a root `STUB_IN`/`STUB_ON` direct wall joint has a
+  header, no branch port B, and current resolved header/branch `PIPE` pose
+  geometry in one frame and `MM`. The diagnostic reports the geometric value,
+  recorded explicit β, and raw signed difference separately; source/method
+  fingerprints make changed inputs `STALE`. It does not backfill/change the
+  joint β, set a tolerance or verdict, infer θ, or feed PAD. OLET and
+  TEE/CROSS are excluded, and wall-contact geometry stays `UNRESOLVED` without
+  host-surface data. Focused checks passed: β unit tests (6/39, including V1
+  snapshot staleness under the V2 input schema), P2P and
+  dependent feature cases (7/127, including EN/FA β display),
+  host-surface unresolved regression (1/14),
+  Pint and PHP syntax for changed PHP files. Both databases were confirmed
+  empty before tests; feature fixtures ran their normal `migrate:fresh`/seed
+  setup only against isolated `epcc_test` (131 public tables / 128 migration
+  rows remain afterward). The `epcc` development database remains empty and
+  unmigrated. No full Laravel suite was run.

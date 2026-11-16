@@ -16,11 +16,10 @@ operational workflow may remain open) · `BUILT` (all stated acceptance met) ·
 `REJECTED` (considered and refused — kept so it is not raised again).
 
 Last updated: **2026-10-26** (P-21/P-22 OLET-path reconciliation; targeted
-OLET/joint regressions passed 84 tests / 218 assertions; P-26 includes explicit
-signed run/rise input and immutable, source-fingerprinted joint-diagnostic
-snapshots; focused P-26 suites pass: ComponentModellingTest 65 / 350,
-BranchWallJointTest 27 / 93, and math/profile unit files 78 / 298; full-suite
-run remains separate).
+OLET/joint regressions passed 84 tests / 218 assertions; P-26 now also has a
+separate pose-derived β diagnostic for supported P2P wall roots. Its focused
+unit/features and host-surface regression passed 14 tests / 180 assertions;
+Pint and PHP syntax checks pass. The full Laravel suite remains separate).
 
 ---
 
@@ -53,7 +52,7 @@ run remains separate).
 | P-23 | Requirement / MTO | MTO has no coverage of branch-connection material: reinforcement pads (plate) and coped stub ends | OPEN — scope decision |
 | P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator + B31.3-2024 materials pack + class design basis + publish-gate validation built; **flange step built 2026-10-12**: ASME B16.5-2025 P-T ratings pack (45 SI tables, cross-checked against the Customary twin) + `FlangeRatingReference` + publish gate rating every FLANGE_TYPE cell against the class design basis; B16.47 large-diameter + Section II Part D extensions remain follow-ups; runtime verification on owner's Laragon pending | PARTIAL — Step B + flange gate built |
 | P-25 | Standards / data | Parallel-session engineering reference library discovered on the owner-published `workspace` branch and ported (commit `bf15816`): full B31.3-2024 Table A-1 stresses (798 rows/138 specs), materials library v1.8, B16.5+B16.47 flange P-T curves, bolting, B16.9 fitting dimensions, valve packs, per-pack schemas and the 2,835-line validator; both flange provenances cross-checked cell-by-cell (4,725/4,725 exact). **Steps 1-4 ported; step 5 catalogue/adoption-only adaptation implemented (awaiting Laragon verification)**: ADR-019 documents ITP-only citation host/migration and mutable-edition conflict; owner chose option A; citation/ITP still deferred. Compatibility assessment (`3bdff9b`) + engineering screening & fitting-review module + MR entry module ported (awaiting Laragon test runs). Next: Laragon verification; group A fluid-service classification implemented pending tests (ADR-020); step 7 baseline/model-import assessed as no-go for wholesale port, owner approved parser-only; pure PCF parser ported (ADR-021), branch-vocabulary conflict handled by a read-only P2P classifier (ADR-022); model importer/baseline deferred | PARTIAL — porting in progress |
-| P-26 | Requirement / engineering model | Manual component slope/orientation/rotation entry and calculated transformed geometry, beyond branch β/θ alone | PARTIAL — persisted project frame; DRAFT-only PIPE/NIPPLE poses plus source-backed B16.9-2018 BW LR `90LR`/`45LR` elbow port geometry; qualifier is persisted and profile/source row is hashed, with explicit P1 anchor, +X/+Y bend-plane convention and roll; bilingual azimuth/inclination/roll and signed dimensioned run/rise entry; immutable, RLS-protected, source-fingerprinted joint snapshots remain idempotent/STALE as designed. Raw values are UNASSESSED without sourced tolerance; wall references remain UNRESOLVED without host-surface geometry. SR/180/reducing/return and SW/threaded geometry plus wider fitting coverage remain outside this profile slice; the requested authentic Autodesk Plant 3D CTPL/PCAT artifact remains an open, separate deliverable because no catalog/template source file is present |
+| P-26 | Requirement / engineering model | Manual component slope/orientation/rotation entry and calculated transformed geometry, beyond branch β/θ alone | PARTIAL — persisted project frame and DRAFT-only poses for supported PIPE/NIPPLE and scoped B16.9 BW LR/B16.11 forged elbows; bilingual azimuth/inclination/roll and signed run/rise entry; immutable, source-fingerprinted joint snapshots. Added a separate pose-derived β diagnostic only for direct P2P STUB_IN/STUB_ON wall roots with current header/branch PIPE poses in common frame/MM; recorded β remains authoritative, Δ is raw/UNASSESSED, and changes show STALE. Wall contact stays UNRESOLVED without host-surface geometry; no θ/PAD use or verdict. Wider fitting coverage and authentic Autodesk Plant 3D CTPL/PCAT remain open |
 
 ---
 
@@ -644,9 +643,10 @@ into model coordinates, and recalculate/report affected connection/joint
 geometry and applicable geometry-dependent checks after a change. Manual entry
 must not depend on the availability of CAD, PCF or other model import.
 
-**Status: PARTIAL — the selected technical contract and the straight-`PIPE`,
-explicit-length `NIPPLE`, and scoped B16.9-2018 BW LR elbow profiles are
-implemented (2026-10-26); FR-ENG-16 remains open.** ADR-061 selects a project-local,
+**Status: PARTIAL — the selected technical contract, straight-`PIPE`,
+explicit-length `NIPPLE`, scoped B16.9-2018 BW LR, and exact-row B16.11-2021
+forged-elbow profiles are implemented (2026-10-26); FR-ENG-16 remains open.**
+ADR-061 selects a project-local,
 right-handed Easting/Northing/Up frame in `MM`; profile-defined component
 anchors and local port geometry; and azimuth/inclination/roll input resolved by
 an explicit local-to-model basis formula. The alternate dimensioned-triangle
@@ -663,9 +663,9 @@ The current vertical slice persists immutable project-frame and component-pose
 revisions with RLS, origin/frame provenance, raw angle or triangle inputs,
 anchor, profile hash and transformed geometry. The bilingual piping model page
 lets authorized modelers define the project frame, use either explicit pose
-input mode for supported `PIPE`/`NIPPLE` and B16.9 BW LR elbow components, and
-inspect transformed port positions/directions plus triangle closure and elbow
-dimension provenance. Existing explicit two-port joints receive raw gap and
+input mode for supported `PIPE`/`NIPPLE`, B16.9 BW LR, and exact-covered B16.11
+forged-elbow components, and inspect transformed port positions/directions
+plus triangle closure and elbow dimension provenance. Existing explicit two-port joints receive raw gap and
 outward-axis-deviation diagnostics when
 both endpoint profiles and poses resolve; these remain `UNASSESSED` without an
 approved tolerance. An explicit DRAFT-only capture action stores an immutable,
@@ -702,9 +702,31 @@ passes all 3 standards packs and 16 reference packs, including
 verification database; the main `epcc` database was left unmigrated, and no full
 application suite was run.
 
-Other dependent-check classes and sourced acceptance rules remain open. Branch
-β stays explicit, θ is not inferred, and PAD calculations remain outside this
-feature.
+The scoped B16.11-2021 follow-on resolves only exact standard rows for
+45°/90° two-ended SW-SW or threaded-threaded elbows, retaining its independent
+standard/profile contract and source fingerprint; mixed ends and inferred
+rows remain unresolved.
+
+The 2026-10-26 P2P wall-root β follow-on adds a separate diagnostic only for a
+root `STUB_IN`/`STUB_ON` joint with no branch port B, a header, and current,
+resolved `PIPE` header/branch poses in the same frame and `MM`. It reports
+geometry β, the explicit recorded β, and raw signed geometry-minus-recorded Δ
+separately as `UNASSESSED`; source changes make the captured result `STALE`.
+The explicit joint value is never changed/backfilled, and no acceptance verdict,
+θ, PAD input, topology change, or host-contact result is introduced. OLET and
+TEE/CROSS are excluded; wall contact remains `UNRESOLVED` without host-surface
+geometry.
+
+Verification for this slice: `JointPortGeometryDiagnosticServiceTest` (6/39),
+focused `ComponentModellingTest` (7/127; EN/FA β labels checked), and the wall-host-surface unresolved
+regression (1/14) all pass, as do Pint, PHP syntax, `git diff --check`, and Blade
+directive-balance checks. Both databases were confirmed empty before the tests. The feature
+fixtures used their normal `migrate:fresh`/seed setup only on isolated
+`epcc_test`; afterward it has 131 public tables and 128 migration rows. The
+`epcc` development database remains empty (zero public tables; no migrations
+run). No full Laravel suite was run. Other dependent-check classes and sourced
+acceptance rules remain open. Explicit β remains authoritative, θ is not inferred, and PAD
+calculations remain outside this feature.
 
 
 ## How to use this file

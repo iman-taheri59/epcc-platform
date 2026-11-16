@@ -27,6 +27,7 @@ use App\Services\PipingLineService;
 use App\Services\ProjectArchiveService;
 use App\Services\ProjectModelFrameService;
 use App\Support\LineReleaseState;
+use App\Support\Piping\JointBranchKind;
 use App\Support\TenantContext;
 use Database\Seeders\AuthSeeder;
 use Database\Seeders\EpccDemoSeeder;
@@ -2131,6 +2132,95 @@ final class ComponentModellingTest extends TestCase
             ->assertSee('STALE — dependent geometry cannot be evaluated until a new pose is recorded.');
     }
 
+    public function test_p2p_wall_beta_is_a_separate_staleable_diagnostic_and_never_replaces_explicit_beta(): void
+    {
+        $project = $this->project();
+        $owner = $this->owner();
+        $branchLine = $this->line('2');
+        $headerLine = $this->line('6');
+        $branchPipe = $this->pipe($branchLine, 1000.0);
+        $headerPipe = $this->pipe($headerLine, 6000.0);
+        $joint = $this->asOwner(fn () => app(JointService::class)->joinToWall(
+            $branchPipe->ports->firstWhere('seq', 1),
+            $headerPipe,
+            JointBranchKind::STUB_IN,
+            2500.0,
+            0.0,
+            45.0,
+            $owner,
+        ));
+        $frame = $this->modelFrame();
+        $poses = $this->poseService();
+        $poses->recordManual($project, $headerLine, $headerPipe, $frame, $owner, 0.0, 0.0, 0.0, [0, 0, 0]);
+        $poses->recordManual($project, $branchLine, $branchPipe, $frame, $owner, 60.0, 0.0, 0.0, [0, 0, 0]);
+
+        $captureUrl = route('piping.model.geometry-snapshots', [
+            'projectCode' => 'PH-14', 'lineId' => $branchLine->id, 'lang' => 'en',
+        ]);
+        $modelUrl = route('piping.model', [
+            'projectCode' => 'PH-14', 'lineId' => $branchLine->id, 'lang' => 'en',
+        ]);
+
+        $this->actingAs($owner)->post($captureUrl)->assertRedirect();
+        $first = $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('joint_id', $joint->id)->firstOrFail());
+        $firstBeta = $first->diagnostic_snapshot['branch_beta_geometry'];
+        $this->assertSame('UNRESOLVED', $first->diagnostic_status, 'Wall contact still lacks host-surface geometry.');
+        $this->assertSame('WALL_REFERENCE_WITHOUT_HOST_SURFACE_GEOMETRY', $first->diagnostic_reason);
+        $this->assertSame('JOINT_GEOMETRY_INPUT_V2', $first->source_snapshot['schema']);
+        $this->assertSame('UNASSESSED', $firstBeta['status']);
+        $this->assertEqualsWithDelta(60.0, $firstBeta['beta_geometry_deg'], 1e-10);
+        $this->assertSame(45.0, (float) $firstBeta['beta_recorded_deg']);
+        $this->assertEqualsWithDelta(15.0, $firstBeta['delta_geometry_minus_recorded_deg'], 1e-10);
+        $this->assertNull($first->source_snapshot['endpoint_b']);
+
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('Pose-derived branch β (diagnostic only; explicit joint β remains authoritative)')
+            ->assertSee('Geometry β:')
+            ->assertSee('Recorded β:')
+            ->assertSee('Raw Δ (geometry − recorded):');
+
+        $persianModelUrl = route('piping.model', [
+            'projectCode' => 'PH-14', 'lineId' => $branchLine->id, 'lang' => 'fa',
+        ]);
+        $this->actingAs($owner)->get($persianModelUrl)
+            ->assertOk()
+            ->assertSee('β مستخرج از pose')
+            ->assertSee('β از هندسه')
+            ->assertSee('β ثبت‌شده')
+            ->assertSee('Δ خام (هندسه − ثبت‌شده)');
+
+        $poses->recordManual($project, $branchLine, $branchPipe, $frame, $owner, 90.0, 0.0, 0.0, [0, 0, 0]);
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('STALE — inputs changed since capture; capture a new snapshot to record a current result.')
+            ->assertDontSee('Geometry β:');
+
+        $this->actingAs($owner)->post($captureUrl)->assertRedirect();
+        $revisions = $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('joint_id', $joint->id)
+            ->orderBy('revision')
+            ->get());
+        $this->assertCount(2, $revisions);
+        $secondBeta = $revisions->last()->diagnostic_snapshot['branch_beta_geometry'];
+        $this->assertSame('UNRESOLVED', $revisions->last()->diagnostic_status);
+        $this->assertSame('UNASSESSED', $secondBeta['status']);
+        $this->assertEqualsWithDelta(90.0, $secondBeta['beta_geometry_deg'], 1e-10);
+        $this->assertSame(45.0, (float) $secondBeta['beta_recorded_deg']);
+        $this->assertEqualsWithDelta(45.0, $secondBeta['delta_geometry_minus_recorded_deg'], 1e-10);
+        $freshJoint = $this->asOwner(fn () => Joint::query()->whereKey($joint->id)->firstOrFail());
+        $this->assertSame(45.0, (float) $freshJoint->branch_longitudinal_angle_deg);
+        $this->assertNull($freshJoint->port_b_id);
+        $this->assertSame($headerPipe->id, $freshJoint->branch_header_component_id);
+
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('Current snapshot revision')
+            ->assertSee('Pose-derived branch β (diagnostic only; explicit joint β remains authoritative)')
+            ->assertSee('Geometry β:');
+    }
+
     public function test_joint_diagnostic_snapshots_are_immutable_idempotent_and_mark_changed_sources_stale(): void
     {
         $project = $this->project();
@@ -2162,7 +2252,7 @@ final class ComponentModellingTest extends TestCase
         $this->assertSame('UNASSESSED', $firstRevision->diagnostic_status);
         $this->assertSame('NO_ACCEPTANCE_RULE', $firstRevision->diagnostic_reason);
         $this->assertSame('EXPLICIT_TWO_PORT_PORT_GAP_AXIS_DEVIATION_V1', $firstRevision->method_code);
-        $this->assertSame('JOINT_GEOMETRY_INPUT_V1', $firstRevision->source_snapshot['schema']);
+        $this->assertSame('JOINT_GEOMETRY_INPUT_V2', $firstRevision->source_snapshot['schema']);
         $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $firstRevision->source_fingerprint);
         $this->assertNotNull($firstRevision->source_snapshot['endpoint_a']['component']['geometry_source_fingerprint']);
 
