@@ -73,11 +73,16 @@
         'stationRecorded' => ['fa' => 'ایستگاه ثبت‌شده', 'en' => 'Recorded station'],
         'headerPoseLength' => ['fa' => 'طول محور هدر از pose', 'en' => 'Header axis length from pose'],
         'perpendicularAxisDistance' => ['fa' => 'فاصلهٔ عمود نقطهٔ پورت شاخه تا محور هدر', 'en' => 'Branch-port point perpendicular distance to header axis'],
+        'projectionWithinSpan' => ['fa' => 'تصویر محوری بین دو سر هدر است', 'en' => 'Axial projection lies between header endpoints'],
+        'projectionOverrunPort1' => ['fa' => 'بیرون‌زدگی محوری از سمت پورت ۱', 'en' => 'Axial overrun beyond port 1'],
+        'projectionOverrunPort2' => ['fa' => 'بیرون‌زدگی محوری از سمت پورت ۲', 'en' => 'Axial overrun beyond port 2'],
+        'yes' => ['fa' => 'بله', 'en' => 'Yes'],
+        'no' => ['fa' => 'خیر', 'en' => 'No'],
         'stationFromPort1' => ['fa' => 'ایستگاه تصویرشده از پورت ۱', 'en' => 'Station projected from port 1'],
         'stationFromPort2' => ['fa' => 'ایستگاه تصویرشده از پورت ۲', 'en' => 'Station projected from port 2'],
         'stationDeltaFromPort1' => ['fa' => 'Δ خام ایستگاه از پورت ۱ (هندسه − ثبت‌شده)', 'en' => 'Raw station Δ from port 1 (geometry − recorded)'],
         'stationDeltaFromPort2' => ['fa' => 'Δ خام ایستگاه از پورت ۲ (هندسه − ثبت‌شده)', 'en' => 'Raw station Δ from port 2 (geometry − recorded)'],
-        'stationDiagnosticHelp' => ['fa' => 'فاصلهٔ عمود فقط از نقطهٔ پورت poseشده تا محور مرکزی PIPE هدر است؛ شعاع، سطح یا تماس واقعی هدر را تعیین نمی‌کند. چون سر بالادست مشخص نیست، هر دو مبدأ ایستگاه نمایش داده می‌شوند. مقادیر خام و UNASSESSED هستند؛ قاعده/تلرانس پذیرش ندارد، branch_offset_mm مصرف نمی‌شود و تماس دیواره UNRESOLVED می‌ماند.', 'en' => 'The perpendicular distance is from the posed branch-port point to the header PIPE centreline only; it does not define header radius, surface, or physical contact. The upstream end is unknown, so stations from both endpoint origins are shown. Raw and UNASSESSED only; no acceptance rule/tolerance is defined, branch_offset_mm is not used, and wall contact remains UNRESOLVED.'],
+        'stationDiagnosticHelp' => ['fa' => 'این‌ها روابط خام نقطه و محورِ poseشده‌اند؛ ایستگاه از هر دو سر، فاصلهٔ عمود تا محور نامتناهی و بیرون‌زدگی از بازهٔ محوری بین دو پورت را نشان می‌دهند. این خروجی شعاع/سطح/تماس هدر یا قاعدهٔ پذیرش را تعیین نمی‌کند؛ تلرانسی اعمال نشده، branch_offset_mm مصرف نمی‌شود و تشخیص UNASSESSED و تماس دیواره UNRESOLVED می‌ماند.', 'en' => 'These are raw posed point/axis relations: stations from both endpoint origins, perpendicular distance to the infinite axis, and axial overrun beyond the port-to-port span. They do not define header radius, surface/contact, or an acceptance rule; no tolerance is applied, branch_offset_mm is not used, the check remains UNASSESSED, and wall contact remains UNRESOLVED.'],
         'stationDiagnosticUnresolved' => ['fa' => 'UNRESOLVED — pose دو PIPE و نقاط دو سر هدر برای پروجکشن ایستگاه در دسترس نیستند.', 'en' => 'UNRESOLVED — both PIPE poses and the header endpoint points are required for station projection.'],
         'stationDiagnosticStale' => ['fa' => 'STALE — فریم/واحد یا poseها برای پروجکشن ایستگاه سازگار نیستند.', 'en' => 'STALE — frames, units, or poses are not compatible for station projection.'],
         'seq'      => ['fa' => 'ردیف', 'en' => 'No.'],
@@ -941,6 +946,11 @@
                 <div>
                   {{ $L('headerPoseLength') }}: <bdi>{{ $formatMm($branchStationGeometry['header_length_from_pose_mm']) }} mm</bdi>
                   · {{ $L('perpendicularAxisDistance') }}: <bdi>{{ $formatMm($branchStationGeometry['perpendicular_distance_to_header_axis_mm']) }} mm</bdi>
+                </div>
+                <div>
+                  {{ $L('projectionWithinSpan') }}: <bdi>{{ $branchStationGeometry['axial_projection_within_endpoint_span'] ? $L('yes') : $L('no') }}</bdi>
+                  · {{ $L('projectionOverrunPort1') }}: <bdi>{{ $formatMm($branchStationGeometry['axial_overrun_beyond_port_1_mm']) }} mm</bdi>
+                  · {{ $L('projectionOverrunPort2') }}: <bdi>{{ $formatMm($branchStationGeometry['axial_overrun_beyond_port_2_mm']) }} mm</bdi>
                 </div>
                 <div>
                   {{ $L('stationFromPort1') }}: <bdi>{{ $formatMm($branchStationGeometry['station_from_port_1_mm']) }} mm</bdi>

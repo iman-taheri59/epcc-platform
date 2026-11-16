@@ -9,11 +9,11 @@ use InvalidArgumentException;
 /**
  * Project a branch-end point onto a straight header centreline.
  *
- * Both endpoint-based station candidates are returned because the piping
- * model does not identify which header port is upstream. The perpendicular
- * centreline distance is a point-to-axis measurement only: it does not use
- * branch_offset_mm to place a point, model a wall surface, or decide whether
- * the branch contacts the header.
+ * Both endpoint-based station candidates and their raw finite-span relation
+ * are returned because the piping model does not identify which header port
+ * is upstream. Perpendicular centreline distance is point-to-axis geometry
+ * only: it does not use branch_offset_mm, model a wall surface, or decide
+ * whether the branch contacts the header.
  */
 final class BranchStationProjectionCalculator
 {
@@ -25,7 +25,10 @@ final class BranchStationProjectionCalculator
      *   header_length_from_pose_mm:float,
      *   station_from_port_1_mm:float,
      *   station_from_port_2_mm:float,
-     *   perpendicular_distance_to_header_axis_mm:float
+     *   perpendicular_distance_to_header_axis_mm:float,
+     *   axial_projection_within_endpoint_span:bool,
+     *   axial_overrun_beyond_port_1_mm:float,
+     *   axial_overrun_beyond_port_2_mm:float
      * }
      */
     public static function measure(
@@ -65,6 +68,9 @@ final class BranchStationProjectionCalculator
             + $branchFromPort1[2] * $headerAxis[2]
         ) / $headerLength;
         $stationFromPort2 = $headerLength - $stationFromPort1;
+        $overrunBeyondPort1 = (float) max(0.0, -$stationFromPort1);
+        $overrunBeyondPort2 = (float) max(0.0, -$stationFromPort2);
+        $projectionWithinEndpointSpan = $stationFromPort1 >= 0.0 && $stationFromPort2 >= 0.0;
         $perpendicularVector = [
             $branchFromPort1[0] - $stationFromPort1 * $headerAxis[0] / $headerLength,
             $branchFromPort1[1] - $stationFromPort1 * $headerAxis[1] / $headerLength,
@@ -86,6 +92,9 @@ final class BranchStationProjectionCalculator
             'station_from_port_1_mm' => $stationFromPort1,
             'station_from_port_2_mm' => $stationFromPort2,
             'perpendicular_distance_to_header_axis_mm' => $perpendicularDistance,
+            'axial_projection_within_endpoint_span' => $projectionWithinEndpointSpan,
+            'axial_overrun_beyond_port_1_mm' => $overrunBeyondPort1,
+            'axial_overrun_beyond_port_2_mm' => $overrunBeyondPort2,
         ];
     }
 

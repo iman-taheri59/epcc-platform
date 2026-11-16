@@ -723,16 +723,21 @@ point onto the header PIPE centreline and compares the raw axial projection
 with the recorded P2P wall station. It also records the Euclidean perpendicular
 distance from that posed branch-port point to the infinite header centreline.
 This is point-to-axis geometry only: it is not a header radius, wall surface,
-contact distance, or signed/circumferential offset. Because no field selects
-which header port is upstream, signed candidate stations and
-geometry-minus-recorded Δ are reported from both port 1 and port 2; the result
-remains `UNASSESSED` with `UPSTREAM_ENDPOINT_NOT_IDENTIFIED`. It consumes no
-`branch_offset_mm`, defines no circumferential direction or contact surface, and
-does not change the wall-root parent result from `UNRESOLVED`. The derived
-length, stations, point-to-axis distance, method and both current poses are
+contact distance, or signed/circumferential offset. The axial projection is also
+located relative to the finite segment between the two header port endpoints;
+raw overrun beyond either endpoint is reported without choosing upstream. The
+result remains `UNASSESSED` with `UPSTREAM_ENDPOINT_NOT_IDENTIFIED`; this
+segment relation is not a fit-up/acceptance verdict and no tolerance is applied.
+It consumes no `branch_offset_mm`, defines no circumferential direction or
+contact surface, and does not change the wall-root parent result from
+`UNRESOLVED`. Header length, both candidate stations/deltas, point-to-axis
+distance, endpoint-span relation/overruns, method and both current poses are
 included in the immutable snapshot/fingerprint; changed inputs make the
-captured result `STALE`. This check is not an acceptance verdict, fit-up rule,
-θ, PAD input, or topology change. P-26 remains `PARTIAL`.
+captured result `STALE`. The station method identifier is versioned as
+`POSE_DERIVED_P2P_BRANCH_STATION_PROJECTION_V2`, so earlier V1 captures do not
+masquerade as containing the newly added geometry. This check is not an
+acceptance verdict, fit-up rule, θ, PAD input, or topology change. P-26 remains
+`PARTIAL`.
 
 At the earlier β checkpoint, `JointPortGeometryDiagnosticServiceTest` (6/39),
 focused `ComponentModellingTest` (7/127; EN/FA β labels checked), and the
@@ -759,6 +764,20 @@ full `ComponentModellingTest.php` file and full Laravel suite were not rerun in
 this follow-on. Other dependent-check classes and sourced acceptance rules
 remain open. Explicit β remains authoritative, θ is not inferred, and PAD
 calculations remain outside this feature; P-26 remains `PARTIAL`.
+
+The finite-header-span follow-on adds raw axial overrun from each header port
+and reports whether the infinite-axis projection falls between the two modeled
+port endpoints. It applies no tolerance and exposes no acceptance verdict;
+this is a geometric extent description only. The station diagnostic method was
+bumped to `POSE_DERIVED_P2P_BRANCH_STATION_PROJECTION_V2`, which participates
+in the P2P snapshot fingerprint so V1 captures cannot appear current with the
+new fields. `BranchStationProjectionCalculatorTest` and
+`JointPortGeometryDiagnosticServiceTest` pass together (10 tests/87 assertions),
+and the focused P2P snapshot/display/staleness feature test passes (1/73).
+Pint, PHP syntax, and Blade compilation pass. The full feature file and full
+Laravel suite were not run. Wall contact remains `UNRESOLVED`, the dependent
+check remains `UNASSESSED`, explicit β remains unchanged, and θ/PAD remain
+outside scope; P-26 remains `PARTIAL`.
 
 
 ## How to use this file

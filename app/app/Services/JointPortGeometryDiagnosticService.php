@@ -22,7 +22,7 @@ final class JointPortGeometryDiagnosticService
 
     public const BRANCH_BETA_METHOD = 'POSE_DERIVED_P2P_BRANCH_BETA_V1';
 
-    public const BRANCH_STATION_METHOD = 'POSE_DERIVED_P2P_BRANCH_STATION_PROJECTION_V1';
+    public const BRANCH_STATION_METHOD = 'POSE_DERIVED_P2P_BRANCH_STATION_PROJECTION_V2';
 
     /**
      * Calculate diagnostics for only the joints the caller has already loaded
@@ -341,6 +341,9 @@ final class JointPortGeometryDiagnosticService
             'station_from_port_1_mm' => $projection['station_from_port_1_mm'],
             'station_from_port_2_mm' => $projection['station_from_port_2_mm'],
             'perpendicular_distance_to_header_axis_mm' => $projection['perpendicular_distance_to_header_axis_mm'],
+            'axial_projection_within_endpoint_span' => $projection['axial_projection_within_endpoint_span'],
+            'axial_overrun_beyond_port_1_mm' => $projection['axial_overrun_beyond_port_1_mm'],
+            'axial_overrun_beyond_port_2_mm' => $projection['axial_overrun_beyond_port_2_mm'],
             'delta_from_port_1_mm' => $recorded === null
                 ? null
                 : $projection['station_from_port_1_mm'] - $recorded,

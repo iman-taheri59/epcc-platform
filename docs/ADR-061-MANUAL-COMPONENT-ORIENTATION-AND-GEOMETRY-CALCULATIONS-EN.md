@@ -15,8 +15,9 @@ Raw diagnostics for explicit two-port joints can be captured as immutable,
 source-fingerprinted revisions; unchanged inputs reuse the latest revision and
 changed inputs display `STALE`. Supported direct P2P wall roots also expose a
 pose-derived β comparison and a two-origin axial station projection, including
-the raw perpendicular distance from the branch root-port point to the header
-centreline; neither resolves wall contact or creates an acceptance verdict.
+the raw perpendicular distance to the header centreline and axial overrun
+beyond its finite port-to-port span; these diagnostics neither resolve wall
+contact nor create an acceptance verdict.
 This is not full FR-ENG-16: other fitting variants, wall-surface geometry,
 broader dependent-check coverage, native Autodesk Plant 3D CTPL/PCAT delivery,
 and engineering acceptance rules remain open. The normative functional

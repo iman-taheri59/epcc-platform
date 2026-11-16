@@ -82,7 +82,8 @@ final class JointPortGeometryDiagnosticServiceTest extends TestCase
         self::assertSame('UNRESOLVED', $diagnostic['status'], 'A station projection does not resolve wall contact.');
         self::assertSame('WALL_REFERENCE_WITHOUT_HOST_SURFACE_GEOMETRY', $diagnostic['reason']);
         self::assertArrayNotHasKey('gap_mm', $diagnostic);
-        self::assertSame(JointPortGeometryDiagnosticService::BRANCH_STATION_METHOD, $station['method_code']);
+        self::assertSame('POSE_DERIVED_P2P_BRANCH_STATION_PROJECTION_V2', $station['method_code']);
+        self::assertSame('POSE_DERIVED_P2P_BRANCH_STATION_PROJECTION_V2', $diagnostic['input_snapshot']['branch_station_method_code']);
         self::assertSame('UNASSESSED', $station['status']);
         self::assertSame('UPSTREAM_ENDPOINT_NOT_IDENTIFIED', $station['reason']);
         self::assertSame(2500.0, $station['station_recorded_mm']);
@@ -92,6 +93,9 @@ final class JointPortGeometryDiagnosticServiceTest extends TestCase
         self::assertEqualsWithDelta(0.0, $station['delta_from_port_1_mm'], 1e-10);
         self::assertEqualsWithDelta(1000.0, $station['delta_from_port_2_mm'], 1e-10);
         self::assertEqualsWithDelta(sqrt(125.0 ** 2 + 35.0 ** 2), $station['perpendicular_distance_to_header_axis_mm'], 1e-10);
+        self::assertTrue($station['axial_projection_within_endpoint_span']);
+        self::assertSame(0.0, $station['axial_overrun_beyond_port_1_mm']);
+        self::assertSame(0.0, $station['axial_overrun_beyond_port_2_mm']);
         self::assertArrayNotHasKey('branch_offset_mm', $station);
         self::assertArrayNotHasKey('contact_surface', $station);
         self::assertArrayNotHasKey('wall_contact', $station);
