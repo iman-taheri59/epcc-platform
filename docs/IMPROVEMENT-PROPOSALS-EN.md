@@ -53,7 +53,7 @@ for supported P2P wall roots. `BranchStationProjectionCalculatorTest` (2/4),
 | P-23 | Requirement / MTO | MTO has no coverage of branch-connection material: reinforcement pads (plate) and coped stub ends | OPEN — scope decision |
 | P-24 | Requirement / piping | Pad thickness on P2P rules must be validated per ASME B31.3 §304.3.3 (owner requirement) — calculator + B31.3-2024 materials pack + class design basis + publish-gate validation built; **flange step built 2026-10-12**: ASME B16.5-2025 P-T ratings pack (45 SI tables, cross-checked against the Customary twin) + `FlangeRatingReference` + publish gate rating every FLANGE_TYPE cell against the class design basis; B16.47 large-diameter + Section II Part D extensions remain follow-ups; runtime verification on owner's Laragon pending | PARTIAL — Step B + flange gate built |
 | P-25 | Standards / data | Parallel-session engineering reference library discovered on the owner-published `workspace` branch and ported (commit `bf15816`): full B31.3-2024 Table A-1 stresses (798 rows/138 specs), materials library v1.8, B16.5+B16.47 flange P-T curves, bolting, B16.9 fitting dimensions, valve packs, per-pack schemas and the 2,835-line validator; both flange provenances cross-checked cell-by-cell (4,725/4,725 exact). **Steps 1-4 ported; step 5 catalogue/adoption-only adaptation implemented (awaiting Laragon verification)**: ADR-019 documents ITP-only citation host/migration and mutable-edition conflict; owner chose option A; citation/ITP still deferred. Compatibility assessment (`3bdff9b`) + engineering screening & fitting-review module + MR entry module ported (awaiting Laragon test runs). Next: Laragon verification; group A fluid-service classification implemented pending tests (ADR-020); step 7 baseline/model-import assessed as no-go for wholesale port, owner approved parser-only; pure PCF parser ported (ADR-021), branch-vocabulary conflict handled by a read-only P2P classifier (ADR-022); model importer/baseline deferred | PARTIAL — porting in progress |
-| P-26 | Requirement / engineering model | Manual component slope/orientation/rotation entry and calculated transformed geometry, beyond branch β/θ alone | PARTIAL — persisted project frame and DRAFT-only poses for supported PIPE/NIPPLE and scoped B16.9 BW LR/B16.11 forged elbows; bilingual azimuth/inclination/roll and signed run/rise entry; immutable, source-fingerprinted joint snapshots. Added separate pose-derived β and branch-station-projection diagnostics for direct P2P STUB_IN/STUB_ON wall roots with current header/branch PIPE poses in common frame/MM. Recorded β remains authoritative; β Δ and both station candidates are raw/UNASSESSED; upstream end is not inferred, branch_offset does not place the wall contact, and changes show STALE. Wall contact stays UNRESOLVED without host-surface geometry; no θ/PAD use or verdict. Wider fitting coverage and authentic Autodesk Plant 3D CTPL/PCAT remain open |
+| P-26 | Requirement / engineering model | Manual component slope/orientation/rotation entry and calculated transformed geometry, beyond branch β/θ alone | PARTIAL — persisted project frame and DRAFT-only poses for supported PIPE/NIPPLE, one-port BW CAP connection geometry, and scoped B16.9 BW LR/B16.11 forged elbows; bilingual azimuth/inclination/roll and signed run/rise entry; immutable, source-fingerprinted joint snapshots. CAP resolves its open-end port centre/axis and, for covered NPS when explicitly supplied thickness and its source are captured, a B16.9-2018 Table 6.1-10 E/E1 closed-end reference point; the source text is recorded, not verified. CAP V3 resolves only axial reference length/point (no contour or body surface); missing inputs and NPS 26–48 agreement cases keep that axial reference UNRESOLVED. Added separate pose-derived β and branch-station-projection diagnostics for direct P2P STUB_IN/STUB_ON wall roots with current header/branch PIPE poses in common frame/MM. Recorded β remains authoritative; β Δ, both station candidates, point-to-axis distance, and raw endpoint/recorded-station range checks are UNASSESSED; upstream end is not inferred, branch_offset does not place the wall contact, and changes show STALE. A sourced, pose-framed host PIPE cylinder may report a separate signed root-point radial residual, never a wall-contact result. Wall contact stays UNRESOLVED without branch-surface geometry/acceptance inputs; no θ/PAD use or verdict. Wider fitting coverage and authentic Autodesk Plant 3D CTPL/PCAT remain open |
 
 ---
 
@@ -645,8 +645,14 @@ geometry and applicable geometry-dependent checks after a change. Manual entry
 must not depend on the availability of CAD, PCF or other model import.
 
 **Status: PARTIAL — the selected technical contract, straight-`PIPE`,
-explicit-length `NIPPLE`, scoped B16.9-2018 BW LR, and exact-row B16.11-2021
-forged-elbow profiles are implemented (2026-10-26); FR-ENG-16 remains open.**
+explicit-length `NIPPLE`, one-port BW `CAP` connection-point profile, scoped
+B16.9-2018 BW LR, and exact-row B16.11-2021 forged-elbow profiles are
+implemented; FR-ENG-16 remains open.** The CAP profile always transforms the
+open-end port centre/axis. For NPS 1/2–24 it also selects the exact B16.9-2018
+Table 6.1-10 E/E1 row only when applicable specified cap thickness and its
+source are explicitly entered; the entered source is recorded, not verified.
+Schedule wall is never inferred. Missing inputs and NPS 26–48 agreement cases
+leave body extent/closed-end coordinates `UNRESOLVED`.
 ADR-061 selects a project-local,
 right-handed Easting/Northing/Up frame in `MM`; profile-defined component
 anchors and local port geometry; and azimuth/inclination/roll input resolved by
@@ -664,9 +670,14 @@ The current vertical slice persists immutable project-frame and component-pose
 revisions with RLS, origin/frame provenance, raw angle or triangle inputs,
 anchor, profile hash and transformed geometry. The bilingual piping model page
 lets authorized modelers define the project frame, use either explicit pose
-input mode for supported `PIPE`/`NIPPLE`, B16.9 BW LR, and exact-covered B16.11
-forged-elbow components, and inspect transformed port positions/directions
-plus triangle closure and elbow dimension provenance. Existing explicit two-port joints receive raw gap and
+input mode for supported `PIPE`/`NIPPLE`, one-port BW `CAP` connection point,
+B16.9 BW LR, and exact-covered B16.11 forged-elbow components, and inspect
+transformed port positions/directions plus triangle closure and elbow dimension
+provenance. For CAP, the UI accepts an explicitly specified wall thickness and
+its source reference, applies B16.9-2018 Table 6.1-10 E/E1 only where the pack
+resolves applicability, and transforms the resulting closed-end reference
+point. User-entered source authority is not independently verified; schedule
+is not substituted and NPS 26–48 remains unresolved pending agreement data. Existing explicit two-port joints receive raw gap and
 outward-axis-deviation diagnostics when
 both endpoint profiles and poses resolve; these remain `UNASSESSED` without an
 approved tolerance. An explicit DRAFT-only capture action stores an immutable,
@@ -778,6 +789,109 @@ Pint, PHP syntax, and Blade compilation pass. The full feature file and full
 Laravel suite were not run. Wall contact remains `UNRESOLVED`, the dependent
 check remains `UNASSESSED`, explicit β remains unchanged, and θ/PAD remain
 outside scope; P-26 remains `PARTIAL`.
+
+The next pose-dependent extent check compares the recorded `branch_station_mm`
+against the header centreline length independently of endpoint orientation. It
+reports whether the scalar station is inside `[0, pose_length]` and its raw
+out-of-range overrun, or `null` when no station was recorded. This does not
+identify the upstream port or assert engineering validity; no tolerance or
+verdict is applied. It remains part of the same P2P-only, staleable station
+snapshot, and the diagnostic method is bumped to
+`POSE_DERIVED_P2P_BRANCH_STATION_PROJECTION_V3` to invalidate older captures.
+Both boundary and out-of-range values are covered in the targeted unit test;
+wall contact remains `UNRESOLVED`, and the station diagnostic remains
+`UNASSESSED`. This V3 follow-on passes the two related Unit test classes
+(11 tests/109 assertions) and the targeted P2P snapshot/display/staleness
+feature test (1/79). Pint, PHP syntax, and Blade compilation pass. The full
+`ComponentModellingTest.php` file and full Laravel suite were not rerun on this
+local change; the latest remote CI success is for the previously pushed commit,
+not this unpushed V3 follow-on.
+
+A separate P2P-only host-surface diagnostic now resolves the header PIPE's
+outside diameter from the read-only `pipe-sizes` reference and uses its current
+pose in the common documented project frame to measure the branch root-port
+centre point's signed radial residual to the finite outer cylinder. The signed
+value is raw point-to-surface geometry only; it is not branch-pipe surface
+clearance, weld contact, a fit-up result, or an acceptance verdict. The parent
+wall joint remains `UNRESOLVED`; if the pipe-size reference or finite host span
+is unavailable, the separate metric is `UNRESOLVED` too. It does not consume
+`branch_offset_mm`, assign circumferential direction/θ, or feed PAD. The method
+code, exact resolved NPS/OD/reference provenance, and current source poses are
+included in the fingerprinted P2P snapshot (schema V4), invalidating prior
+captures. The P2P gate remains limited to direct `STUB_IN`/`STUB_ON` roots with
+current compatible PIPE poses in `MM`. A missing/unreadable size-reference pack, unknown NPS, or axial projection
+outside the finite host length yields `UNRESOLVED` for this separate metric;
+no surface value is fabricated. Pipe-size index construction is atomic, so a
+failed pack load cannot poison the same request's subsequent lookup and
+misclassify source unavailability as an unknown NPS. The bilingual model view now
+shows the OD source pack ID, version and standards citation next to the value.
+Focused Feature regressions change the host from resolved NPS 6 to NPS 8 and
+move the header pose after capture: each old snapshot is hidden as `STALE`, and
+recapture uses the new sourced OD and shifted axis. Re-capturing unchanged
+sources is idempotent. A Unit regression confirms the residual is invariant
+under a common 3D rigid rotation and translation. Targeted verification passes
+both Unit classes (14 tests/148 assertions) and the complete
+`ComponentModellingTest.php` file (75 tests/588 assertions). Pint and Blade
+compilation pass. Caution: this Feature class invokes `migrate:fresh` and the
+demo/auth seeders on `epcc_test`; it was run in this session despite the
+standing no-reset/seed constraint. A read-only check now shows 131 public tables
+and 128 migration rows in `epcc_test`; the `epcc` development database was not
+targeted (runtime preflight showed 0/0). Do not rerun this class until its
+destructive test harness is isolated or explicitly approved. The full Laravel
+suite was not run; these changes remain uncommitted and unpushed, so the
+previous green CI run does not cover them. A later, database-free Unit
+regression changes the host NPS after a captured revision and confirms the
+revision displays as `STALE` while retaining only the captured NPS-6 result;
+the fresh NPS-8 result remains live-only until recapture. The two pure Unit
+classes now pass 18 tests/177 assertions, including fail-closed handling when
+the pipe-size pack is missing or malformed, plus explicit positive-outside /
+negative-inside radial-residual sign checks. No Feature tests were rerun after this
+addition because of the destructive `setUp` described above.
+
+The initial CAP pose slice supports a one-port BW connection point. The local
+origin is the open-end port centre; local +X points into the blind body and the
+port outward normal is −X. Roll does not alter this axisymmetric port. At that
+checkpoint body extent remained unresolved pending thickness provenance. The
+three selected pure Unit classes passed 20 tests/191 assertions; Pint and Blade
+view compilation passed. The Feature file and full Laravel suite were not run.
+
+The subsequent CAP extent step adds explicit specified-wall-thickness and
+source fields to both pose-entry modes. Those raw inputs are stored with the
+immutable pose and used to resolve only the exact B16.9-2018 Table 6.1-10 E/E1
+row for NPS 1/2–24. The transformer now also carries named profile reference
+points; the resolved cap length produces a pose-transformed `closed_end` point.
+No schedule substitution occurs, entered source authority is not verified, and
+NPS 26–48 stays `UNRESOLVED` pending manufacturer-agreement data. A source or
+selected row change changes the profile hash and makes old geometry stale.
+Focused verification across the CAP profile, transformer, branch projection,
+and joint-diagnostic Unit classes passes **37 tests/488 assertions**. CAP
+coverage exercises exact-threshold E and just-above-threshold E1 selection
+across all 21 B16.9-2018 Table 6.1-10 NPS rows with explicit thickness limits,
+without rounding across the boundary. All 12 agreement-required sizes from
+NPS 26–48 are separately confirmed to remain `UNRESOLVED` even with supplied
+thickness and recorded source text. Separate checks confirm E/E1 selection and
+changed thickness-source provenance alter the pose profile fingerprint. A
+pure diagnostic regression also moves the captured host pose and confirms the
+old P2P radial residual displays `STALE` while retaining the captured value;
+live geometry is not substituted into that historical revision. Pint, PHP
+syntax, Blade compilation, and `git diff --check` pass. No Feature or full
+Laravel tests were run.
+
+A subsequent standards-coverage sweep extends the same source-pinned approach
+to the already implemented B16.11-2021 forged-elbow profile. It exercises all
+63 authentic class/configuration/NPS rows at both tabulated bend angles (126
+profile resolutions) and checks the exact sourced dimension, table symbol,
+source table, and transformed local point—without angle/radius aliases or
+interpolation. The CAP profile is also versioned V3 to state its strict scope:
+only the axial E/E1 reference length and closed-end reference point resolve;
+no cap contour, body surface, or weld contact is modelled. The UI makes that
+limit explicit and exposes the selected B16.9 note, threshold, reference-pack
+ID/version, and source citation alongside the entered thickness provenance.
+The six focused geometry/diagnostic Unit classes pass
+**48 tests/1,398 assertions**; the standards validator passes all three packs
+and 17 reference packs. Pint, PHP syntax, Blade compilation, and
+`git diff --check` pass. Feature/full suites were not run and P-26 remains
+`PARTIAL`.
 
 
 ## How to use this file

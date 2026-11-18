@@ -7,7 +7,11 @@ namespace App\Services;
 use App\Models\Component;
 use App\Models\Joint;
 use App\Models\Port;
+use App\Support\Reference\Exceptions\UnknownSizeException;
+use App\Support\Reference\PipeReference;
 use InvalidArgumentException;
+use JsonException;
+use RuntimeException;
 
 /**
  * Read-only diagnostics for explicit two-port joints (ADR-061).
@@ -22,7 +26,11 @@ final class JointPortGeometryDiagnosticService
 
     public const BRANCH_BETA_METHOD = 'POSE_DERIVED_P2P_BRANCH_BETA_V1';
 
-    public const BRANCH_STATION_METHOD = 'POSE_DERIVED_P2P_BRANCH_STATION_PROJECTION_V2';
+    public const BRANCH_STATION_METHOD = 'POSE_DERIVED_P2P_BRANCH_STATION_PROJECTION_V3';
+
+    public const BRANCH_HOST_SURFACE_METHOD = 'POSE_DERIVED_P2P_BRANCH_HOST_PIPE_NOMINAL_CYLINDER_RESIDUAL_V1';
+
+    public function __construct(private readonly ?PipeReference $pipeReference = null) {}
 
     /**
      * Calculate diagnostics for only the joints the caller has already loaded
@@ -68,7 +76,13 @@ final class JointPortGeometryDiagnosticService
 
             if ($this->isP2pWallRoot($joint)) {
                 $diagnostic['branch_beta_geometry'] = $this->branchBetaGeometry($joint, $geometryByComponentId);
-                $diagnostic['branch_station_geometry'] = $this->branchStationGeometry($joint, $geometryByComponentId);
+                $stationGeometry = $this->branchStationGeometry($joint, $geometryByComponentId);
+                $diagnostic['branch_station_geometry'] = $stationGeometry;
+                $diagnostic['branch_host_surface_geometry'] = $this->branchHostSurfaceGeometry(
+                    $joint,
+                    $geometryByComponentId,
+                    $stationGeometry,
+                );
             }
 
             return $diagnostic;
@@ -341,6 +355,16 @@ final class JointPortGeometryDiagnosticService
             'station_from_port_1_mm' => $projection['station_from_port_1_mm'],
             'station_from_port_2_mm' => $projection['station_from_port_2_mm'],
             'perpendicular_distance_to_header_axis_mm' => $projection['perpendicular_distance_to_header_axis_mm'],
+            'station_recorded_within_pose_length' => $recorded === null
+                ? null
+                : $recorded >= 0.0 && $recorded <= $projection['header_length_from_pose_mm'],
+            'station_recorded_overrun_pose_length_mm' => $recorded === null
+                ? null
+                : (float) max(
+                    0.0,
+                    -$recorded,
+                    $recorded - $projection['header_length_from_pose_mm'],
+                ),
             'axial_projection_within_endpoint_span' => $projection['axial_projection_within_endpoint_span'],
             'axial_overrun_beyond_port_1_mm' => $projection['axial_overrun_beyond_port_1_mm'],
             'axial_overrun_beyond_port_2_mm' => $projection['axial_overrun_beyond_port_2_mm'],
@@ -354,6 +378,114 @@ final class JointPortGeometryDiagnosticService
             'coordinate_unit' => $headerGeometry['coordinate_unit'],
             'pose_revision_header' => $headerGeometry['pose_revision'] ?? null,
             'pose_revision_branch' => $branchGeometry['pose_revision'] ?? null,
+        ];
+    }
+
+    /**
+     * Report a root-port point's radial residual to a standards-sized,
+     * pose-framed circular header pipe. This is not a branch-surface/contact
+     * assessment; that remains unresolved without branch surface geometry and
+     * an acceptance basis.
+     *
+     * @param  array<string, array<string, mixed>>  $geometryByComponentId
+     * @param  array<string, mixed>  $stationGeometry
+     * @return array<string, mixed>
+     */
+    private function branchHostSurfaceGeometry(
+        Joint $joint,
+        array $geometryByComponentId,
+        array $stationGeometry,
+    ): array {
+        $method = self::BRANCH_HOST_SURFACE_METHOD;
+        if (($stationGeometry['status'] ?? null) !== 'UNASSESSED') {
+            $status = ($stationGeometry['status'] ?? null) === 'STALE' ? 'STALE' : 'UNRESOLVED';
+
+            return [
+                'method_code' => $method,
+                'status' => $status,
+                'reason' => 'BRANCH_STATION_GEOMETRY_NOT_READY',
+            ];
+        }
+
+        if (($stationGeometry['axial_projection_within_endpoint_span'] ?? null) !== true) {
+            return [
+                'method_code' => $method,
+                'status' => 'UNRESOLVED',
+                'reason' => 'BRANCH_ROOT_PROJECTION_OUTSIDE_HOST_PIPE_SPAN',
+            ];
+        }
+
+        $header = $joint->branchHeaderComponent;
+        if (! $header instanceof Component || $header->template_code !== 'PIPE') {
+            return [
+                'method_code' => $method,
+                'status' => 'UNRESOLVED',
+                'reason' => 'HOST_PIPE_PROFILE_NOT_AVAILABLE',
+            ];
+        }
+
+        if ($this->pipeReference === null) {
+            return [
+                'method_code' => $method,
+                'status' => 'UNRESOLVED',
+                'reason' => 'PIPE_SIZE_REFERENCE_NOT_AVAILABLE',
+            ];
+        }
+
+        try {
+            $size = $this->pipeReference->size((string) $header->nominal_size);
+            $sizeSource = $this->pipeReference->sizeProvenance();
+        } catch (UnknownSizeException) {
+            return [
+                'method_code' => $method,
+                'status' => 'UNRESOLVED',
+                'reason' => 'HOST_PIPE_SIZE_NOT_RESOLVED_IN_REFERENCE',
+                'host_nominal_size' => $header->nominal_size,
+            ];
+        } catch (RuntimeException|JsonException) {
+            return [
+                'method_code' => $method,
+                'status' => 'UNRESOLVED',
+                'reason' => 'PIPE_SIZE_REFERENCE_INVALID_OR_UNAVAILABLE',
+            ];
+        }
+
+        $geometry = $geometryByComponentId[$header->id] ?? null;
+        if (! is_array($geometry)
+            || ! is_string($geometry['model_frame_id'] ?? null)
+            || ($geometry['coordinate_unit'] ?? null) !== 'MM') {
+            return [
+                'method_code' => $method,
+                'status' => 'UNRESOLVED',
+                'reason' => 'HOST_PIPE_FRAME_OR_UNIT_NOT_AVAILABLE',
+            ];
+        }
+
+        $outerDiameter = $size->odMm;
+        $radius = $outerDiameter / 2.0;
+        $radialDistance = $stationGeometry['perpendicular_distance_to_header_axis_mm'] ?? null;
+        if (! is_int($radialDistance) && ! is_float($radialDistance)
+            || ! is_finite((float) $radialDistance)) {
+            return [
+                'method_code' => $method,
+                'status' => 'UNRESOLVED',
+                'reason' => 'ROOT_PORT_RADIAL_DISTANCE_NOT_AVAILABLE',
+            ];
+        }
+
+        return [
+            'method_code' => $method,
+            'status' => 'UNASSESSED',
+            'reason' => 'BRANCH_SURFACE_AND_CONTACT_ACCEPTANCE_RULE_NOT_DEFINED',
+            'host_pipe_nps' => $size->nps,
+            'host_pipe_size_reference' => $sizeSource,
+            'host_pipe_outer_diameter_mm' => $outerDiameter,
+            'host_pipe_outer_radius_mm' => $radius,
+            'root_port_radial_distance_to_axis_mm' => (float) $radialDistance,
+            'root_port_signed_radial_residual_to_outer_surface_mm' => (float) $radialDistance - $radius,
+            'model_frame_id' => $geometry['model_frame_id'],
+            'coordinate_unit' => $geometry['coordinate_unit'],
+            'pose_revision_header' => $geometry['pose_revision'] ?? null,
         ];
     }
 
@@ -377,6 +509,39 @@ final class JointPortGeometryDiagnosticService
         ];
     }
 
+    /** @return array<string, mixed> */
+    private function hostPipeSurfaceReference(?Component $header): array
+    {
+        if (! $header instanceof Component || $header->template_code !== 'PIPE') {
+            return ['status' => 'UNRESOLVED', 'reason' => 'HOST_PIPE_PROFILE_NOT_AVAILABLE'];
+        }
+        if ($this->pipeReference === null) {
+            return ['status' => 'UNRESOLVED', 'reason' => 'PIPE_SIZE_REFERENCE_NOT_AVAILABLE'];
+        }
+
+        try {
+            $size = $this->pipeReference->size((string) $header->nominal_size);
+
+            return [
+                'status' => 'RESOLVED',
+                'nps' => $size->nps,
+                'outer_diameter_mm' => $size->odMm,
+                'reference' => $this->pipeReference->sizeProvenance(),
+            ];
+        } catch (UnknownSizeException) {
+            return [
+                'status' => 'UNRESOLVED',
+                'reason' => 'HOST_PIPE_SIZE_NOT_RESOLVED_IN_REFERENCE',
+                'nominal_size' => $header->nominal_size,
+            ];
+        } catch (RuntimeException|JsonException) {
+            return [
+                'status' => 'UNRESOLVED',
+                'reason' => 'PIPE_SIZE_REFERENCE_INVALID_OR_UNAVAILABLE',
+            ];
+        }
+    }
+
     /**
      * Capture every explicit joint/endpoint source used by this diagnostic.
      * Component pose ids and current source fingerprints bind the inputs to
@@ -389,12 +554,14 @@ final class JointPortGeometryDiagnosticService
     {
         $isP2pWallRoot = $this->isP2pWallRoot($joint);
         $input = [
-            'schema' => $isP2pWallRoot ? 'JOINT_GEOMETRY_INPUT_V3' : 'JOINT_GEOMETRY_INPUT_V2',
+            'schema' => $isP2pWallRoot ? 'JOINT_GEOMETRY_INPUT_V4' : 'JOINT_GEOMETRY_INPUT_V2',
             'method_code' => self::METHOD,
             'branch_beta_method_code' => $isP2pWallRoot ? self::BRANCH_BETA_METHOD : null,
         ];
         if ($isP2pWallRoot) {
             $input['branch_station_method_code'] = self::BRANCH_STATION_METHOD;
+            $input['branch_host_surface_method_code'] = self::BRANCH_HOST_SURFACE_METHOD;
+            $input['host_pipe_surface_reference'] = $this->hostPipeSurfaceReference($joint->branchHeaderComponent);
         }
 
         return $input + [

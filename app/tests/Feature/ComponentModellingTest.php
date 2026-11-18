@@ -2166,9 +2166,10 @@ final class ComponentModellingTest extends TestCase
             ->where('joint_id', $joint->id)->firstOrFail());
         $firstBeta = $first->diagnostic_snapshot['branch_beta_geometry'];
         $firstStation = $first->diagnostic_snapshot['branch_station_geometry'];
+        $firstSurface = $first->diagnostic_snapshot['branch_host_surface_geometry'];
         $this->assertSame('UNRESOLVED', $first->diagnostic_status, 'Wall contact still lacks host-surface geometry.');
         $this->assertSame('WALL_REFERENCE_WITHOUT_HOST_SURFACE_GEOMETRY', $first->diagnostic_reason);
-        $this->assertSame('JOINT_GEOMETRY_INPUT_V3', $first->source_snapshot['schema']);
+        $this->assertSame('JOINT_GEOMETRY_INPUT_V4', $first->source_snapshot['schema']);
         $this->assertSame('UNASSESSED', $firstBeta['status']);
         $this->assertEqualsWithDelta(60.0, $firstBeta['beta_geometry_deg'], 1e-10);
         $this->assertSame(45.0, (float) $firstBeta['beta_recorded_deg']);
@@ -2180,6 +2181,16 @@ final class ComponentModellingTest extends TestCase
         $this->assertEqualsWithDelta(2500.0, $firstStation['station_from_port_1_mm'], 1e-10);
         $this->assertEqualsWithDelta(3500.0, $firstStation['station_from_port_2_mm'], 1e-10);
         $this->assertEqualsWithDelta(0.0, $firstStation['perpendicular_distance_to_header_axis_mm'], 1e-10);
+        $this->assertTrue($firstStation['station_recorded_within_pose_length']);
+        $this->assertEqualsWithDelta(0.0, $firstStation['station_recorded_overrun_pose_length_mm'], 1e-10);
+        $this->assertSame('UNASSESSED', $firstSurface['status']);
+        $this->assertSame('BRANCH_SURFACE_AND_CONTACT_ACCEPTANCE_RULE_NOT_DEFINED', $firstSurface['reason']);
+        $this->assertSame(168.3, $firstSurface['host_pipe_outer_diameter_mm']);
+        $this->assertSame('pipe-sizes', $firstSurface['host_pipe_size_reference']['ref_id']);
+        $this->assertSame('1.0.0', $firstSurface['host_pipe_size_reference']['version']);
+        $this->assertStringContainsString('ASME B36.10M-2022', $firstSurface['host_pipe_size_reference']['source']);
+        $this->assertEqualsWithDelta(-84.15, $firstSurface['root_port_signed_radial_residual_to_outer_surface_mm'], 1e-10);
+        $this->assertSame($firstStation['model_frame_id'], $firstSurface['model_frame_id']);
         $this->assertTrue($firstStation['axial_projection_within_endpoint_span']);
         $this->assertEqualsWithDelta(0.0, $firstStation['axial_overrun_beyond_port_1_mm'], 1e-10);
         $this->assertEqualsWithDelta(0.0, $firstStation['axial_overrun_beyond_port_2_mm'], 1e-10);
@@ -2196,10 +2207,20 @@ final class ComponentModellingTest extends TestCase
             ->assertSee('Pose-derived branch station projection (diagnostic only; upstream end is not identified)')
             ->assertSee('Header axis length from pose:')
             ->assertSee('Branch-port point perpendicular distance to header axis:')
+            ->assertSee('Recorded station is within pose-derived header length:')
+            ->assertSee('Recorded station overrun beyond pose-derived header length:')
             ->assertSee('Axial projection lies between header endpoints:')
             ->assertSee('Yes')
             ->assertSee('Axial overrun beyond port 1:')
             ->assertSee('Axial overrun beyond port 2:')
+            ->assertSee('Radial residual to host PIPE outer cylinder — not a contact assessment')
+            ->assertSee('Reference host PIPE OD:')
+            ->assertSee('OD size reference:')
+            ->assertSee('pipe-sizes')
+            ->assertSee('1.0.0')
+            ->assertSee('ASME B36.10M-2022')
+            ->assertSee('Root-port point radial distance to axis:')
+            ->assertSee('Point radial residual to outer radius:')
             ->assertSee('Station projected from port 1:')
             ->assertSee('Station projected from port 2:')
             ->assertSee('Raw station Δ from port 1 (geometry − recorded):');
@@ -2216,10 +2237,20 @@ final class ComponentModellingTest extends TestCase
             ->assertSee('پروجکشن ایستگاه انشعاب از pose')
             ->assertSee('طول محور هدر از pose:')
             ->assertSee('فاصلهٔ عمود نقطهٔ پورت شاخه تا محور هدر:')
+            ->assertSee('ایستگاه ثبت‌شده در بازهٔ طول هدرِ poseشده است:')
+            ->assertSee('بیرون‌زدگی ایستگاه ثبت‌شده از طول هدر:')
             ->assertSee('تصویر محوری بین دو سر هدر است:')
             ->assertSee('بله')
             ->assertSee('بیرون‌زدگی محوری از سمت پورت ۱:')
             ->assertSee('بیرون‌زدگی محوری از سمت پورت ۲:')
+            ->assertSee('باقی‌ماندهٔ شعاعی تا استوانهٔ بیرونی PIPE هدر — تماس‌سنجی نیست')
+            ->assertSee('OD مرجع PIPE هدر:')
+            ->assertSee('منبع OD:')
+            ->assertSee('pipe-sizes')
+            ->assertSee('1.0.0')
+            ->assertSee('ASME B36.10M-2022')
+            ->assertSee('فاصلهٔ شعاعی نقطهٔ ریشه تا محور:')
+            ->assertSee('باقی‌ماندهٔ شعاعی نقطه تا شعاع بیرونی:')
             ->assertSee('ایستگاه تصویرشده از پورت ۱:')
             ->assertSee('ایستگاه تصویرشده از پورت ۲:');
 
@@ -2228,7 +2259,8 @@ final class ComponentModellingTest extends TestCase
             ->assertOk()
             ->assertSee('STALE — inputs changed since capture; capture a new snapshot to record a current result.')
             ->assertDontSee('Geometry β:')
-            ->assertDontSee('Station projected from port 1:');
+            ->assertDontSee('Station projected from port 1:')
+            ->assertDontSee('Radial residual to host PIPE outer cylinder — not a contact assessment');
 
         $this->actingAs($owner)->post($captureUrl)->assertRedirect();
         $revisions = $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
@@ -2257,7 +2289,62 @@ final class ComponentModellingTest extends TestCase
             ->assertSee('Pose-derived branch β (diagnostic only; explicit joint β remains authoritative)')
             ->assertSee('Geometry β:')
             ->assertSee('Pose-derived branch station projection (diagnostic only; upstream end is not identified)')
+            ->assertSee('Radial residual to host PIPE outer cylinder — not a contact assessment')
             ->assertSee('Station projected from port 1:');
+
+        // The host size reference is a diagnostic source as well. Even while
+        // the poses and explicit beta remain untouched, changing the header
+        // from one resolved NPS to another invalidates the captured residual.
+        $this->asOwner(fn () => Component::query()->whereKey($headerPipe->id)
+            ->update(['nominal_size' => '8']));
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('STALE — inputs changed since capture; capture a new snapshot to record a current result.')
+            ->assertDontSee('Radial residual to host PIPE outer cylinder — not a contact assessment');
+
+        $this->actingAs($owner)->post($captureUrl)->assertRedirect();
+        $revisions = $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('joint_id', $joint->id)
+            ->orderBy('revision')
+            ->get());
+        $this->assertCount(3, $revisions);
+        $thirdSurface = $revisions->last()->diagnostic_snapshot['branch_host_surface_geometry'];
+        $this->assertSame('UNASSESSED', $thirdSurface['status']);
+        $this->assertSame('8', $thirdSurface['host_pipe_nps']);
+        $this->assertSame(219.1, $thirdSurface['host_pipe_outer_diameter_mm']);
+        $this->assertSame(45.0, (float) $this->asOwner(fn () => Joint::query()
+            ->whereKey($joint->id)->value('branch_longitudinal_angle_deg')));
+
+        // A new host PIPE pose changes the posed header axis, so the prior
+        // point residual must also become stale. Re-capture measures the same
+        // root point against the shifted axis, without producing a verdict.
+        $poses->recordManual($project, $headerLine, $headerPipe, $frame, $owner, 0.0, 0.0, 0.0, [0, 10, 0]);
+        $this->actingAs($owner)->get($modelUrl)
+            ->assertOk()
+            ->assertSee('STALE — inputs changed since capture; capture a new snapshot to record a current result.')
+            ->assertDontSee('Radial residual to host PIPE outer cylinder — not a contact assessment');
+
+        $this->actingAs($owner)->post($captureUrl)->assertRedirect();
+        $revisions = $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('joint_id', $joint->id)
+            ->orderBy('revision')
+            ->get());
+        $this->assertCount(4, $revisions);
+        $fourthSurface = $revisions->last()->diagnostic_snapshot['branch_host_surface_geometry'];
+        $fourthFingerprint = $revisions->last()->source_fingerprint;
+        $this->assertSame('UNASSESSED', $fourthSurface['status']);
+        $this->assertEqualsWithDelta(10.0, $fourthSurface['root_port_radial_distance_to_axis_mm'], 1e-10);
+        $this->assertEqualsWithDelta(-99.55, $fourthSurface['root_port_signed_radial_residual_to_outer_surface_mm'], 1e-10);
+        $this->assertSame(45.0, (float) $this->asOwner(fn () => Joint::query()
+            ->whereKey($joint->id)->value('branch_longitudinal_angle_deg')));
+
+        // Re-capturing unchanged sources is idempotent for this extended
+        // diagnostic payload, including its reference and pose provenance.
+        $this->actingAs($owner)->post($captureUrl)->assertRedirect();
+        $this->assertSame(4, $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('joint_id', $joint->id)->count()));
+        $this->assertSame($fourthFingerprint, $this->asOwner(fn () => JointGeometryDiagnosticRevision::query()
+            ->where('joint_id', $joint->id)->orderByDesc('revision')->value('source_fingerprint')));
     }
 
     public function test_joint_diagnostic_snapshots_are_immutable_idempotent_and_mark_changed_sources_stale(): void

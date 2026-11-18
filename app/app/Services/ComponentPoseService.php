@@ -48,6 +48,8 @@ final class ComponentPoseService
         float $rollDeg,
         array $anchorModel,
         ?array $inputGeometry = null,
+        ?float $capSpecifiedWallThicknessMm = null,
+        ?string $capThicknessSource = null,
     ): ComponentPoseRevision {
         $inputGeometry ??= [
             'input_mode' => 'AZIMUTH_INCLINATION_ROLL',
@@ -57,6 +59,12 @@ final class ComponentPoseService
             'inclination_deg' => $inclinationDeg,
             'roll_deg' => $rollDeg,
         ];
+        if ($component->template_code === 'CAP') {
+            $inputGeometry['cap_extent_inputs'] = [
+                'specified_wall_thickness_mm' => $capSpecifiedWallThicknessMm,
+                'thickness_source' => $capThicknessSource,
+            ];
+        }
 
         $this->frames->assertProjectAccess($project, $actor);
 
@@ -149,7 +157,7 @@ final class ComponentPoseService
             }
 
             try {
-                $profile = $this->resolveGeometryProfile($lockedComponent);
+                $profile = $this->resolveGeometryProfile($lockedComponent, $inputGeometry);
             } catch (InvalidArgumentException $exception) {
                 throw ValidationException::withMessages([
                     'length_mm' => __('epcc.component.pose_profile_invalid', ['reason' => $exception->getMessage()]),
@@ -235,6 +243,8 @@ final class ComponentPoseService
         float $riseMm,
         ?float $measuredHypotenuseMm,
         array $anchorModel,
+        ?float $capSpecifiedWallThicknessMm = null,
+        ?string $capThicknessSource = null,
     ): ComponentPoseRevision {
         try {
             $triangle = DimensionedTriangleOrientation3D::resolveDeg(
@@ -261,6 +271,8 @@ final class ComponentPoseService
             $triangle['roll_deg'],
             $anchorModel,
             $triangle['input_geometry'],
+            $capSpecifiedWallThicknessMm,
+            $capThicknessSource,
         );
     }
 
@@ -429,7 +441,8 @@ final class ComponentPoseService
         }
 
         try {
-            $profile = $this->resolveGeometryProfile($component);
+            $poseInputGeometry = is_array($pose->input_geometry) ? $pose->input_geometry : [];
+            $profile = $this->resolveGeometryProfile($component, $poseInputGeometry);
         } catch (InvalidArgumentException) {
             return [
                 'status' => 'STALE',
@@ -455,18 +468,33 @@ final class ComponentPoseService
         return in_array($component->template_code, [
             ...LinearTwoPortComponentGeometryProfile::SUPPORTED_TEMPLATES,
             'ELBOW',
+            'CAP',
         ], true);
     }
 
     /** @return array<string, mixed> */
-    private function resolveGeometryProfile(Component $component): array
+    private function resolveGeometryProfile(Component $component, ?array $inputGeometry = null): array
     {
+        $capExtentInputs = $inputGeometry['cap_extent_inputs'] ?? [];
+        $capSpecifiedWallThicknessMm = is_array($capExtentInputs)
+            ? ($capExtentInputs['specified_wall_thickness_mm'] ?? null)
+            : null;
+        $capThicknessSource = is_array($capExtentInputs)
+            ? ($capExtentInputs['thickness_source'] ?? null)
+            : null;
+
         return match ($component->template_code) {
             'PIPE', 'NIPPLE' => LinearTwoPortComponentGeometryProfile::resolve(
                 $component->template_code,
                 $component->length_mm,
             ),
             'ELBOW' => $this->resolveElbowGeometryProfile($component),
+            'CAP' => SinglePortCapGeometryProfile::resolve(
+                $component->nominal_size,
+                $capSpecifiedWallThicknessMm,
+                is_string($capThicknessSource) ? $capThicknessSource : null,
+                $this->fittingDimensions,
+            ),
             default => throw new InvalidArgumentException('No sourced component geometry profile is defined.'),
         };
     }
@@ -519,6 +547,12 @@ final class ComponentPoseService
             'seq' => (int) $port->seq,
             'role' => (string) $port->role,
         ])->all();
+
+        if ($component->template_code === 'CAP') {
+            return $actual === [['seq' => 1, 'role' => 'RUN']]
+                && $ports->first() !== null
+                && strtoupper((string) $ports->first()->end_type) === 'BW';
+        }
 
         if ($actual !== [
             ['seq' => 1, 'role' => 'RUN'],

@@ -146,6 +146,7 @@ final class JointGeometryDiagnosticRevisionService
                     'pose_revision_b',
                     'branch_beta_geometry',
                     'branch_station_geometry',
+                    'branch_host_surface_geometry',
                 ] as $key) {
                     if (array_key_exists($key, $diagnostic)) {
                         $payload[$key] = $diagnostic[$key];

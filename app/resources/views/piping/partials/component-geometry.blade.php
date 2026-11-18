@@ -5,6 +5,7 @@
     $isCurrentForm = old('component_id') === $component->id;
     $poseValue = fn (string $field, mixed $stored): mixed => $isCurrentForm ? old($field) : $stored;
     $inputGeometry = is_array($pose?->input_geometry) ? $pose->input_geometry : [];
+    $capExtentInputs = is_array($inputGeometry['cap_extent_inputs'] ?? null) ? $inputGeometry['cap_extent_inputs'] : [];
     $profileSnapshot = is_array($pose?->resolved_port_geometry) ? $pose->resolved_port_geometry : [];
     $profileParameters = is_array($profileSnapshot['profile_parameters'] ?? null) ? $profileSnapshot['profile_parameters'] : [];
     $savedInputMode = $inputGeometry['input_mode'] ?? 'AZIMUTH_INCLINATION_ROLL';
@@ -12,10 +13,13 @@
     $triangleFormOpen = $inputMode === 'DIMENSIONED_TRIANGLE';
 @endphp
 
-@if(! in_array($component->template_code, ['PIPE', 'NIPPLE', 'ELBOW'], true))
+@if(! in_array($component->template_code, ['PIPE', 'NIPPLE', 'ELBOW', 'CAP'], true))
   <div style="color:var(--muted);font-size:10px;line-height:1.6;">{{ $L('geometryUnsupported') }}</div>
 @else
   <div style="font-size:11px;line-height:1.6;">
+    @if($component->template_code === 'CAP')
+      <div style="margin-bottom:4px;color:var(--muted);font-size:10px;line-height:1.6;">{{ $L('capGeometryHelp') }}</div>
+    @endif
     @if($component->template_code === 'ELBOW')
       <div style="margin-bottom:4px;color:var(--muted);font-size:10px;line-height:1.6;">
         {{ $L($component->fitting_standard === 'B16.11' ? 'forgedElbowGeometryHelp' : 'elbowGeometryHelp') }}
@@ -47,6 +51,27 @@
     @elseif($reason)
       <div class="mono" style="color:var(--muted);font-size:10px;">{{ $reason }}</div>
     @endif
+    @if($component->template_code === 'CAP' && $status === 'RESOLVED' && isset($profileParameters['body_extent_status']))
+      @php
+          $capThicknessSelection = is_array($profileParameters['body_thickness_selection'] ?? null)
+              ? $profileParameters['body_thickness_selection']
+              : [];
+          $capStandardReference = is_array($profileParameters['body_standard_reference'] ?? null)
+              ? $profileParameters['body_standard_reference']
+              : [];
+      @endphp
+      <div class="mono" style="color:var(--muted);font-size:10px;">
+        @if($profileParameters['body_extent_status'] === 'RESOLVED')
+          {{ $L('capBodyExtentResolved') }} · B16.9 {{ $profileParameters['body_standard_reference']['standard']['editionYear'] ?? '—' }} · {{ $profileParameters['body_source_table'] ?? '—' }} · {{ $profileParameters['body_dimension_symbol'] ?? '—' }} = {{ $formatMm($profileParameters['body_length_mm'] ?? 0) }} mm
+          · {{ $L('capThickness') }} {{ $formatMm($capThicknessSelection['wallThicknessMm'] ?? 0) }} mm
+          · B16.9 note ({{ $capThicknessSelection['sourceNote'] ?? '—' }}) · E limit {{ $formatMm($capThicknessSelection['limitingWallThicknessMm'] ?? 0) }} mm
+          · {{ $L('capThicknessSource') }}: {{ $profileParameters['body_thickness_source'] ?? '—' }}
+          <small style="display:block;margin-top:2px;">{{ $L('referenceSource') }}: <bdi>{{ $capStandardReference['refId'] ?? '—' }} v{{ $capStandardReference['version'] ?? '—' }}</bdi> · <bdi>{{ $capStandardReference['source'] ?? '—' }}</bdi></small>
+        @else
+          {{ $L('capBodyExtentUnresolved') }}: {{ $profileParameters['body_extent_reason'] ?? 'CAP_BODY_EXTENT_NOT_RESOLVED' }}
+        @endif
+      </div>
+    @endif
 
     @if($status === 'RESOLVED')
       <div style="margin-top:4px;color:var(--muted);">{{ $L('geometryPoints') }}</div>
@@ -59,6 +84,12 @@
           <bdi>P{{ $num($portGeometry['seq']) }} {{ $portGeometry['role'] }}</bdi>
           · {{ $L('geometryPoint') }} <bdi>[{{ $pointText }}]</bdi> mm
           · {{ $L('geometryAxis') }} <bdi>[{{ $axisText }}]</bdi>
+        </div>
+      @endforeach
+      @foreach($geometry['reference_points'] ?? [] as $referencePointName => $referencePoint)
+        @php $referencePointText = implode(', ', array_map($formatMm, $referencePoint['point_model'] ?? [])); @endphp
+        <div style="border-top:1px solid var(--line);padding-top:3px;margin-top:3px;">
+          {{ $L('capLengthSelection') }} ({{ $referencePointName }}): <bdi>[{{ $referencePointText }}]</bdi> mm
         </div>
       @endforeach
     @endif
@@ -120,6 +151,17 @@
           <input type="hidden" name="input_mode" value="AZIMUTH_INCLINATION_ROLL">
           <input type="hidden" name="component_id" value="{{ $component->id }}">
           <input type="hidden" name="model_frame_revision_id" value="{{ $currentModelFrame->id }}">
+          @if($component->template_code === 'CAP')
+            <label style="grid-column:1/-1;font-size:10px;color:var(--muted);">{{ $L('capThickness') }}
+              <input type="number" step="any" min="0" name="cap_specified_wall_thickness_mm" value="{{ $poseValue('cap_specified_wall_thickness_mm', $capExtentInputs['specified_wall_thickness_mm'] ?? null) }}"
+                     style="width:100%;box-sizing:border-box;margin-top:2px;padding:4px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+            </label>
+            <label style="grid-column:1/-1;font-size:10px;color:var(--muted);">{{ $L('capThicknessSource') }}
+              <input type="text" maxlength="240" name="cap_thickness_source" value="{{ $poseValue('cap_thickness_source', $capExtentInputs['thickness_source'] ?? null) }}"
+                     style="width:100%;box-sizing:border-box;margin-top:2px;padding:4px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+              <small style="display:block;margin-top:3px;line-height:1.5;">{{ $L('capThicknessSourceHelp') }}</small>
+            </label>
+          @endif
           <label style="font-size:10px;color:var(--muted);">{{ $L('azimuth') }}
             <input type="number" step="any" name="azimuth_deg" required value="{{ $poseValue('azimuth_deg', $pose?->input_azimuth_deg) }}"
                    style="width:100%;box-sizing:border-box;margin-top:2px;padding:4px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
@@ -160,6 +202,17 @@
           <input type="hidden" name="input_mode" value="DIMENSIONED_TRIANGLE">
           <input type="hidden" name="component_id" value="{{ $component->id }}">
           <input type="hidden" name="model_frame_revision_id" value="{{ $currentModelFrame->id }}">
+          @if($component->template_code === 'CAP')
+            <label style="grid-column:1/-1;font-size:10px;color:var(--muted);">{{ $L('capThickness') }}
+              <input type="number" step="any" min="0" name="cap_specified_wall_thickness_mm" value="{{ $poseValue('cap_specified_wall_thickness_mm', $capExtentInputs['specified_wall_thickness_mm'] ?? null) }}"
+                     style="width:100%;box-sizing:border-box;margin-top:2px;padding:4px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+            </label>
+            <label style="grid-column:1/-1;font-size:10px;color:var(--muted);">{{ $L('capThicknessSource') }}
+              <input type="text" maxlength="240" name="cap_thickness_source" value="{{ $poseValue('cap_thickness_source', $capExtentInputs['thickness_source'] ?? null) }}"
+                     style="width:100%;box-sizing:border-box;margin-top:2px;padding:4px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
+              <small style="display:block;margin-top:3px;line-height:1.5;">{{ $L('capThicknessSourceHelp') }}</small>
+            </label>
+          @endif
           <label style="font-size:10px;color:var(--muted);">{{ $L('triangleAzimuth') }}
             <input type="number" step="any" name="azimuth_deg" required value="{{ $poseValue('azimuth_deg', $inputGeometry['azimuth_plane_deg'] ?? $pose?->input_azimuth_deg) }}"
                    style="width:100%;box-sizing:border-box;margin-top:2px;padding:4px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;">
