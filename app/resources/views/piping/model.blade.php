@@ -44,6 +44,14 @@
         'elbowEndType' => ['fa' => 'نوع سر هر دو انتها', 'en' => 'End type at both ends'],
         'elbowEndTypeHelp' => ['fa' => 'برای B16.11 صریح انتخاب کنید: SW یا SC. این پروفیل سرهای مختلط و street elbow را پوشش نمی‌دهد.', 'en' => 'Choose explicitly for B16.11: SW or SC. Mixed-end and street elbows are outside this profile.'],
         'elbowGeometryHelp' => ['fa' => 'این پروفیل هندسهٔ پورت است، نه مدل CAD. لنگر مرکز P1 است؛ +X از P1 به تقاطع مجازی امتداد محورهای مرکز پورت‌ها می‌رود؛ +Y سمت خم را تعیین می‌کند و رول صریحاً صفحهٔ خم را می‌چرخاند. مقدار center-to-end از ردیف B16.9-2018 Table 6.1-1 می‌آید؛ این فایل، تمپلت Autodesk Plant 3D نیست.', 'en' => 'This is a port-geometry profile, not a CAD solid. The anchor is P1 centre; local +X runs from P1 to the virtual intersection of the extended port centre-lines; +Y selects the bend side and explicit roll clocks the bend plane. Centre-to-end comes from B16.9-2018 Table 6.1-1; this is not an Autodesk Plant 3D template.'],
+        'capGeometryHelp' => ['fa' => 'فقط مرکز/محور پورتِ سر باز pose می‌شود؛ مبدأ مرکز پورت، +X به‌سمت انتهای بسته و نرمال بیرونی پورت −X است. رول بر پورت اثر ندارد. برای NPS 1/2–24، طول مرجع محوری E/E1 و نقطهٔ مرجع سر بسته فقط با ضخامت مشخص‌شدهٔ قابل‌اعمال و منبع آن حل می‌شود؛ این خروجی کانتور سه‌بعدی، سطح بدنه یا تماس جوش نیست. schedule جانشین نمی‌شود و منبع واردشده راستی‌آزمایی نمی‌شود. NPS 26–48 تا ثبت توافق سازنده UNRESOLVED می‌ماند.', 'en' => 'Only the open-end port centre/axis is posed; the origin is the port centre, +X points toward the closed end and the port outward normal is −X. Roll does not affect the port. For NPS 1/2–24, only the axial E/E1 reference length and closed-end reference point resolve when applicable specified cap wall thickness and its source are entered; this is not a 3D contour, body surface, or weld-contact model. No schedule substitution is made and the entered source is not verified. NPS 26–48 remain UNRESOLVED pending manufacturer agreement.'],
+        'capThickness' => ['fa' => 'ضخامت مشخص‌شدهٔ درپوش برای انتخاب E/E1 (mm)', 'en' => 'Specified cap wall thickness for E/E1 selection (mm)'],
+        'capThicknessSource' => ['fa' => 'منبع ضخامت (سند/بند/ردیف)', 'en' => 'Thickness source (document/clause/row)'],
+        'capThicknessSourceHelp' => ['fa' => 'ورودی صریح ثبت می‌شود؛ مرجع فقط مقدار B16.9 را انتخاب می‌کند و اعتبار منبع یا قابلیت اعمال آن را تأیید نمی‌کند. بدون هر دو مقدار، مرجع محوری UNRESOLVED می‌ماند.', 'en' => 'Inputs are recorded as supplied; lookup selects the B16.9 value but does not verify source authority or applicability. Without both inputs, the axial reference stays UNRESOLVED.'],
+        'capLengthSelection' => ['fa' => 'نقطهٔ سر بسته', 'en' => 'Closed-end reference point'],
+        'capBodyExtentResolved' => ['fa' => 'طول مرجع محوری/نقطهٔ انتهای بسته حل شد؛ کانتور و سطح بدنه مدل نشده است؛ منبع ضخامت تأیید مستقل نشده', 'en' => 'Axial reference length/end point resolved; no body contour or surface is modelled; thickness source is unverified'],
+
+        'capBodyExtentUnresolved' => ['fa' => 'UNRESOLVED — مرجع محوری/نقطهٔ انتهای بسته', 'en' => 'UNRESOLVED — axial reference/closed-end point'],
         'forgedElbowGeometryHelp' => ['fa' => 'این پروفیل فقط مختصات دو پورت است، نه CAD solid. B16.11-2021 فقط زاویه‌های 45/90 و ردیف‌های NPS/class مرجع را حل می‌کند. threaded از A (۹۰°) یا C (۴۵°)، مرکز تا انتها، استفاده می‌کند. برای SW، قرارداد برنامه datum پورت را کف سوکت می‌گیرد و A مرکز تا کف سوکت را مستقیم مصرف می‌کند؛ J عمق حداقل سوکت جداگانه ثبت می‌شود. فاصلهٔ تقریبی پیشنهادی پیش از جوش 1.5 mm اعمال نمی‌شود. هیچ شعاع LR/SR، انتهای مختلط، street elbow یا CAD solid استنباط نمی‌شود.', 'en' => 'This profile resolves two port coordinates only, not a CAD solid. B16.11-2021 resolves only 45/90-degree rows present for the exact NPS/class. Threaded uses table A (90°) or C (45°), centre-to-end. For SW, the application contract sets the port datum at the socket bottom and uses A directly; minimum socket depth J is recorded separately. The approximate recommended 1.5 mm pre-weld gap is not applied. No LR/SR radius, mixed ends, street elbow, or CAD solid is inferred.'],
         'geometryPoints' => ['fa' => 'مختصات پورت‌ها در فریم مدل (mm)', 'en' => 'Port coordinates in model frame (mm)'],
         'geometryPoint' => ['fa' => 'نقطه', 'en' => 'point'],
@@ -73,16 +81,26 @@
         'stationRecorded' => ['fa' => 'ایستگاه ثبت‌شده', 'en' => 'Recorded station'],
         'headerPoseLength' => ['fa' => 'طول محور هدر از pose', 'en' => 'Header axis length from pose'],
         'perpendicularAxisDistance' => ['fa' => 'فاصلهٔ عمود نقطهٔ پورت شاخه تا محور هدر', 'en' => 'Branch-port point perpendicular distance to header axis'],
+        'recordedStationWithinPoseLength' => ['fa' => 'ایستگاه ثبت‌شده در بازهٔ طول هدرِ poseشده است', 'en' => 'Recorded station is within pose-derived header length'],
+        'recordedStationOverrun' => ['fa' => 'بیرون‌زدگی ایستگاه ثبت‌شده از طول هدر', 'en' => 'Recorded station overrun beyond pose-derived header length'],
         'projectionWithinSpan' => ['fa' => 'تصویر محوری بین دو سر هدر است', 'en' => 'Axial projection lies between header endpoints'],
         'projectionOverrunPort1' => ['fa' => 'بیرون‌زدگی محوری از سمت پورت ۱', 'en' => 'Axial overrun beyond port 1'],
         'projectionOverrunPort2' => ['fa' => 'بیرون‌زدگی محوری از سمت پورت ۲', 'en' => 'Axial overrun beyond port 2'],
+        'hostSurfaceTitle' => ['fa' => 'باقی‌ماندهٔ شعاعی تا استوانهٔ بیرونی PIPE هدر — تماس‌سنجی نیست', 'en' => 'Radial residual to host PIPE outer cylinder — not a contact assessment'],
+        'hostPipeOd' => ['fa' => 'OD مرجع PIPE هدر', 'en' => 'Reference host PIPE OD'],
+        'hostOdProvenance' => ['fa' => 'منبع OD', 'en' => 'OD size reference'],
+        'referenceVersion' => ['fa' => 'نسخه', 'en' => 'version'],
+        'referenceSource' => ['fa' => 'مبنای مرجع', 'en' => 'source'],
+        'rootPointRadialDistance' => ['fa' => 'فاصلهٔ شعاعی نقطهٔ ریشه تا محور', 'en' => 'Root-port point radial distance to axis'],
+        'rootSurfaceResidual' => ['fa' => 'باقی‌ماندهٔ شعاعی نقطه تا شعاع بیرونی', 'en' => 'Point radial residual to outer radius'],
+        'hostSurfaceHelp' => ['fa' => 'قطر خارجی از مرجع NPS pipe-sizes و فاصله از محور poseشده محاسبه شده است؛ علامت مثبت بیرون و منفی داخل شعاع را نشان می‌دهد. این فاصلهٔ نقطهٔ مرکز پورت است، نه سطح لولهٔ شاخه یا تماس جوش؛ تلرانس/قاعده پذیرش ندارد، زاویهٔ محیطی/θ نمی‌سازد و تماس دیواره UNRESOLVED می‌ماند.', 'en' => 'OD comes from the NPS pipe-sizes reference and distance from the posed axis. Positive is outside and negative is inside the host radius. This measures the branch root-port centre point, not branch-pipe surface or weld contact; no acceptance tolerance/rule or circumferential angle/θ is inferred, and wall contact remains UNRESOLVED.'],
         'yes' => ['fa' => 'بله', 'en' => 'Yes'],
         'no' => ['fa' => 'خیر', 'en' => 'No'],
         'stationFromPort1' => ['fa' => 'ایستگاه تصویرشده از پورت ۱', 'en' => 'Station projected from port 1'],
         'stationFromPort2' => ['fa' => 'ایستگاه تصویرشده از پورت ۲', 'en' => 'Station projected from port 2'],
         'stationDeltaFromPort1' => ['fa' => 'Δ خام ایستگاه از پورت ۱ (هندسه − ثبت‌شده)', 'en' => 'Raw station Δ from port 1 (geometry − recorded)'],
         'stationDeltaFromPort2' => ['fa' => 'Δ خام ایستگاه از پورت ۲ (هندسه − ثبت‌شده)', 'en' => 'Raw station Δ from port 2 (geometry − recorded)'],
-        'stationDiagnosticHelp' => ['fa' => 'این‌ها روابط خام نقطه و محورِ poseشده‌اند؛ ایستگاه از هر دو سر، فاصلهٔ عمود تا محور نامتناهی و بیرون‌زدگی از بازهٔ محوری بین دو پورت را نشان می‌دهند. این خروجی شعاع/سطح/تماس هدر یا قاعدهٔ پذیرش را تعیین نمی‌کند؛ تلرانسی اعمال نشده، branch_offset_mm مصرف نمی‌شود و تشخیص UNASSESSED و تماس دیواره UNRESOLVED می‌ماند.', 'en' => 'These are raw posed point/axis relations: stations from both endpoint origins, perpendicular distance to the infinite axis, and axial overrun beyond the port-to-port span. They do not define header radius, surface/contact, or an acceptance rule; no tolerance is applied, branch_offset_mm is not used, the check remains UNASSESSED, and wall contact remains UNRESOLVED.'],
+        'stationDiagnosticHelp' => ['fa' => 'همهٔ مقادیر روابط هندسی خام از pose هستند: ایستگاه از هر دو سر، فاصلهٔ عمود تا محور نامتناهی، بیرون‌زدگی تصویر محوری از بازهٔ بین دو پورت، و مقایسهٔ ایستگاه ثبت‌شده با طول poseشدهٔ هدر. هیچ تلرانس/قاعدهٔ پذیرش اعمال نشده؛ این‌ها شعاع، سطح یا تماس هدر را تعیین نمی‌کنند، branch_offset_mm مصرف نمی‌شود، تشخیص UNASSESSED و تماس دیواره UNRESOLVED می‌ماند.', 'en' => 'All values are raw pose geometry: stations from both endpoint origins, perpendicular distance to the infinite axis, projected overrun beyond the port-to-port span, and the recorded station compared with pose-derived header length. No tolerance or acceptance rule is applied; these values do not define header radius, surface, or contact, branch_offset_mm is not used, the check remains UNASSESSED, and wall contact remains UNRESOLVED.'],
         'stationDiagnosticUnresolved' => ['fa' => 'UNRESOLVED — pose دو PIPE و نقاط دو سر هدر برای پروجکشن ایستگاه در دسترس نیستند.', 'en' => 'UNRESOLVED — both PIPE poses and the header endpoint points are required for station projection.'],
         'stationDiagnosticStale' => ['fa' => 'STALE — فریم/واحد یا poseها برای پروجکشن ایستگاه سازگار نیستند.', 'en' => 'STALE — frames, units, or poses are not compatible for station projection.'],
         'seq'      => ['fa' => 'ردیف', 'en' => 'No.'],
@@ -948,6 +966,10 @@
                   · {{ $L('perpendicularAxisDistance') }}: <bdi>{{ $formatMm($branchStationGeometry['perpendicular_distance_to_header_axis_mm']) }} mm</bdi>
                 </div>
                 <div>
+                  {{ $L('recordedStationWithinPoseLength') }}: <bdi>{{ $branchStationGeometry['station_recorded_within_pose_length'] === null ? '—' : ($branchStationGeometry['station_recorded_within_pose_length'] ? $L('yes') : $L('no')) }}</bdi>
+                  · {{ $L('recordedStationOverrun') }}: <bdi>{{ $branchStationGeometry['station_recorded_overrun_pose_length_mm'] === null ? '—' : $formatMm($branchStationGeometry['station_recorded_overrun_pose_length_mm']).' mm' }}</bdi>
+                </div>
+                <div>
                   {{ $L('projectionWithinSpan') }}: <bdi>{{ $branchStationGeometry['axial_projection_within_endpoint_span'] ? $L('yes') : $L('no') }}</bdi>
                   · {{ $L('projectionOverrunPort1') }}: <bdi>{{ $formatMm($branchStationGeometry['axial_overrun_beyond_port_1_mm']) }} mm</bdi>
                   · {{ $L('projectionOverrunPort2') }}: <bdi>{{ $formatMm($branchStationGeometry['axial_overrun_beyond_port_2_mm']) }} mm</bdi>
@@ -971,6 +993,34 @@
               @else
                 <div style="color:#fcd34d;">{{ $L('stationDiagnosticUnresolved') }}</div>
                 <div class="mono" style="color:var(--muted);">{{ $branchStationGeometry['reason'] ?? 'BRANCH_STATION_GEOMETRY_UNRESOLVED' }}</div>
+              @endif
+            </div>
+          @endif
+          @php $branchHostSurfaceGeometry = $diagnostic['branch_host_surface_geometry'] ?? null; @endphp
+          @if(($diagnostic['snapshot_state'] ?? null) !== 'STALE' && is_array($branchHostSurfaceGeometry))
+            <div style="margin-top:5px;padding-top:4px;border-top:1px solid var(--line);">
+              <strong>{{ $L('hostSurfaceTitle') }}</strong>
+              @if(($branchHostSurfaceGeometry['status'] ?? null) === 'UNASSESSED')
+                <div>
+                  {{ $L('hostPipeOd') }}: <bdi>{{ $formatMm($branchHostSurfaceGeometry['host_pipe_outer_diameter_mm']) }} mm</bdi>
+                  · {{ $L('rootPointRadialDistance') }}: <bdi>{{ $formatMm($branchHostSurfaceGeometry['root_port_radial_distance_to_axis_mm']) }} mm</bdi>
+                  · {{ $L('rootSurfaceResidual') }}: <bdi>{{ $formatMm($branchHostSurfaceGeometry['root_port_signed_radial_residual_to_outer_surface_mm']) }} mm</bdi>
+                </div>
+                @php $hostPipeSizeReference = $branchHostSurfaceGeometry['host_pipe_size_reference'] ?? null; @endphp
+                @if(is_array($hostPipeSizeReference))
+                  <small style="display:block;color:var(--muted);">
+                    {{ $L('hostOdProvenance') }}: <bdi>{{ $hostPipeSizeReference['ref_id'] ?? '—' }}</bdi>
+                    · {{ $L('referenceVersion') }} <bdi>{{ $hostPipeSizeReference['version'] ?? '—' }}</bdi>
+                    · {{ $L('referenceSource') }} <bdi>{{ $hostPipeSizeReference['source'] ?? '—' }}</bdi>
+                  </small>
+                @endif
+                <small style="color:var(--muted);">{{ $L('hostSurfaceHelp') }}</small>
+              @elseif(($branchHostSurfaceGeometry['status'] ?? null) === 'STALE')
+                <div style="color:#fca5a5;">{{ $L('stationDiagnosticStale') }}</div>
+                <div class="mono" style="color:var(--muted);">{{ $branchHostSurfaceGeometry['reason'] ?? 'BRANCH_HOST_SURFACE_GEOMETRY_STALE' }}</div>
+              @else
+                <div style="color:#fcd34d;">{{ $L('stationDiagnosticUnresolved') }}</div>
+                <div class="mono" style="color:var(--muted);">{{ $branchHostSurfaceGeometry['reason'] ?? 'BRANCH_HOST_SURFACE_GEOMETRY_UNRESOLVED' }}</div>
               @endif
             </div>
           @endif

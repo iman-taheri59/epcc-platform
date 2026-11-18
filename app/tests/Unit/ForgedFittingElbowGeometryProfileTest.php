@@ -83,6 +83,41 @@ final class ForgedFittingElbowGeometryProfileTest extends TestCase
         ], $elbow45['ports'][1]['point_local_mm']);
     }
 
+    public function test_every_exact_b16_11_reference_row_resolves_both_tabulated_angles_without_inference(): void
+    {
+        $referenceDirectory = dirname(__DIR__, 3).'/standards-packs/reference';
+        $pack = json_decode(file_get_contents($referenceDirectory.'/forged-fitting-elbow-dimensions.ref.json'), true, 512, JSON_THROW_ON_ERROR);
+        $dimensions = $this->dimensions();
+
+        self::assertCount(63, $pack['dimensions']);
+        foreach ($pack['dimensions'] as $row) {
+            $endType = $row['endConfiguration'] === 'SOCKET_WELD_BOTH_ENDS' ? 'SW' : 'SC';
+            foreach (['45', '90'] as $angle) {
+                $dimension = $row['bendDimensions'][$angle];
+                $profile = ForgedFittingElbowGeometryProfile::resolve(
+                    $endType,
+                    $row['classDesignation'],
+                    $angle,
+                    $row['nps'],
+                    $dimensions,
+                );
+                $distance = (float) $dimension['mm'];
+                $radians = deg2rad((float) $angle);
+
+                self::assertSame('RESOLVED', $profile['status'], $row['nps'].' '.$endType.' Class '.$row['classDesignation'].' '.$angle);
+                self::assertSame($dimension['symbol'], $profile['profile_parameters']['dimension_symbol']);
+                self::assertSame($dimension['dimension'], $profile['profile_parameters']['dimension']);
+                self::assertSame($distance, $profile['profile_parameters']['dimension_mm']);
+                self::assertSame($row['sourceTable'], $profile['profile_parameters']['source_table']);
+                self::assertEqualsWithDelta(
+                    [$distance * (1.0 + cos($radians)), $distance * sin($radians), 0.0],
+                    $profile['ports'][1]['point_local_mm'],
+                    1e-9,
+                );
+            }
+        }
+    }
+
     public function test_a_class_size_pair_absent_from_the_reference_is_unresolved_not_interpolated(): void
     {
         $profile = ForgedFittingElbowGeometryProfile::resolve(

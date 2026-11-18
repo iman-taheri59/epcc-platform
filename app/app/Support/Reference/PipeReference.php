@@ -41,9 +41,7 @@ final class PipeReference
     /** @var array<int, PipeSize>|null  keyed by DN */
     private ?array $byDn = null;
 
-    public function __construct(private readonly string $refDir)
-    {
-    }
+    public function __construct(private readonly string $refDir) {}
 
     // ------------------------------------------------------------ sizes ---
 
@@ -301,6 +299,18 @@ final class PipeReference
 
     // -------------------------------------------------------- provenance --
 
+    /** @return array{ref_id:string,version:string,source:string} */
+    public function sizeProvenance(): array
+    {
+        $pack = $this->pack('pipe-sizes');
+
+        return [
+            'ref_id' => 'pipe-sizes',
+            'version' => (string) $pack['version'],
+            'source' => (string) $pack['source'],
+        ];
+    }
+
     /** @return array<string,string> refId => "version (source)" */
     public function provenance(): array
     {
@@ -339,14 +349,20 @@ final class PipeReference
             return;
         }
 
-        $this->byNps = [];
-        $this->byDn = [];
+        // Build into locals and publish only after the entire reference pack
+        // resolves. If loading/decoding the pack fails, a retry must not see
+        // empty indexes and misreport the source failure as an unknown NPS.
+        $byNps = [];
+        $byDn = [];
 
         foreach ($this->pack('pipe-sizes')['sizes'] as $row) {
             $size = PipeSize::fromArray($row);
-            $this->byNps[$size->nps] = $size;
-            $this->byDn[$size->dn] = $size;
+            $byNps[$size->nps] = $size;
+            $byDn[$size->dn] = $size;
         }
+
+        $this->byNps = $byNps;
+        $this->byDn = $byDn;
     }
 
     /**

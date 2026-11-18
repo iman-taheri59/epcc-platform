@@ -15,9 +15,14 @@ Raw diagnostics for explicit two-port joints can be captured as immutable,
 source-fingerprinted revisions; unchanged inputs reuse the latest revision and
 changed inputs display `STALE`. Supported direct P2P wall roots also expose a
 pose-derived β comparison and a two-origin axial station projection, including
-the raw perpendicular distance to the header centreline and axial overrun
-beyond its finite port-to-port span; these diagnostics neither resolve wall
-contact nor create an acceptance verdict.
+the raw perpendicular distance to the header centreline, axial overrun beyond
+its finite port-to-port span, and recorded-station range against pose-derived
+header length. A separately fingerprinted diagnostic can compare the posed
+root-port centre point's radial distance with a finite, standards-sized,
+circular header-PIPE outer-cylinder surface. This signed scalar residual is
+`UNASSESSED`, is not a branch-surface or contact result, and does not consume
+θ or PAD geometry; wall contact remains unresolved without branch-surface and
+acceptance inputs.
 This is not full FR-ENG-16: other fitting variants, wall-surface geometry,
 broader dependent-check coverage, native Autodesk Plant 3D CTPL/PCAT delivery,
 and engineering acceptance rules remain open. The normative functional
@@ -477,7 +482,7 @@ boundaries and the remaining profile, diagnostics, and acceptance work.
 | Component anchors and geometry | Versioned straight-`PIPE`/`NIPPLE`, B16.9 BW LR, and separate B16.11 forged-elbow profiles resolve exactly two RUN ports; missing reference rows return `UNRESOLVED` | B16.11 is limited to exact 45°/90° SW-SW or SC-SC NPS/class rows; SW port datum is the application-defined socket bottom using A directly, J remains separate; threaded uses A/C directly. Do not infer from sequence, station/offset, LR/SR, or take-out alone |
 | Pose persistence | Raw angles or complete triangle input + anchor + frame/profile versions resolve to immutable pose revisions for the supported `PIPE`/`NIPPLE`, B16.9 BW LR, and limited B16.11 profiles | RLS-protected persistence, latest-revision selection, provenance/hash, B16.11 standard/class/end-type fingerprinting, raw triangle/method data and optional closure residual are implemented; other fitting variants remain open |
 | User entry | Bilingual azimuth/inclination/roll and signed dimensioned run/rise modes with explicit plane, roll and anchor, under the DRAFT gate | Both input modes, optional measured hypotenuse, raw triangle/method provenance and non-verdict closure residual are implemented for the supported `PIPE`/`NIPPLE`, B16.9 and limited B16.11 elbow profiles; broader variants remain open |
-| Derived geometry | Transformed ports for supported `PIPE`/`NIPPLE`, B16.9 BW LR elbows and exact covered B16.11 elbows plus raw two-port gap/axis-deviation diagnostics; explicit DRAFT-only capture stores immutable, source-fingerprinted joint revisions and displays changed sources as `STALE` | Broaden supported fitting profiles and dependent checks; wall geometry stays unresolved without host-surface data |
+| Derived geometry | Transformed ports for supported `PIPE`/`NIPPLE`, B16.9 BW LR elbows and exact covered B16.11 elbows plus raw two-port gap/axis-deviation diagnostics; explicit DRAFT-only capture stores immutable, source-fingerprinted joint revisions and displays changed sources as `STALE` | Broaden supported fitting profiles and dependent checks; the P2P root-point residual to a nominal host PIPE cylinder is diagnostic-only, while branch-surface intersection and weld contact remain `UNRESOLVED` |
 | Engineering acceptance | Matrix tolerance is `1e-8`; fit residuals remain `UNASSESSED` without a joint/type/project rule | Define and source each applicable linear/angular acceptance tolerance; do not invent a global one |
 | Change control | Pose writes only on `DRAFT`; frame changes are guarded after poses on non-DRAFT lines; changed frame/profile hides old coordinates as `STALE` | Integrate any later fitted/released dependant review and refresh transactions without bypassing the existing return-to-DRAFT/re-approval path |
 | Branch β / θ | Entered β remains authoritative; θ is not inferred and PAD does not consume pose | A separate pose-derived β diagnostic is implemented only for direct P2P stub-in/stub-on wall roots when current header/branch `PIPE` poses resolve in one frame/`MM`; it reports raw geometry β and signed geometry-minus-recorded Δ as `UNASSESSED`, is fingerprinted/STALE, and never backfills or overwrites explicit β. TEE/CROSS, OLET, θ, PAD consumption, and acceptance/mismatch verdicts remain out of scope |
@@ -506,9 +511,12 @@ boundaries and the remaining profile, diagnostics, and acceptance work.
    output plus raw gap/axis diagnostics; an explicit DRAFT-only capture writes
    append-only, RLS-protected, source-fingerprinted revisions and changes to
    inputs display `STALE`. Topology/ownership remain untouched. Wider profiles,
-   host-surface geometry and other dependent-check classes remain open.
-5. Keep wall-contact geometry unresolved until host-surface geometry exists;
-   keep fit-up and β-difference results `UNASSESSED` until a cited
+   branch-surface/contact geometry and other dependent-check classes remain
+   open. The P2P root-point residual to a nominal host PIPE cylinder is a
+   separate `UNASSESSED` diagnostic only.
+5. Keep branch-surface/weld-contact geometry `UNRESOLVED`; the nominal
+   host-cylinder point residual is not an intersection or contact result. Keep
+   fit-up and β-difference results `UNASSESSED` until a cited
    type/project acceptance rule is configured. The implemented pose-derived β
    is a separate diagnostic only for supported P2P stub wall roots with current
    `PIPE` poses in a common frame. Do not write/backfill explicit β, infer θ,
@@ -522,10 +530,18 @@ boundaries and the remaining profile, diagnostics, and acceptance work.
 - The current vertical slice does not complete all of FR-ENG-16, add a
   PCF-to-model writer, or replace specialist CAD authoring tools. It implements
   persisted frame/pose revisions, DRAFT-only straight-`PIPE`, explicit-length
-  `NIPPLE`, scoped B16.9 BW LR elbow workflows, and the exact-covered B16.11
-  two-ended forged-elbow workflow, with transformed-port output, both selected
+  `NIPPLE`, one-port BW `CAP` connection-point geometry, scoped B16.9 BW LR
+  elbow workflows, and the exact-covered B16.11 two-ended forged-elbow
+  workflow, with transformed-port output, both selected
   manual input modes, raw two-port diagnostics and explicit DRAFT-only
-  source-versioned snapshots. It is not a full supported-component geometry
+  source-versioned snapshots. The CAP profile resolves its open-end port
+  centre/axis and, for NPS 1/2–24, the exact B16.9-2018 Table 6.1-10 E/E1
+  closed-end reference point only when applicable specified thickness and its
+  source are entered. The source text is captured, not verified; schedule wall
+  is not inferred. Profile V3 resolves only axial E/E1 length and a closed-end
+  reference point, not a cap contour/body surface/weld contact. Missing
+  thickness/source and NPS 26–48 agreement cases keep that axial reference
+  `UNRESOLVED`. It is not a full supported-component geometry
   catalogue, a native Autodesk Plant 3D CTPL/PCAT deliverable, or a fit-up
   acceptance system. Report P-26 as `PARTIAL`, not `BUILT`.
 - The profiles remain limited port-centreline calculation contracts, not a
@@ -644,3 +660,31 @@ boundaries and the remaining profile, diagnostics, and acceptance work.
   seed setup ran only against `epcc_test`, which now has 131 tables / 128
   migration rows. The development `epcc` database remains empty and
   unmigrated. No full Laravel suite was run; P-26 remains `PARTIAL`.
+- **2026-10-26 — explicit B16.9 BW CAP extent:** retained the open-end port
+  centre as the one-port anchor. Added user-entered specified cap thickness and
+  source text to immutable pose input; the source is recorded but not verified,
+  and no schedule wall is substituted. Only the exact B16.9-2018 Table 6.1-10
+  E/E1 row for NPS 1/2–24 can produce a transformed `closed_end` reference
+  point. Missing inputs and NPS 26–48 manufacturer-agreement cases leave body
+  extent `UNRESOLVED`. Named reference-point transformation is included in the
+  fingerprinted geometry profile. Focused pure checks pass 37 tests/488
+  assertions across the CAP profile, transformer, branch projection, and
+  joint-diagnostic classes. Every one of the 21 covered CAP NPS rows is tested
+  at the exact E/E1 thickness boundary and just above it without rounding; all
+  12 agreement-required sizes (NPS 26–48) are confirmed `UNRESOLVED` even with
+  supplied thickness/source inputs. Provenance changes also alter the profile
+  fingerprint. A captured P2P radial residual is verified to become stale after
+  host-pose movement without replacing its historical value. No Feature or
+  full Laravel suite was run. P-26 remains `PARTIAL`.
+- **2026-10-26 — B16.11 coverage and CAP profile scope:** added pure
+  regression over all 63 source-covered B16.11 class/configuration/NPS rows at
+  both standard angles (126 resolved profile cases), checking exact dimensions,
+  symbols, source tables, and local port points without interpolation or
+  cross-standard aliases. CAP profile V3 now explicitly contracts only the
+  axial E/E1 reference length and closed-end point; no cap contour, body surface,
+  or weld contact is modelled. The bilingual UI states this limit and shows the
+  selected B16.9 note/threshold and reference-pack ID/version/source beside the
+  supplied thickness provenance. The six focused geometry/diagnostic Unit
+  classes pass 48 tests/1,398 assertions;
+  standards validator passes all three packs and 17 reference packs. No Feature
+  or full Laravel suite was run; P-26 remains `PARTIAL`.

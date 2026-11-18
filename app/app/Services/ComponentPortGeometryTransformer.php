@@ -23,6 +23,7 @@ final class ComponentPortGeometryTransformer
      *   anchor_local_mm:list<float>,
      *   anchor_model:list<int|float>,
      *   profile_parameters?:array<string,mixed>,
+     *   reference_points?:array<string,array{point_local_mm:list<float>,point_model:list<float>}>,
      *   ports:list<array{
      *     seq:int,
      *     role:string,
@@ -156,6 +157,24 @@ final class ComponentPortGeometryTransformer
             ];
         }
 
+        $referencePoints = $profile['reference_points'] ?? [];
+        if (! is_array($referencePoints)
+            || ($referencePoints !== [] && array_is_list($referencePoints))) {
+            throw new InvalidArgumentException('Optional reference_points must be a name-keyed coordinate map.');
+        }
+        $transformedReferencePoints = [];
+        foreach ($referencePoints as $name => $pointLocal) {
+            if (! is_string($name) || trim($name) === '') {
+                throw new InvalidArgumentException('Every reference point must have a non-empty string name.');
+            }
+            $point = self::vector3($pointLocal, "reference_points.$name");
+            $modelPoint = $pose->transformPoint($point, $pose->sourceFrameId, $unit);
+            $transformedReferencePoints[$name] = [
+                'point_local_mm' => $point,
+                'point_model' => $modelPoint['coordinates'],
+            ];
+        }
+
         $resolved = [
             'status' => 'RESOLVED',
             'profile_id' => $profileId,
@@ -168,6 +187,9 @@ final class ComponentPortGeometryTransformer
         ];
         if (is_array($profileParameters)) {
             $resolved['profile_parameters'] = $profileParameters;
+        }
+        if ($transformedReferencePoints !== []) {
+            $resolved['reference_points'] = $transformedReferencePoints;
         }
 
         return $resolved;

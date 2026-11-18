@@ -400,6 +400,8 @@ final class ComponentController extends Controller
                 'prohibited_if:input_mode,AZIMUTH_INCLINATION_ROLL',
                 'nullable', 'numeric', 'gt:0',
             ],
+            'cap_specified_wall_thickness_mm' => ['nullable', 'numeric', 'gt:0'],
+            'cap_thickness_source' => ['nullable', 'string', 'max:240'],
             'anchor_easting_mm' => ['required', 'numeric', $coordinateBounds],
             'anchor_northing_mm' => ['required', 'numeric', $coordinateBounds],
             'anchor_elevation_mm' => ['required', 'numeric', $coordinateBounds],
@@ -452,6 +454,10 @@ final class ComponentController extends Controller
                         ? (float) $data['measured_hypotenuse_mm']
                         : null,
                     $anchorModel,
+                    isset($data['cap_specified_wall_thickness_mm'])
+                        ? (float) $data['cap_specified_wall_thickness_mm']
+                        : null,
+                    $data['cap_thickness_source'] ?? null,
                 );
             } else {
                 $pose = $this->poses->recordManual(
@@ -464,6 +470,10 @@ final class ComponentController extends Controller
                     (float) $data['inclination_deg'],
                     (float) $data['roll_deg'],
                     $anchorModel,
+                    capSpecifiedWallThicknessMm: isset($data['cap_specified_wall_thickness_mm'])
+                        ? (float) $data['cap_specified_wall_thickness_mm']
+                        : null,
+                    capThicknessSource: $data['cap_thickness_source'] ?? null,
                 );
             }
         } catch (ValidationException $exception) {
