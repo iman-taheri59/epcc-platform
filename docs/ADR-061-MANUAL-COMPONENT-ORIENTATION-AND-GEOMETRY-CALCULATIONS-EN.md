@@ -676,6 +676,8 @@ boundaries and the remaining profile, diagnostics, and acceptance work.
   fingerprint. A captured P2P radial residual is verified to become stale after
   host-pose movement without replacing its historical value. No Feature or
   full Laravel suite was run. P-26 remains `PARTIAL`.
+- **2026-11-18 — straight TEE and BW reducer profiles:** added source-backed B16.9-2018 straight equal tees (Table 6.1-7, 33 NPS) and concentric/eccentric reducers (Table 6.1-11, H per large NPS) as versioned local profiles with explicit run C / branch M and end-to-end H. TEE is a 3-port RUN/RUN/BRANCH profile anchored at run port 1 with roll-clocked branch; REDUCER is a 2-port LARGE/SMALL profile anchored at the large end, concentric coaxial (roll-invariant) and eccentric offset by (OD_large−OD_small)/2 via pipe OD reference. Both are fingerprinted/STALE, support both azimuth/roll and dimensioned-triangle input modes, and are exposed in the bilingual model view. Reducing outlet tees (Table 6.1-8) remain open pending a second nominal size.
+
 - **2026-10-26 — B16.11 coverage and CAP profile scope:** added pure
   regression over all 63 source-covered B16.11 class/configuration/NPS rows at
   both standard angles (126 resolved profile cases), checking exact dimensions,

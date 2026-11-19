@@ -14,6 +14,7 @@ use App\Support\AuthorizationPipeline;
 use App\Support\LineReleaseState;
 use App\Support\Reference\FittingDimensions;
 use App\Support\Reference\ForgedFittingElbowDimensions;
+use App\Support\Reference\PipeReference;
 use App\Support\TenantContext;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -26,6 +27,7 @@ final class ComponentPoseService
         private readonly ProjectModelFrameService $frames,
         private readonly FittingDimensions $fittingDimensions,
         private readonly ForgedFittingElbowDimensions $forgedElbowDimensions,
+        private readonly PipeReference $pipeReference,
         private readonly TenantContext $tenant,
         private readonly AuthorizationPipeline $authz,
     ) {}
@@ -469,6 +471,8 @@ final class ComponentPoseService
             ...LinearTwoPortComponentGeometryProfile::SUPPORTED_TEMPLATES,
             'ELBOW',
             'CAP',
+            'TEE',
+            'REDUCER',
         ], true);
     }
 
@@ -495,6 +499,11 @@ final class ComponentPoseService
                 is_string($capThicknessSource) ? $capThicknessSource : null,
                 $this->fittingDimensions,
             ),
+            'TEE' => ButtWeldTeeGeometryProfile::resolve(
+                $component->nominal_size,
+                $this->fittingDimensions,
+            ),
+            'REDUCER' => $this->resolveReducerGeometryProfile($component),
             default => throw new InvalidArgumentException('No sourced component geometry profile is defined.'),
         };
     }
@@ -531,6 +540,31 @@ final class ComponentPoseService
         );
     }
 
+    /** @return array<string,mixed> */
+    private function resolveReducerGeometryProfile(Component $component): array
+    {
+        $ports = $component->relationLoaded('ports') ? $component->getRelation('ports') : $component->ports()->get();
+        $largePort = $ports->first(fn ($p): bool => (string) $p->role === 'LARGE');
+        $smallPort = $ports->first(fn ($p): bool => (string) $p->role === 'SMALL');
+        $largeNps = $largePort?->nominal_size ?? $component->nominal_size;
+        $smallNps = $smallPort?->nominal_size;
+
+        $qualifier = $component->fitting_qualifier;
+        if ($qualifier === null || trim((string) $qualifier) === '') {
+            // Default to CONCENTRIC when no qualifier was stored — preserves
+            // modelling for legacy reducers created before qualifier was required.
+            $qualifier = 'CONCENTRIC';
+        }
+
+        return ButtWeldReducerGeometryProfile::resolve(
+            $largeNps,
+            $smallNps,
+            $qualifier,
+            $this->fittingDimensions,
+            $this->pipeReference,
+        );
+    }
+
     private function assertProfilePortShape(Component $component): void
     {
         if (! $this->profilePortShapeMatches($component)) {
@@ -552,6 +586,21 @@ final class ComponentPoseService
             return $actual === [['seq' => 1, 'role' => 'RUN']]
                 && $ports->first() !== null
                 && strtoupper((string) $ports->first()->end_type) === 'BW';
+        }
+
+        if ($component->template_code === 'TEE') {
+            return $actual === [
+                ['seq' => 1, 'role' => 'RUN'],
+                ['seq' => 2, 'role' => 'RUN'],
+                ['seq' => 3, 'role' => 'BRANCH'],
+            ] && $ports->every(fn ($port): bool => strtoupper((string) $port->end_type) === 'BW');
+        }
+
+        if ($component->template_code === 'REDUCER') {
+            return $actual === [
+                ['seq' => 1, 'role' => 'LARGE'],
+                ['seq' => 2, 'role' => 'SMALL'],
+            ] && $ports->every(fn ($port): bool => strtoupper((string) $port->end_type) === 'BW');
         }
 
         if ($actual !== [

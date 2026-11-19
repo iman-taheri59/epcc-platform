@@ -98,7 +98,9 @@
      "fitting": {
       "enum": [
        "ELBOW",
-       "CAP"
+       "CAP",
+       "TEE",
+       "REDUCER"
       ]
      },
      "qualifier": {
@@ -150,6 +152,13 @@
      },
      "requiresManufacturerAgreement": {
       "type": "boolean"
+     },
+     "branchCentreToEndMm": {
+      "type": "number",
+      "exclusiveMinimum": 0
+     },
+     "branchSymbol": {
+      "type": "string"
      }
     },
     "allOf": [
@@ -227,6 +236,91 @@
           ]
          }
         ]
+       }
+      }
+     },
+     {
+      "if": {
+       "properties": {
+        "fitting": {
+         "const": "TEE"
+        }
+       },
+       "required": [
+        "fitting"
+       ]
+      },
+      "then": {
+       "required": [
+        "branchCentreToEndMm",
+        "branchSymbol"
+       ],
+       "properties": {
+        "dimension": {
+         "const": "CENTRE_TO_END"
+        },
+        "symbol": {
+         "const": "C"
+        },
+        "branchSymbol": {
+         "const": "M"
+        },
+        "qualifier": {
+         "enum": [
+          "STRAIGHT",
+          "EQUAL"
+         ]
+        },
+        "sourceTable": {
+         "const": "Table 6.1-7"
+        }
+       }
+      },
+      "else": {
+       "not": {
+        "anyOf": [
+         {
+          "required": [
+           "branchCentreToEndMm"
+          ]
+         },
+         {
+          "required": [
+           "branchSymbol"
+          ]
+         }
+        ]
+       }
+      }
+     },
+     {
+      "if": {
+       "properties": {
+        "fitting": {
+         "const": "REDUCER"
+        }
+       },
+       "required": [
+        "fitting"
+       ]
+      },
+      "then": {
+       "properties": {
+        "dimension": {
+         "const": "LENGTH"
+        },
+        "symbol": {
+         "const": "H"
+        },
+        "qualifier": {
+         "enum": [
+          "CONCENTRIC",
+          "ECCENTRIC"
+         ]
+        },
+        "sourceTable": {
+         "const": "Table 6.1-11"
+        }
        }
       }
      }
