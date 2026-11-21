@@ -529,6 +529,62 @@ final class ComponentService
                 ? strtoupper((string) ($template['ports'][0]['defaultEnd'] ?? ''))
                 : strtoupper(trim((string) $legacyEndType)));
 
+        if ($templateCode === 'TEE') {
+            // TEE qualifier is derived (EQUAL vs REDUCING) from port sizes; the straight-tee
+            // geometry contract is B16.9 Table 6.1-7 and is valid for equal tees without an
+            // explicit qualifier. Allow an explicit EQUAL/STRAIGHT for straight tees and
+            // derive otherwise.
+            if ($standard !== null && $standard !== 'B16.9') {
+                throw ValidationException::withMessages([
+                    'fitting_standard' => __('epcc.component.elbow_standard_unsupported'),
+                ]);
+            }
+            if ($classDesignation !== null || $endType !== null) {
+                throw ValidationException::withMessages([
+                    'fitting_qualifier' => __('epcc.component.fitting_qualifier_not_applicable'),
+                ]);
+            }
+            if ($qualifier !== '' && ! in_array($qualifier, ['EQUAL', 'STRAIGHT', 'REDUCING'], true)) {
+                throw ValidationException::withMessages([
+                    'fitting_qualifier' => __('epcc.component.elbow_qualifier_unsupported'),
+                ]);
+            }
+            $teeQualifier = $qualifier === 'REDUCING' ? 'REDUCING' : null;
+            if ($qualifier === 'STRAIGHT') {
+                $teeQualifier = 'EQUAL';
+            }
+
+            return [
+                'standard' => $standard ?? ($teeQualifier === null || $teeQualifier === 'EQUAL' ? 'B16.9' : null),
+                'qualifier' => $teeQualifier,
+                'classDesignation' => null,
+                'endType' => null,
+            ];
+        }
+
+        if ($templateCode === 'REDUCER') {
+            if ($standard !== null && $standard !== 'B16.9') {
+                throw ValidationException::withMessages([
+                    'fitting_standard' => __('epcc.component.elbow_standard_unsupported'),
+                ]);
+            }
+            if ($classDesignation !== null || $endType !== null) {
+                throw ValidationException::withMessages([
+                    'fitting_qualifier' => __('epcc.component.fitting_qualifier_not_applicable'),
+                ]);
+            }
+            if ($qualifier === '') {
+                $qualifier = 'CONCENTRIC';
+            }
+            if (! in_array($qualifier, ['CONCENTRIC', 'ECCENTRIC'], true)) {
+                throw ValidationException::withMessages([
+                    'fitting_qualifier' => __('epcc.component.elbow_qualifier_required'),
+                ]);
+            }
+
+            return ['standard' => 'B16.9', 'qualifier' => $qualifier, 'classDesignation' => null, 'endType' => null];
+        }
+
         if ($templateCode !== 'ELBOW') {
             if ($qualifier !== '' || $standard !== null || $classDesignation !== null || $endType !== null) {
                 throw ValidationException::withMessages([

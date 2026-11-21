@@ -19,7 +19,7 @@ final class FittingDimensionsTest extends TestCase
     public function test_all_pack_rows_round_trip_without_reinterpreting_dimensions(): void
     {
         $pack = json_decode(file_get_contents(base_path('../standards-packs/reference/fitting-dimensions.ref.json')), true);
-        self::assertCount(99, $pack['dimensions']);
+        self::assertCount(196, $pack['dimensions']);
         foreach ($pack['dimensions'] as $row) {
             if ($row['requiresManufacturerAgreement'] ?? false) { continue; }
             $result = $this->reader()->lookup($row['fitting'], $row['qualifier'], $row['nps'], $row['limitingWallThicknessMm'] ?? null);
@@ -58,8 +58,8 @@ final class FittingDimensionsTest extends TestCase
             ['ELBOW', '90SR', '6', 'QUALIFIER_NOT_COVERED'],
             ['ELBOW', '180LR', '6', 'QUALIFIER_NOT_COVERED'],
             ['CAP', '90LR', '6', 'QUALIFIER_NOT_COVERED'],
-            ['TEE', null, '6', 'FITTING_NOT_COVERED'],
-            ['REDUCER', null, '6', 'FITTING_NOT_COVERED'],
+            ['TEE', null, '6', 'QUALIFIER_NOT_COVERED'],
+            ['REDUCER', null, '6', 'QUALIFIER_NOT_COVERED'],
             ['ELBOW', '90LR', '6x4', 'SIZE_INVALID'],
             ['ELBOW', '90LR', '52', 'PROJECT_SPEC_REQUIRED'],
             ['CAP', null, '26', 'CAP_MANUFACTURER_AGREEMENT_REQUIRED'],

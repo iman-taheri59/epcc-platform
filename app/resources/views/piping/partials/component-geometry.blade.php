@@ -13,7 +13,7 @@
     $triangleFormOpen = $inputMode === 'DIMENSIONED_TRIANGLE';
 @endphp
 
-@if(! in_array($component->template_code, ['PIPE', 'NIPPLE', 'ELBOW', 'CAP'], true))
+@if(! in_array($component->template_code, ['PIPE', 'NIPPLE', 'ELBOW', 'CAP', 'TEE', 'REDUCER'], true))
   <div style="color:var(--muted);font-size:10px;line-height:1.6;">{{ $L('geometryUnsupported') }}</div>
 @else
   <div style="font-size:11px;line-height:1.6;">
@@ -38,6 +38,16 @@
           <bdi>{{ $profileParameters['standard_code'] ?? 'B16.9' }}-{{ $profileParameters['standard_edition_year'] ?? '2018' }} · {{ $profileParameters['source_table'] ?? 'Table 6.1-1' }} · {{ $profileParameters['dimension_symbol'] ?? '—' }} = {{ $formatMm($profileParameters['center_to_end_mm']) }} mm</bdi>
         </div>
       @endif
+    @endif
+    @if($component->template_code === 'TEE' && isset($profileParameters['run_centre_to_end_mm']))
+      <div style="margin-bottom:4px;color:var(--muted);font-size:10px;">
+        <bdi>B16.9-2018 · {{ $profileParameters['source_table'] ?? 'Table 6.1-7' }} · C (run) = {{ $formatMm($profileParameters['run_centre_to_end_mm']) }} mm · M (branch) = {{ $formatMm($profileParameters['branch_centre_to_end_mm']) }} mm</bdi>
+      </div>
+    @endif
+    @if($component->template_code === 'REDUCER' && isset($profileParameters['end_to_end_h_mm']))
+      <div style="margin-bottom:4px;color:var(--muted);font-size:10px;">
+        <bdi>B16.9-2018 · {{ $profileParameters['source_table'] ?? 'Table 6.1-11' }} · H = {{ $formatMm($profileParameters['end_to_end_h_mm']) }} mm @if(($profileParameters['fitting_qualifier'] ?? '') === 'ECCENTRIC' && isset($profileParameters['eccentric_offset_y_mm'])) · {{ $L('eccentricOffset') ?? 'eccentric offset' }} = {{ $formatMm($profileParameters['eccentric_offset_y_mm']) }} mm @endif</bdi>
+      </div>
     @endif
     <div>
       <strong>{{ $L('geometryStatus') }}:</strong>

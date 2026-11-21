@@ -2712,6 +2712,9 @@ def check_fitting_dimensions(refs: dict) -> None:
         ("ELBOW", "LONG_RADIUS_90"): ("CENTRE_TO_END", "A", "Table 6.1-1"),
         ("ELBOW", "LONG_RADIUS_45"): ("CENTRE_TO_END", "B", "Table 6.1-1"),
         ("CAP", None): ("LENGTH", "E", "Table 6.1-10"),
+        ("TEE", "STRAIGHT"): ("CENTRE_TO_END", "C", "Table 6.1-7"),
+        ("REDUCER", "CONCENTRIC"): ("LENGTH", "H", "Table 6.1-11"),
+        ("REDUCER", "ECCENTRIC"): ("LENGTH", "H", "Table 6.1-11"),
     }
     declared = pack["standard"]["sourceTables"]
     actual = {r["sourceTable"] for r in pack["dimensions"]}
@@ -2758,6 +2761,12 @@ def check_fitting_dimensions(refs: dict) -> None:
                     fail(f"[ref:fitting-dimensions] CAP_APPLICABILITY incomplete/inconsistent for {d['nps']}")
         elif any(f in d for f in cap_fields):
             fail(f"[ref:fitting-dimensions] CAP_APPLICABILITY fields on non-cap {key}")
+        # TEE branch fields are only valid on TEE rows
+        if d.get("fitting") == "TEE":
+            if not (isinstance(d.get("branchCentreToEndMm"), (int,float)) and d["branchCentreToEndMm"]>0 and d.get("branchSymbol")=="M"):
+                fail(f"[ref:fitting-dimensions] TEE branch dimension missing or invalid for {key}")
+        elif any(k in d for k in ("branchCentreToEndMm","branchSymbol")):
+            fail(f"[ref:fitting-dimensions] branch fields on non-tee row {key}")
 
         # 2. THE GEOMETRY. Above the floor B16.9 sets at the small end, the
         #    take-out is a fixed multiple of the size.

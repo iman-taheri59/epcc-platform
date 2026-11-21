@@ -70,10 +70,11 @@ final class FittingDimensions
         $qualifier = match ($qualifier) {
             '90LR' => 'LONG_RADIUS_90',
             '45LR' => 'LONG_RADIUS_45',
+            'EQUAL' => 'STRAIGHT',
             '' => null,
             default => $qualifier,
         };
-        if (! in_array($fitting, ['ELBOW', 'CAP'], true)) {
+        if (! in_array($fitting, ['ELBOW', 'CAP', 'TEE', 'REDUCER'], true)) {
             return $this->unavailable('FITTING_NOT_COVERED');
         }
         if ($fitting === 'ELBOW' && $qualifier === null) {
@@ -84,7 +85,9 @@ final class FittingDimensions
             return $this->unavailable('RADIUS_UNSPECIFIED');
         }
         if (($fitting === 'CAP' && $qualifier !== null)
-            || ($fitting === 'ELBOW' && ! in_array($qualifier, ['LONG_RADIUS_90', 'LONG_RADIUS_45'], true))) {
+            || ($fitting === 'ELBOW' && ! in_array($qualifier, ['LONG_RADIUS_90', 'LONG_RADIUS_45'], true))
+            || ($fitting === 'TEE' && ! in_array($qualifier, ['STRAIGHT', 'EQUAL'], true))
+            || ($fitting === 'REDUCER' && ! in_array($qualifier, ['CONCENTRIC', 'ECCENTRIC'], true))) {
             return $this->unavailable('QUALIFIER_NOT_COVERED');
         }
         $size = $this->pipe->resolveLabel((string) $this->npsValue($nps));
@@ -183,6 +186,10 @@ final class FittingDimensions
                 ['ELBOW', 'LONG_RADIUS_90'] => ['CENTRE_TO_END', 'A', 'Table 6.1-1'],
                 ['ELBOW', 'LONG_RADIUS_45'] => ['CENTRE_TO_END', 'B', 'Table 6.1-1'],
                 ['CAP', null] => ['LENGTH', 'E', 'Table 6.1-10'],
+                ['TEE', 'STRAIGHT'] => ['CENTRE_TO_END', 'C', 'Table 6.1-7'],
+                ['TEE', 'EQUAL'] => ['CENTRE_TO_END', 'C', 'Table 6.1-7'],
+                ['REDUCER', 'CONCENTRIC'] => ['LENGTH', 'H', 'Table 6.1-11'],
+                ['REDUCER', 'ECCENTRIC'] => ['LENGTH', 'H', 'Table 6.1-11'],
                 default => null,
             };
             $size = $this->pipe->resolveLabel($row['nps']);
@@ -195,6 +202,14 @@ final class FittingDimensions
                 || abs($size->odMm - $row['odMm']) > 0.11
                 || ! $this->positiveNumber($row['mm'] ?? null)) {
                 throw new RuntimeException('Inconsistent fitting dimension row.');
+            }
+            if ($row['fitting'] === 'TEE') {
+                if (! $this->positiveNumber($row['branchCentreToEndMm'] ?? null)
+                    || ($row['branchSymbol'] ?? null) !== 'M') {
+                    throw new RuntimeException('Incomplete or inconsistent tee branch dimension.');
+                }
+            } elseif (array_key_exists('branchCentreToEndMm', $row) || array_key_exists('branchSymbol', $row)) {
+                throw new RuntimeException('Branch dimension fields on a non-tee row.');
             }
             if ($row['fitting'] === 'CAP') {
                 if ($size->npsDecimal <= 24) {

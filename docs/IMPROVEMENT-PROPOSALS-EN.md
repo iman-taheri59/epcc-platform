@@ -893,6 +893,17 @@ and 17 reference packs. Pint, PHP syntax, Blade compilation, and
 `git diff --check` pass. Feature/full suites were not run and P-26 remains
 `PARTIAL`.
 
+The 2026-11-18 TEE/REDUCER extension adds source-backed B16.9-2018 straight tees
+(Table 6.1-7, equal, 33 NPS 1/2–48 secondarily transcribed) and concentric/eccentric
+reducers (Table 6.1-11, H per large NPS 3/4–48, 32 large sizes secondarily transcribed)
+as separate versioned local profiles. TEE uses run C and branch M with a 3-port
+RUN/RUN/BRANCH local frame anchored at run port 1; REDUCER uses end-to-end H with a
+2-port LARGE/SMALL frame anchored at the large end. Concentric reducers are coaxial
+(roll-invariant) while eccentric reducers offset the small bore by
+(OD_large−OD_small)/2 along +Y via the pipe OD reference. Both profiles are fingerprinted
+and transform through the existing pose service; reducing outlet tees (Table 6.1-8)
+remain open pending a second nominal size.
+
 
 ## How to use this file
 
