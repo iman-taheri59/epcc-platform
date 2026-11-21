@@ -573,6 +573,9 @@ final class ComponentService
                     'fitting_qualifier' => __('epcc.component.fitting_qualifier_not_applicable'),
                 ]);
             }
+            if ($qualifier === '') {
+                $qualifier = 'CONCENTRIC';
+            }
             if (! in_array($qualifier, ['CONCENTRIC', 'ECCENTRIC'], true)) {
                 throw ValidationException::withMessages([
                     'fitting_qualifier' => __('epcc.component.elbow_qualifier_required'),

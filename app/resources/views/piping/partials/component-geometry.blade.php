@@ -46,7 +46,7 @@
     @endif
     @if($component->template_code === 'REDUCER' && isset($profileParameters['end_to_end_h_mm']))
       <div style="margin-bottom:4px;color:var(--muted);font-size:10px;">
-        <bdi>B16.9-2018 · {{ $profileParameters['source_table'] ?? 'Table 6.1-11' }} · H = {{ $formatMm($profileParameters['end_to_end_h_mm']) }} mm@if(($profileParameters['fitting_qualifier'] ?? '') === 'ECCENTRIC' && isset($profileParameters['eccentric_offset_y_mm'])) · {{ $L('eccentricOffset') ?? 'eccentric offset' }} = {{ $formatMm($profileParameters['eccentric_offset_y_mm']) }} mm @endif</bdi>
+        <bdi>B16.9-2018 · {{ $profileParameters['source_table'] ?? 'Table 6.1-11' }} · H = {{ $formatMm($profileParameters['end_to_end_h_mm']) }} mm @if(($profileParameters['fitting_qualifier'] ?? '') === 'ECCENTRIC' && isset($profileParameters['eccentric_offset_y_mm'])) · {{ $L('eccentricOffset') ?? 'eccentric offset' }} = {{ $formatMm($profileParameters['eccentric_offset_y_mm']) }} mm @endif</bdi>
       </div>
     @endif
     <div>
