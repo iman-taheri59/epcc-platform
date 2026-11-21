@@ -97,7 +97,7 @@ final class ButtWeldReducerGeometryProfileTest extends TestCase
         self::assertVector([240, 200, 300], $resolvedC['ports'][1]['point_model']);
         // Eccentric small port is offset along local +Y, after 90° roll it moves to +Z
         self::assertVector([240, 200, 327], $resolvedE['ports'][1]['point_model']);
-        self::assertVector([0, 0, 1], $resolvedE['ports'][1]['outward_direction_model']); // direction is still along +X, unaffected by offset
+        self::assertVector([1, 0, 0], $resolvedE['ports'][1]['outward_direction_model']); // direction is still along +X, unaffected by offset
     }
 
     public function test_every_concentric_reducer_row_resolves_h_without_small_size(): void
